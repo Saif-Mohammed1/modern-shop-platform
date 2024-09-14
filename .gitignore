@@ -37,6 +37,6 @@ yarn-error.log*
 next-env.d.ts
 
 REQUIRES.md
-data.json
+data.js
 dbConnect.js
 route_to_count.js
