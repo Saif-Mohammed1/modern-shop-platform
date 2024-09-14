@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+/* 
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -30,4 +30,80 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+} */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  scroll-behavior: smooth; /* Smooth scrolling */
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.no-scrollbar {
+  /* -ms-overflow-style: none; Internet Explorer and Edge */
+  /* scrollbar-width: none; Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  /*display: none; /* Chrome, Safari, Opera */
+}
+
+.bg-red {
+  border: 3px solid red;
+}
+.bg-blue {
+  border: 3px solid blue;
+}
+.bg-black {
+  border: 3px solid black;
+}
+.bg-green {
+  border: 3px solid green;
+}
+
+.padding {
+  padding: 24px;
+}
+.margin {
+  margin: -24px;
+}
+/* .col {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+} */
+/* global.css */
+.col {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(var(--col-min-width, 300px), 1fr)
+  );
+  gap: var(--col-gap, 30px);
+}
+
+.custom-shadow {
+  box-shadow: rgba(0, 0, 0, 0.5) -5px 5px 10px;
+}
+.empty {
+  @apply text-gray-600 text-center my-10;
+}
+
+.imgParent {
+  height: 100%;
+}
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
 }
