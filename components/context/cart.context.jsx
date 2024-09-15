@@ -52,7 +52,7 @@ export const CartProvider = ({ children }) => {
       });
       // toast.success("Product added to cart");
     } catch (error) {
-      throw new AppError(error.message, error.status);
+      throw error;
       // toast.error(error?.message || "Failed to add to cart");
     }
   };
@@ -62,7 +62,7 @@ export const CartProvider = ({ children }) => {
       const data = await removeFromCart(product, user);
       setCartItems(data);
     } catch (error) {
-      throw new AppError(error.message, error.status);
+      throw error;
     }
   };
   const clearProductFromCartItem = async (product) => {
@@ -70,7 +70,7 @@ export const CartProvider = ({ children }) => {
       await clearItemFromCart(product, user);
       setCartItems((pre) => pre.filter((item) => item._id !== product._id));
     } catch (error) {
-      throw new AppError(error.message, error.status);
+      throw error;
     }
   };
   const toggleCartStatus = () => {

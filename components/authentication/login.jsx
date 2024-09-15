@@ -29,7 +29,7 @@ const LoginPage = () => {
       });
 
       if (error) {
-        throw new AppError(error.message, error.status);
+        throw error;
       }
       // //console.log("data", data);
 
@@ -115,7 +115,7 @@ const LoginPageV2 = () => {
         // callbackUrl: callbackUrl || "/",
       });
       if (error) {
-        throw new AppError(error.message, error.status);
+        throw error;
       }
       toast.success("Login success 👌");
       setEmail("");

@@ -47,7 +47,7 @@ export const WishlistProvider = ({ children }) => {
         await api.post("/customer/wishlist/" + product._id);
         setWishlist((prevWishlist) => [...prevWishlist, { product }]);
       } catch (error) {
-        throw new AppError(error.message, error.status);
+        throw error;
       }
     } else {
       setWishlist((prevWishlist) => [...prevWishlist, { product }]);
@@ -62,7 +62,7 @@ export const WishlistProvider = ({ children }) => {
           prevWishlist.filter((item) => item.product._id !== product._id)
         );
       } catch (error) {
-        throw new AppError(error.message, error.status);
+        throw error;
       }
     } else {
       setWishlist((prevWishlist) =>

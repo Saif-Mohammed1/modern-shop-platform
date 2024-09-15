@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
+import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 const protectedRoutes = [
   "/account",
@@ -23,14 +24,8 @@ const authMiddleware = async (req) => {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  if (isAuth && isAuth.role === "admin" && pathname.startsWith("/dashboard")) {
-    return NextResponse.next();
-  } else if (
-    isAuth &&
-    isAuth.role === "user" &&
-    pathname.startsWith("/dashboard")
-  ) {
-    return;
+  if (pathname.startsWith("/dashboard") && isAuth && isAuth.role !== "admin") {
+    return notFound();
   }
 
   // if (isAuth &&isAuth. &&pathname.startsWith("/dashboard")) {

@@ -260,7 +260,7 @@ export const updateProduct = async (product) => {
           method: "PUT",
           body: JSON.stringify(result.value),
         });
-        if (error) throw new AppError(error.message, error.status);
+        if (error) throw error;
         Swal.fire(
           "Updated!",
           "Product details have been updated successfully.",

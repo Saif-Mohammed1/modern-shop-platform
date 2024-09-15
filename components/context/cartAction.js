@@ -29,7 +29,7 @@ export const addToCart = async (product, userId = null, quantity = 1) => {
       return cart;
     }
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };
 
@@ -59,7 +59,7 @@ export const removeFromCart = async (product, userId = null, quantity = 1) => {
       return cart;
     }
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };
 
@@ -86,7 +86,7 @@ export const saveCartToDB = async (productId) => {
 
     return data.data;
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };
 
@@ -102,21 +102,21 @@ export const getCartItems = async (userId = null) => {
       return JSON.parse(localStorage.getItem("cart")) || [];
     }
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };
 export const removeCartItemFromDB = async (product) => {
   try {
     await api.put(`/customer/cart/${product._id}`);
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };
 export const clearCartInDB = async (product) => {
   try {
     await api.delete(`/customer/cart/${product._id}`);
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };
 export const mergeLocalCartWithDB = async () => {
@@ -131,7 +131,7 @@ export const mergeLocalCartWithDB = async () => {
     );
     localStorage.removeItem("cart");
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };
 const fetchCartItemsFromDB = async () => {
@@ -140,6 +140,6 @@ const fetchCartItemsFromDB = async () => {
 
     return data.data;
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    throw error;
   }
 };

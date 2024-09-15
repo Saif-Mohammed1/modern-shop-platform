@@ -50,7 +50,7 @@ const Shipping = ({ address }) => {
           shippingInfo: selectedShippingAddress,
         }),
       });
-      if (error) throw new AppError(error.message, error.status);
+      if (error) throw error;
       window.open(data.url, "_blank");
     } catch (error) {
       toast.error(
