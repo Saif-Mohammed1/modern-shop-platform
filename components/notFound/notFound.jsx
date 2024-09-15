@@ -20,21 +20,21 @@ const NotFoundComponent = () => {
       </div>
 
       {/* 404 Error Text */}
-      <h1 className="text-4xl font-bold text-gray-800 mb-4 animate-bounce">
+      <h1 className="text-4xl text-center font-bold text-gray-800 mb-4 animate-bounce">
         404 - Page Not Found
       </h1>
 
       {/* Suggestions */}
-      <p className="text-lg text-gray-600 mb-8">
+      <p className="text-lg text-center  text-gray-600 mb-8">
         Oops! The page you’re looking for doesn’t exist.
       </p>
 
       {/* Links */}
-      <div className="flex gap-6">
+      <div className="flex  gap-6">
         <Link href="/">
           <span className="text-blue-500 hover:underline">Go to Homepage</span>
         </Link>
-        <Link href="/contact">
+        <Link href="/contact-us">
           <span className="text-blue-500 hover:underline">Contact Us</span>
         </Link>
       </div>
