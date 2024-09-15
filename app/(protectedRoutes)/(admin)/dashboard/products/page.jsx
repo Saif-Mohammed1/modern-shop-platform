@@ -53,16 +53,16 @@ const queryParams = async (searchParams) => {
 };
 
 const page = async ({ searchParams }) => {
-  const defaultSearchParams = searchParams || {
-    category: undefined,
-    name: undefined,
-    sort: undefined,
-    fields: undefined,
-    page: undefined,
-    limit: undefined,
-    rating: undefined,
-    min: undefined,
-    max: undefined,
+  const defaultSearchParams = {
+    category: searchParams.category || undefined,
+    name: searchParams.name || undefined,
+    sort: searchParams.sort || undefined,
+    fields: searchParams.fields || undefined,
+    page: searchParams.page || undefined,
+    limit: searchParams.limit || undefined,
+    rating: searchParams.rating || undefined,
+    min: searchParams.min || undefined,
+    max: searchParams.max || undefined,
   };
   try {
     const { data, categories, pageCount } = await queryParams(

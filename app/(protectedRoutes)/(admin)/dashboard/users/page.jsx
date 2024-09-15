@@ -40,13 +40,13 @@ const queryParams = async (searchParams) => {
 };
 
 const page = async ({ searchParams }) => {
-  const defaultSearchParams = searchParams || {
-    email: undefined,
-    active: undefined,
-    sort: undefined,
-    role: undefined,
-    page: undefined,
-    limit: undefined,
+  const defaultSearchParams = {
+    email: searchParams.email || undefined,
+    active: searchParams.active || undefined,
+    sort: searchParams.sort || undefined,
+    role: searchParams.role || undefined,
+    page: searchParams.page || undefined,
+    limit: searchParams.limit || undefined,
   };
 
   try {

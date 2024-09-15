@@ -40,14 +40,15 @@ const queryParams = async (searchParams) => {
 };
 
 const page = async ({ searchParams }) => {
-  const defaultSearchParams = searchParams || {
-    user: undefined,
-    status: undefined,
-    date: undefined,
-    sort: undefined,
-    page: undefined,
-    limit: undefined,
+  const defaultSearchParams = {
+    user: searchParams.user || undefined,
+    status: searchParams.status || undefined,
+    date: searchParams.date || undefined,
+    sort: searchParams.sort || undefined,
+    page: searchParams.page || undefined,
+    limit: searchParams.limit || undefined,
   };
+
   try {
     const { data, pageCount } = await queryParams(defaultSearchParams);
 
