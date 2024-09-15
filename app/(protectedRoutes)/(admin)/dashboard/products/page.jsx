@@ -53,8 +53,21 @@ const queryParams = async (searchParams) => {
 };
 
 const page = async ({ searchParams }) => {
+  const defaultSearchParams = searchParams || {
+    category: undefined,
+    name: undefined,
+    sort: undefined,
+    fields: undefined,
+    page: undefined,
+    limit: undefined,
+    rating: undefined,
+    min: undefined,
+    max: undefined,
+  };
   try {
-    const { data, categories, pageCount } = await queryParams(searchParams);
+    const { data, categories, pageCount } = await queryParams(
+      defaultSearchParams
+    );
     return (
       <div className="p-8 bg-gray-100 min-h-screen">
         <h1 className="text-3xl font-bold mb-6">Manage Products</h1>

@@ -40,8 +40,16 @@ const queryParams = async (searchParams) => {
 };
 
 const page = async ({ searchParams }) => {
+  const defaultSearchParams = searchParams || {
+    user: undefined,
+    status: undefined,
+    date: undefined,
+    sort: undefined,
+    page: undefined,
+    limit: undefined,
+  };
   try {
-    const { data, pageCount } = await queryParams(searchParams);
+    const { data, pageCount } = await queryParams(defaultSearchParams);
 
     return <AdminOrdersDashboard orders={data} totalPages={pageCount} />;
   } catch (error) {

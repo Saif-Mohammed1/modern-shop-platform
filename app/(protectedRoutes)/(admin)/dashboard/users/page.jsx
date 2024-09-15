@@ -40,8 +40,17 @@ const queryParams = async (searchParams) => {
 };
 
 const page = async ({ searchParams }) => {
+  const defaultSearchParams = searchParams || {
+    email: undefined,
+    active: undefined,
+    sort: undefined,
+    role: undefined,
+    page: undefined,
+    limit: undefined,
+  };
+
   try {
-    const { data, pageCount } = await queryParams(searchParams);
+    const { data, pageCount } = await queryParams(defaultSearchParams);
 
     return <AdminUsers users={data} totalPages={pageCount} />;
   } catch (error) {

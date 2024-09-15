@@ -36,7 +36,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-REQUIRES.md
+requierments.md
 data.js
 dbConnect.js
 route_to_count.js

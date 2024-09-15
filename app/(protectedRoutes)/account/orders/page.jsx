@@ -1,4 +1,4 @@
-import OrderHistory from "@/components/shop/orders/orderHistory";
+// import OrderHistory from "@/components/shop/orders/orderHistory";
 import UserOrderTracking from "@/components/shop/orders/orderTracking";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";

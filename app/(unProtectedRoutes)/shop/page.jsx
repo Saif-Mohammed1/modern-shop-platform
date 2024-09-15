@@ -55,8 +55,21 @@ const queryParams = async (searchParams) => {
 };
 
 const page = async ({ searchParams }) => {
+  const defaultSearchParams = searchParams || {
+    category: undefined,
+    name: undefined,
+    sort: undefined,
+    fields: undefined,
+    page: undefined,
+    limit: undefined,
+    rating: undefined,
+    min: undefined,
+    max: undefined,
+  };
   try {
-    const { data, categories, pageCount } = await queryParams(searchParams);
+    const { data, categories, pageCount } = await queryParams(
+      defaultSearchParams
+    );
     return (
       <Shop
         products={data || []}
