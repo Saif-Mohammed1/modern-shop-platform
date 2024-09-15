@@ -1,12 +1,11 @@
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
-import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 const protectedRoutes = [
   "/account",
   "/checkout",
   "/confirm-email-change",
-  "/dashboard",
+  // "/dashboard",
 ]; // only this shoud be proteted othwr routes should be public
 const authMiddleware = async (req) => {
   const pathname = req.nextUrl.pathname;
@@ -24,10 +23,15 @@ const authMiddleware = async (req) => {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  if (pathname.startsWith("/dashboard") && isAuth && isAuth.role !== "admin") {
-    return notFound();
+  if (pathname.startsWith("/dashboard") && isAuth && isAuth.role === "admin") {
+    return NextResponse.next();
+  } else if (
+    pathname.startsWith("/dashboard") &&
+    isAuth &&
+    isAuth.role !== "admin"
+  ) {
+    return NextResponse.rewrite(new URL("/not-found", req.url));
   }
-
   // if (isAuth &&isAuth. &&pathname.startsWith("/dashboard")) {
   //   return NextResponse.json
   // Allow other routes like / to be accessible
