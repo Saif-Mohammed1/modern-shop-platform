@@ -51,7 +51,7 @@ export const createUser = async () => {
     });
     if (result.isConfirmed && result.value) {
       // Here you can handle the result, such as creating the user in your database
-      //   //console.log(result.value);
+      //   ////console.log(result.value);
       const { data, error } = await fetchApi("/dashboard/users", {
         method: "POST",
         body: JSON.stringify(result.value),

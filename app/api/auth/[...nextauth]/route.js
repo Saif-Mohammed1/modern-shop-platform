@@ -39,7 +39,7 @@ export const authOptions = {
           //   createdAt: user.createdAt,
           // };
         } catch (error) {
-          throw error;
+          throw new AppError(error.message, error.status);
         }
       },
     }),

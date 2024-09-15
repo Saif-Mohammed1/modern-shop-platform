@@ -23,7 +23,7 @@ export const POST = async (req) => {
   try {
     await connectDB();
     await isAuth(req);
-    console.log("called");
+    //console.log("called");
 
     const { data, statusCode } = await createOne(req, Address);
     return NextResponse.json({ data }, { status: statusCode });

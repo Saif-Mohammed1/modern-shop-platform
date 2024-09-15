@@ -89,9 +89,9 @@ export const refreshAccessToken = async (req, res) => {
   const ipAddress =
     req.headers.get("x-forwarded-for") || req.connection.remoteAddress;
 
-  console.log("refreshAccessToken From  refreshAccessToken", token);
-  console.log("deviceInfo", deviceInfo);
-  console.log("ipAddress", ipAddress);
+  //console.log("refreshAccessToken From  refreshAccessToken", token);
+  //console.log("deviceInfo", deviceInfo);
+  //console.log("ipAddress", ipAddress);
 
   if (!token || !deviceInfo || !ipAddress) {
     throw new AppError("Missing required fields", 400);
@@ -104,8 +104,7 @@ export const refreshAccessToken = async (req, res) => {
 
     return { accessToken };
   } catch (error) {
-    throw error;
-    // return res.status(401).json({ message: "Invalid refresh token" });
+    throw error; // return res.status(401).json({ message: "Invalid refresh token" });
   }
 };
 const verifyRefreshToken = async (token, deviceInfo, ipAddress) => {

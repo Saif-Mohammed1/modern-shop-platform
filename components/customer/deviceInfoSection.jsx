@@ -113,7 +113,7 @@ const DeviceInfoSection = ({ devices }) => {
               <button
                 onClick={() => {
                   // Implement API call to delete devices here
-                  console.log("Deleting devices: ", selectedDevice);
+                  //console.log("Deleting devices: ", selectedDevice);
                   setShowDeleteModal(false);
                 }}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -140,7 +140,7 @@ const DeviceInfoSectionV1 = ({ devices }) => {
 
   const handleDelete = () => {
     // Handle delete logic here
-    console.log("Delete devices:", devices._id);
+    //console.log("Delete devices:", devices._id);
   };
 
   return (

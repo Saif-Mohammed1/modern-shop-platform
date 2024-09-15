@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa";
 
 const Sidebar = (req) => {
-  console.log(req);
+  //console.log(req);
   return (
     <aside className="w-64 h-screen bg-gray-800 text-white">
       <div className="p-4">

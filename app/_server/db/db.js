@@ -14,7 +14,7 @@
 
 // db.on("error", //console.error.bind(//console, "connection error:"));
 // db.once("open", function () {
-//   //console.log("Connected to MongoDB");
+//   ////console.log("Connected to MongoDB");
 // });
 
 // // Define your schema and models here
@@ -29,30 +29,24 @@ let isConnected = false;
 
 const connectDB = async () => {
   if (isConnected) {
-    console.log("Using existing MongoDB connection");
     return;
   }
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     isConnected = true;
-    console.log("MongoDB connected successfully");
   } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
     throw error;
   }
 };
 
 const disconnectDB = async () => {
   if (!isConnected) {
-    console.log("No active connection to MongoDB to disconnect");
     return;
   }
   try {
     await mongoose.disconnect();
     isConnected = false;
-    console.log("MongoDB disconnected");
   } catch (error) {
-    console.error("Error disconnecting from MongoDB:", error);
     throw error;
   }
 };

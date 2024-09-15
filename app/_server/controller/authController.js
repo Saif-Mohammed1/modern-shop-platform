@@ -81,83 +81,6 @@ export const isAuth = async (req) => {
     throw error;
   }
 };
-// export const isAuth = async (req) => {
-//   let token;
-
-//   if (
-//     (req?.headers?.authorization &&
-//       req?.headers?.authorization?.startsWith("Bearer")) ||
-//     (req?.headers?.get("authorization") &&
-//       req?.headers?.get("authorization")?.startsWith("Bearer"))
-//   ) {
-//     token =
-//       req?.headers?.authorization?.split(" ")[1] ||
-//       req?.headers?.get("authorization")?.split(" ")[1];
-//   } else {
-//     //  both work fine cookies()?.get("jwt")?.value|| req?.cookies?.get("jwt")?.value
-
-//     token = cookies()?.get("jwt")?.value || req?.cookies?.get("jwt")?.value;
-//     if (token) {
-//       // Token is not empty, proceed with your logic
-//       return token;
-//     } else {
-//       // Handle the case where the token is empty or not provided
-//       throw new AppError("Authorization token is missing or empty");
-//     }
-//   }
-
-//   if (!token) {
-//     throw new AppError(
-//       "You are not logged in! Please log in to get access?.",
-//       401
-//     );
-//   }
-//   try {
-//     const decode = await promisify(verify)(token, process?.env?.JWT_SECRET);
-//     //console.log("decode", decode);
-//     if (!decode) {
-//       throw new AppError("invalid jwt", 400);
-//     }
-//     const currentUser = await User.findById(decode?.id);
-//     //console.log("currentUser", currentUser);
-
-//     if (!currentUser) {
-//       throw new AppError(
-//         "The user belonging to this token does no longer exist?.",
-//         401
-//       );
-//     }
-//     if (
-//       currentUser.updatedAt &&
-//       currentUser.updatedAt.getTime() !== decode?.iat
-//     ) {
-//       throw new AppError(
-//         "Your session is not valid anymore please login again",
-//         400
-//       );
-//     }
-//     if (!currentUser?.active) {
-//       throw new AppError(
-//         "This user is no longer active please contact support",
-//         401
-//       );
-//     }
-//     // 4) Check if user changed password after the token was issued
-//     if (currentUser?.changedPasswordAfter(decode?.iat)) {
-//       throw new AppError(
-//         "User recently changed password! Please log in again?.",
-//         401
-//       );
-//     }
-
-//     req.user = currentUser;
-
-//     // return NextResponse?.next();
-//   } catch (error) {
-//     throw error;
-//     // NextResponse?.json({ message: "unex" }, { status: 500 });
-//   }
-// };
 export const restrictTo = async (req, ...roles) => {
   // roles ['admin', 'lead-guide']?. role='user'
   if (!roles?.includes(req?.user?.role)) {
@@ -437,8 +360,7 @@ export const validateToken = async (req) => {
 //       statusCode: 200,
 //     };
 //   } catch (error) {
-//     throw error;
-//   }
+//     throw error//   }
 // };
 export const restPassword = async (req) => {
   try {

@@ -24,8 +24,7 @@ import Product from "../models/product.model";
 //       statusCode: 201,
 //     };
 //   } catch (error) {
-//     throw error;
-//   } finally {
+//     throw error//   } finally {
 //     sending = false;
 //   }
 // };
@@ -61,9 +60,7 @@ import Product from "../models/product.model";
 // //     //   { status: 200 }
 // //     // );
 // //   } catch (error) {
-// //     throw error;
-
-// //   }
+// //     throw error// //   }
 // // };
 
 // export const updateCart = async (req, Model) => {
@@ -116,8 +113,7 @@ import Product from "../models/product.model";
 
 //     return { data: updatedCartItem, statusCode: 200 };
 //   } catch (error) {
-//     throw error;
-//   } finally {
+//     throw error//   } finally {
 //     sending = false;
 //   }
 // };
@@ -144,8 +140,7 @@ import Product from "../models/product.model";
 //       statusCode: 200,
 //     };
 //   } catch (error) {
-//     throw error;
-//   } finally {
+//     throw error//   } finally {
 //     sending = false;
 //   }
 // };

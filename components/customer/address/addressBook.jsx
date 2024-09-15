@@ -25,7 +25,7 @@ const AddressBook = () => {
 
   // Fetch cities of Ukraine for validation (or hardcode some if needed)
   const ukraineCities = getCities("Ukraine");
-  console.log(ukraineCities);
+  //console.log(ukraineCities);
 
   const handleAddAddress = () => {
     // Ensure the city entered is in Ukraine
@@ -424,7 +424,7 @@ const AddressBookV3 = ({ addressList }) => {
       toast.error("City must be in Ukraine");
       return;
     }
-    // console.log("newAddress", newAddress);
+    // //console.log("newAddress", newAddress);
     if (
       !newAddress.city ||
       !newAddress.street ||
@@ -515,8 +515,8 @@ const AddressBookV3 = ({ addressList }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    console.log("name", name);
-    console.log("value", value);
+    //console.log("name", name);
+    //console.log("value", value);
     setNewAddress((prevAddress) => ({ ...prevAddress, [name]: value }));
   };
   const handelCancelAddAddress = () => {

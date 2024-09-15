@@ -188,7 +188,7 @@ export const showDescription = (title, description) => {
 //         method: "PUT",
 //         body: JSON.stringify(result.value),
 //       });
-//       if (error) throw error;
+//       if (error) throw error
 //       Swal.fire(
 //         "Updated!",
 //         "Product details have been updated successfully.",
@@ -196,7 +196,7 @@ export const showDescription = (title, description) => {
 //       );
 //     }
 //   } catch (error) {
-//     throw error;
+//     throw error
 //   }
 // };
 
@@ -260,7 +260,7 @@ export const updateProduct = async (product) => {
           method: "PUT",
           body: JSON.stringify(result.value),
         });
-        if (error) throw error;
+        if (error) throw new AppError(error.message, error.status);
         Swal.fire(
           "Updated!",
           "Product details have been updated successfully.",

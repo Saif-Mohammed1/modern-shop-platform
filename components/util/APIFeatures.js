@@ -11,7 +11,7 @@ class APIFeatures {
     let query = {};
 
     if (this.searchParams) {
-      //console.log("this.searchParams)" + this.searchParams);
+      ////console.log("this.searchParams)" + this.searchParams);
       for (const [key, value] of this.searchParams) {
         if (value && value !== "undefined") {
           // Check if the key is a range query (e.g., 'price[gte]')
@@ -39,15 +39,15 @@ class APIFeatures {
         }
       }
     }
-    //console.log("query", query);
+    ////console.log("query", query);
     return query;
   }
   filter() {
-    //console.log("this.queryString first", this.queryString);
+    ////console.log("this.queryString first", this.queryString);
 
     const queryObj = { ...this.queryString };
     const excludedFields = ["page", "sort", "limit", "fields", "category"];
-    //console.log("queryObj first", queryObj);
+    ////console.log("queryObj first", queryObj);
     // excludedFields.forEach((el) => delete queryObj[el]);
     excludedFields.forEach((el) => delete queryObj[el]);
     // Check if name or email is provided in the query parameters
@@ -160,7 +160,7 @@ class APIFeatures {
       const sortBy = this.queryString.sort.split(",").join(" ");
 
       this.query = this.query.sort(sortBy);
-      //console.log("this.queryString.sort", this.queryString.sort);
+      ////console.log("this.queryString.sort", this.queryString.sort);
     } else {
       this.query = this.query.sort("-createdAt");
     }

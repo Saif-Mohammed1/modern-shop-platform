@@ -5,11 +5,11 @@ import { NextResponse } from "next/server";
 
 export const POST = async (req) => {
   try {
-    console.log("register route");
+    //console.log("register route");
 
     await connectDB();
-    // .then((re) => //console.log("success connect to db"))
-    // .catch((re) => //console.log("failed connect to db"));
+    // .then((re) => ////console.log("success connect to db"))
+    // .catch((re) => ////console.log("failed connect to db"));
     const { message, accessToken, statusCode } = await register(req);
 
     return NextResponse.json(

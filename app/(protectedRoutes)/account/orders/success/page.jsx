@@ -1,5 +1,6 @@
 import OrderCompletedV2 from "@/components/shop/orders/orderCompletedPrushers";
 import api from "@/components/util/axios.api";
+import AppError from "@/components/util/appError";
 
 const page = async () => {
   try {
@@ -7,9 +8,7 @@ const page = async () => {
     const order = data.data;
     return <OrderCompletedV2 order={order} />;
   } catch (error) {
-    console.log(error);
-    return <div>error</div>;
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 };
 

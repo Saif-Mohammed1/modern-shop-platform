@@ -97,7 +97,7 @@ ProductSchema.virtual("reviews", {
 
 // Populate user before executing the find query
 ProductSchema.pre(/^find/, function (next) {
-  // console.log("worked populate");
+  // //console.log("worked populate");
 
   this.populate({
     path: "user",
@@ -108,7 +108,7 @@ ProductSchema.pre(/^find/, function (next) {
 
 // Update discount and expire discounts before executing the find query doesn't work
 // ProductSchema.pre(/^find/, async function (next) {
-//   console.log("worked updated");
+//   //console.log("worked updated");
 
 //   try {
 //     const currentDate = new Date();
@@ -193,7 +193,7 @@ ProductSchema.post(/^find/, async function (docs, next) {
 //   const doc = this;
 //   const price = await doc.get("price");
 //   const discount = await doc.get("discount");
-//   //console.log("guess what");
+//   ////console.log("guess what");
 //   if (discount > price) {
 //     throw new Error("Discount must be less than price");
 //   }

@@ -2,7 +2,7 @@
 // const AdminOrderManagement = ({ orders }) => {
 //   const handleStatusChange = (orderId, newStatus) => {
 //     // Implement the function to update order status in the database
-//     console.log(`Changing order ${orderId} to ${newStatus}`);
+//     //console.log(`Changing order ${orderId} to ${newStatus}`);
 //   };
 
 //   return (

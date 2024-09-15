@@ -12,7 +12,7 @@ const ChangePassword = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { user } = useUser();
 
-  console.log("user", user);
+  //console.log("user", user);
 
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

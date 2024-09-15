@@ -1,5 +1,6 @@
 import Shop from "@/components/shop/shop";
 import api from "@/components/util/axios.api";
+import AppError from "@/components/util/appError";
 
 export const metadata = {
   title: "Online Shop - Buy the Best Products",
@@ -49,7 +50,7 @@ const queryParams = async (searchParams) => {
     } = await api.get("/shop/" + (queryString ? `?${queryString}` : ""));
     return { data, pageCount, categories };
   } catch (error) {
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 };
 
@@ -64,7 +65,7 @@ const page = async ({ searchParams }) => {
       />
     );
   } catch (error) {
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 };
 

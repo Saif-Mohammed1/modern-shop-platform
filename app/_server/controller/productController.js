@@ -78,7 +78,7 @@ export const createProduct = async (req, Model) => {
 //   try {
 //     let formData = await req.formData();
 
-//     console.log("formData", formData);
+//     //console.log("formData", formData);
 
 //     // let parsedDiscountExpire;
 //     // if (data.discountExpire) {
@@ -116,7 +116,7 @@ export const createProduct = async (req, Model) => {
 //       extractedData.images = singleImage;
 //     }
 
-//     console.log("extractedData", extractedData);
+//     //console.log("extractedData", extractedData);
 //     //for clodianry
 //     // let imgUrl = [];
 //     // let publicId = [];
@@ -187,8 +187,7 @@ export const createProduct = async (req, Model) => {
 //     if (doc) {
 //       await Model.findByIdAndDelete(doc._id);
 //     }
-//     throw error;
-//   }
+//     throw error//   }
 // };
 export const deleteProduct = async (req, Model) => {
   try {
@@ -215,8 +214,7 @@ export const deleteProduct = async (req, Model) => {
     };
   } catch (error) {
     throw error;
-
-    // //console.log("err", error);
+    // ////console.log("err", error);
     // return NextResponse.json({ ...error });
   }
 };
@@ -283,12 +281,12 @@ export const deleteProductImages = async (req, Model) => {
 // //     // Convert single image field to array if necessary
 // //     if (!Array.isArray(formData.get("images"))) {
 // //       const singleImage = formData.get("images");
-// //       //console.log("singleImage", singleImage);
+// //       ////console.log("singleImage", singleImage);
 // //       extractedData.images = [singleImage];
 // //     }
 // //     if (Array.isArray(formData.getAll("images"))) {
 // //       const Image = formData.get("images");
-// //       //console.log("Image", Image);
+// //       ////console.log("Image", Image);
 // //       extractedData.images = Image;
 // //     }
 
@@ -357,9 +355,7 @@ export const deleteProductImages = async (req, Model) => {
 // //       statusCode: 200,
 // //     };
 // //   } catch (error) {
-// //     throw error;
-
-// //     // //console.log("err", error);
+// //     throw error// //     // ////console.log("err", error);
 // //     // return NextResponse.json({ ...error });
 // //   }
 // // };
@@ -450,8 +446,7 @@ export const deleteProductImages = async (req, Model) => {
 //       statusCode: 200,
 //     };
 //   } catch (error) {
-//     throw error;
-//   }
+//     throw error//   }
 // };
 // /**export const updateProductImage = async (req, Model) => {
 //   try {
@@ -519,8 +514,7 @@ export const deleteProductImages = async (req, Model) => {
 //       statusCode: 200,
 //     };
 //   } catch (error) {
-//     throw error;
-//   }
+//     throw error//   }
 // };
 //  */
 

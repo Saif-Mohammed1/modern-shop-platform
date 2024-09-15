@@ -14,7 +14,7 @@ const ProductTicket = (
   const columns = ["Name", "Category", "Price", "Stock"];
   const handleEdit = (product) => {
     // Handle product edit logic
-    console.log("Edit product", product);
+    //console.log("Edit product", product);
   };
 
   const handleDelete = async (id) => {

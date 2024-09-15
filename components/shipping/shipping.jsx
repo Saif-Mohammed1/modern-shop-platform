@@ -42,7 +42,7 @@ const Shipping = ({ address }) => {
       return;
     }
     try {
-      //console.log("selectedShippingAddress", selectedShippingAddress);
+      ////console.log("selectedShippingAddress", selectedShippingAddress);
       const { data, error } = await fetchApi("/stripe/checkout", {
         method: "POST",
         body: JSON.stringify({
@@ -50,7 +50,7 @@ const Shipping = ({ address }) => {
           shippingInfo: selectedShippingAddress,
         }),
       });
-      if (error) throw error;
+      if (error) throw new AppError(error.message, error.status);
       window.open(data.url, "_blank");
     } catch (error) {
       toast.error(

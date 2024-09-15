@@ -1,5 +1,6 @@
 import CheckoutPage from "@/components/shop/checkout/checkout";
 import api from "@/components/util/axios.api";
+import AppError from "@/components/util/appError";
 
 const Page = async () => {
   try {
@@ -9,8 +10,8 @@ const Page = async () => {
 
     //
   } catch (error) {
-    throw error;
-    // throw error;
+    throw new AppError(error.message, error.status);
+    //     throw new AppError(error.message, error.status);
   }
 };
 

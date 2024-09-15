@@ -1,5 +1,6 @@
 import Dashboard from "@/components/shop/adminDashboard/dashboard";
 import api from "@/components/util/axios.api";
+import AppError from "@/components/util/appError";
 
 const page = async () => {
   try {
@@ -8,7 +9,7 @@ const page = async () => {
     } = await api.get("/admin/dashboard");
     return <Dashboard data={data} />;
   } catch (error) {
-    return <p>No data available.</p>;
+    throw new AppError(error.message, error.status);
   }
 };
 

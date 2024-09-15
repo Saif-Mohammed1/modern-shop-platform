@@ -6,8 +6,8 @@ import { NextResponse } from "next/server";
 export const POST = async (req) => {
   try {
     await connectDB();
-    //   .then((re) => //console.log("success connect to db"))
-    //   .catch((re) => //console.log("failed connect to db"));
+    //   .then((re) => ////console.log("success connect to db"))
+    //   .catch((re) => ////console.log("failed connect to db"));
 
     const { user, accessToken, statusCode } = await logIn(req);
 

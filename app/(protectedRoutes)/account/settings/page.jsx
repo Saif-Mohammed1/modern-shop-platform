@@ -1,5 +1,6 @@
 import ChangePassword from "@/components/customer/changePassword";
 import api from "@/components/util/axios.api";
+import AppError from "@/components/util/appError";
 
 const page = async () => {
   try {
@@ -7,7 +8,7 @@ const page = async () => {
     const deviceInfo = data.data;
     return <ChangePassword devices={deviceInfo} />;
   } catch (error) {
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 };
 

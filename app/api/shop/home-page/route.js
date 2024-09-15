@@ -7,7 +7,6 @@ import { NextResponse } from "next/server";
 export const GET = async (req) => {
   try {
     await connectDB();
-
     const { data, statusCode } = await getTopOffersAndNewProducts(req, Product);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {

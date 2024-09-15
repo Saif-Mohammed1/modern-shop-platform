@@ -47,9 +47,6 @@ export const deleteOne = async (req, Model) => {
     };
   } catch (error) {
     throw error;
-
-    // ////console.log("err", error);
-    // return NextResponse.json({ ...error });
   }
 };
 
@@ -178,7 +175,7 @@ export const getAggregate = async (
 
     return { data: paginatedResult, statusCode: 200, pageCount };
   } catch (error) {
-    ////console.log("error", error);
+    //////console.log("error", error);
     throw error;
   }
 };
@@ -205,8 +202,8 @@ export const getAll = async (
     if (popOptions) features.query = features.query.populate(popOptions);
 
     let doc = await features.query;
-    // ////console.log("doc product 1S", doc);
-    ////console.log("doc product 1S", doc.length);
+    // //////console.log("doc product 1S", doc);
+    //////console.log("doc product 1S", doc.length);
     const allData = doc;
 
     const pageCount = Math.ceil(doc.length / features.limit);

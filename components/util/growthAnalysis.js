@@ -120,7 +120,7 @@ export const GrowthAnalysis = async (endpoint, dateField) => {
       },
     };
   } catch (error) {
-    //console.log("+++++++++++++++++++++++error++++++++++++++++++", error);
+    ////console.log("+++++++++++++++++++++++error++++++++++++++++++", error);
     return {
       error: {
         message:
@@ -128,7 +128,7 @@ export const GrowthAnalysis = async (endpoint, dateField) => {
         status: error?.status,
       },
     };
-    // throw error;
+    // throw error
   }
 };
 

@@ -66,7 +66,7 @@ ReviewSchema.statics.calcAverageRatings = async function (productId) {
       },
     },
   ]);
-  // //console.log(stats);
+  // ////console.log(stats);
 
   if (stats.length > 0) {
     await Product.findByIdAndUpdate(productId, {
@@ -89,7 +89,7 @@ ReviewSchema.post("save", function () {
 // findByIdAndDelete
 ReviewSchema.pre(/^findOneAnd/, async function (next) {
   this.r = await this.findOne();
-  // //console.log(this.r);
+  // ////console.log(this.r);
   next();
 });
 

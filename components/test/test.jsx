@@ -27,7 +27,7 @@ const Test = ({ product }) => {
         error: "Error copying product link to clipboard",
       });
       // .then(() => {
-      //   //console.log("Product link copied to clipboard:", productLink);
+      //   ////console.log("Product link copied to clipboard:", productLink);
       //   // Optionally, you can show a success message to the user
       // })
       // .catch((error) => {

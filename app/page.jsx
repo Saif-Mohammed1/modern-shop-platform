@@ -1,4 +1,5 @@
 import HomeComponent from "@/components/home/home";
+import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 
 export default async function Home() {
@@ -18,6 +19,6 @@ export default async function Home() {
       />
     );
   } catch (error) {
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 }

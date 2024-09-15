@@ -11,7 +11,7 @@ import { promisify } from "util";
 // export const verifyEmail = async (req) => {
 //   try {
 //     const { verificationCode } = await req.json();
-//     //console.log("verificationCode", verificationCode);
+//     ////console.log("verificationCode", verificationCode);
 //     if (!verificationCode) {
 //       throw new AppError("verificationCode must be required", 400);
 //     }
@@ -35,8 +35,7 @@ import { promisify } from "util";
 //       statusCode: 200,
 //     };
 //   } catch (error) {
-//     throw error;
-//   }
+//     throw error//   }
 // };
 
 export const sendNewVerificationCode = async (req) => {
@@ -194,8 +193,8 @@ export const editUserByAdmin = async (req, Model) => {
   try {
     let data = {};
     const { active, role } = await req.json();
-    //console.log("active", active);
-    //console.log("role", role);
+    ////console.log("active", active);
+    ////console.log("role", role);
 
     if (typeof active !== "boolean" && !role) {
       throw new AppError("Please select at least one option.", 400);
@@ -206,7 +205,7 @@ export const editUserByAdmin = async (req, Model) => {
     if (role) {
       data.role = role;
     }
-    //console.log("data", data);
+    ////console.log("data", data);
     const doc = await Model.findByIdAndUpdate(
       req.id,
 
@@ -390,8 +389,7 @@ export const updateUserEmail = async (req) => {
 //     await user.save();
 //     return { data: user, statusCode: 200 };
 //   } catch (error) {
-//     throw error;
-//   }
+//     throw error//   }
 // };
 // export const updatePassword = async (req) => {
 //   try {

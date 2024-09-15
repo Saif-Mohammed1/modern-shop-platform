@@ -5,7 +5,7 @@ import { connectDB } from "@/app/_server/db/db";
 import Cart from "@/app/_server/models/cart.model";
 import { NextResponse } from "next/server";
 export const POST = async (req) => {
-  console.log("mergeLocalCartWithDBModel");
+  //console.log("mergeLocalCartWithDBModel");
   try {
     await connectDB();
 

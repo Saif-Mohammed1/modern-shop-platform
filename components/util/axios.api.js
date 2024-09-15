@@ -103,7 +103,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log("token tokenManager", token);
+    //console.log("token tokenManager", token);
 
     return config;
   },
@@ -148,15 +148,7 @@ api.interceptors.response.use(
           tokenManager.clearAccessToken();
           window.dispatchEvent(new Event("sessionExpired"));
         }
-        // }
-        console.log(
-          "axios  refreshError status:",
-          refreshError?.response?.status
-        );
-        console.log(
-          "axios refreshError message:",
-          refreshError.response?.data?.message
-        );
+
         if (
           refreshError?.response?.status === 400 &&
           refreshError.response?.data?.message === "Missing required fields"

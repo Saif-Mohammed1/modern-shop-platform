@@ -21,7 +21,7 @@ const page = async () => {
       </div>
     );
   } catch (error) {
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 };
 export default page;

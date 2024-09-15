@@ -1,5 +1,6 @@
 import ReviewHistory from "@/components/customer/reviewHistory";
 import api from "@/components/util/axios.api";
+import AppError from "@/components/util/appError";
 
 const page = async () => {
   try {
@@ -8,7 +9,7 @@ const page = async () => {
     const reviews = data.data;
     return <ReviewHistory reviewsList={reviews} />;
   } catch (error) {
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 };
 

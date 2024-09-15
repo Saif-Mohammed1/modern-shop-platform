@@ -147,8 +147,7 @@ export const createStripeProduct = async (req) => {
       statusCode: 200,
     };
   } catch (error) {
-    throw error;
-    // throw new AppError("Error creating products", 500);
+    throw error; // throw new AppError("Error creating products", 500);
   }
 };
 
@@ -203,12 +202,11 @@ export const createStripeProduct = async (req) => {
 //     }
 //     return { data: null, statusCode: 200 };
 //   } catch (error) {
-//     console.log("error", error);
+//     //console.log("error", error);
 //     if (doc) {
 //       await Order.findByIdAndDelete(doc._id);
 //     }
-//     throw error;
-//   }
+//     throw error//   }
 // };
 export const handleStripeWebhook = async (req) => {
   // const sig = req.headers["stripe-signature"];
@@ -312,12 +310,12 @@ const captureSuccessPayment = async (req, sessionId) => {
       const fee = totalPrice * feeDecimal;
       const finalTotalPrice = totalPrice + fee;
 
-      // console.log(
+      // //console.log(
       //   "***************************************************************************************************"
       // );
-      // console.log("totalPrice", totalPrice + fee);
-      // console.log("session.amount_total / 100,", session.amount_total / 100);
-      // console.log(
+      // //console.log("totalPrice", totalPrice + fee);
+      // //console.log("session.amount_total / 100,", session.amount_total / 100);
+      // //console.log(
       //   "***************************************************************************************************"
       // );
 

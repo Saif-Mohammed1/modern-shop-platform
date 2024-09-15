@@ -46,7 +46,7 @@ const RegisterPage = () => {
         // callbackUrl: callbackUrl || "/",
       });
       if (error) {
-        throw error;
+        throw new AppError(error.message, error.status);
       }
       router.push(callbackUrl || "/");
 

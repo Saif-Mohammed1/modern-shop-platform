@@ -1,5 +1,5 @@
 import ProductDetail from "@/components/products/product-details/productDetails";
-import data from "../../../../data";
+import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 
 export const metadata = {
@@ -16,7 +16,7 @@ const page = async ({ params }) => {
     const product = data.data;
     return <ProductDetail product={product} />;
   } catch (error) {
-    throw error;
+    throw new AppError(error.message, error.status);
   }
 };
 
