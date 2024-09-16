@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+import ErrorHandler from "@/components/Error/errorHandler";
 import OrderHistory from "@/components/shop/orders/orderHistory";
 import AppError from "@/components/util/appError";
 // import UserOrderTracking from "@/components/shop/orders/orderTracking";
@@ -23,7 +24,9 @@ const page = async () => {
       </div>
     );
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    // throw new AppError(error.message, error.status);
   }
 };
 export default page;

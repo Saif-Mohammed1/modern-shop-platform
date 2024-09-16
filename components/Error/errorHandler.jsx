@@ -1,4 +1,4 @@
-const ErrorHandler = ({ message, reset }) => {
+const ErrorHandler = ({ message, reset = null }) => {
   return (
     <div className="flex flex-col items-center justify-center h-screen mx-auto">
       <div className="bg-red-500 p-8 rounded-lg shadow-lg text-white">
@@ -8,12 +8,14 @@ const ErrorHandler = ({ message, reset }) => {
             ? message
             : "An unexpected error occurred. Please try again later.Or contact support."}
         </p>
-        <button
-          onClick={() => reset()}
-          className="bg-white text-red-500 py-2 px-4 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-        >
-          Try again
-        </button>
+        {reset && (
+          <button
+            onClick={() => reset()}
+            className="bg-white text-red-500 py-2 px-4 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Try again
+          </button>
+        )}
       </div>
     </div>
   );

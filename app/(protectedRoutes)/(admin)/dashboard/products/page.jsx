@@ -1,5 +1,6 @@
 // pages/admin/products.js
 
+import ErrorHandler from "@/components/Error/errorHandler";
 import ProductTicket from "@/components/shop/adminDashboard/ProductTicket";
 import AdminProducts from "@/components/shop/adminDashboard/adminProduct";
 import AppError from "@/components/util/appError";
@@ -82,7 +83,9 @@ const page = async ({ searchParams }) => {
       </div>
     );
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    // throw new AppError(error.message, error.status);
   }
 };
 export default page;

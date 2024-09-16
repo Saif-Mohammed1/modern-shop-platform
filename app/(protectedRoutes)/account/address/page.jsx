@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import AddressBook from "@/components/customer/address/addressBook";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
+import ErrorHandler from "@/components/Error/errorHandler";
 
 export const metadata = {
   title: "Address Page",
@@ -15,7 +16,9 @@ const page = async () => {
 
     return <AddressBook addressList={address} />;
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    //   throw new AppError(error.message, error.status);
   }
 };
 

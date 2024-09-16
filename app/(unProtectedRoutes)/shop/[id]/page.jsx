@@ -1,3 +1,4 @@
+import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
@@ -16,7 +17,9 @@ const page = async ({ params }) => {
     const product = data.data;
     return <ProductDetail product={product} />;
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    // throw new AppError(error.message, error.status);
   }
 };
 

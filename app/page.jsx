@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+import ErrorHandler from "@/components/Error/errorHandler";
 import HomeComponent from "@/components/home/home";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
@@ -19,6 +20,8 @@ export default async function Home() {
       />
     );
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    // throw new AppError(error.message, error.status);
   }
 }

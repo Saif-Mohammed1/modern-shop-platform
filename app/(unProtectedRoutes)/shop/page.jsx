@@ -1,6 +1,7 @@
 import Shop from "@/components/shop/shop";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
+import ErrorHandler from "@/components/Error/errorHandler";
 
 export const metadata = {
   title: "Online Shop - Buy the Best Products",
@@ -78,7 +79,9 @@ const page = async ({ searchParams }) => {
       />
     );
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    // throw new AppError(error.message, error.status);
   }
 };
 

@@ -1,6 +1,7 @@
 import AdminUsers from "@/components/(admin)/dashboard/users/users";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
+import ErrorHandler from "@/components/Error/errorHandler";
 
 const queryParams = async (searchParams) => {
   const url = new URLSearchParams();
@@ -54,7 +55,9 @@ const page = async ({ searchParams }) => {
 
     return <AdminUsers users={data} totalPages={pageCount} />;
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    // throw new AppError(error.message, error.status);
   }
 };
 

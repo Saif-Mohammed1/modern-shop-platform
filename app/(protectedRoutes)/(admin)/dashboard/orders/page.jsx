@@ -1,4 +1,5 @@
 import AdminOrdersDashboard from "@/components/(admin)/dashboard/orders/orderMangement";
+import ErrorHandler from "@/components/Error/errorHandler";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 const queryParams = async (searchParams) => {
@@ -54,7 +55,9 @@ const page = async ({ searchParams }) => {
 
     return <AdminOrdersDashboard orders={data} totalPages={pageCount} />;
   } catch (error) {
-    throw new AppError(error.message, error.status);
+    return <ErrorHandler message={error.message} />;
+
+    // throw new AppError(error.message, error.status);
   }
 };
 
