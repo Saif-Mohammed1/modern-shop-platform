@@ -1,19 +1,11 @@
+export const dynamic = "force-dynamic";
 import CheckoutPage from "@/components/shop/checkout/checkout";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
-import { headers } from "next/headers";
 
 const Page = async () => {
-  const reqHeaders = headers();
-  const customHeaders = {
-    Authorization: `Bearer ${reqHeaders.get("Authorization") || ""}`,
-    "Content-Type": "application/json",
-    "User-Agent": reqHeaders.get("user-agent") || "Unknown Device",
-  };
   try {
-    const { data } = await api.get("/customer/address", {
-      headers: customHeaders,
-    });
+    const { data } = await api.get("/customer/address");
     const address = data?.data;
     return <CheckoutPage address={address || []} />;
 
