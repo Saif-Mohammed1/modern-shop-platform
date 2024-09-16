@@ -69,7 +69,7 @@ export const createUserTokens = async (userId, req) => {
         process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    overwrite: true,
+    // overwrite: true,
     sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax", // 'Lax' in development if set none need secure to true
     secure: process.env.NODE_ENV === "production" ? true : false, // 'false' in development
     // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
@@ -139,17 +139,18 @@ export const deleteRefreshTokenOnLogOut = async (req) => {
       cookies()?.get("refreshAccessToken")?.value ||
       req?.cookies?.get("refreshAccessToken")?.value;
 
-    if (!token) {
-      throw new AppError("Missing required fields", 400);
-    }
+    // if (!token) {
+    //   throw new AppError("Missing required fields", 400);
+    // }
 
     const refreshToken = await RefreshToken.findOne({ token });
 
-    if (!refreshToken) {
-      throw new AppError("Invalid refresh token", 401);
+    if (refreshToken) {
+      await RefreshToken.findByIdAndDelete(refreshToken._id);
+
+      // throw new AppError("Invalid refresh token", 401);
     }
 
-    await RefreshToken.findByIdAndDelete(refreshToken._id);
     return { message: "Refresh token deleted", statusCode: 200 };
   } catch (error) {
     throw error;
