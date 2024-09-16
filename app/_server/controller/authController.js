@@ -37,6 +37,7 @@ export const modifyFinalResponse = (
 export const isAuth = async (req) => {
   const authHeader =
     req?.headers?.authorization || req?.headers?.get("authorization");
+  // headers()?.get("authorization");
   const token = authHeader?.startsWith("Bearer") && authHeader.split(" ")[1];
   if (!token) {
     throw new AppError(

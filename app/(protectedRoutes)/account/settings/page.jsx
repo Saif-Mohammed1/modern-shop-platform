@@ -17,8 +17,6 @@ const page = async () => {
     const deviceInfo = data.data;
     return <ChangePassword devices={deviceInfo} />;
   } catch (error) {
-    console.log("ChangePassword error", error);
-
     throw new AppError(error.message, error.status);
   }
 };

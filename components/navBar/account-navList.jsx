@@ -32,7 +32,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }) => {
     >
       {/* Welcome */}
       <div className="px-4 py-2 font-bold text-black border-b border-gray-300">
-        {user ? `Welcome, ${user.name}` : "Welcome"}
+        {user ? `Welcome, ${user.name.split(" ")[0]}` : "Welcome"}
       </div>
       {user && user.role === "admin" && (
         <Link href="/dashboard">

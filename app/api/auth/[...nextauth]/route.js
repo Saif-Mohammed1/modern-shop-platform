@@ -15,16 +15,27 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
+        const customHeaders = {
+          "Content-Type": "application/json",
+          "User-Agent": req?.headers["user-agent"] || "Unknown Device",
+        };
+
         try {
           const { password, email } = credentials;
 
           if (!email || !password) {
             throw new AppError("Email and Password are required", 400);
           }
-          const { data } = await api.post("/auth/login", {
-            email,
-            password,
-          });
+          const { data } = await api.post(
+            "/auth/login",
+            {
+              email,
+              password,
+            },
+            {
+              headers: customHeaders,
+            }
+          );
 
           return data;
 
