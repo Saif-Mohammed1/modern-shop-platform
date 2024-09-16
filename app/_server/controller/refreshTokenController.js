@@ -64,6 +64,7 @@ export const createUserTokens = async (userId, req) => {
     ipAddress
   );
   cookies().set("refreshAccessToken", refreshAccessToken, {
+    path: "/", // Ensure the cookie is available across all routes
     expires: new Date(
       Date.now() +
         process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
