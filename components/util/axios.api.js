@@ -149,17 +149,6 @@ api.interceptors.response.use(
           window.dispatchEvent(new Event("sessionExpired"));
         }
 
-        if (
-          refreshError?.response?.status === 400 &&
-          refreshError.response?.data?.message === "Missing required fields"
-        ) {
-          await axios.post(
-            process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/signout",
-            {},
-            { withCredentials: true }
-          );
-        }
-
         return Promise.reject({
           status: refreshError?.response?.status || 500,
           message:
@@ -167,9 +156,6 @@ api.interceptors.response.use(
             "Network response was not ok.",
         });
       }
-    }
-
-    if (error.response && error.response.status === 400) {
     }
 
     return Promise.reject({
