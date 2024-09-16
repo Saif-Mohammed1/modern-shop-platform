@@ -2,10 +2,19 @@ import OrderHistory from "@/components/shop/orders/orderHistory";
 import AppError from "@/components/util/appError";
 // import UserOrderTracking from "@/components/shop/orders/orderTracking";
 import api from "@/components/util/axios.api";
+import { headers } from "next/headers";
 
 const page = async () => {
+  const reqHeaders = headers();
+  const customHeaders = {
+    Authorization: "Bearer " + reqHeaders.get("Authorization") || "",
+    "Content-Type": "application/json",
+    // Add any other headers you need
+  };
   try {
-    const { data } = await api.get("/customer/orders");
+    const { data } = await api.get("/customer/orders", {
+      headers: customHeaders,
+    });
     const orders = data.data;
     // return <OrderHistory ordersList={orders} />;
     return (
