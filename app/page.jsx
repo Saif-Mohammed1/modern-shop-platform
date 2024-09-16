@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 export default async function Home() {
   const reqHeaders = headers();
   const customHeaders = {
-    Authorization: "Bearer " + reqHeaders.get("Authorization") || "",
+    Authorization: `Bearer ${reqHeaders.get("Authorization") || ""}`,
     "Content-Type": "application/json",
     "User-Agent": reqHeaders.get("user-agent") || "Unknown Device",
   };

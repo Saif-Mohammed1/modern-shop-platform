@@ -11,7 +11,7 @@ export const metadata = {
 const page = async () => {
   const reqHeaders = headers();
   const customHeaders = {
-    Authorization: "Bearer " + reqHeaders.get("Authorization") || "",
+    Authorization: `Bearer ${reqHeaders.get("Authorization") || ""}`,
     "Content-Type": "application/json",
     "User-Agent": reqHeaders.get("user-agent") || "Unknown Device",
   };
