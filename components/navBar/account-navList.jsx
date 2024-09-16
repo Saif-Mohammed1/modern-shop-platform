@@ -11,15 +11,15 @@ import {
   VscChecklist,
   VscHeart,
 } from "react-icons/vsc";
-import fetchApi from "../util/axios.api";
 import { MdDashboard } from "react-icons/md";
+import api from "../util/axios.api";
 
 const AccountNavList = ({ user, setAccountMenuOpen }) => {
   const logOut = async () => {
     try {
       await signOut();
       toast.success("Logged out successfully");
-      await fetchApi("/auth/logout", { method: "POST" });
+      await api.post("/auth/logout");
     } catch (error) {
       toast.error("Error logging out", error);
     }

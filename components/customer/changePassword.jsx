@@ -2,7 +2,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import fetchApi from "../util/axios.api";
 import { signOut } from "next-auth/react";
 import { useUser } from "../context/user.context";
 import DeviceInfoSection from "./deviceInfoSection";
@@ -36,9 +35,10 @@ const ChangePassword = () => {
     try {
       toast.loading("Updating Password...");
 
-      await fetchApi("/customer/update-password", {
-        method: "PATCH",
-        body: JSON.stringify({ password, newPassword, confirmPassword }),
+      await api.patch("/customer/update-password", {
+        password,
+        newPassword,
+        confirmPassword,
       });
 
       toast.success("Password Updated Successfully!");
@@ -157,6 +157,7 @@ const ChangePasswordV2 = ({ devices }) => {
       await api.delete("/customer/");
 
       await signOut();
+      await api.post("/auth/logout");
 
       toast.success("Account deleted successfully!");
     } catch (error) {
