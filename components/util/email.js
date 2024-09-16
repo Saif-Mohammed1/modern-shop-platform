@@ -195,7 +195,7 @@ export const sendEmailOnDetectedUnusualActivity = async (
       <p>We noticed a new login to your account from a different device or location.</p>
       <p><strong>Device Information:</strong> ${deviceInfo}</p>
       <p><strong>IP Address:</strong> ${ipAddress}</p>
-      <p>If this was you, no further action is required. Otherwise, <a href="${process.env.FRONTEND_URL}/reset-password">change your password</a> immediately.</p>
+      <p>If this was you, no further action is required. Otherwise, <a href="${process.env.NEXTAUTH_URL}/reset-password">change your password</a> immediately.</p>
     `,
   });
 };

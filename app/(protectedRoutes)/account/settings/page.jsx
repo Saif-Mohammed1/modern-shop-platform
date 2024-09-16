@@ -8,7 +8,7 @@ const page = async () => {
   const customHeaders = {
     Authorization: "Bearer " + reqHeaders.get("Authorization") || "",
     "Content-Type": "application/json",
-    // Add any other headers you need
+    "User-Agent": reqHeaders.get("user-agent") || "Unknown Device",
   };
   try {
     const { data } = await api.get("/customer/device-info", {
@@ -17,6 +17,8 @@ const page = async () => {
     const deviceInfo = data.data;
     return <ChangePassword devices={deviceInfo} />;
   } catch (error) {
+    console.log("ChangePassword error", error);
+
     throw new AppError(error.message, error.status);
   }
 };

@@ -81,8 +81,7 @@ export const createUserTokens = async (userId, req) => {
 export const refreshAccessToken = async (req, res) => {
   const token =
     cookies()?.get("refreshAccessToken")?.value ||
-    req?.cookies?.get("refreshAccessToken")?.value ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmQ4ZDU5NGFiYjVmZTY2OTg3MmZiMTYiLCJpYXQiOjE3MjYxMzQzMDYsImV4cCI6MTcyNjczOTEwNn0.1bWRYWgOzZd67v3PlwPgvYeHqhTRG6XyMGh60KA0IiU";
+    req?.cookies?.get("refreshAccessToken")?.value;
 
   // Get device info and IP address from the request
   const deviceInfo = req.headers.get("user-agent");
@@ -210,10 +209,14 @@ export const detectUnusualLogin = async (user, req) => {
 
       if (isIpDifferent || isDeviceDifferent) {
         // Potential unusual activity
+        /** user,
+         * deviceInfo,
+         * ipAddress
+         *  */
         await sendEmailOnDetectedUnusualActivity(
           user,
-          currentIp,
-          currentDevice
+          currentDevice,
+          currentIp
         );
       }
     }
