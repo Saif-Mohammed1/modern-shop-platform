@@ -294,15 +294,22 @@ export const mergeLocalCartWithDBModel = async (req, Model) => {
           user: req.user._id,
           product: product._id,
         });
-
+        const isQuantityBigger =
+          existingProduct.stock < product.quantity * 1
+            ? existingProduct.stock
+            : product.quantity;
         if (doc) {
-          doc.quantity += product.quantity;
+          const isExistingQuantityBigger =
+            existingProduct.stock < isQuantityBigger * 1 + doc.quantity * 1
+              ? existingProduct.stock
+              : doc.quantity + isQuantityBigger * 1;
+          doc.quantity = isExistingQuantityBigger;
           await doc.save();
         } else {
           doc = await Model.create({
             user: req.user._id,
             product: product._id,
-            quantity: product.quantity,
+            quantity: isQuantityBigger,
           });
         }
       }
