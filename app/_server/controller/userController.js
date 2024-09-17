@@ -181,7 +181,12 @@ export const createUserByAdmin = async (req) => {
     // Send the verification email
     await user.sendVerificationCode();
     // const accessToken = await createUserTokens(user._id, req);
-    return modifyFinalResponse(user, null, 201, true);
+    return modifyFinalResponse(
+      user,
+      null, // accessToken,is null when admen create userno need access token here or it will modify users
+      201,
+      true
+    );
   } catch (error) {
     if (user) {
       await User.findByIdAndDelete(user._id);
