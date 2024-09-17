@@ -30,8 +30,7 @@ export const modifyFinalResponse = (
         "User created successfully. Check your email for verification.") ||
       undefined,
     user: userData.user,
-    accessToken: accessToken.accessToken,
-    refreshAccessToken: accessToken.refreshAccessToken,
+    accessToken,
     statusCode,
   };
 };
@@ -190,7 +189,7 @@ export const logIn = async (req) => {
 
 export const logout = async (req) => {
   cookies().set("refreshAccessToken", "loggedOut", {
-    expires: new Date(Date.now() + 10 * 1000), // 10 seconds
+    expires: new Date(Date.now() + 10 * 1000), // 10 sec
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
   });

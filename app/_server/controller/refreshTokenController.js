@@ -63,21 +63,21 @@ export const createUserTokens = async (userId, req) => {
     deviceInfo,
     ipAddress
   );
-  // cookies().set("refreshAccessToken", refreshAccessToken, {
-  //   path: "/", // Ensure the cookie is available across all routes
-  //   expires: new Date(
-  //     Date.now() +
-  //       process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-  //   ),
-  //   httpOnly: true,
-  //   // overwrite: true,
-  //   sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax", // 'Lax' in development if set none need secure to true
-  //   secure: process.env.NODE_ENV === "production" ? true : false, // 'false' in development
-  //   // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
-  //   // secure: req?.secure || req?.headers["x-forwarded-proto"] === "https",
-  // });
-  return { accessToken, refreshAccessToken }; //new for test idea
-  // return accessToken;
+  cookies().set("refreshAccessToken", refreshAccessToken, {
+    path: "/", // Ensure the cookie is available across all routes
+    expires: new Date(
+      Date.now() +
+        process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+    // overwrite: true,
+    sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax", // 'Lax' in development if set none need secure to true
+    secure: process.env.NODE_ENV === "production", // 'false' in development
+    // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
+    // secure: req?.secure || req?.headers["x-forwarded-proto"] === "https",
+  });
+
+  return accessToken;
 };
 export const refreshAccessToken = async (req, res) => {
   const token =
