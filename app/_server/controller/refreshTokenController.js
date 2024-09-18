@@ -70,8 +70,7 @@ export const createUserTokens = async (userId, req) => {
         process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    // overwrite: true,
-    sameSite: "none",
+
     // sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax", // 'Lax' in development if set none need secure to true
     secure: process.env.NODE_ENV === "production", // 'false' in development
     // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
