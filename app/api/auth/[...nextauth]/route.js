@@ -2,6 +2,7 @@ import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { cookies } from "next/headers";
 export const authOptions = {
   session: {
     strategy: "jwt",
@@ -36,7 +37,22 @@ export const authOptions = {
               headers: customHeaders,
             }
           );
-
+          cookies().set("test", "test", {
+            path: "/", // Ensure the cookie is available across all routes
+            expires: new Date(
+              Date.now() +
+                process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN *
+                  24 *
+                  60 *
+                  60 *
+                  1000
+            ),
+            httpOnly: true,
+            sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax", // 'Lax' in development if set none need secure to true
+            secure: process.env.NODE_ENV === "production", // 'false' in development
+            // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
+            // secure: req?.secure || req?.headers["x-forwarded-proto"] === "https",
+          });
           return data;
 
           // return {
