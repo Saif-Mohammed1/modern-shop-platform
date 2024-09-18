@@ -96,7 +96,10 @@ export const refreshAccessToken = async (req, res) => {
   //    throw new AppError("Missing required fields", 400);
   //  }
 
-  throw new AppError(JSON.stringify(cookies()?.get("refreshAccessToken")), 400);
+  throw new AppError(
+    JSON.stringify(cookies()?.get("refreshAccessToken").value),
+    400
+  );
   if (!deviceInfo) {
     throw new AppError("Missing required deviceInfo", 400);
   }
