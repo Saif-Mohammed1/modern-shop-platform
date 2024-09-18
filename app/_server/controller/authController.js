@@ -193,8 +193,6 @@ export const logout = async (req) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
   });
-  //
-  cookies().delete("refreshAccessToken");
   return { data: [], statusCode: 200 };
 };
 export const forgetPassword = async (req) => {

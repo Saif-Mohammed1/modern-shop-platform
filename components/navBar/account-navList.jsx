@@ -13,12 +13,14 @@ import {
 } from "react-icons/vsc";
 import { MdDashboard } from "react-icons/md";
 import api from "../util/axios.api";
+import { deleteCookies } from "../util/cookies";
 
 const AccountNavList = ({ user, setAccountMenuOpen }) => {
   const logOut = async () => {
     try {
       await signOut();
       toast.success("Logged out successfully");
+      deleteCookies("refreshAccessToken");
       await api.post("/auth/logout");
     } catch (error) {
       toast.error("Error logging out", error);
