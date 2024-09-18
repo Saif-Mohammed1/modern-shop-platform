@@ -26,7 +26,7 @@ export const authOptions = {
           if (!email || !password) {
             throw new AppError("Email and Password are required", 400);
           }
-          const { data } = await api.post(
+          const data = await api.post(
             "/auth/login",
             {
               email,
@@ -36,7 +36,8 @@ export const authOptions = {
               headers: customHeaders,
             }
           );
-          return data;
+
+          return data.data;
 
           // return {
           //   _id: user._id,
