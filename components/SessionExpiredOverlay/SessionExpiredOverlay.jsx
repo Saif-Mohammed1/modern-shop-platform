@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import api from "../util/axios.api";
 import toast from "react-hot-toast";
+import { deleteCookies } from "../util/cookies";
 
 const SessionExpiredOverlay = () => {
   const router = useRouter();
@@ -27,6 +28,8 @@ const SessionExpiredOverlay = () => {
   const handleLogin = async () => {
     try {
       await signOut();
+      deleteCookies("refreshAccessToken");
+
       await api.post("/auth/logout");
       // Handle login logic here
       router.push("/auth");
