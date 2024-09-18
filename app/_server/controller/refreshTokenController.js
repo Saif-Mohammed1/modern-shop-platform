@@ -92,24 +92,12 @@ export const refreshAccessToken = async (req, res) => {
   //console.log("refreshAccessToken From  refreshAccessToken", token);
   //console.log("deviceInfo", deviceInfo);
   //console.log("ipAddress", ipAddress);
-  //  if (!token || !deviceInfo || !ipAddress) {
-  //    throw new AppError("Missing required fields", 400);
-  //  }
 
-  throw new AppError(
-    JSON.stringify(cookies()?.get("refreshAccessToken").value),
-    400
-  );
-  if (!deviceInfo) {
-    throw new AppError("Missing required deviceInfo", 400);
-  }
-  if (!ipAddress) {
-    throw new AppError("Missing required ipAddress", 400);
-  }
-  if (!token) {
-    throw new AppError("Missing required token", 400);
-  }
   try {
+    if (!token || !deviceInfo || !ipAddress) {
+      throw new AppError("Missing required fields", 400);
+    }
+
     const userId = await verifyRefreshToken(token, deviceInfo, ipAddress);
 
     const accessToken = createAccessToken(userId);
