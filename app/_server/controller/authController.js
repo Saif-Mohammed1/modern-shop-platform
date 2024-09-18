@@ -188,11 +188,12 @@ export const logIn = async (req) => {
 };
 
 export const logout = async (req) => {
-  cookies().set("refreshAccessToken", "loggedOut", {
-    expires: new Date(Date.now() + 10 * 1000), // 10 sec
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  });
+  // cookies().set("refreshAccessToken", "loggedOut", {
+  //   expires: new Date(Date.now() + 10 * 1000), // 10 sec
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  // });
+  cookies().delete("refreshAccessToken");
   return { data: [], statusCode: 200 };
 };
 export const forgetPassword = async (req) => {
