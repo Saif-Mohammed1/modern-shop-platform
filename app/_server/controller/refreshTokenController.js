@@ -81,7 +81,8 @@ export const createUserTokens = async (userId, req) => {
 export const refreshAccessToken = async (req, res) => {
   const token =
     cookies()?.get("refreshAccessToken")?.value ||
-    req?.cookies?.get("refreshAccessToken")?.value;
+    req?.cookies?.get("refreshAccessToken")?.value ||
+    req.cookies?.refreshAccessToken;
 
   // Get device info and IP address from the request
   const deviceInfo = req.headers.get("user-agent");
