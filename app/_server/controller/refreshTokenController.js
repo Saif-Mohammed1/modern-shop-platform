@@ -71,7 +71,7 @@ export const createUserTokens = async (userId, req) => {
     ),
     httpOnly: true,
     // overwrite: true,
-    sameSite: "lax",
+    sameSite: "none",
     // sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax", // 'Lax' in development if set none need secure to true
     secure: process.env.NODE_ENV === "production", // 'false' in development
     // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
