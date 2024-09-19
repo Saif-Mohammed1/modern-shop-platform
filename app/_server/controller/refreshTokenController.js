@@ -95,7 +95,7 @@ export const refreshAccessToken = async (req, res) => {
 
   try {
     if (!token || !deviceInfo || !ipAddress) {
-      throw new AppError("Missing required fields" + new Date(), 400);
+      throw new AppError("Missing required fields", 400);
     }
 
     const userId = await verifyRefreshToken(token, deviceInfo, ipAddress);
