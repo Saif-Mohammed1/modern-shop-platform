@@ -112,7 +112,7 @@ const verifyRefreshToken = async (token, deviceInfo, ipAddress) => {
   const refreshToken = await RefreshToken.findOne({
     token,
     // deviceInfo,
-    ipAddress,
+    // ipAddress,
   });
 
   if (!refreshToken) {
