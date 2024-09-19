@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { useUser } from "../context/user.context";
 import DeviceInfoSection from "./deviceInfoSection";
 import api from "../util/axios.api";
+import { deleteCookies } from "../util/cookies";
 
 const ChangePassword = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -157,6 +158,8 @@ const ChangePasswordV2 = ({ devices }) => {
       await api.delete("/customer/");
 
       await signOut();
+      deleteCookies("refreshAccessToken");
+
       await api.post("/auth/logout");
 
       toast.success("Account deleted successfully!");
@@ -204,6 +207,8 @@ const ChangePasswordV2 = ({ devices }) => {
       loadingToast = toast.loading("Signing out of all devices...");
       await api.delete("/auth/refresh-token");
       await signOut();
+      deleteCookies("refreshAccessToken");
+
       toast.success("Signed out of all devices successfully!");
       setDevicesList([]);
     } catch (error) {

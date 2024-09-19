@@ -1,5 +1,6 @@
 "use client";
 import api from "@/components/util/axios.api";
+import { deleteCookies } from "@/components/util/cookies";
 import { signOut } from "next-auth/react";
 // components/Sidebar.js
 import Link from "next/link";
@@ -288,6 +289,8 @@ const SidebarV3 = () => {
     try {
       toastLoading = toast.loading("Logging out...");
       await signOut();
+      deleteCookies("refreshAccessToken");
+
       await api.post("/auth/logout");
 
       toast.success("Logged out successfully");
