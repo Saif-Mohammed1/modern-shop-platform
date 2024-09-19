@@ -4,10 +4,13 @@ import UserOrderTracking from "@/components/shop/orders/orderTracking";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
+import { getCookiesValue, getCustomHeaders } from "@/components/util/cookies";
 
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/orders");
+    const { data } = await api.get("/customer/orders", {
+      headers: getCustomHeaders(),
+    });
     const orders = data.data;
     // return <OrderHistory ordersList={orders} />;
     return (
