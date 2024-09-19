@@ -5,6 +5,7 @@ import ProductTicket from "@/components/shop/adminDashboard/ProductTicket";
 import AdminProducts from "@/components/shop/adminDashboard/adminProduct";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
+import { headers } from "next/headers";
 
 const queryParams = async (searchParams) => {
   const url = new URLSearchParams();
@@ -46,7 +47,9 @@ const queryParams = async (searchParams) => {
         pageCount,
         categories: { categories },
       },
-    } = await api.get("/shop/" + (queryString ? `?${queryString}` : ""));
+    } = await api.get("/shop/" + (queryString ? `?${queryString}` : ""), {
+      headers: headers(),
+    });
     return { data, pageCount, categories };
   } catch (error) {
     throw new AppError(error.message, error.status);

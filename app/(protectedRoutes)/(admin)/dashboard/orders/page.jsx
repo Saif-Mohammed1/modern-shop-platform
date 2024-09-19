@@ -2,6 +2,7 @@ import AdminOrdersDashboard from "@/components/(admin)/dashboard/orders/orderMan
 import ErrorHandler from "@/components/Error/errorHandler";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
+import { headers } from "next/headers";
 const queryParams = async (searchParams) => {
   const url = new URLSearchParams();
 
@@ -31,7 +32,10 @@ const queryParams = async (searchParams) => {
     const {
       data: { data, pageCount },
     } = await api.get(
-      "/admin/dashboard/orders" + (queryString ? `?${queryString}` : "")
+      "/admin/dashboard/orders" + (queryString ? `?${queryString}` : ""),
+      {
+        headers: headers(),
+      }
     );
 
     return { data, pageCount };

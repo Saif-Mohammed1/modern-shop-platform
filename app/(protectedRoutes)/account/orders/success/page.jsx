@@ -3,10 +3,13 @@ import OrderCompletedV2 from "@/components/shop/orders/orderCompletedPrushers";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
+import { headers } from "next/headers";
 
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/orders/latest-order");
+    const { data } = await api.get("/customer/orders/latest-order", {
+      headers: headers(),
+    });
     const order = data.data;
     return <OrderCompletedV2 order={order} />;
   } catch (error) {

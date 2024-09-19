@@ -2,6 +2,7 @@ import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "Shop - Product Details", // Update the title here
@@ -13,7 +14,9 @@ const page = async ({ params }) => {
   const { id } = params;
 
   try {
-    const { data } = await api.get("/shop/" + id);
+    const { data } = await api.get("/shop/" + id, {
+      headers: headers(),
+    });
     const product = data.data;
     return <ProductDetail product={product} />;
   } catch (error) {

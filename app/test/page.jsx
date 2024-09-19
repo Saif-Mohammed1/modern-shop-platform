@@ -4,10 +4,13 @@ import OrderHistory from "@/components/shop/orders/orderHistory";
 import AppError from "@/components/util/appError";
 // import UserOrderTracking from "@/components/shop/orders/orderTracking";
 import api from "@/components/util/axios.api";
+import { headers } from "next/headers";
 
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/orders");
+    const { data } = await api.get("/customer/orders", {
+      headers: headers(),
+    });
     const orders = data.data;
     // return <OrderHistory ordersList={orders} />;
     return (

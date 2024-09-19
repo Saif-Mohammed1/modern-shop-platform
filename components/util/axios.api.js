@@ -1,52 +1,51 @@
 import axios from "axios";
 import tokenManager from "./TokenManager";
-import { getCookiesValue } from "./cookies";
-const fetchApi = async (url, options = {}) => {
-  if (!process.env.NEXT_PUBLIC_API_ENDPOINT) return;
-  // let token;
-  try {
-    // Make a fetch request
+// const fetchApi = async (url, options = {}) => {
+//   if (!process.env.NEXT_PUBLIC_API_ENDPOINT) return;
+//   // let token;
+//   try {
+//     // Make a fetch request
 
-    // if (token) {
-    //   options["headers"] = {
-    //     ...options["headers"],
-    //     "Content-Type": "application/json", // Set the default Content-Type header
-    //     Authorization: `Bearer ${token}`,
-    //   };
-    // } else {
-    //   options["headers"] = {
-    //     ...options["headers"],
-    //     "Content-Type": "application/json", // Set the default Content-Type header
-    //   };
-    // }
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_API_ENDPOINT + url,
-      options
-    );
+//     // if (token) {
+//     //   options["headers"] = {
+//     //     ...options["headers"],
+//     //     "Content-Type": "application/json", // Set the default Content-Type header
+//     //     Authorization: `Bearer ${token}`,
+//     //   };
+//     // } else {
+//     //   options["headers"] = {
+//     //     ...options["headers"],
+//     //     "Content-Type": "application/json", // Set the default Content-Type header
+//     //   };
+//     // }
+//     const response = await fetch(
+//       process.env.NEXT_PUBLIC_API_ENDPOINT + url,
+//       options
+//     );
 
-    if (!response.ok) {
-      const err = await response.json();
-      // throw err;
-      throw {
-        status: response.status,
-        message: err?.message || "Network response was not ok.",
-      };
-    }
-    // Parse response JSON
-    const data = await response.json();
-    // Hide loading indicator
+//     if (!response.ok) {
+//       const err = await response.json();
+//       // throw err;
+//       throw {
+//         status: response.status,
+//         message: err?.message || "Network response was not ok.",
+//       };
+//     }
+//     // Parse response JSON
+//     const data = await response.json();
+//     // Hide loading indicator
 
-    return { data };
-  } catch (error) {
-    if (process.env.NODE_ENV === "production") {
-      if (typeof window !== "undefined" && window && error.status === 401) {
-        window.dispatchEvent(new Event("sessionExpired"));
-      }
-    }
-    // return { error };
-    throw error;
-  }
-};
+//     return { data };
+//   } catch (error) {
+//     if (process.env.NODE_ENV === "production") {
+//       if (typeof window !== "undefined" && window && error.status === 401) {
+//         window.dispatchEvent(new Event("sessionExpired"));
+//       }
+//     }
+//     // return { error };
+//     throw error;
+//   }
+// };
 // export default api;
 /*
 const api = async (url, options = {}) => {
@@ -127,34 +126,20 @@ api.interceptors.response.use(
       originalRequest._retry = true; // Prevent infinite retry loop
       // let accessToken;
       try {
-        // if (typeof window === "undefined" && !window) {
-        //   const { data } = await axios.post(
-        //     `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`,
-        //     {},
-        //     {
-        //       withCredentials: true,
-        //       headers: {
-        //         Cookie: `refreshAccessToken=${getCookiesValue(
-        //           "refreshAccessToken"
-        //         )}`, // Manually add cookie if missing
-        //       },
-        //     }
-        //   );
-        //   accessToken = data.accessToken;
-        // } else {
-        // Call the refresh token API
         const { data } = await axios.post(
           // here user augent is  axios/1.7.7 how is it possible
           `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`,
-          {},
-          { withCredentials: true }
+          undefined,
+          { headers: originalRequest.headers }
         );
-        const accessToken = data.accessToken;
+        data.accessToken;
         // }
         // Update the original request with the new token and retry
-        api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
-        tokenManager.setAccessToken(accessToken);
+        api.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${data.accessToken}`;
+        originalRequest.headers["Authorization"] = `Bearer ${data.accessToken}`;
+        tokenManager.setAccessToken(data.accessToken);
 
         return api(originalRequest); // Retry the original request with updated token
       } catch (refreshError) {

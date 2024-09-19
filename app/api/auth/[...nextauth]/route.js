@@ -2,7 +2,7 @@ import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 export const authOptions = {
   session: {
     strategy: "jwt",
@@ -16,11 +16,6 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        const customHeaders = {
-          "Content-Type": "application/json",
-          "User-Agent": req?.headers["user-agent"] || "Unknown Device",
-        };
-
         try {
           const { password, email } = credentials;
 
@@ -34,32 +29,32 @@ export const authOptions = {
               password,
             },
             {
-              headers: customHeaders,
+              headers: headers(),
             }
           );
 
-          const setCookieHeader = data.headers["set-cookie"][0];
-          const cookieParts = setCookieHeader.split("; ");
-          const cookieValue = cookieParts[0].split("=")[1];
-          const expiresPart = cookieParts.find((part) =>
-            part.startsWith("Expires=")
-          );
+          // const setCookieHeader = data.headers["set-cookie"][0];
+          // const cookieParts = setCookieHeader.split("; ");
+          // const cookieValue = cookieParts[0].split("=")[1];
+          // const expiresPart = cookieParts.find((part) =>
+          //   part.startsWith("Expires=")
+          // );
 
-          const expiresDate = new Date(expiresPart.split("=")[1]);
-          const SameSiteValue = cookieParts
-            .find((part) => part.startsWith("SameSite="))
-            .split("=")[1];
+          // const expiresDate = new Date(expiresPart.split("=")[1]);
+          // const SameSiteValue = cookieParts
+          //   .find((part) => part.startsWith("SameSite="))
+          //   .split("=")[1];
 
-          // im doing it because i want to set the cookie in the browser bexause nextauth is not setting the cookie in the browser
-          cookies().set({
-            name: "refreshAccessToken",
-            value: cookieValue,
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: SameSiteValue,
-            expires: expiresDate,
-            path: "/",
-          });
+          // // im doing it because i want to set the cookie in the browser bexause nextauth is not setting the cookie in the browser
+          // cookies().set({
+          //   name: "refreshAccessToken",
+          //   value: cookieValue,
+          //   httpOnly: true,
+          //   secure: process.env.NODE_ENV === "production",
+          //   sameSite: SameSiteValue,
+          //   expires: expiresDate,
+          //   path: "/",
+          // });
           return data.data;
 
           // return {

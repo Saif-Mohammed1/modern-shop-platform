@@ -3,6 +3,7 @@ import AddressBook from "@/components/customer/address/addressBook";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "Address Page",
@@ -11,7 +12,9 @@ export const metadata = {
 
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/address");
+    const { data } = await api.get("/customer/address", {
+      headers: headers(),
+    });
     const address = data.data;
 
     return <AddressBook addressList={address} />;
