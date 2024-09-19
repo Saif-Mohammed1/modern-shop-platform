@@ -1,5 +1,6 @@
 import axios from "axios";
 import tokenManager from "./TokenManager";
+import { getCookiesValue } from "./cookies";
 const fetchApiV11 = async (url, options = {}) => {
   if (!process.env.NEXT_PUBLIC_API_ENDPOINT) return;
   // let token;
@@ -124,22 +125,36 @@ api.interceptors.response.use(
       !originalRequest._retry
     ) {
       originalRequest._retry = true; // Prevent infinite retry loop
-
+      let accessToken;
       try {
-        // Call the refresh token API
-        const { data } = await axios.post(
-          // here user augent is  axios/1.7.7 how is it possible
-          `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`,
-          {},
-          { withCredentials: true }
-        );
-
+        if (typeof window === "undefined" && !window) {
+          const { data } = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`,
+            {},
+            {
+              withCredentials: true,
+              headers: {
+                Cookie: `refreshAccessToken=${getCookiesValue(
+                  "refreshAccessToken"
+                )}`, // Manually add cookie if missing
+              },
+            }
+          );
+          accessToken = data.accessToken;
+        } else {
+          // Call the refresh token API
+          const { data } = await axios.post(
+            // here user augent is  axios/1.7.7 how is it possible
+            `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`,
+            {},
+            { withCredentials: true }
+          );
+          accessToken = data.accessToken;
+        }
         // Update the original request with the new token and retry
-        api.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${data.accessToken}`;
-        originalRequest.headers["Authorization"] = `Bearer ${data.accessToken}`;
-        tokenManager.setAccessToken(data.accessToken);
+        api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
+        tokenManager.setAccessToken(accessToken);
 
         return api(originalRequest); // Retry the original request with updated token
       } catch (refreshError) {
