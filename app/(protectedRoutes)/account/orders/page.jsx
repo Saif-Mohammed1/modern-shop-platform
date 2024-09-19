@@ -20,9 +20,13 @@ const page = async () => {
         </h1>
         <div className="max-h-[80vh] overflow-y-auto">
           {/* <OrderHistory ordersList={orders} />; */}
-          {orders.map((order) => (
-            <UserOrderTracking order={order} />
-          ))}
+
+          {orders.length === 0 ? (
+            orders.map((order) => <UserOrderTracking order={order} />)
+          ) : (
+            // <h1 className="text-3xl font-semibold mb-6 text-center">
+            <h1 className="empty">No Orders Found</h1>
+          )}
         </div>
       </div>
     );
