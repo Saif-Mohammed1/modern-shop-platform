@@ -16,6 +16,12 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
+        const customHeaders = {
+          ...headers(),
+          "Content-Type": "application/json",
+          "User-Agent": req?.headers["user-agent"] || "Unknown Device",
+        };
+
         try {
           const { password, email } = credentials;
 
@@ -29,7 +35,7 @@ export const authOptions = {
               password,
             },
             {
-              headers: headers(),
+              headers: customHeaders,
             }
           );
 
