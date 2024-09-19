@@ -50,7 +50,10 @@ const createRefreshAccessToken = async (userId, deviceInfo, ipAddress) => {
 
 export const createUserTokens = async (userId, req) => {
   const deviceInfo = req.headers.get("user-agent");
-  const ipAddress = req.headers.get("x-forwarded-for") || req.ip || "unknown";
+  const ipAddress =
+    req.headers.get("x-forwarded-for") ||
+    req.headers.get("x-real-ip") ||
+    "0.0.0.0";
 
   const accessToken = createAccessToken(userId);
 
@@ -82,7 +85,10 @@ export const refreshAccessToken = async (req, res) => {
 
   // Get device info and IP address from the request
   const deviceInfo = req.headers.get("user-agent");
-  const ipAddress = req.headers.get("x-forwarded-for") || req.ip || "unknown";
+  const ipAddress =
+    req.headers.get("x-forwarded-for") ||
+    req.headers.get("x-real-ip") ||
+    "0.0.0.0";
 
   //console.log("refreshAccessToken From  refreshAccessToken", token);
   //console.log("deviceInfo", deviceInfo);
@@ -192,7 +198,10 @@ export const deleteSpecificUserRefreshTokens = async (req) => {
 };
 
 export const detectUnusualLogin = async (user, req) => {
-  const currentIp = req.headers.get("x-forwarded-for") || req.ip || "unknown";
+  const currentIp =
+    req.headers.get("x-forwarded-for") ||
+    req.headers.get("x-real-ip") ||
+    "0.0.0.0";
   const currentDevice = req.headers.get("user-agent");
   try {
     const lastToken = await RefreshToken.findOne({ user: user._id }).sort({

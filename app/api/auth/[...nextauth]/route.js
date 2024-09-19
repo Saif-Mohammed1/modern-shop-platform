@@ -17,7 +17,7 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
         const customHeaders = {
-          ...headers(),
+          ...headers(req),
           "Content-Type": "application/json",
           "User-Agent": req?.headers["user-agent"] || "Unknown Device",
         };
