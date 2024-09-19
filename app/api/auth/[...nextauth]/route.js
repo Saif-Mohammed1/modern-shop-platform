@@ -33,28 +33,28 @@ export const authOptions = {
             }
           );
 
-          // const setCookieHeader = data.headers["set-cookie"][0];
-          // const cookieParts = setCookieHeader.split("; ");
-          // const cookieValue = cookieParts[0].split("=")[1];
-          // const expiresPart = cookieParts.find((part) =>
-          //   part.startsWith("Expires=")
-          // );
+          const setCookieHeader = data.headers["set-cookie"][0];
+          const cookieParts = setCookieHeader.split("; ");
+          const cookieValue = cookieParts[0].split("=")[1];
+          const expiresPart = cookieParts.find((part) =>
+            part.startsWith("Expires=")
+          );
 
-          // const expiresDate = new Date(expiresPart.split("=")[1]);
-          // const SameSiteValue = cookieParts
-          //   .find((part) => part.startsWith("SameSite="))
-          //   .split("=")[1];
+          const expiresDate = new Date(expiresPart.split("=")[1]);
+          const SameSiteValue = cookieParts
+            .find((part) => part.startsWith("SameSite="))
+            .split("=")[1];
 
-          // // im doing it because i want to set the cookie in the browser bexause nextauth is not setting the cookie in the browser
-          // cookies().set({
-          //   name: "refreshAccessToken",
-          //   value: cookieValue,
-          //   httpOnly: true,
-          //   secure: process.env.NODE_ENV === "production",
-          //   sameSite: SameSiteValue,
-          //   expires: expiresDate,
-          //   path: "/",
-          // });
+          // im doing it because i want to set the cookie in the browser bexause nextauth is not setting the cookie in the browser
+          cookies().set({
+            name: "refreshAccessToken",
+            value: cookieValue,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: SameSiteValue,
+            expires: expiresDate,
+            path: "/",
+          });
           return data.data;
 
           // return {
