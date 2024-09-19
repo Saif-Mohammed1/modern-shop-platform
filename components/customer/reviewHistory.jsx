@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const ReviewHistory = ({ reviewsList }) => {
   const [reviews, setReviews] = useState(reviewsList || []);
@@ -25,6 +25,9 @@ const ReviewHistory = ({ reviewsList }) => {
   //   if (loading) return <div>Loading...</div>;
   //   if (error) return <div>Error: {error}</div>;
 
+  useEffect(() => {
+    setReviews(reviewsList);
+  }, [reviewsList]);
   return (
     <div className="container mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
       <h1 className="text-3xl font-bold mb-6">My Review History</h1>

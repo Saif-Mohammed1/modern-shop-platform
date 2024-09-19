@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getCities } from "countries-cities"; // Importing to use Ukraine cities
 import toast from "react-hot-toast";
 import api from "../../util/axios.api";
@@ -530,6 +530,9 @@ const AddressBookV3 = ({ addressList }) => {
       country: "Ukraine",
     });
   };
+  useEffect(() => {
+    setAddresses(addressList);
+  }, [addressList]);
   return (
     <div className="container mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg min-h-screen overflow-hidden">
       <h1 className="text-3xl font-bold mb-6">My Address Book</h1>

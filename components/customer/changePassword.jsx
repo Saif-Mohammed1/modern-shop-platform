@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { signOut } from "next-auth/react";
@@ -219,7 +219,9 @@ const ChangePasswordV2 = ({ devices }) => {
       toast.dismiss(loadingToast);
     }
   };
-
+  useEffect(() => {
+    setDevicesList(devices);
+  }, [devices]);
   return (
     <div className="w-full max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg min-h-screen overflow-hidden">
       <h1 className="text-2xl font-bold mb-6">Change Password</h1>
