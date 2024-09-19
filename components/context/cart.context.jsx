@@ -18,6 +18,7 @@ export const CartContext = createContext({
   cartItems: [],
   addToCartItems: async () => {},
   removeCartItem: async () => {},
+  setIsCartOpen: () => {},
   clearProductFromCartItem: async () => {},
 });
 
@@ -119,6 +120,7 @@ export const CartProvider = ({ children }) => {
       value={{
         cartItems,
         toggleCartStatus,
+        setIsCartOpen,
         isCartOpen,
         addToCartItems,
         removeCartItem,

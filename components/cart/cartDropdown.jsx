@@ -1,17 +1,18 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCartItems } from "../context/cart.context";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useUser } from "../context/user.context";
 import imageSrc from "../util/productImageHandler";
 
-const CartDropdownV2 = ({ toggleIsCartOpen, cartItems }) => {
+const CartDropdownV2 = ({ toggleIsCartOpen, setIsCartOpen, cartItems }) => {
   const { removeCartItem, addToCartItems, clearProductFromCartItem } =
     useCartItems();
 
   const { user } = useUser();
   const router = useRouter();
+  const cartRef = useRef(null);
   const handleIncrease = async (item) => {
     let toastLoading;
     try {
@@ -70,8 +71,21 @@ const CartDropdownV2 = ({ toggleIsCartOpen, cartItems }) => {
 
     router.push("/checkout");
   };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cartRef.current && !cartRef.current.contains(event.target)) {
+        setIsCartOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setIsCartOpen]);
   return (
     <div
+      ref={cartRef}
       className="absolute right-3 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 top-[10vh]"
       onMouseLeave={toggleIsCartOpen}
     >

@@ -14,8 +14,10 @@ import {
 import { MdDashboard } from "react-icons/md";
 import api from "../util/axios.api";
 import { deleteCookies } from "../util/cookies";
+import { useEffect, useRef } from "react";
 
 const AccountNavList = ({ user, setAccountMenuOpen }) => {
+  const navListRef = useRef(null);
   const logOut = async () => {
     try {
       await signOut();
@@ -26,8 +28,21 @@ const AccountNavList = ({ user, setAccountMenuOpen }) => {
       toast.error("Error logging out", error);
     }
   };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navListRef.current && !navListRef.current.contains(event.target)) {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setAccountMenuOpen]);
   return (
     <div
+      ref={navListRef}
       className="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-lg py-2 text-gray-800 z-50"
       onMouseEnter={() => setAccountMenuOpen(true)}
       onMouseLeave={() => setAccountMenuOpen(false)}

@@ -12,7 +12,8 @@ import AccountNavList from "./account-navList";
 
 const NavBar = () => {
   const { user } = useUser();
-  const { isCartOpen, toggleCartStatus, cartItems } = useCartItems(); // get the cartItemsCount from context
+  const { isCartOpen, toggleCartStatus, setIsCartOpen, cartItems } =
+    useCartItems(); // get the cartItemsCount from context
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const toggleCart = () => {
@@ -89,7 +90,11 @@ const NavBar = () => {
 
       {/* Cart Dropdown */}
       {isCartOpen && (
-        <CartDropdown toggleIsCartOpen={toggleCart} cartItems={cartItems} />
+        <CartDropdown
+          toggleIsCartOpen={toggleCart}
+          cartItems={cartItems}
+          setIsCartOpen={setIsCartOpen}
+        />
       )}
     </nav>
   );
