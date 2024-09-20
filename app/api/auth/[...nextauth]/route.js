@@ -2,9 +2,7 @@ import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import {
-  cookies, // headers
-} from "next/headers";
+import { cookies, headers } from "next/headers";
 export const authOptions = {
   session: {
     strategy: "jwt",
@@ -27,7 +25,10 @@ export const authOptions = {
           "User-Agent": req?.headers["user-agent"] || "Unknown Device",
         };
 
-        // throw new AppError("This is a test error" + JSON.stringify(req), 400);
+        throw new AppError(
+          "This is a test error" + JSON.stringify(headers()),
+          400
+        );
         try {
           const { password, email } = credentials;
 
