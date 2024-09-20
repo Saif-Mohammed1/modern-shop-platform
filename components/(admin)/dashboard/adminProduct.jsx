@@ -115,7 +115,9 @@ const ProductList = ({ products, categories, totalPages }) => {
     }
     // Implement delete functionality here
   };
-
+  useEffect(() => {
+    setProductsList(products);
+  }, [products]);
   return (
     <div className="p-2 bg-gray-100 max-h-screen overflow-hidden">
       <div className="flex items-center mb-6">
