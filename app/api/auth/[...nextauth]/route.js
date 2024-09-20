@@ -2,7 +2,7 @@ import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 export const authOptions = {
   session: {
     strategy: "jwt",
@@ -17,7 +17,6 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
         const customHeaders = {
-          ...req?.headers,
           "x-client-ip": req?.headers["x-client-ip"],
           "x-forwarded-for": req?.headers["x-forwarded-for"],
           "x-real-ip": req?.headers["x-real-ip"],
