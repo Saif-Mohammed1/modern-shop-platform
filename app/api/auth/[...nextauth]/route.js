@@ -2,7 +2,7 @@ import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 export const authOptions = {
   session: {
     strategy: "jwt",
@@ -16,13 +16,24 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        const customHeaders = {
-          "x-client-ip": req?.headers["x-client-ip"],
-          "x-forwarded-for": req?.headers["x-forwarded-for"],
-          "x-real-ip": req?.headers["x-real-ip"],
-          "Content-Type": "application/json",
-          "User-Agent": req?.headers["user-agent"] || "Unknown Device",
-        };
+        // const customHeaders = {
+        //   "x-client-ip": req?.headers["x-client-ip"],
+        //   "x-forwarded-for": req?.headers["x-forwarded-for"],
+        //   "x-real-ip": req?.headers["x-real-ip"],
+        //   "Content-Type": "application/json",
+        //   "User-Agent": req?.headers["user-agent"] || "Unknown Device",
+        // };
+
+        const customHeaders = headers();
+        customHeaders().set("x-client-ip", req?.headers["x-client-ip"]);
+        customHeaders().set("x-forwarded-for", req?.headers["x-forwarded-for"]);
+        customHeaders().set("x-real-ip", req?.headers["x-real-ip"]);
+        customHeaders().set("Content-Type", "application/json");
+        customHeaders().set(
+          "User-Agent",
+          req?.headers["user-agent"] || "Unknown Device"
+        );
+
         // throw new AppError(
         //   "This is a test error" + JSON.stringify(customHeaders),
         //   400
