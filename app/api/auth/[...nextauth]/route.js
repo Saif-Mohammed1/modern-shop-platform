@@ -2,9 +2,7 @@ import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import {
-  cookies, // headers
-} from "next/headers";
+import { cookies, headers } from "next/headers";
 export const authOptions = {
   session: {
     strategy: "jwt",
