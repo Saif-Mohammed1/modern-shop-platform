@@ -232,3 +232,49 @@ export const detectUnusualLogin = async (user, req) => {
     throw error;
   }
 };
+
+export const getUniqueRefreshTokens = async (req) => {
+  try {
+    await deleteExpiredRefreshTokens(req);
+    const uniqueTokens = await RefreshToken.aggregate([
+      {
+        $match: { user: req.user._id }, // Match tokens for the specific user
+      },
+      {
+        $group: {
+          _id: {
+            deviceInfo: "$deviceInfo",
+            ipAddress: "$ipAddress",
+          },
+          token: { $first: "$token" }, // Get the first token for this combination
+          createdAt: { $first: "$createdAt" }, // Include createdAt if needed
+          lastActiveAt: { $first: "$lastActiveAt" }, // Include lastActiveAt if needed
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          deviceInfo: "$_id.deviceInfo",
+          ipAddress: "$_id.ipAddress",
+          token: 1,
+          createdAt: 1,
+          lastActiveAt: 1,
+        },
+      },
+    ]);
+
+    return { data: uniqueTokens, statusCode: 200 };
+  } catch (error) {
+    throw error;
+  }
+};
+async function deleteExpiredRefreshTokens(req) {
+  try {
+    const result = await RefreshToken.deleteMany({
+      user: req.user._id,
+      expiresAt: { $lt: new Date() }, // Find tokens where expiration date is in the past
+    });
+  } catch (error) {
+    throw error;
+  }
+}

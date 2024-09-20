@@ -1,15 +1,14 @@
 import { isAuth } from "@/app/_server/controller/authController";
 import ErrorHandler from "@/app/_server/controller/errorController";
-import { getDataByUser } from "@/app/_server/controller/factoryController";
+import { getUniqueRefreshTokens } from "@/app/_server/controller/refreshTokenController";
 import { connectDB } from "@/app/_server/db/db";
-import RefreshToken from "@/app/_server/models/refreshToken.model";
 import { NextResponse } from "next/server";
 export const GET = async (req) => {
   try {
     await connectDB();
 
     await isAuth(req);
-    const { data, statusCode } = await getDataByUser(req, RefreshToken);
+    const { data, statusCode } = await getUniqueRefreshTokens(req);
 
     return NextResponse.json(
       {
