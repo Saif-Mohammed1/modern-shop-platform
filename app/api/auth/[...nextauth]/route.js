@@ -24,12 +24,11 @@ export const authOptions = {
         //   "User-Agent": req?.headers["user-agent"] || "Unknown Device",
         // };
 
-        const customHeaders = headers();
-        customHeaders().set("x-client-ip", req?.headers["x-client-ip"]);
-        customHeaders().set("x-forwarded-for", req?.headers["x-forwarded-for"]);
-        customHeaders().set("x-real-ip", req?.headers["x-real-ip"]);
-        customHeaders().set("Content-Type", "application/json");
-        customHeaders().set(
+        haeders().set("x-client-ip", req?.headers["x-client-ip"]);
+        haeders().set("x-forwarded-for", req?.headers["x-forwarded-for"]);
+        haeders().set("x-real-ip", req?.headers["x-real-ip"]);
+        haeders().set("Content-Type", "application/json");
+        haeders().set(
           "User-Agent",
           req?.headers["user-agent"] || "Unknown Device"
         );
@@ -51,7 +50,7 @@ export const authOptions = {
               password,
             },
             {
-              headers: customHeaders,
+              headers: headers(),
             }
           );
 
