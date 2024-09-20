@@ -17,7 +17,7 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
         const customHeaders = {
-          ...headers(),
+          ...headers(req),
           "x-client-ip": req?.headers["x-client-ip"],
           "x-forwarded-for": req?.headers["x-forwarded-for"],
           "x-real-ip": req?.headers["x-real-ip"],
