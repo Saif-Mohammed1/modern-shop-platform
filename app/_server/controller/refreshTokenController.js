@@ -235,7 +235,7 @@ export const detectUnusualLogin = async (user, req) => {
 
 export const getUniqueRefreshTokens = async (req) => {
   try {
-    await deleteExpiredRefreshTokens(req);
+    await deleteExpiredRefreshTokensFromUser(req);
     const uniqueTokens = await RefreshToken.aggregate([
       {
         $match: { user: req.user._id }, // Match tokens for the specific user
@@ -268,7 +268,7 @@ export const getUniqueRefreshTokens = async (req) => {
     throw error;
   }
 };
-async function deleteExpiredRefreshTokens(req) {
+async function deleteExpiredRefreshTokensFromUser(req) {
   try {
     const result = await RefreshToken.deleteMany({
       user: req.user._id,
