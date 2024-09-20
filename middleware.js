@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 const protectedRoutes = [
   "/account",
@@ -9,10 +10,10 @@ const protectedRoutes = [
 ]; // only this shoud be proteted othwr routes should be public
 const authMiddleware = async (req) => {
   const forwardedFor = req.headers.get("x-forwarded-for");
-  const clientIp = forwardedFor ? forwardedFor : "";
+  const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "";
   // Store client IP in request headers or cookies for further use
 
-  req.headers.set("x-client-ip", clientIp);
+  headers().set("x-client-ip", clientIp);
   const pathname = req.nextUrl.pathname;
   const isAuth = await getToken({ req });
   const isProtectedRoute = protectedRoutes.some((route) =>
