@@ -26,12 +26,7 @@ export const authOptions = {
           "Content-Type": "application/json",
           "User-Agent": req?.headers["user-agent"] || "Unknown Device",
         };
-        // Filter out any problematic headers
-        const filteredHeaders = { ...req.headers };
-        delete filteredHeaders["host"];
-        delete filteredHeaders["connection"];
-        delete filteredHeaders["content-length"];
-        delete filteredHeaders["accept-encoding"];
+
         // throw new AppError("This is a test error" + JSON.stringify(req), 400);
         try {
           const { password, email } = credentials;
@@ -46,7 +41,7 @@ export const authOptions = {
               password,
             },
             {
-              headers: filteredHeaders,
+              headers: customHeaders,
             }
           );
 
