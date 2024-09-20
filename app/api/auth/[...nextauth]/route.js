@@ -26,7 +26,7 @@ export const authOptions = {
         };
 
         throw new AppError(
-          "This is a test error" + JSON.stringify(headers()),
+          "This is a test error" + JSON.stringify(headers(req)),
           400
         );
         try {
