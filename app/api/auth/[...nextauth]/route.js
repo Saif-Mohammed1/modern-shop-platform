@@ -24,9 +24,9 @@ export const authOptions = {
           "Content-Type": "application/json",
           "User-Agent": req?.headers["user-agent"] || "Unknown Device",
         };
-
+        const headersHandler = headers();
         throw new AppError(
-          "This is a test error" + JSON.stringify(headers(req)),
+          "This is a test error" + JSON.stringify(headersHandler),
           400
         );
         try {
