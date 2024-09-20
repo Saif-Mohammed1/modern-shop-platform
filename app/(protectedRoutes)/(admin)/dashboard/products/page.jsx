@@ -1,8 +1,7 @@
 // pages/admin/products.js
 
 import ErrorHandler from "@/components/Error/errorHandler";
-import ProductTicket from "@/components/shop/adminDashboard/ProductTicket";
-import AdminProducts from "@/components/shop/adminDashboard/adminProduct";
+import AdminProducts from "@/components/(admin)/dashboard/adminProduct";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import { headers } from "next/headers";

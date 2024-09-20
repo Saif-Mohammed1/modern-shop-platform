@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import Dashboard from "@/components/shop/adminDashboard/dashboard";
+import Dashboard from "@/components/(admin)/dashboard/dashboard";
 import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";

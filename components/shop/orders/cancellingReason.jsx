@@ -1,51 +1,5 @@
 "use client";
-// import api from "@/components/util/axios.api";
-// import  { useState } from "react";
-// import toast from "react-hot-toast";
 
-//         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-//           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
-//             <h2 className="text-xl font-bold text-red-600 mb-4">
-//               Are you sure you want to cancel your order?
-//             </h2>
-//             <p className="text-gray-700 mb-4">
-//               We're sorry to hear that you'd like to cancel your order. Could you please let us know why?
-//             </p>
-//             <textarea
-//               value={cancellationReason}
-//               onChange={(e) => setCancellationReason(e.target.value)}
-//               placeholder="Reason for cancellation"
-//               className="border rounded w-full px-3 py-2 mb-4"
-//               rows="3"
-//             />
-
-//             <p className="text-gray-600 mb-6">
-//               Cancelling this order may affect your refund eligibility. Please contact support if you have any questions.
-//             </p>
-
-//             <div className="flex justify-center space-x-4">
-//               <button
-//                 onClick={() => setShowCancelModal(false)}
-//                 className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
-//               >
-//                 Nevermind
-//               </button>
-//               <button
-//                 onClick={handleCancelOrder}
-//                 className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ${isSubmitting ? "opacity-50" : ""}`}
-//                 disabled={isSubmitting}
-//               >
-//                 {isSubmitting ? "Cancelling..." : "Yes, Cancel Order"}
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default CancelOrder;
 import { useState } from "react";
 
 const OrderCancellation = () => {

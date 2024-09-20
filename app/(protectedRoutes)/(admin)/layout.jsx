@@ -1,4 +1,4 @@
-import SidebarV3 from "@/components/shop/adminDashboard/dashboardSideBar";
+import SidebarV3 from "@/components/(admin)/dashboard/dashboardSideBar";
 const layout = ({ children }) => {
   return (
     <div className="flex flex-col md:flex-row ">

@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { BiSearch } from "react-icons/bi";
-import { useCartItems } from "../../context/cart.context";
+
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/pagination/Pagination";
@@ -11,110 +10,6 @@ import moment from "moment";
 import toast from "react-hot-toast";
 import api from "@/components/util/axios.api";
 import imageSrc from "@/components/util/productImageHandler";
-
-const AdminProducts = () => {
-  const { cartItems } = useCartItems();
-  const [products, setProducts] = useState(cartItems || []);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(15);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
-  };
-
-  //   if (loading) return <p>Loading...</p>;
-
-  return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Manage Products</h1>
-
-      <div className="mb-6 flex items-center">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={handleSearch}
-          className="p-2 border border-gray-300 rounded-lg mr-4 w-full"
-        />
-        <BiSearch className="w-6 h-6 text-gray-600" />
-      </div>
-
-      <table className="w-full bg-white border border-gray-200 rounded-lg shadow-md">
-        <thead>
-          <tr className="bg-gray-200 text-left">
-            <th className="p-4">Image</th>
-            <th className="p-4">Name</th>
-            <th className="p-4">Category</th>
-            <th className="p-4">Price</th>
-            <th className="p-4">Discount</th>
-            <th className="p-4">Stock</th>
-            <th className="p-4">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => {
-            return (
-              <tr key={product._id}>
-                <td className="p-4">
-                  <Image
-                    src={imageSrc(product)}
-                    alt={product.name}
-                    className="w-16 h-16 object-cover rounded-md"
-                    width={60}
-                    height={60}
-                    style={{ objectFit: "cover" }}
-                    priority
-                  />
-                </td>
-                <td className="p-4">{product.name}</td>
-                <td className="p-4">{product.category}</td>
-                <td className="p-4">${product.price}</td>
-                <td className="p-4">{product.discount}%</td>
-                <td className="p-4">{product.stock}</td>
-                <td className="p-4 flex space-x-2">
-                  <button className="p-2 text-blue-600 hover:text-blue-800">
-                    <FaEdit />
-                  </button>
-                  <button className="p-2 text-red-600 hover:text-red-800">
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      <div className="flex justify-between items-center mt-6">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-        >
-          Previous
-        </button>
-        <span className="text-gray-700">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-        >
-          Next
-        </button>
-      </div>
-    </div>
-  );
-};
 
 const ProductList = ({ products, categories, totalPages }) => {
   const [searchQuery, setSearchQuery] = useState("");
