@@ -49,8 +49,6 @@ const createRefreshAccessToken = async (userId, deviceInfo, ipAddress) => {
 };
 
 export const createUserTokens = async (userId, req) => {
-  console.log("Request Headers:", req);
-  console.log("User ID:", userId);
   const deviceInfo = req.headers.get("user-agent");
   const ipAddress =
     req.headers.get("x-client-ip") ||
