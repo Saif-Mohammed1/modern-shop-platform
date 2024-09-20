@@ -17,16 +17,15 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
         const customHeaders = {
-          // ...headers(req),
+          ...headers(),
           "x-client-ip": req?.headers["x-client-ip"],
           "x-forwarded-for": req?.headers["x-forwarded-for"],
           "x-real-ip": req?.headers["x-real-ip"],
           "Content-Type": "application/json",
           "User-Agent": req?.headers["user-agent"] || "Unknown Device",
         };
-        const headersHandler = headers();
         throw new AppError(
-          "This is a test error" + JSON.stringify(headersHandler),
+          "This is a test error" + JSON.stringify(customHeaders),
           400
         );
         try {
@@ -42,7 +41,7 @@ export const authOptions = {
               password,
             },
             {
-              headers: customHeaders,
+              headers: req?.headers,
             }
           );
 
