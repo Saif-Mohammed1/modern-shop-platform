@@ -16,22 +16,13 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        // const customHeaders = {
-        //   "x-client-ip": req?.headers["x-client-ip"],
-        //   "x-forwarded-for": req?.headers["x-forwarded-for"],
-        //   "x-real-ip": req?.headers["x-real-ip"],
-        //   "Content-Type": "application/json",
-        //   "User-Agent": req?.headers["user-agent"] || "Unknown Device",
-        // };
-
-        haeders().set("x-client-ip", req?.headers["x-client-ip"]);
-        haeders().set("x-forwarded-for", req?.headers["x-forwarded-for"]);
-        haeders().set("x-real-ip", req?.headers["x-real-ip"]);
-        haeders().set("Content-Type", "application/json");
-        haeders().set(
-          "User-Agent",
-          req?.headers["user-agent"] || "Unknown Device"
-        );
+        const customHeaders = {
+          "x-client-ip": req?.headers["x-client-ip"],
+          "x-forwarded-for": req?.headers["x-forwarded-for"],
+          "x-real-ip": req?.headers["x-real-ip"],
+          "Content-Type": "application/json",
+          "User-Agent": req?.headers["user-agent"] || "Unknown Device",
+        };
 
         // throw new AppError(
         //   "This is a test error" + JSON.stringify(customHeaders),
@@ -50,7 +41,7 @@ export const authOptions = {
               password,
             },
             {
-              headers: headers(),
+              headers: customHeaders,
             }
           );
 
