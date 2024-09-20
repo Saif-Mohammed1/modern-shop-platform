@@ -51,6 +51,7 @@ const createRefreshAccessToken = async (userId, deviceInfo, ipAddress) => {
 export const createUserTokens = async (userId, req) => {
   const deviceInfo = req.headers.get("user-agent");
   const ipAddress =
+    req.headers.get("x-client-ip") ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
     "0.0.0.0";
@@ -86,6 +87,7 @@ export const refreshAccessToken = async (req, res) => {
   // Get device info and IP address from the request
   const deviceInfo = req.headers.get("user-agent");
   const ipAddress =
+    req.headers.get("x-client-ip") ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
     "0.0.0.0";
@@ -199,6 +201,7 @@ export const deleteSpecificUserRefreshTokens = async (req) => {
 
 export const detectUnusualLogin = async (user, req) => {
   const currentIp =
+    req.headers.get("x-client-ip") ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
     "0.0.0.0";
