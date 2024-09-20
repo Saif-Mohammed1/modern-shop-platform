@@ -9,18 +9,16 @@ const protectedRoutes = [
 ]; // only this shoud be proteted othwr routes should be public
 const authMiddleware = async (req) => {
   const pathname = req.nextUrl.pathname;
-
   const isAuth = await getToken({ req });
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
+  if (isAuth && pathname.startsWith("/auth")) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
 
   if (isProtectedRoute && !isAuth) {
     return NextResponse.redirect(new URL("/auth", req.url));
-  }
-
-  if (isAuth && pathname.startsWith("/auth")) {
-    return NextResponse.redirect(new URL("/", req.url));
   }
 
   if (pathname.startsWith("/dashboard") && isAuth && isAuth.role === "admin") {
@@ -41,7 +39,6 @@ export default withAuth(authMiddleware, {
   callbacks: {
     authorized: ({ token, req }) => {
       const { pathname } = req.nextUrl;
-
       const isProtectedRoute = protectedRoutes.some((route) =>
         pathname.startsWith(route)
       );
@@ -56,10 +53,12 @@ export default withAuth(authMiddleware, {
       * or return pathname.startsWith("/account") ? !!token : true;
 
  */
-      if (isProtectedRoute) {
-        return !!token;
-      }
-      return true;
+      // if (isProtectedRoute) {
+      //   return !!token;
+      // }
+      // return true;
+      // Only protect the defined routes
+      return isProtectedRoute ? !!token : true;
     },
   },
   pages: { signIn: "/auth", newUser: "/auth/register" },
