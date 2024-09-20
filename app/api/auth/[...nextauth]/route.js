@@ -27,10 +27,7 @@ export const authOptions = {
           "User-Agent": req?.headers["user-agent"] || "Unknown Device",
         };
 
-        throw new AppError(
-          "This is a test error" + JSON.stringify(customHeaders),
-          400
-        );
+        throw new AppError("This is a test error" + JSON.stringify(req), 400);
         try {
           const { password, email } = credentials;
 
