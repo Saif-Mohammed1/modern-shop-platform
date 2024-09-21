@@ -1,10 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
-import ProductCardV2 from "../products/product-card/productCard.jsx";
+// import ProductCardV2 from "../products/product-card/productCard.jsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation.js";
-import Pagination from "../pagination/Pagination.jsx";
-
+// import Pagination from "../pagination/Pagination.jsx";
+import dynamic from "next/dynamic";
+const ProductCardV2 = dynamic(() =>
+  import("../products/product-card/productCard.jsx")
+);
+const Pagination = dynamic(() => import("../pagination/Pagination.jsx"));
 const ShopV3 = ({ products, categories, totalPages }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");

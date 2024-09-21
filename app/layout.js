@@ -19,9 +19,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.className} `}>
         <Providers>
-          <main className="space-y-3 p-1 md:p-4">
+          <main className="space-y-3 p-2 sm:p-4">
             <NavBar />
-            <div className="rounded-3xl bg-red-600 text-white py-3 px-5 text-center overflow-hidden -mx-3">
+            <div className="rounded-3xl bg-red-600 text-white py-3 px-5 text-center overflow-hidden ">
               <div className="animate-marquee inline-block whitespace-nowrap">
                 <p>
                   ⚠️ We are currently undergoing maintenance. Payments and user

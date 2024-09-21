@@ -5,7 +5,11 @@ import AdminProducts from "@/components/(admin)/dashboard/adminProduct";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import { headers } from "next/headers";
-
+export const metadata = {
+  title: "Products",
+  description: "Products management for the admin",
+  keywords: "admin, products, admin products",
+};
 const queryParams = async (searchParams) => {
   const url = new URLSearchParams();
 

@@ -1,6 +1,11 @@
 "use client";
 import Slider from "./slider/slider";
-import RelatedProducts from "../products/reuseableComponents/relatedProductsComponent";
+
+// import RelatedProducts from "../products/reuseableComponents/relatedProductsComponent";
+import dynamic from "next/dynamic";
+const RelatedProducts = dynamic(() =>
+  import("../products/reuseableComponents/relatedProductsComponent")
+);
 const HomeComponent = ({ topOfferProducts, newProducts, topRating }) => {
   return (
     <section>

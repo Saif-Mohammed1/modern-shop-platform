@@ -3,6 +3,12 @@ import ErrorHandler from "@/components/Error/errorHandler";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import { headers } from "next/headers";
+export const metadata = {
+  title: "Orders",
+  description: "Orders management for the admin",
+  keywords: "admin, orders, admin orders",
+};
+
 const queryParams = async (searchParams) => {
   const url = new URLSearchParams();
 

@@ -2,15 +2,21 @@
 import { useCartItems } from "@/components/context/cart.context";
 import { useUser } from "@/components/context/user.context";
 import { useWishlist } from "@/components/context/whishList.context";
-import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
-import ReviewSection from "@/components/products/Review/review";
+// import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
+// import ReviewSection from "@/components/products/Review/review";
 import api from "@/components/util/axios.api";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai"; // Wishlist icons
 import StarRatings from "react-star-ratings";
-
+import dynamic from "next/dynamic";
+const ReviewSection = dynamic(() =>
+  import("@/components/products/Review/review")
+);
+const RelatedProducts = dynamic(() =>
+  import("@/components/products/reuseableComponents/relatedProductsComponent")
+);
 const ProductDetailV2 = ({ product }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);

@@ -3,7 +3,11 @@ import AdminOrderDetails from "@/components/(admin)/dashboard/orders/OrderDetail
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
-
+export const metadata = {
+  title: "Order Details",
+  description: "Order details for the admin",
+  keywords: "admin, order, admin order",
+};
 const page = async ({ params }) => {
   const { id } = params;
   try {

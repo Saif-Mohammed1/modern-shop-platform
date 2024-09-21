@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import { getCities } from "countries-cities"; // Importing to use Ukraine cities
 import toast from "react-hot-toast";
 import api from "../../util/axios.api";
-import AddAddressComponent from "./addAddressReuseableComponent";
+import dynamic from "next/dynamic";
+const AddAddressComponent = dynamic(() =>
+  import("./addAddressReuseableComponent")
+);
 
 const AddressBookV3 = ({ addressList }) => {
   const [addresses, setAddresses] = useState(addressList || []);

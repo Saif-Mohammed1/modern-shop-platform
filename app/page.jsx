@@ -4,6 +4,11 @@ import HomeComponent from "@/components/home/home";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import { headers } from "next/headers";
+export const metadata = {
+  title: "Home",
+  description: "Home page for the shop",
+  keywords: "home, shop, home page",
+};
 export default async function Home() {
   try {
     const {

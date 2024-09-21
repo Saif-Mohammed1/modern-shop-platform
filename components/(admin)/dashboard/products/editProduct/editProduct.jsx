@@ -2,14 +2,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import EditProductDetails from "./editProductDetails";
-import EditProductPrice from "./editProductPrice";
-import EditProductInventory from "./editProductInventory";
+// import EditProductDetails from "./editProductDetails";
+// import EditProductPrice from "./editProductPrice";
+// import EditProductInventory from "./editProductInventory";
+// import EditProductImages from "./editProductImages";
+// import EditProductSubmit from "./editProductSubmit";
 import api from "@/components/util/axios.api";
 import toast from "react-hot-toast";
-import EditProductImages from "./editProductImages";
-import EditProductSubmit from "./editProductSubmit";
-
+import dynamic from "next/dynamic";
+const EditProductDetails = dynamic(() => import("./editProductDetails"));
+const EditProductPrice = dynamic(() => import("./editProductPrice"));
+const EditProductInventory = dynamic(() => import("./editProductInventory"));
+const EditProductImages = dynamic(() => import("./editProductImages"));
+const EditProductSubmit = dynamic(() => import("./editProductSubmit"));
 const EditProduct = ({ product }) => {
   const {
     name,

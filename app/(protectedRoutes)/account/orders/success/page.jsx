@@ -4,7 +4,11 @@ import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
-
+export const metadata = {
+  title: "Order Completed",
+  description: "Order Completed for the customer",
+  keywords: "customer, order completed, customer order completed",
+};
 const page = async () => {
   try {
     const { data } = await api.get("/customer/orders/latest-order", {

@@ -119,12 +119,12 @@ const ProductList = ({ products, categories, totalPages }) => {
     setProductsList(products);
   }, [products]);
   return (
-    <div className="p-2 bg-gray-100 max-h-screen overflow-hidden">
-      <div className="flex items-center mb-6">
+    <div className="p-2 bg-gray-100 /max-h-screen /overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-center mb-6 gap-2">
         <input
           type="text"
           placeholder="Search..."
-          className="p-2 border border-gray-300 rounded-lg mr-4"
+          className="p-2 border border-gray-300 rounded-lg mr-4 w-full"
           value={searchQuery}
           onChange={handleSearch}
         />{" "}
@@ -132,7 +132,7 @@ const ProductList = ({ products, categories, totalPages }) => {
           id="categoryFilter"
           value={categoryFilter}
           onChange={handleCategoryFilterChange}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2 w-full"
         >
           <option value="">All</option>
           {/* Add more categories as options here */}
@@ -154,7 +154,7 @@ const ProductList = ({ products, categories, totalPages }) => {
             <option value="accessories">Accessories</option>
           </select> */}
         <select
-          className="p-2 border border-gray-300 rounded-lg"
+          className="p-2 border border-gray-300 rounded-lg w-full"
           value={sortOrder}
           onChange={handleSortFilterChange}
         >
@@ -163,7 +163,7 @@ const ProductList = ({ products, categories, totalPages }) => {
           <option value="ratingsAverage">Lowest Rated</option>
         </select>
         <button
-          className="ml-auto p-2 bg-blue-500 text-white rounded-lg"
+          className="ml-auto p-2 bg-blue-500 text-white rounded-lg w-full"
           onClick={() => router.push("/dashboard/products/add")}
         >
           Add Product

@@ -72,8 +72,14 @@ const CartDropdownV2 = ({ toggleIsCartOpen, setIsCartOpen, cartItems }) => {
     router.push("/checkout");
   };
   useEffect(() => {
+    const shoppingCart = document.querySelector(".shopping-cart");
     const handleClickOutside = (event) => {
-      if (cartRef.current && !cartRef.current.contains(event.target)) {
+      if (
+        cartRef.current &&
+        !cartRef.current.contains(event.target) &&
+        shoppingCart &&
+        !shoppingCart.contains(event.target)
+      ) {
         setIsCartOpen(false);
       }
     };

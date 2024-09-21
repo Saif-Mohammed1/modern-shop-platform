@@ -3,7 +3,11 @@ import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
-
+const metadata = {
+  title: "Users",
+  description: "Users management for the admin",
+  keywords: "admin, users, admin users",
+};
 const queryParams = async (searchParams) => {
   const url = new URLSearchParams();
 

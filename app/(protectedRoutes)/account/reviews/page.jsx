@@ -4,7 +4,11 @@ import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
-
+export const metadata = {
+  title: "Review History",
+  description: "Review History for the customer",
+  keywords: "customer, review history, customer review history",
+};
 const page = async () => {
   try {
     const { data } = await api.get("/customer/reviews", {

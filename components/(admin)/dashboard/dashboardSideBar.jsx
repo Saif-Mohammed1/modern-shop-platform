@@ -106,7 +106,7 @@ const SidebarV3 = () => {
       </div>
 
       {/* Desktop View: Sidebar */}
-      <aside className="hidden md:block min-w-[260px] max-w-[300px] bg-gray-800 text-white min-h-screen">
+      <aside className="hidden md:block min-w-[260px] max-w-[300px] bg-gray-800 text-white min-h-screen rounded-lg">
         <div className="p-4">
           <h1 className="text-2xl font-semibold mb-6">Admin Dashboard</h1>
           <nav>

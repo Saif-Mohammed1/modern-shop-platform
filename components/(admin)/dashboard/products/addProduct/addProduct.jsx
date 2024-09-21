@@ -1,10 +1,17 @@
 "use client";
 import { useState } from "react";
-import ProductDetails from "./productDetails";
-import ProductPricing from "./productPrice";
-import ProductInventory from "./productInventory";
-import ProductImages from "./productImages";
-import ProductSubmit from "./productSubmit";
+// import ProductDetails from "./productDetails";
+// import ProductPricing from "./productPrice";
+// import ProductInventory from "./productInventory";
+// import ProductImages from "./productImages";
+// import ProductSubmit from "./productSubmit";
+import dynamic from "next/dynamic";
+const ProductDetails = dynamic(() => import("./productDetails"));
+const ProductPricing = dynamic(() => import("./productPrice"));
+const ProductInventory = dynamic(() => import("./productInventory"));
+const ProductImages = dynamic(() => import("./productImages"));
+const ProductSubmit = dynamic(() => import("./productSubmit"));
+
 export default function AddProduct() {
   const [step, setStep] = useState(Number(localStorage.getItem("step")) || 1);
   const [productDetails, setProductDetails] = useState({});

@@ -5,7 +5,11 @@ import AppError from "@/components/util/appError";
 // import UserOrderTracking from "@/components/shop/orders/orderTracking";
 import api from "@/components/util/axios.api";
 import { headers } from "next/headers";
-
+export const metadata = {
+  title: "Order History",
+  description: "Order History for the customer",
+  keywords: "customer, order history, customer order history",
+};
 const page = async () => {
   try {
     const { data } = await api.get("/customer/orders", {

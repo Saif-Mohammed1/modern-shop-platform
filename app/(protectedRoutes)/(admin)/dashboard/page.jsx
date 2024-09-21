@@ -4,7 +4,11 @@ import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
-
+export const metadata = {
+  title: "Dashboard",
+  description: "Dashboard for the admin",
+  keywords: "admin, dashboard, admin dashboard",
+};
 const page = async () => {
   try {
     const {

@@ -5,11 +5,13 @@ import { AiOutlineShoppingCart } from "react-icons/ai";
 
 import { VscAccount } from "react-icons/vsc";
 
-import CartDropdown from "../cart/cartDropdown";
+// import CartDropdown from "../cart/cartDropdown";
 import { useUser } from "../context/user.context";
 import { useCartItems } from "../context/cart.context";
-import AccountNavList from "./account-navList";
-
+// import AccountNavList from "./account-navList";
+import dynamic from "next/dynamic";
+const AccountNavList = dynamic(() => import("./account-navList"));
+const CartDropdown = dynamic(() => import("../cart/cartDropdown"));
 const NavBar = () => {
   const { user } = useUser();
   const { isCartOpen, toggleCartStatus, setIsCartOpen, cartItems } =
@@ -28,7 +30,7 @@ const NavBar = () => {
   // ];
 
   return (
-    <nav className="flex items-center justify-between bg-white shadow-lg  -mx-4 -mt-4 p-5">
+    <nav className="flex items-center justify-between bg-white shadow-lg -mx-2 -mt-2 sm:-mx-4 sm:-mt-4 p-3 sm:p-5">
       {/* Logo */}
       <Link href="/" className="flex items-center text-gray-800 mr-6">
         <span className="font-semibold text-xl tracking-tight">Logo</span>
@@ -68,7 +70,7 @@ const NavBar = () => {
             <span className="hidden md:block  ml-2">Hi,</span>
           </div>
           <div
-            className="relative flex items-center cursor-pointer"
+            className="relative flex items-center cursor-pointer shopping-cart"
             onClick={toggleCart}
           >
             <AiOutlineShoppingCart className="text-2xl text-gray-800 mx-3" />

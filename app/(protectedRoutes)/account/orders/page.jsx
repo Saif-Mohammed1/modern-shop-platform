@@ -5,7 +5,11 @@ import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
-
+export const metadata = {
+  title: "Order History",
+  description: "Order History for the customer",
+  keywords: "customer, order history, customer order history",
+};
 const page = async () => {
   try {
     const { data } = await api.get("/customer/orders", {
@@ -21,7 +25,7 @@ const page = async () => {
         <div className="max-h-[80vh] overflow-y-auto">
           {/* <OrderHistory ordersList={orders} />; */}
 
-          {orders.length === 0 ? (
+          {orders.length > 0 ? (
             orders.map((order) => <UserOrderTracking order={order} />)
           ) : (
             // <h1 className="text-3xl font-semibold mb-6 text-center">

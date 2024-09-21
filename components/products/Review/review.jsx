@@ -1,7 +1,8 @@
 import Image from "next/image";
-import CreateReview from "./createReview";
+// import CreateReview from "./createReview";
 import StarRatings from "react-star-ratings";
-
+import dynamic from "next/dynamic";
+const CreateReview = dynamic(() => import("./createReview"));
 const ReviewSection = ({ reviews, productId, user }) => {
   return (
     <div

@@ -4,6 +4,11 @@ import api from "@/components/util/axios.api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
+export const metadata = {
+  title: "Change Password",
+  description: "Change Password for the customer",
+  keywords: "customer, change password, customer change password",
+};
 const page = async () => {
   try {
     const { data } = await api.get("/customer/device-info", {

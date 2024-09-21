@@ -1,12 +1,15 @@
 "use client";
 
 import { useCartItems } from "@/components/context/cart.context";
-import AddAddressComponent from "@/components/customer/address/addAddressReuseableComponent";
 import api from "@/components/util/axios.api";
 import imageSrc from "@/components/util/productImageHandler";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import dynamic from "next/dynamic";
+const AddAddressComponent = dynamic(() =>
+  import("@/components/customer/address/addAddressReuseableComponent")
+);
 
 const ShippingComponentV3 = ({ address }) => {
   const { cartItems } = useCartItems(); // Assuming useCartItems is available
