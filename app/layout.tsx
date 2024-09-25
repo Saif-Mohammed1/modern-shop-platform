@@ -5,16 +5,21 @@ import Footer from "@/components/footer/footer";
 import NavBar from "@/components/navBar/navBar";
 import Providers from "@/components/providers/providers";
 import SessionExpiredOverlay from "@/components/SessionExpiredOverlay/SessionExpiredOverlay";
+import { rootStaticPagesTranslate } from "./_translate/rootStaticPagesTranslate";
+import { lang } from "@/components/util/lang";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "My Awesome Online Shop",
-  description:
-    "Discover a wide range of products at great prices on My Awesome Online Shop. Shop now and enjoy a seamless shopping experience.",
+  title: rootStaticPagesTranslate[lang].layout.metadata.title,
+  description: rootStaticPagesTranslate[lang].layout.metadata.description,
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={`${inter.className} `}>
@@ -23,10 +28,7 @@ export default function RootLayout({ children }) {
             <NavBar />
             <div className="rounded-3xl bg-red-600 text-white py-3 px-5 text-center overflow-hidden ">
               <div className="animate-marquee inline-block whitespace-nowrap">
-                <p>
-                  ⚠️ We are currently undergoing maintenance. Payments and user
-                  actions are temporarily disabled. Please check back later.
-                </p>
+                <p>{rootStaticPagesTranslate[lang].layout.fixed.message}</p>
               </div>
             </div>
 

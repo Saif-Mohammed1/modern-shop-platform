@@ -1,20 +1,23 @@
 export const dynamic = "force-dynamic";
 import ErrorHandler from "@/components/Error/errorHandler";
 import HomeComponent from "@/components/home/home";
-import AppError from "@/components/util/appError";
+// import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
-export const metadata = {
-  title: "Home",
-  description: "Home page for the shop",
-  keywords: "home, shop, home page",
+import { rootStaticPagesTranslate } from "./_translate/rootStaticPagesTranslate";
+import { lang } from "@/components/util/lang";
+export const metadata: Metadata = {
+  title: rootStaticPagesTranslate[lang].home.metadata.title,
+  description: rootStaticPagesTranslate[lang].home.metadata.description,
+  keywords: rootStaticPagesTranslate[lang].home.metadata.keywords,
 };
 export default async function Home() {
   try {
     const {
       data: { data },
     } = await api.get("/shop/home-page", {
-      headers: headers(),
+      headers: Object.fromEntries(headers().entries()), // convert headers to plain object
     });
     const topOfferProducts = data.topOfferProducts;
     const newProducts = data.newProducts;
@@ -27,7 +30,7 @@ export default async function Home() {
         topRating={topRating}
       />
     );
-  } catch (error) {
+  } catch (error: any) {
     return <ErrorHandler message={error.message} />;
 
     // throw new AppError(error.message, error.status);

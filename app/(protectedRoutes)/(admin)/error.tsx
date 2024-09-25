@@ -16,10 +16,6 @@ const Error: FC<ErrorProps> = ({ error, reset }) => {
   useEffect(() => {
     if (error.message) {
       setMessage(error.message);
-    } else {
-      setMessage(
-        "An unexpected error occurred. Please try again later. Or contact support."
-      );
     }
   }, [error]);
 

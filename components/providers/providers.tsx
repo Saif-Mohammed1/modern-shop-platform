@@ -5,7 +5,7 @@ import { CartProvider } from "../context/cart.context";
 import { UserProvider } from "../context/user.context";
 import { WishlistProvider } from "../context/whishList.context";
 
-const Providers = ({ children }) => {
+const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <SessionProvider>
       <UserProvider>

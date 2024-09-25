@@ -1,15 +1,17 @@
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 const protectedRoutes = [
   "/account",
   "/checkout",
   "/confirm-email-change",
   // "/dashboard",
 ]; // only this shoud be proteted othwr routes should be public
-const authMiddleware = async (req) => {
+const authMiddleware = async (req: NextRequest) => {
   const forwardedFor = req.headers.get("x-forwarded-for");
-  const clientIp = forwardedFor ? forwardedFor : req.headers.get("x-real-ip");
+  const clientIp = forwardedFor
+    ? forwardedFor
+    : req.headers.get("x-real-ip") ?? "";
   // Store client IP in request headers or cookies for further use
 
   req.headers.set("x-client-ip", clientIp);
@@ -18,6 +20,7 @@ const authMiddleware = async (req) => {
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
+
   if (isAuth && pathname.startsWith("/auth")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
@@ -58,15 +61,19 @@ export default withAuth(authMiddleware, {
       * or return pathname.startsWith("/account") ? !!token : true;
 
  */
-      // if (isProtectedRoute) {
-      //   return !!token;
-      // }
-      // return true;
+      if (isProtectedRoute) {
+        return !!token;
+      }
+      return true;
       // Only protect the defined routes
-      return isProtectedRoute ? !!token : true;
+      // return isProtectedRoute ? !!token : true;
     },
   },
-  pages: { signIn: "/auth", newUser: "/auth/register" },
+  pages: {
+    //  signIn: "/auth"
+
+    newUser: "/auth/register",
+  },
 });
 export const config = {
   matcher: [
