@@ -1,17 +1,5 @@
-export type UserType = {
-  /** The user's postal address. */
+import { UserType } from "@/components/context/user.context";
 
-  _id: string;
-  name: string;
-  email: string;
-  emailVerify: boolean;
-  // password: user.password,
-  // photo: user.photo,
-  role: string;
-  createdAt: string;
-  accessToken: string;
-  phone: string;
-};
 declare module "next-auth" {
   /**
    * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context

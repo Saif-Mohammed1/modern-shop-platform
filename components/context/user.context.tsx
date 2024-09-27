@@ -2,7 +2,20 @@
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import tokenManager from "@/components/util/TokenManager";
-import { UserType } from "@/@types/next-auth";
+export type UserType = {
+  /** The user's postal address. */
+
+  _id: string;
+  name: string;
+  email: string;
+  emailVerify: boolean;
+  // password: user.password,
+  // photo: user.photo,
+  role: string;
+  createdAt: string;
+  accessToken: string;
+  phone?: string;
+};
 type User = UserType | null;
 type UserContextType = {
   user: User;

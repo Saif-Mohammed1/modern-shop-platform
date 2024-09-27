@@ -1,4 +1,4 @@
-import { UserType } from "@/@types/next-auth";
+import { UserType } from "@/components/context/user.context";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import NextAuth, { AuthOptions } from "next-auth";

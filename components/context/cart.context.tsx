@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { useUser } from "./user.context.jsx";
 import {
   addToCart,
   getCartItems,
@@ -10,10 +9,10 @@ import {
   mergeLocalCartWithDB,
 } from "./cartAction.js";
 import toast from "react-hot-toast";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate.js";
-import { UserType } from "@/@types/next-auth.js";
-import { cartContextTranslate } from "@/app/_translate/cartContextTranslate.js";
+import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
+import { UserType, useUser } from "./user.context";
 export type UserInCart = Partial<UserType> | undefined;
 // export type CartItemsType = {
 //   _id: string;

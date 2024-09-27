@@ -9,6 +9,7 @@ import { createUserTokens, detectUnusualLogin } from "./refreshTokenController";
 import { NextRequest } from "next/server";
 import { authControllerTranslate } from "../_Translate/authControllerTranslate";
 import { lang } from "@/components/util/lang";
+
 export type UserAuthType = {
   _id: string;
   name: string;
@@ -16,6 +17,7 @@ export type UserAuthType = {
   emailVerify: boolean;
   role: string;
   createdAt: Date;
+  phone?: string;
 };
 type UserTokenType = {
   user: UserAuthType;
@@ -40,6 +42,7 @@ export const modifyFinalResponse = (
     // photo: user.photo,
     role: user.role,
     createdAt: user.createdAt,
+    phone: user.phone,
   };
   return {
     message:

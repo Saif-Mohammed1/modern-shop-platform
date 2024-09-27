@@ -1,4 +1,4 @@
-import { UserType } from "@/@types/next-auth";
+import { UserType } from "@/components/context/user.context";
 
 const addProduct = {
   en: {
