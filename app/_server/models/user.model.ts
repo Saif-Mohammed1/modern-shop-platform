@@ -191,7 +191,7 @@ UserSchema.pre("save", async function (next) {
 });
 UserSchema.pre("save", function (next) {
   // Only run the email validation if the email has been modified (or it's a new document)
-  if (!this.isModified("email" || !this.isNew)) {
+  if (!this.isModified("email") && !this.isNew) {
     return next();
   }
 
