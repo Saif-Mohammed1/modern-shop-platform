@@ -1,0 +1,57 @@
+/* 
+const styles = {
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+    fontFamily: "Arial, sans-serif",
+  },
+  loading: {
+    fontSize: "18px",
+    color: "#555",
+  },
+  messageBox: {
+    maxWidth: "500px",
+    padding: "20px",
+    border: "1px solid #fff",
+    borderRadius: "10px",
+    textAlign: "center",
+  },
+  heading: {
+    fontSize: "24px",
+    color: "#333",
+  },
+  message: {
+    fontSize: "18px",
+    color: "#555",
+  },
+};
+ */
+
+#container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+.loading {
+  font-size: 18px;
+  color: #555;
+}
+.messageBox {
+  max-width: 500px;
+  padding: 20px;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  text-align: center;
+}
+.heading {
+  font-size: 24px;
+  color: #333;
+}
+.message {
+  font-size: 18px;
+  color: #555;
+}
