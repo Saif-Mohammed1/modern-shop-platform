@@ -49,43 +49,6 @@ export const authControllerTranslate = {
           "Too many unsuccessful password reset attempts. Blocked for an hour.",
         succussMessage: "Password reset successfully",
       },
-      /**export const restPassword = async (req:NextRequest) => {
-  try {
-    const { newPassword, confirmPassword, token } = await req.json();
-
-    if (!newPassword || !confirmPassword) {
-      throw new AppError("password OR confirmPassword cannot be empty", 400);
-    }
-
-    if (!token) {
-      throw new AppError("token is required", 400);
-    }
-    if (newPassword !== confirmPassword) {
-      throw new AppError("password and confirmPassword don't match", 400);
-    }
-    const user = await User.findOne({
-      passwordResetToken: token,
-      passwordResetExpires: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      //       // User not found
-      throw new AppError("Invalid or expired token.", 400);
-    }
-
-    // 3) If so, update password
-    user.password = newPassword;
-    user.passwordResetExpires = undefined;
-    user.passwordResetToken = undefined;
-    user.passwordResetAttempts = undefined;
-    await user.save();
-    // User.findByIdAndUpdate will NOT work as intended!
-    const accessToken = await createUserTokens(user._id, req);
-    return modifyFinalResponse(user, accessToken, 200);
-  } catch (error) {
-    throw error;
-  }
-}; */
       restPassword: {
         newPasswordRequired: "New Password is required",
         confirmPasswordRequired: "confirmPassword is required",

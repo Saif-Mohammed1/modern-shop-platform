@@ -260,14 +260,20 @@ export const logIn = async (req: NextRequest) => {
   }
 };
 
-export const logout = async (req: NextRequest) => {
-  cookies().set("refreshAccessToken", "loggedOut", {
-    expires: new Date(Date.now() + 10 * 1000), // 10 sec
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  });
-  return { data: [], statusCode: 200 };
-};
+export const logout = async () =>
+  /**
+   * it will throw error becuse no use of itso commit it
+   */
+  //req: NextRequest
+
+  {
+    cookies().set("refreshAccessToken", "loggedOut", {
+      expires: new Date(Date.now() + 10 * 1000), // 10 sec
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+    return { data: [], statusCode: 200 };
+  };
 export const forgetPassword = async (req: NextRequest) => {
   let user;
   try {
