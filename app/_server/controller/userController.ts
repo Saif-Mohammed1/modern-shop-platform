@@ -180,7 +180,7 @@ export const createUserByAdmin = async (req: NextRequest) => {
       user,
       null, // accessToken,is null when admen create userno need access token here or it will modify users
       201,
-      true
+      "sendVerificationCode" // for passing typescript strick mode
     );
   } catch (error) {
     if (user) {
@@ -344,7 +344,13 @@ export const changeEmailRequest = async (req: NextRequest) => {
 
     // Send confirmation email to the current email
     // Send confirmation email to the current email
-    await ChangeEmail(req.user, token);
+    if (!req.user?.email) {
+      throw new AppError(
+        userControllerTranslate[lang].errors.noUserFoundWithId,
+        404
+      );
+    }
+    await ChangeEmail(req?.user, token);
 
     return {
       message:
