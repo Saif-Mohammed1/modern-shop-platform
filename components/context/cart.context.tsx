@@ -7,7 +7,7 @@ import {
   removeFromCart,
   clearItemFromCart,
   mergeLocalCartWithDB,
-} from "./cartAction.js";
+} from "./cartAction";
 import toast from "react-hot-toast";
 import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
