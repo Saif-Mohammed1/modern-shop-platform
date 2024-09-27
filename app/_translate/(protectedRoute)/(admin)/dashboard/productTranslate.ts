@@ -1,3 +1,5 @@
+import { UserType } from "@/@types/next-auth";
+
 const addProduct = {
   en: {
     metadata: {
@@ -521,15 +523,22 @@ type OldImage = {
   public_id: string;
   link: string;
 };
+// type UserType = {
+//   name: string;
+//   _id: string;
+// };
 export type ProductType = {
   name: string;
   category: string;
-  description: string;
   price: number;
   discount: number;
   discountExpire: Date | undefined;
-  stock: number;
   images: OldImage[] | [];
+  user: Partial<UserType>;
+  description: string;
+  stock: number;
   _id: string;
   ratingsAverage: number;
+  ratingsQuantity: number;
+  createdAt: string;
 };

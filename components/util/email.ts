@@ -1,3 +1,4 @@
+import { UserAuthType } from "@/app/_server/controller/authController";
 import nodemailer from "nodemailer";
 // Create a transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({
@@ -15,7 +16,7 @@ const transporter = nodemailer.createTransport({
   // },
 });
 
-export const Email = async (user, token) => {
+export const Email = async (user: UserAuthType, token: string) => {
   // const emailHTML = `
   //   <div style="font-family: Arial, sans-serif; color: #333;">
   //     <h2 style="color: #0056b3;">Password Reset Request</h2>
@@ -80,7 +81,7 @@ export const Email = async (user, token) => {
     throw error;
   }
 };
-export const ChangeEmail = async (user, token) => {
+export const ChangeEmail = async (user: UserAuthType, token: string) => {
   try {
     // Define email options
     await transporter.sendMail({
@@ -109,7 +110,10 @@ export const ChangeEmail = async (user, token) => {
     throw error;
   }
 };
-export const sendVerificationCode = async (user, code) => {
+export const sendVerificationCode = async (
+  user: Partial<UserAuthType>,
+  code: string
+) => {
   try {
     await transporter.sendMail({
       from: "fashFlash <no-reply@example.com>", // process.env.SENDER_EMAIL,
@@ -133,7 +137,10 @@ export const sendVerificationCode = async (user, code) => {
     throw error;
   }
 };
-export const sendEmailWithInvoice = async (user, link) => {
+export const sendEmailWithInvoice = async (
+  user: UserAuthType,
+  link: string
+) => {
   try {
     // Setup email data
     /*let mailOptions = {
@@ -183,9 +190,9 @@ export const sendEmailWithInvoice = async (user, link) => {
 };
 
 export const sendEmailOnDetectedUnusualActivity = async (
-  user,
-  deviceInfo,
-  ipAddress
+  user: UserAuthType,
+  deviceInfo: string,
+  ipAddress: string
 ) => {
   await transporter.sendMail({
     from: "fashFlash <no-reply@example.com>",
@@ -200,7 +207,11 @@ export const sendEmailOnDetectedUnusualActivity = async (
   });
 };
 // Assuming 'lineItems' contains the products and their details
-export const sendRefundStatusUpdateEmail = (user, status, reason) => {
+export const sendRefundStatusUpdateEmail = (
+  user: UserAuthType,
+  status: string,
+  reason: string
+) => {
   const subject = `Your Refund Request ${
     status === "approved" ? "Approved" : "Refused"
   }`;

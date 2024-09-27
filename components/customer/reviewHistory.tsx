@@ -1,10 +1,15 @@
 "use client";
+import {
+  accountReviewsTranslate,
+  ReviewType,
+} from "@/app/_translate/(protectedRoute)/account/reviewsTranslate";
 import { useEffect, useState } from "react";
+import { lang } from "@/components/util/lang";
 
-const ReviewHistory = ({ reviewsList }) => {
+const ReviewHistory = ({ reviewsList }: { reviewsList: ReviewType[] }) => {
   const [reviews, setReviews] = useState(reviewsList || []);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
   //   useEffect(() => {
   //     // Fetch reviews for the user
@@ -30,7 +35,9 @@ const ReviewHistory = ({ reviewsList }) => {
   }, [reviewsList]);
   return (
     <div className="container mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold mb-6">My Review History</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        {accountReviewsTranslate[lang].title}
+      </h1>
       <div
         className="max-h-[80vh] overscroll-y-auto mx-auto p-6 bg-gray-100 rounded-lg shadow-lg
 "
@@ -42,24 +49,27 @@ const ReviewHistory = ({ reviewsList }) => {
               className="p-4 mb-4 bg-white rounded shadow-lg border border-gray-200"
             >
               <h2 className="text-xl font-semibold mb-2">
-                Product: {review.product.name}
+                {accountReviewsTranslate[lang].review.product}:{" "}
+                {review.product.name}
               </h2>
               <p className="mb-2">
-                <strong>Rating:</strong>{" "}
+                <strong>{accountReviewsTranslate[lang].review.rating}:</strong>{" "}
                 <span className="text-yellow-500">
                   {"★".repeat(review.rating)} {"☆".repeat(5 - review.rating)}
                 </span>
               </p>
               <p className="mb-2">
-                <strong>Review:</strong> {review.reviewText}
+                <strong>{accountReviewsTranslate[lang].review.review}:</strong>{" "}
+                {review.reviewText}
               </p>
               <p className="text-gray-500 text-sm">
-                Reviewed on: {new Date(review.createdAt).toLocaleDateString()}
+                {accountReviewsTranslate[lang].review.reviewedOn}:{" "}
+                {new Date(review.createdAt).toLocaleDateString()}
               </p>
             </div>
           ))
         ) : (
-          <p className="empty">No reviews found.</p>
+          <p className="empty">{accountReviewsTranslate[lang].noReviewFound}</p>
         )}
       </div>
     </div>

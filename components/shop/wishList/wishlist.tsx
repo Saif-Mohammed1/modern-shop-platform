@@ -1,12 +1,15 @@
 // pages/wishlist.js
 "use client";
-import { useWishlist } from "@/components/context/whishList.context";
+import {
+  useWishlist,
+  WishlistType,
+} from "@/components/context/whishList.context";
 import WishListCard from "./wishListCard";
 import { useEffect, useState } from "react";
 
 const WishlistPage = () => {
   const { wishlist } = useWishlist();
-  const [wishlistProduct, setWishlistProduct] = useState([]);
+  const [wishlistProduct, setWishlistProduct] = useState<WishlistType[]>([]);
 
   useEffect(() => {
     setWishlistProduct(wishlist);
@@ -20,7 +23,7 @@ const WishlistPage = () => {
         <div className="grid col gap-4">
           {wishlistProduct.map((product) => {
             const products = product.product;
-            return <WishListCard key={product._id} product={products} />;
+            return <WishListCard key={product?._id} product={products} />;
           })}
         </div>
       )}

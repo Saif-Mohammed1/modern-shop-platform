@@ -10,9 +10,32 @@ import {
   mergeLocalCartWithDB,
 } from "./cartAction.js";
 import toast from "react-hot-toast";
+import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate.js";
+import { UserType } from "@/@types/next-auth.js";
+import { cartContextTranslate } from "@/app/_translate/cartContextTranslate.js";
+import { lang } from "@/components/util/lang";
+export type UserInCart = Partial<UserType> | undefined;
+// export type CartItemsType = {
+//   _id: string;
+//   quantity: number;
+//   product: ProductType;
+//   user?: UserInCart;
+// };
+export type CartItemsType = {
+  quantity: number;
+} & ProductType;
 
+type CartContextType = {
+  isCartOpen: boolean;
+  toggleCartStatus: () => void;
+  cartItems: CartItemsType[];
+  addToCartItems: (product: ProductType) => void;
+  removeCartItem: (product: ProductType) => void;
+  setIsCartOpen: (status: boolean) => void;
+  clearProductFromCartItem: (product: ProductType) => void;
+};
 // Create the cart context
-export const CartContext = createContext({
+export const CartContext = createContext<CartContextType>({
   isCartOpen: false,
   toggleCartStatus: () => {},
   cartItems: [],
@@ -21,18 +44,17 @@ export const CartContext = createContext({
   setIsCartOpen: () => {},
   clearProductFromCartItem: async () => {},
 });
-
+const storedCart = localStorage.getItem("cart");
+const parseStoredCart = storedCart ? JSON.parse(storedCart) : [];
 // Create a CartProvider component
-export const CartProvider = ({ children }) => {
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   // Define the state for the cart
-  const [cartItems, setCartItems] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [LocalCart, setLocalCart] = useState(
-    JSON.parse(localStorage.getItem("cart")) || []
-  );
+  const [cartItems, setCartItems] = useState<CartItemsType[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [LocalCart] = useState(parseStoredCart);
   const { user } = useUser();
   // Function to update the cart
-  const addToCartItems = async (product) => {
+  const addToCartItems = async (product: ProductType) => {
     try {
       await addToCart(product, user);
 
@@ -58,7 +80,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeCartItem = async (product) => {
+  const removeCartItem = async (product: ProductType) => {
     try {
       const data = await removeFromCart(product, user);
       setCartItems(data);
@@ -66,7 +88,7 @@ export const CartProvider = ({ children }) => {
       throw error;
     }
   };
-  const clearProductFromCartItem = async (product) => {
+  const clearProductFromCartItem = async (product: ProductType) => {
     try {
       await clearItemFromCart(product, user);
       setCartItems((pre) => pre.filter((item) => item._id !== product._id));
@@ -82,16 +104,23 @@ export const CartProvider = ({ children }) => {
     const loadCart = async () => {
       try {
         if (user) {
-          const data = await getCartItems(user._id);
+          const data = await getCartItems(user);
 
           setCartItems(data);
         } else {
-          const storedCart = await getCartItems();
+          const storedCart = await getCartItems(null);
 
           setCartItems(storedCart);
         }
-      } catch (error) {
-        toast.error(error?.message || "Failed to load cart");
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(
+            error?.message ||
+              cartContextTranslate[lang].cartContext.loadCart.error
+          );
+        } else {
+          toast.error(cartContextTranslate[lang].errors.global);
+        }
       }
     };
     loadCart();
@@ -106,9 +135,18 @@ export const CartProvider = ({ children }) => {
       if (user && LocalCart.length > 0) {
         try {
           await mergeLocalCartWithDB();
-          toast.success("Cart merged successfully");
-        } catch (error) {
-          toast.error(error?.message || "Failed to merge cart");
+          toast.success(
+            cartContextTranslate[lang].cartContext.mergeLocalCart.success
+          );
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            toast.error(
+              error?.message ||
+                cartContextTranslate[lang].cartContext.mergeLocalCart.error
+            );
+          } else {
+            toast.error(cartContextTranslate[lang].errors.global);
+          }
         }
       }
     };

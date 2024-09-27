@@ -12,13 +12,13 @@ const httpsOptions = {
   key: fs.readFileSync(path.join(__dirname, "localhost-key.pem")),
   cert: fs.readFileSync(path.join(__dirname, "localhost.pem")),
 };
-
+const Port = 3002;
 app.prepare().then(() => {
   createServer(httpsOptions, (req, res) => {
     const parsedUrl = parse(req.url, true);
     handle(req, res, parsedUrl);
-  }).listen(3000, (err) => {
+  }).listen(Port, (err) => {
     if (err) throw err;
-    console.log("> Server started on https://localhost:3000");
+    console.log("> Server started on https://localhost:" + Port);
   });
 });

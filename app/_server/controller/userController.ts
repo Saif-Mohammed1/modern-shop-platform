@@ -1,49 +1,24 @@
 import AppError from "@/components/util/appError";
-import User from "../models/user.model";
+import User, { IUserSchema } from "../models/user.model";
 import { modifyFinalResponse } from "./authController";
-import { createUserTokens } from "./refreshTokenController";
+// import { createUserTokens } from "./refreshTokenController";
 import { ChangeEmail } from "@/components/util/email";
 import { sign, verify } from "jsonwebtoken";
-import { promisify } from "util";
-// import { destroyImage } from "@/components/util/cloudinary";
-// import { UTApi } from "uploadthing/server";
+// import { promisify } from "util";
+import type { NextRequest } from "next/server";
+import { userControllerTranslate } from "../_Translate/userControllerTranslate";
+import { lang } from "@/components/util/lang";
+import { Model } from "mongoose";
 
-// export const verifyEmail = async (req) => {
-//   try {
-//     const { verificationCode } = await req.json();
-//     ////console.log("verificationCode", verificationCode);
-//     if (!verificationCode) {
-//       throw new AppError("verificationCode must be required", 400);
-//     }
-//     const user = await User.findOne({
-//       verificationCode,
-//       verificationCodeExpires: { $gt: Date.now() }, // Ensures the code has not expired
-//     });
-
-//     if (!user) {
-//       //       // User not found
-//       throw new AppError("Invalid or expired verification code.", 400);
-//     }
-
-//     user.emailVerify = true;
-//     user.verificationCode = undefined;
-//     user.verificationCodeExpires = undefined;
-//     await user.save();
-//     return {
-//       message: "Your email has been successfully verified!",
-
-//       statusCode: 200,
-//     };
-//   } catch (error) {
-//     throw error//   }
-// };
-
-export const sendNewVerificationCode = async (req) => {
+export const sendNewVerificationCode = async (req: NextRequest) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user?._id);
 
     if (!user) {
-      throw new AppError("User not found.", 404);
+      throw new AppError(
+        userControllerTranslate[lang].errors.noUserFoundWithId,
+        404
+      );
     }
     if (
       user.verificationCodeBlockedUntil
@@ -54,7 +29,9 @@ export const sendNewVerificationCode = async (req) => {
         await user.save();
       } else {
         throw new AppError(
-          "Your verification attempts are currently blocked. Please wait for a while before attempting again.",
+          userControllerTranslate[
+            lang
+          ].errors.verificationCodeBlockedUntilMessage,
           400
         );
       }
@@ -66,7 +43,7 @@ export const sendNewVerificationCode = async (req) => {
       // await user.save({ validateBeforeSave: false });
       await user.save();
       throw new AppError(
-        "Maximum verification attempts exceeded. Please try again later",
+        userControllerTranslate[lang].errors.verificationAttemptsMessage,
         429
       );
     }
@@ -79,24 +56,34 @@ export const sendNewVerificationCode = async (req) => {
     await user.save();
 
     return {
-      message: "Verification code has been sent to your email!",
+      message:
+        userControllerTranslate[lang].controllers.sendNewVerificationCode
+          .success,
       statusCode: 200,
     };
   } catch (error) {
     throw error;
   }
 };
-export const verifyEmail = async (req) => {
+export const verifyEmail = async (req: NextRequest) => {
   try {
     const { verificationCode } = await req.json();
     if (!verificationCode) {
-      throw new AppError("verification code must be required", 400);
+      throw new AppError(
+        userControllerTranslate[
+          lang
+        ].controllers.verifyEmail.requiredVerificationCode,
+        400
+      );
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user?._id);
 
     if (!user) {
-      throw new AppError("User not found.", 404);
+      throw new AppError(
+        userControllerTranslate[lang].errors.noUserFoundWithId,
+        404
+      );
     }
     if (user.verificationCodeBlockedUntil) {
       if (user.verificationCodeBlockedUntil < new Date()) {
@@ -104,7 +91,9 @@ export const verifyEmail = async (req) => {
         await user.save();
       } else {
         throw new AppError(
-          "Your verification attempts are currently blocked. Please wait for a while before attempting again.",
+          userControllerTranslate[
+            lang
+          ].errors.verificationCodeBlockedUntilMessage,
           400
         );
       }
@@ -116,7 +105,7 @@ export const verifyEmail = async (req) => {
       // await user.save({ validateBeforeSave: false });
       await user.save();
       throw new AppError(
-        "Maximum verification attempts exceeded. Please request a new code.",
+        userControllerTranslate[lang].errors.verificationAttemptsMessage,
         429
       );
     }
@@ -128,7 +117,10 @@ export const verifyEmail = async (req) => {
     ) {
       user.verificationAttempts = (user.verificationAttempts || 0) + 1; // Increment attempts on failure
       await user.save();
-      throw new AppError("Invalid or expired verification code.", 400);
+      throw new AppError(
+        userControllerTranslate[lang].errors.invalidOrExpiredVerificationCode,
+        400
+      );
     }
 
     // Reset the fields on successful verification
@@ -142,14 +134,14 @@ export const verifyEmail = async (req) => {
     await user.save();
 
     return {
-      message: "Your email has been successfully verified!",
+      message: userControllerTranslate[lang].controllers.verifyEmail.success,
       statusCode: 200,
     };
   } catch (error) {
     throw error;
   }
 };
-export const createUserByAdmin = async (req) => {
+export const createUserByAdmin = async (req: NextRequest) => {
   let user;
   try {
     const { name, email, password, role, active } = await req?.json();
@@ -165,7 +157,10 @@ export const createUserByAdmin = async (req) => {
     // // }
 
     if (!role || !name || !email || !password) {
-      throw new AppError("Please fill all the fields", 400);
+      throw new AppError(
+        userControllerTranslate[lang].errors.requiredFields,
+        400
+      );
     }
 
     user = await User.create({
@@ -194,15 +189,23 @@ export const createUserByAdmin = async (req) => {
     throw error;
   }
 };
-export const editUserByAdmin = async (req, Model) => {
+export const editUserByAdmin = async (
+  req: NextRequest,
+  Model: Model<IUserSchema>
+) => {
   try {
-    let data = {};
+    let data: Partial<IUserSchema> = {};
     const { active, role } = await req.json();
     ////console.log("active", active);
     ////console.log("role", role);
 
     if (typeof active !== "boolean" && !role) {
-      throw new AppError("Please select at least one option.", 400);
+      throw new AppError(
+        userControllerTranslate[
+          lang
+        ].controllers.editUserByAdmin.requiredOneOption,
+        400
+      );
     }
     if (typeof active === "boolean") {
       data.active = active;
@@ -222,7 +225,10 @@ export const editUserByAdmin = async (req, Model) => {
       }
     );
     if (!doc) {
-      throw new AppError("No document found with that ID", 404);
+      throw new AppError(
+        userControllerTranslate[lang].errors.noDocumentFoundWithId,
+        404
+      );
     }
 
     return { data: doc, statusCode: 200 };
@@ -230,12 +236,18 @@ export const editUserByAdmin = async (req, Model) => {
     throw error;
   }
 };
-export const deleteUserByAdmin = async (req, Model) => {
+export const deleteUserByAdmin = async (
+  req: NextRequest,
+  Model: Model<IUserSchema>
+) => {
   try {
     const doc = await Model.findByIdAndDelete(req.id);
 
     if (!doc) {
-      throw new AppError("No document found with that ID", 404);
+      throw new AppError(
+        userControllerTranslate[lang].errors.noDocumentFoundWithId,
+        404
+      );
     }
 
     return {
@@ -246,10 +258,13 @@ export const deleteUserByAdmin = async (req, Model) => {
     throw error;
   }
 };
-export const deleteUser = async (req, Model) => {
+export const deleteUser = async (
+  req: NextRequest,
+  Model: Model<IUserSchema>
+) => {
   try {
     const doc = await Model.findByIdAndUpdate(
-      req.user._id,
+      req.user?._id,
       {
         active: false,
       },
@@ -260,7 +275,10 @@ export const deleteUser = async (req, Model) => {
     );
 
     if (!doc) {
-      throw new AppError("No document found with that ID", 404);
+      throw new AppError(
+        userControllerTranslate[lang].errors.noDocumentFoundWithId,
+        404
+      );
     }
 
     return { data: null, statusCode: 200 };
@@ -268,36 +286,39 @@ export const deleteUser = async (req, Model) => {
     throw error;
   }
 };
-export const deleteProductByUser = async (req, Model) => {
-  try {
-    const doc = await Model.findOne({
-      _id: req.id,
-      user: req.user._id,
-    }); //.select("+public_id");
+// export const deleteProductByUser = async (req: NextRequest, Model) => {
+//   try {
+//     const doc = await Model.findOne({
+//       _id: req.id,
+//       user: req.user?._id,
+//     }); //.select("+public_id");
 
-    if (!doc) {
-      throw new AppError("No document found with that ID", 404);
-    }
-    if (doc.public_id) {
-      const utapi = new UTApi();
-      for (const public_id of doc.public_id) {
-        await utapi.deleteFiles(public_id);
+//     if (!doc) {
+//       throw new AppError("No document found with that ID", 404);
+//     }
+//     if (doc.public_id) {
+//       const utapi = new UTApi();
+//       for (const public_id of doc.public_id) {
+//         await utapi.deleteFiles(public_id);
 
-        // for cloudainry
-        // await destroyImage(public_id);
-      }
-    }
-    await Model.findByIdAndDelete(req.id); // or Model.findByIdAndDelete(req.params.id) if you prefer
+//         // for cloudainry
+//         // await destroyImage(public_id);
+//       }
+//     }
+//     await Model.findByIdAndDelete(req.id); // or Model.findByIdAndDelete(req.params.id) if you prefer
 
-    return { data: null, statusCode: 200 };
-  } catch (error) {
-    throw error;
-  }
-};
-export const changeEmailRequest = async (req, res) => {
+//     return { data: null, statusCode: 200 };
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+export const changeEmailRequest = async (req: NextRequest) => {
   const { newEmail } = await req.json();
   if (!newEmail) {
-    throw new AppError("newEmail must be required", 400);
+    throw new AppError(
+      userControllerTranslate[lang].controllers.changeEmailRequest.newEmail,
+      400
+    );
   }
 
   // Validate newEmail
@@ -305,12 +326,17 @@ export const changeEmailRequest = async (req, res) => {
   try {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newEmail)) {
-      throw new AppError("Invalid email format for newEmail", 400);
+      throw new AppError(
+        userControllerTranslate[
+          lang
+        ].controllers.changeEmailRequest.invalidEmail,
+        400
+      );
     }
     // Generate a confirmation token
     const token = sign(
-      { userId: req.user._id, newEmail },
-      process.env.CHANGE_EMAIL_SECRET,
+      { userId: req.user?._id, newEmail },
+      process.env.CHANGE_EMAIL_SECRET as string,
       {
         expiresIn: "15m",
       }
@@ -321,7 +347,9 @@ export const changeEmailRequest = async (req, res) => {
     await ChangeEmail(req.user, token);
 
     return {
-      message: "Confirmation email sent to your current email address.",
+      message:
+        userControllerTranslate[lang].controllers.changeEmailRequest
+          .confirmationEmailSent,
       statusCode: 200,
     };
   } catch (error) {
@@ -329,24 +357,38 @@ export const changeEmailRequest = async (req, res) => {
   }
 };
 
-export const updateUserEmail = async (req) => {
+export const updateUserEmail = async (req: NextRequest) => {
   const token = new URLSearchParams(req.nextUrl.searchParams).get("token");
 
   try {
     if (!token) {
-      throw new AppError("Token must be required", 400);
+      throw new AppError(
+        userControllerTranslate[lang].controllers.updateUserEmail.requiredToken,
+        400
+      );
     }
 
-    // const user=await User.findById(req.user._id);
-    const decoded = await promisify(verify)(
+    // const user=await User.findById(req.user?._id);
+
+    // Use promisify, but cast result as the decoded token type
+    //not working with promisify
+    // const decoded = await promisify(verify)(
+    //   token,
+    //   process.env.CHANGE_EMAIL_SECRET as string
+    // ) as { userId: string; newEmail: string };
+
+    const decoded = verify(
       token,
-      process.env.CHANGE_EMAIL_SECRET
-    );
+      process.env.CHANGE_EMAIL_SECRET as string
+    ) as { userId: string; newEmail: string };
 
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      throw new AppError("No user found with that ID", 404);
+      throw new AppError(
+        userControllerTranslate[lang].errors.noUserFoundWithId,
+        404
+      );
     }
 
     user.email = decoded.newEmail;
@@ -355,16 +397,35 @@ export const updateUserEmail = async (req) => {
 
     return {
       message:
-        "Email has been successfully updated please verify your new email ",
+        userControllerTranslate[lang].controllers.updateUserEmail.message,
       statusCode: 200,
     };
-  } catch (error) {
-    if (error.name === "TokenExpiredError") {
-      throw new AppError("Token has expired", 400);
-    } else if (error.name === "JsonWebTokenError") {
-      throw new AppError("Invalid token", 400);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.name === "TokenExpiredError") {
+        throw new AppError(
+          userControllerTranslate[
+            lang
+          ].controllers.updateUserEmail.errors.TokenExpiredError,
+          400
+        );
+      } else if (error.name === "JsonWebTokenError") {
+        throw new AppError(
+          userControllerTranslate[
+            lang
+          ].controllers.updateUserEmail.errors.JsonWebTokenError,
+          400
+        );
+      }
+      throw new AppError(
+        userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
+        500
+      );
     }
-    throw new AppError("An error occurred while processing your request", 500);
+    throw new AppError(
+      userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
+      500
+    );
   }
 };
 
@@ -377,7 +438,7 @@ export const updateUserEmail = async (req) => {
 //     if (!public_id) {
 //       throw new AppError("public_id must be required", 400);
 //     }
-//     const user = await Model.findById(req.user._id); //.select("+public_id");
+//     const user = await Model.findById(req.user?._id); //.select("+public_id");
 
 //     if (!user) {
 //       throw new AppError("No user found with that ID", 404);

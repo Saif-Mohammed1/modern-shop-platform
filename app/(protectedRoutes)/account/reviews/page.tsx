@@ -1,23 +1,25 @@
 export const dynamic = "force-dynamic";
 import ReviewHistory from "@/components/customer/reviewHistory";
 import api from "@/components/util/axios.api";
-import AppError from "@/components/util/appError";
+// import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
+import { accountReviewsTranslate } from "@/app/_translate/(protectedRoute)/account/reviewsTranslate";
+import { lang } from "@/components/util/lang";
 export const metadata = {
-  title: "Review History",
-  description: "Review History for the customer",
-  keywords: "customer, review history, customer review history",
+  title: accountReviewsTranslate[lang].metadata.title,
+  description: accountReviewsTranslate[lang].metadata.description,
+  keywords: accountReviewsTranslate[lang].metadata.keywords,
 };
 const page = async () => {
   try {
     const { data } = await api.get("/customer/reviews", {
-      headers: headers(),
+      headers: Object.fromEntries(headers().entries()), //convert headers to object
     });
     const reviews = data.data;
     return <ReviewHistory reviewsList={reviews} />;
-  } catch (error) {
-    return <ErrorHandler message={error.message} />;
+  } catch (error: any) {
+    return <ErrorHandler message={error?.message} />;
 
     // throw new AppError(error.message, error.status);
   }

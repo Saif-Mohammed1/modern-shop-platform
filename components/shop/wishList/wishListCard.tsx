@@ -1,24 +1,41 @@
 // components/ProductCard.js
+import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { accountWishlistTranslate } from "@/app/_translate/(protectedRoute)/account/wishlistTranslate";
 import { useWishlist } from "@/components/context/whishList.context";
+import { lang } from "@/components/util/lang";
 import imageSrc from "@/components/util/productImageHandler";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 
-const WishListCard = ({ product }) => {
+const WishListCard = ({ product }: { product: ProductType }) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   const handleWishlistClick = async () => {
     try {
       if (isInWishlist(product._id)) {
         await removeFromWishlist(product);
-        toast.success("Removed from wishlist");
+        toast.success(
+          accountWishlistTranslate[lang].WishListCard.functions
+            .handleWishlistClick.removed
+        );
       } else {
         await addToWishlist(product);
-        toast.success("Added to wishlist");
+        toast.success(
+          accountWishlistTranslate[lang].WishListCard.functions
+            .handleWishlistClick.success
+        );
       }
-    } catch (error) {
-      toast.error(error?.message || "Failed to add to wishlist");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error.message ||
+            accountWishlistTranslate[lang].WishListCard.functions
+              .handleWishlistClick.error
+        );
+      } else {
+        toast.error(accountWishlistTranslate[lang].errors.global);
+      }
     }
   };
 
@@ -44,7 +61,11 @@ const WishListCard = ({ product }) => {
         ) : (
           <AiOutlineHeart className="mr-2" />
         )}
-        {isInWishlist(product._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+        {isInWishlist(product._id)
+          ? accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
+              .remove
+          : accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
+              .add}
       </button>
     </div>
   );

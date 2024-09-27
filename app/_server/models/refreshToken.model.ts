@@ -1,5 +1,15 @@
 import { Schema, model, models } from "mongoose";
 import User from "./user.model";
+// import { UserAuthType } from "../controller/authController";
+// interface IRefreshToken extends Document {
+//   token: string;
+//   user: UserAuthType;
+//   deviceInfo: string;
+//   ipAddress: string;
+//   expiresAt: Date;
+//   createdAt: Date;
+//   lastActiveAt: Date;
+// }
 const refreshTokenSchema = new Schema({
   token: { type: String, required: true },
   user: {

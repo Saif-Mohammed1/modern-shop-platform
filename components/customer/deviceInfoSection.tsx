@@ -13,11 +13,23 @@ import {
 } from "react-icons/fa"; // OS/Browser icons
 import moment from "moment";
 import { useEffect, useState } from "react";
-import api from "../util/axios.api";
+import api from "@/components/util/axios.api";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import {
+  accountSettingsTranslate,
+  DeviceInfoType,
+} from "@/app/_translate/(protectedRoute)/account/settingsTranslate";
+import { lang } from "@/components/util/lang";
+moment.locale(lang ?? "uk");
 
-const DeviceInfoSectionV2 = ({ devices, deleteDevice }) => {
+const DeviceInfoSectionV2 = ({
+  devices,
+  deleteDevice,
+}: {
+  devices: DeviceInfoType;
+  deleteDevice: () => void;
+}) => {
   const [isActive, setIsActive] = useState(false);
   const router = useRouter();
   useEffect(() => {
@@ -30,14 +42,25 @@ const DeviceInfoSectionV2 = ({ devices, deleteDevice }) => {
   const handleDelete = async () => {
     let toastLoading;
     try {
-      toastLoading = toast.loading("Deleting device...");
+      toastLoading = toast.loading(
+        accountSettingsTranslate[lang].devices.functions.handleDelete.loading
+      );
 
       await api.delete(`/customer/device-info/${devices._id}`);
       deleteDevice();
-      toast.success("Device deleted successfully");
+      toast.success(
+        accountSettingsTranslate[lang].devices.functions.handleDelete.success
+      );
       router.refresh();
-    } catch (error) {
-      toast.error(error?.message || error || "An error occurred");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error?.message ||
+            accountSettingsTranslate[lang].devices.functions.handleDelete.error
+        );
+      } else {
+        toast.error(accountSettingsTranslate[lang].errors.global);
+      }
     } finally {
       toast.dismiss(toastLoading);
     }
@@ -72,11 +95,13 @@ const DeviceInfoSectionV2 = ({ devices, deleteDevice }) => {
           <div className="flex items-center">
             <FaNetworkWired className="text-xl text-gray-500" />
             <p className="ml-2 text-sm font-semibold">
-              IP: {devices.ipAddress}
+              {accountSettingsTranslate[lang].devices.details.ip}:{" "}
+              {devices.ipAddress}
             </p>
           </div>
           <p className="text-sm text-gray-500">
-            Last Active: {moment(devices.lastActiveAt).fromNow()}
+            {accountSettingsTranslate[lang].devices.details.lastActive}:{" "}
+            {moment(devices.lastActiveAt).fromNow()}
           </p>
         </div>
       </div>

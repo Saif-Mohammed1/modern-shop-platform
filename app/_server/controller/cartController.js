@@ -210,6 +210,7 @@ export const addToCartModel = async (req, Model) => {
   },
   "__v": 0
 }*/
+
     return {
       data: {
         // Assuming the product has a name field
@@ -221,7 +222,7 @@ export const addToCartModel = async (req, Model) => {
         discountExpire: existingProduct.discountExpire,
         // Assuming the product has an image field
         images: existingProduct.images,
-        public_id: existingProduct.public_id,
+
         description: existingProduct.description,
 
         stock: existingProduct.stock,
@@ -231,6 +232,7 @@ export const addToCartModel = async (req, Model) => {
         createdAt: existingProduct.createdAt,
         quantity: doc.quantity,
         _id: existingProduct._id,
+        // user: req.user._id,
       },
       statusCode,
     };

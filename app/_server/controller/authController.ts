@@ -1,19 +1,36 @@
 import User from "../models/user.model";
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";
-import { promisify } from "util";
+// import { promisify } from "util";
 
 import AppError from "@/components/util/appError";
 import { Email } from "@/components/util/email";
 import { createUserTokens, detectUnusualLogin } from "./refreshTokenController";
+import { NextRequest } from "next/server";
+import { authControllerTranslate } from "../_Translate/authControllerTranslate";
+import { lang } from "@/components/util/lang";
+export type UserAuthType = {
+  _id: string;
+  name: string;
+  email: string;
+  emailVerify: boolean;
+  role: string;
+  createdAt: Date;
+};
+type UserTokenType = {
+  user: UserAuthType;
+  accessToken: string | null;
+  statusCode: number;
+  message?: string;
+};
 
 export const modifyFinalResponse = (
-  user,
-  accessToken,
-  statusCode,
-  message = false
-) => {
-  let userData = {};
+  user: UserAuthType,
+  accessToken: string | null,
+  statusCode: number,
+  message?: string
+): UserTokenType => {
+  let userData = {} as { user: UserAuthType };
   userData.user = {
     _id: user._id,
     name: user.name,
@@ -26,31 +43,45 @@ export const modifyFinalResponse = (
   };
   return {
     message:
-      (message &&
-        "User created successfully. Check your email for verification.") ||
-      undefined,
+      message &&
+      authControllerTranslate[lang].functions.modifyFinalResponse.message,
     user: userData.user,
     accessToken,
     statusCode,
   };
 };
-export const isAuth = async (req) => {
+export const isAuth = async (req: NextRequest) => {
   const authHeader =
-    req?.headers?.authorization || req?.headers?.get("authorization");
-  // headers()?.get("authorization");
+    // req?.headers?.authorization ||
+    req?.headers?.get("authorization");
   const token = authHeader?.startsWith("Bearer") && authHeader.split(" ")[1];
   if (!token) {
     throw new AppError(
-      "You are not logged in! Please log in to get access.",
+      authControllerTranslate[lang].functions.isAuth.noExistingToken,
       401
     );
   }
 
   try {
-    const decoded = await promisify(verify)(
+    //not working with promisify
+    // const decoded = await promisify(verify)(
+    //   token,
+    //   process.env.CHANGE_EMAIL_SECRET as string
+    // ) as { userId: string; newEmail: string };
+
+    const decoded = verify(
       token,
-      process?.env?.JWT_ACCESS_TOKEN_SECRET
-    );
+      process.env.CHANGE_EMAIL_SECRET as string
+    ) as {
+      userId: string;
+
+      iat: number;
+    };
+
+    // const decoded = await promisify(verify)(
+    //   token,
+    //   process?.env?.JWT_ACCESS_TOKEN_SECRET
+    // );
 
     const currentUser = await User.findOne({
       _id: decoded?.userId,
@@ -58,7 +89,7 @@ export const isAuth = async (req) => {
     });
     if (!currentUser) {
       throw new AppError(
-        "The user belonging to this token no longer exists.",
+        authControllerTranslate[lang].functions.isAuth.noUserBelongingToken,
         401
       );
     }
@@ -67,12 +98,15 @@ export const isAuth = async (req) => {
       currentUser?.updatedAt &&
       currentUser?.updatedAt?.getTime() !== decoded?.iat
     ) {
-      throw new AppError("Your session is invalid .", 401);
+      throw new AppError(
+        authControllerTranslate[lang].functions.isAuth.invalidSession,
+        401
+      );
     }
 
     if (currentUser.changedPasswordAfter(decoded?.iat)) {
       throw new AppError(
-        "User recently changed password! Please log in again.",
+        authControllerTranslate[lang].functions.isAuth.recentlyChangedPassword,
         401
       );
     }
@@ -82,26 +116,45 @@ export const isAuth = async (req) => {
     throw error;
   }
 };
-export const restrictTo = async (req, ...roles) => {
+export const restrictTo = async (req: NextRequest, ...roles: string[]) => {
   // roles ['admin', 'lead-guide']?. role='user'
-  if (!roles?.includes(req?.user?.role)) {
+  // Ensure `req.user?.role` is defined and a string before checking roles
+  const userRole = req.user?.role;
+
+  if (!userRole || !roles.includes(userRole)) {
     throw new AppError(
-      "You do not have permission to perform this action",
+      authControllerTranslate[lang].functions.restrictTo.message,
       403
     );
   }
   return;
 };
-export const register = async (req) => {
+export const register = async (req: NextRequest) => {
   let user;
   try {
     const { name, email, password, confirmPassword } = await req?.json();
 
+    if (!name || !email || !password) {
+      throw new AppError(
+        authControllerTranslate[lang].errors.requiredFields,
+        400
+      );
+    }
     if (!confirmPassword) {
-      throw new AppError("confirmPassword must be required", 400);
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.register.confirmPasswordRequired,
+        400
+      );
     }
     if (password !== confirmPassword) {
-      throw new AppError("password and confirmPassword don't match", 400);
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.register.passwordAndConfirmPasswordDontMatch,
+        400
+      );
     }
 
     user = await User.create({
@@ -115,7 +168,12 @@ export const register = async (req) => {
     // Send the verification email
     await user.sendVerificationCode();
     const accessToken = await createUserTokens(user._id, req);
-    return modifyFinalResponse(user, accessToken, 201, true);
+    return modifyFinalResponse(
+      user,
+      accessToken,
+      201,
+      "User created successfully"
+    );
   } catch (error) {
     if (user) {
       await User.findByIdAndDelete(user._id);
@@ -123,7 +181,7 @@ export const register = async (req) => {
     throw error;
   }
 };
-export const logIn = async (req) => {
+export const logIn = async (req: NextRequest) => {
   try {
     const { email, password } = await req?.json();
     const user = await User.findOne({
@@ -131,11 +189,15 @@ export const logIn = async (req) => {
     }).select("+password");
 
     if (!user) {
-      throw new AppError("Email or Password are incorrect", 400);
+      // User not found or password incorrect you throw this error to avoid user enumeration
+      throw new AppError(
+        authControllerTranslate[lang].functions.logIn.invalidEmailOrPassword,
+        400
+      );
     }
     if (!user?.active) {
       throw new AppError(
-        "This user is no longer active please contact support",
+        authControllerTranslate[lang].functions.logIn.userNoLongerActive,
         401
       );
     }
@@ -146,7 +208,9 @@ export const logIn = async (req) => {
         await user.save();
       } else {
         throw new AppError(
-          "Your logIn attempts are currently blocked. Please wait for an hour before attempting again.",
+          authControllerTranslate[
+            lang
+          ].functions.logIn.logInAttemptsBlockedMessage,
           400
         );
       }
@@ -166,11 +230,16 @@ export const logIn = async (req) => {
         // await user.save({ validateBeforeSave: false });
         await user.save();
         throw new AppError(
-          "Too many unsuccessful password attempts. Please try again later.",
+          authControllerTranslate[
+            lang
+          ].functions.logIn.tooManyUnsuccessfulPasswordAttemptsMessage,
           400
         );
       }
-      throw new AppError("Email or Password are incorrect", 400);
+      throw new AppError(
+        authControllerTranslate[lang].functions.logIn.invalidEmailOrPassword,
+        400
+      );
     }
     // }
     // Reset counters on successful login
@@ -178,7 +247,8 @@ export const logIn = async (req) => {
     user.passwordLoginBlockedUntil = undefined;
     // await user.save({ validateBeforeSave: false });
     await user.save();
-    await detectUnusualLogin(user, req);
+    req.user = user;
+    await detectUnusualLogin(req);
 
     const accessToken = await createUserTokens(user._id, req);
     return modifyFinalResponse(user, accessToken, 200);
@@ -187,7 +257,7 @@ export const logIn = async (req) => {
   }
 };
 
-export const logout = async (req) => {
+export const logout = async (req: NextRequest) => {
   cookies().set("refreshAccessToken", "loggedOut", {
     expires: new Date(Date.now() + 10 * 1000), // 10 sec
     httpOnly: true,
@@ -195,13 +265,16 @@ export const logout = async (req) => {
   });
   return { data: [], statusCode: 200 };
 };
-export const forgetPassword = async (req) => {
+export const forgetPassword = async (req: NextRequest) => {
   let user;
   try {
     const { email } = await req?.json();
 
     if (!email) {
-      throw new AppError("Email is required", 400);
+      throw new AppError(
+        authControllerTranslate[lang].functions.forgetPassword.emailRequired,
+        400
+      );
     }
 
     user = await User.findOne({
@@ -210,7 +283,13 @@ export const forgetPassword = async (req) => {
 
     if (!user) {
       // User not found
-      throw new AppError("Email does not exist", 400);
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.forgetPassword.emailDoesNotExist,
+
+        400
+      );
     }
     // Check if the user is currently blocked
 
@@ -221,7 +300,9 @@ export const forgetPassword = async (req) => {
         await user.save();
       } else {
         throw new AppError(
-          "Your Forget Password attempts are currently blocked. Please wait for an hour before attempting again.",
+          authControllerTranslate[
+            lang
+          ].functions.forgetPassword.forgetPasswordAttemptsBlockedMessage,
           400
         );
       }
@@ -239,7 +320,9 @@ export const forgetPassword = async (req) => {
       // await user.save({ validateBeforeSave: false });
       await user.save();
       throw new AppError(
-        "Too many unsuccessful password reset attempts. Please try again later.",
+        authControllerTranslate[
+          lang
+        ].functions.forgetPassword.tooManyUnsuccessfulForgetPasswordAttemptsMessage,
         400
       );
     }
@@ -250,7 +333,8 @@ export const forgetPassword = async (req) => {
     await user.save();
     await Email(user, createToken);
     return {
-      message: "Token sent to email!",
+      message:
+        authControllerTranslate[lang].functions.forgetPassword.tokenSentToEmail,
       statusCode: 200,
     };
     // Continue with password reset logic...
@@ -258,13 +342,17 @@ export const forgetPassword = async (req) => {
     throw error;
   }
 };
-export const validateToken = async (req) => {
+export const validateToken = async (req: NextRequest) => {
   try {
     const { email, token } = await req?.json();
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
-      throw new AppError("User doesn't exist", 404);
+      throw new AppError(
+        authControllerTranslate[lang].errors.notFoundUser,
+
+        404
+      );
     }
 
     const isBlocked =
@@ -272,7 +360,9 @@ export const validateToken = async (req) => {
       user.passwordResetBlockedUntil > new Date();
     if (isBlocked) {
       throw new AppError(
-        "Your reset password attempts are currently blocked. Please wait for an hour before trying again.",
+        authControllerTranslate[
+          lang
+        ].functions.validateToken.restPasswordBlockedUntilMessage,
         400
       );
     }
@@ -288,12 +378,19 @@ export const validateToken = async (req) => {
         user.passwordResetAttempts = 0;
         await user.save();
         throw new AppError(
-          "Too many unsuccessful password reset attempts. Blocked for an hour.",
+          authControllerTranslate[
+            lang
+          ].functions.validateToken.restPasswordAttemptsMessage,
           400
         );
       }
       await user.save();
-      throw new AppError("Invalid or expired token.", 400);
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.validateToken.invalidOrExpiredToken,
+        400
+      );
     }
 
     // Clear blocked state if it was previously set but expired
@@ -302,7 +399,11 @@ export const validateToken = async (req) => {
       await user.save();
     }
 
-    return { message: "Success", statusCode: 200 };
+    return {
+      message:
+        authControllerTranslate[lang].functions.validateToken.succussMessage,
+      statusCode: 200,
+    };
   } catch (error) {
     throw error;
   }
@@ -363,20 +464,45 @@ export const validateToken = async (req) => {
 //   } catch (error) {
 //     throw error//   }
 // };
-export const restPassword = async (req) => {
+export const restPassword = async (req: NextRequest) => {
   try {
     const { newPassword, confirmPassword, token } = await req.json();
 
-    if (!newPassword || !confirmPassword) {
-      throw new AppError("password OR confirmPassword cannot be empty", 400);
+    // if (!newPassword || !confirmPassword) {
+    //   throw new AppError("password OR confirmPassword cannot be empty", 400);
+    // }
+    if (!newPassword) {
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.restPassword.newPasswordRequired,
+        400
+      );
+    }
+    if (!confirmPassword) {
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.restPassword.confirmPasswordRequired,
+        400
+      );
     }
 
     if (!token) {
-      throw new AppError("token is required", 400);
+      throw new AppError(
+        authControllerTranslate[lang].functions.restPassword.tokenRequired,
+        400
+      );
     }
     if (newPassword !== confirmPassword) {
-      throw new AppError("password and confirmPassword don't match", 400);
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.restPassword.passwordAndConfirmPasswordDontMatch,
+        400
+      );
     }
+
     const user = await User.findOne({
       passwordResetToken: token,
       passwordResetExpires: { $gt: Date.now() },
@@ -384,7 +510,13 @@ export const restPassword = async (req) => {
 
     if (!user) {
       //       // User not found
-      throw new AppError("Invalid or expired token.", 400);
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.restPassword.invalidOrExpiredToken,
+
+        400
+      );
     }
 
     // 3) If so, update password
@@ -400,28 +532,58 @@ export const restPassword = async (req) => {
     throw error;
   }
 };
-export const updatePassword = async (req) => {
+export const updatePassword = async (req: NextRequest) => {
   try {
     const { password, confirmPassword, newPassword } = await req.json();
 
-    if (newPassword !== confirmPassword) {
-      throw new AppError("password and confirmPassword don't match", 400);
-    }
-    if (!password || !newPassword || !confirmPassword) {
+    if (!password) {
       throw new AppError(
-        "password, newPassword, confirmPassword cannot be empty",
+        authControllerTranslate[lang].functions.updatePassword.passwordRequired,
         400
       );
     }
-    const user = await User.findById(req.user._id).select("+password");
+    if (!newPassword) {
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.restPassword.newPasswordRequired,
+        400
+      );
+    }
+    if (!confirmPassword) {
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.restPassword.confirmPasswordRequired,
+        400
+      );
+    }
+    if (newPassword !== confirmPassword) {
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.updatePassword.passwordAndConfirmPasswordDontMatch,
+        400
+      );
+    }
+    const user = await User.findById(req?.user?._id).select("+password");
     if (!user) {
-      //       // User not found
-      throw new AppError("User does not exist", 400);
+      // User not found
+      throw new AppError(
+        authControllerTranslate[lang].errors.notFoundUser,
+        400
+      );
     }
 
     const CheckPassword = await user.CheckPassword(password, user.password);
     if (!CheckPassword) {
-      throw new AppError(" old password isn't correct", 400);
+      throw new AppError(
+        authControllerTranslate[
+          lang
+        ].functions.updatePassword.oldPasswordIsntCorrect,
+
+        400
+      );
     }
 
     // 3) If so, update password

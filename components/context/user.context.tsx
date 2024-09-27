@@ -1,23 +1,28 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
-import tokenManager from "../util/TokenManager";
-
+import tokenManager from "@/components/util/TokenManager";
+import { UserType } from "@/@types/next-auth";
+type User = UserType | null;
+type UserContextType = {
+  user: User;
+  updateUser: (newUser: User) => void;
+};
 // Create the user context
-export const UserContext = createContext({
+export const UserContext = createContext<UserContextType>({
   user: null,
   updateUser: () => {},
 });
 
 // Create a UserProvider component
-export const UserProvider = ({ children }) => {
+export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   // Define the state for the user
   const { data: session, status } = useSession();
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User>(null);
 
   // Function to update the user
-  const updateUser = (newUser) => {
+  const updateUser = (newUser: User) => {
     setUser(newUser);
   };
 

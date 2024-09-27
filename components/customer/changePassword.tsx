@@ -6,8 +6,13 @@ import { signOut } from "next-auth/react";
 import DeviceInfoSection from "./deviceInfoSection";
 import api from "../util/axios.api";
 import { deleteCookies } from "../util/cookies";
+import {
+  accountSettingsTranslate,
+  DeviceInfoType,
+} from "@/app/_translate/(protectedRoute)/account/settingsTranslate";
+import { lang } from "../util/lang";
 
-const ChangePasswordV2 = ({ devices }) => {
+const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
   const [devicesList, setDevicesList] = useState(devices || []);
   const [isEditing, setIsEditing] = useState(false);
   const [password, setPassword] = useState("");
@@ -17,7 +22,7 @@ const ChangePasswordV2 = ({ devices }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false); // For delete confirmation
-  const deleteDevice = (deviceId) => {
+  const deleteDevice = (deviceId: string) => {
     setDevicesList((prevDevices) =>
       prevDevices.filter((device) => device._id !== deviceId)
     );
@@ -29,7 +34,9 @@ const ChangePasswordV2 = ({ devices }) => {
   const handleDeleteAccount = async () => {
     let toastLoading;
     try {
-      toastLoading = toast.loading("Deleting account...");
+      toastLoading = toast.loading(
+        accountSettingsTranslate[lang].functions.handleDeleteAccount.loading
+      );
 
       // API call to delete the user account
       await api.delete("/customer/");
@@ -39,9 +46,18 @@ const ChangePasswordV2 = ({ devices }) => {
 
       await api.post("/auth/logout");
 
-      toast.success("Account deleted successfully!");
-    } catch (error) {
-      toast.error(error?.message || error || "Failed to delete account!");
+      toast.success(
+        accountSettingsTranslate[lang].functions.handleDeleteAccount.success
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error.message ||
+            accountSettingsTranslate[lang].functions.handleDeleteAccount.error
+        );
+      } else {
+        toast.error(accountSettingsTranslate[lang].errors.global);
+      }
     } finally {
       toast.dismiss(toastLoading);
     }
@@ -49,15 +65,23 @@ const ChangePasswordV2 = ({ devices }) => {
   const handlePasswordUpdate = async () => {
     let loadingToast;
     if (!password || !newPassword || !confirmPassword) {
-      toast.error("Please fill all the fields");
+      toast.error(
+        accountSettingsTranslate[lang].functions.handlePasswordUpdate
+          .requiredFields
+      );
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("New Password and Confirm Password are not the same");
+      toast.error(
+        accountSettingsTranslate[lang].functions.handlePasswordUpdate
+          .passwordMismatch
+      );
       return;
     }
     try {
-      toast.loading("Updating Password...");
+      toast.loading(
+        accountSettingsTranslate[lang].functions.handlePasswordUpdate.loading
+      );
 
       await api.patch("/customer/update-password", {
         password,
@@ -66,10 +90,17 @@ const ChangePasswordV2 = ({ devices }) => {
       });
 
       toast.success(
-        "Password Updated Successfully!,We recommend you to Log Out of all devices and login again"
+        accountSettingsTranslate[lang].functions.handlePasswordUpdate.success
       );
-    } catch (error) {
-      toast.error(error?.message || error || "Failed to update password!");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error.message ||
+            accountSettingsTranslate[lang].functions.handlePasswordUpdate.error
+        );
+      } else {
+        toast.error(accountSettingsTranslate[lang].errors.global);
+      }
     } finally {
       toast.dismiss(loadingToast);
 
@@ -81,17 +112,26 @@ const ChangePasswordV2 = ({ devices }) => {
   const handleSignoutAll = async () => {
     let loadingToast;
     try {
-      loadingToast = toast.loading("Signing out of all devices...");
+      loadingToast = toast.loading(
+        accountSettingsTranslate[lang].functions.handleSignoutAll.loading
+      );
       await api.delete("/auth/refresh-token");
       await signOut();
       deleteCookies("refreshAccessToken");
 
-      toast.success("Signed out of all devices successfully!");
-      setDevicesList([]);
-    } catch (error) {
-      toast.error(
-        error?.message || error || "Failed to sign out of all devices!"
+      toast.success(
+        accountSettingsTranslate[lang].functions.handleSignoutAll.success
       );
+      setDevicesList([]);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error.message ||
+            accountSettingsTranslate[lang].functions.handleSignoutAll.error
+        );
+      } else {
+        toast.error(accountSettingsTranslate[lang].errors.global);
+      }
     } finally {
       toast.dismiss(loadingToast);
     }
@@ -101,12 +141,14 @@ const ChangePasswordV2 = ({ devices }) => {
   }, [devices]);
   return (
     <div className="w-full max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg min-h-screen overflow-hidden">
-      <h1 className="text-2xl font-bold mb-6">Change Password</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {accountSettingsTranslate[lang].title}
+      </h1>
 
       {/* Password Field */}
       <div className="mb-6">
         <label className="block text-gray-700 font-medium mb-2">
-          Password:
+          {accountSettingsTranslate[lang].form.password.label}:
         </label>
         <div className="flex items-center justify-between">
           <span>********</span>
@@ -114,7 +156,9 @@ const ChangePasswordV2 = ({ devices }) => {
             onClick={handleEditClick}
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
-            {isEditing ? "Cancel" : "Change"}
+            {isEditing
+              ? accountSettingsTranslate[lang].button.cancel
+              : accountSettingsTranslate[lang].button.change}
           </button>
         </div>
         {isEditing && (
@@ -123,7 +167,9 @@ const ChangePasswordV2 = ({ devices }) => {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Enter Your Old Password"
+                placeholder={
+                  accountSettingsTranslate[lang].form.oldPassword.placeholder
+                }
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="border rounded px-3 py-2 w-full mt-1"
@@ -139,7 +185,9 @@ const ChangePasswordV2 = ({ devices }) => {
               <input
                 type={showNewPassword ? "text" : "password"}
                 name="NewPassword"
-                placeholder="Enter Your New Password"
+                placeholder={
+                  accountSettingsTranslate[lang].form.newPassword.placeholder
+                }
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="border rounded px-3 py-2 w-full mt-1"
@@ -155,7 +203,10 @@ const ChangePasswordV2 = ({ devices }) => {
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
-                placeholder="Enter Your Confirm Password"
+                placeholder={
+                  accountSettingsTranslate[lang].form.confirmPassword
+                    .placeholder
+                }
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="border rounded px-3 py-2 w-full mt-1"
@@ -171,7 +222,7 @@ const ChangePasswordV2 = ({ devices }) => {
               onClick={handlePasswordUpdate}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
-              Update
+              {accountSettingsTranslate[lang].button.update}
             </button>
           </div>
         )}
@@ -182,7 +233,7 @@ const ChangePasswordV2 = ({ devices }) => {
         onClick={() => setShowDeleteModal(true)}
         className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
       >
-        Delete Account
+        {accountSettingsTranslate[lang].button.deleteAccount}
       </button>
 
       {/* Delete Account Confirmation Modal */}
@@ -190,21 +241,23 @@ const ChangePasswordV2 = ({ devices }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
             <h2 className="text-xl font-bold text-red-600 mb-4">
-              Are you sure?
+              {accountSettingsTranslate[lang].showDeleteModal.title}
             </h2>
-            <p className="text-gray-700 mb-6">This action cannot be undone.</p>
+            <p className="text-gray-700 mb-6">
+              {accountSettingsTranslate[lang].showDeleteModal.description}
+            </p>
             <div className="flex justify-center space-x-4">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
               >
-                Cancel
+                {accountSettingsTranslate[lang].showDeleteModal.cancel}
               </button>
               <button
                 onClick={handleDeleteAccount}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               >
-                Yes, Delete
+                {accountSettingsTranslate[lang].showDeleteModal.delete}
               </button>
             </div>
           </div>
@@ -213,7 +266,9 @@ const ChangePasswordV2 = ({ devices }) => {
 
       {/* Devices Section */}
       <div className="space-y-4 mt-4 ">
-        <h1 className="text-3xl font-bold  text-gray-800 mb-6">My Devices</h1>{" "}
+        <h1 className="text-3xl font-bold  text-gray-800 mb-6">
+          {accountSettingsTranslate[lang].devices.title}
+        </h1>{" "}
         <div className="max-h-[50vh] md:max-h-[70vh] overflow-y-auto">
           {devicesList.map((device) => (
             <DeviceInfoSection
@@ -227,11 +282,11 @@ const ChangePasswordV2 = ({ devices }) => {
           onClick={handleSignoutAll}
           className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
         >
-          Sign out of all devices
+          {accountSettingsTranslate[lang].devices.button.signoutAll}
         </button>
       </div>
     </div>
   );
 };
 
-export default ChangePasswordV2;
+export default ChangePassword;
