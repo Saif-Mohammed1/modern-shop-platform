@@ -1,4 +1,4 @@
-import { Document, Schema, model, models } from "mongoose";
+import { Document, Model, Schema, model, models } from "mongoose";
 import crypto from "crypto"; // Add import for the crypto module
 import { sendVerificationCode } from "@/components/util/email";
 import bcrypt from "bcryptjs";
@@ -18,9 +18,10 @@ export interface IUserInput {
   email: string;
   password: string;
   passwordConfirm: string | undefined;
-  emailVerify?: boolean;
+  emailVerify: boolean;
 }
 export interface IUserSchema extends IUserInput, Document {
+  _id: Schema.Types.ObjectId;
   role: UserRoleType;
   createdAt: Date;
   passwordChangedAt?: Date;
@@ -282,6 +283,7 @@ UserSchema.methods.sendVerificationCode = async function (): Promise<void> {
   // Send the verification email using the `sendVerificationCode` utility
   await sendVerificationCode(this, this.verificationCode); // Pass the correct types
 };
-const User = models.User || model<IUserSchema>("User", UserSchema);
+const User: Model<IUserSchema> =
+  models.User || model<IUserSchema>("User", UserSchema);
 
 export default User;

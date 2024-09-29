@@ -1,0 +1,51 @@
+import { Document, Model, Query, Schema, model, models } from "mongoose";
+import User, { IUserSchema } from "./user.model";
+import Product, { IProductSchema } from "./product.model";
+export interface IFavoriteSchema extends Document {
+  user: IUserSchema["_id"];
+  product: IProductSchema["_id"];
+  // favorite: boolean;
+}
+const FavoriteSchema = new Schema<IFavoriteSchema>({
+  user: {
+    type: Schema.Types.ObjectId,
+
+    ref: "User",
+    required: [true, "Product must belong to a user."],
+  },
+  product: {
+    type: Schema.Types.ObjectId,
+
+    ref: "Product",
+    required: [true, "Product must belong to a product."],
+  },
+  // favorite: {
+  //   type: Boolean,
+  //   default: true,
+  // },
+});
+FavoriteSchema.pre<Query<any, IFavoriteSchema>>(/^find/, function (next) {
+  this.populate({
+    path: "product",
+    select: "name price",
+  }).populate({
+    path: "user",
+    select: "name email",
+  });
+  next();
+});
+FavoriteSchema.post(/^find/, function (docs, next) {
+  // Ensure `docs` is an array (it should be for `find`)
+  if (Array.isArray(docs)) {
+    // Filter out documents where `product` is null
+    const filteredDocs = docs.filter((doc) => doc.product !== null);
+    // You cannot just replace `docs` with `filteredDocs`, as `docs` is what the caller receives
+    // You would need to mutate `docs` directly if you need to change the actual array being passed back
+    docs.splice(0, docs.length, ...filteredDocs);
+  }
+  next();
+});
+const Favorite: Model<IFavoriteSchema> =
+  models.Favorite || model<IFavoriteSchema>("Favorite", FavoriteSchema);
+
+export default Favorite;

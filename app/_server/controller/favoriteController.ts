@@ -1,0 +1,62 @@
+import AppError from "@/components/util/appError";
+import type { NextRequest } from "next/server";
+import { ICartSchema } from "../models/cart.model";
+import { lang } from "@/components/util/lang";
+import { Model } from "mongoose";
+import { cartControllerTranslate } from "../_Translate/cartControllerTranslate";
+type Cart = Model<ICartSchema>;
+
+export const getFav = async (req: NextRequest, model: Cart) => {
+  try {
+    const doc = await model.find({ user: { $eq: req.user?._id } });
+
+    return {
+      // data: doc,
+      data: doc,
+      statusCode: 200,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+export const createFav = async (req: NextRequest, model: Cart) => {
+  let doc;
+  try {
+    doc = await model.create({
+      user: req.user?._id,
+      product: req.id,
+    });
+    return {
+      // data: doc,
+      data: doc,
+      statusCode: 201,
+    };
+  } catch (error) {
+    if (doc) {
+      await model.findOneAndDelete(
+        { product: req.id, user: req.user?._id } // Condition to find the document
+      );
+      throw error;
+    }
+  }
+};
+export const deleteFav = async (req: NextRequest, model: Cart) => {
+  try {
+    const doc = await model.findOneAndDelete(
+      { product: req.id, user: req.user?._id } // Condition to find the document
+    );
+    if (!doc) {
+      throw new AppError(
+        cartControllerTranslate[lang].errors.noDocumentsFoundWithId,
+        404
+      );
+    }
+    return {
+      // data: doc,
+      data: null,
+      statusCode: 200,
+    };
+  } catch (error) {
+    throw error;
+  }
+};

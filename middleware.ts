@@ -9,12 +9,14 @@ const protectedRoutes = [
 ]; // only this shoud be proteted othwr routes should be public
 const authMiddleware = async (req: NextRequest) => {
   const forwardedFor = req.headers.get("x-forwarded-for");
+  const lang = req.headers.get("lang") ?? "uk";
   const clientIp = forwardedFor
     ? forwardedFor
     : req.headers.get("x-real-ip") ?? "";
   // Store client IP in request headers or cookies for further use
 
   req.headers.set("x-client-ip", clientIp);
+  req.headers.set("lang", lang);
   const pathname = req.nextUrl.pathname;
   const isAuth = await getToken({ req });
   const isProtectedRoute = protectedRoutes.some((route) =>

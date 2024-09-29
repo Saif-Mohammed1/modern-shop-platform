@@ -26,19 +26,6 @@ export default function ProductSubmit({
   inventoryDetails,
   imageDetails,
 }: ProductSubmitProps) {
-  const storedProductDetails = localStorage.getItem("productDetails");
-  const getProductDetails = storedProductDetails
-    ? JSON.parse(storedProductDetails)
-    : {};
-  const storedPricingDetails = localStorage.getItem("pricingDetails");
-  const getPricingDetails = storedPricingDetails
-    ? JSON.parse(storedPricingDetails)
-    : {};
-  const storedInventoryDetails = localStorage.getItem("inventoryDetails");
-  const getInventoryDetails = storedInventoryDetails
-    ? JSON.parse(storedInventoryDetails)
-    : {};
-
   const handleSubmit = async () => {
     let toastLoading;
 
@@ -95,7 +82,7 @@ export default function ProductSubmit({
               .productName
           }
         </h3>
-        <p>{productDetails.name || getProductDetails.name}</p>
+        <p>{productDetails.name}</p>
       </div>
 
       <div className="mb-6">
@@ -105,21 +92,21 @@ export default function ProductSubmit({
               .category
           }
         </h3>
-        <p>{productDetails.category || getProductDetails.category}</p>
+        <p>{productDetails.category}</p>
       </div>
 
       <div className="mb-6">
         <h3 className="text-lg font-medium">
           {productsTranslate.products[lang].addProduct.form.productSubmit.price}
         </h3>
-        <p>{pricingDetails.price || getPricingDetails.price}</p>
+        <p>{pricingDetails.price}</p>
       </div>
 
       <div className="mb-6">
         <h3 className="text-lg font-medium">
           {productsTranslate.products[lang].addProduct.form.productSubmit.stock}
         </h3>
-        <p>{inventoryDetails.stock || getInventoryDetails.stock}</p>
+        <p>{inventoryDetails.stock}</p>
       </div>
 
       <div className="flex justify-between">

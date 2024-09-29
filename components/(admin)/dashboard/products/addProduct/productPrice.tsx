@@ -7,25 +7,20 @@ type ProductPricingProps = {
   nextStep: () => void;
   prevStep: () => void;
   setPricingDetails: (details: {
-    price: number;
-    discount: number;
+    price: number | string;
+    discount: number | string;
     discountExpire: string;
   }) => void;
 };
-const storedPricingDetails = localStorage.getItem("pricingDetails");
-const pricingDetails = storedPricingDetails
-  ? JSON.parse(storedPricingDetails)
-  : {};
+
 export default function productPricing({
   nextStep,
   prevStep,
   setPricingDetails,
 }: ProductPricingProps) {
-  const [price, setPrice] = useState(pricingDetails.price || "");
-  const [discount, setDiscount] = useState(pricingDetails.discount || "");
-  const [discountExpire, setDiscountExpire] = useState(
-    pricingDetails.discountExpire || ""
-  );
+  const [price, setPrice] = useState("");
+  const [discount, setDiscount] = useState("");
+  const [discountExpire, setDiscountExpire] = useState("");
 
   const handleNext = () => {
     setPricingDetails({ price, discount, discountExpire });
@@ -97,7 +92,7 @@ export default function productPricing({
           className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      {discount > 0 && (
+      {discount && (
         <div className="mb-6">
           <label className="block text-gray-700 font-medium mb-2">
             {

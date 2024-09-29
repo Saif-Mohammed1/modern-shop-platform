@@ -14,16 +14,9 @@ export default function ProductDetails({
   nextStep,
   setProductDetails,
 }: ProductDetailsProps) {
-  const storedProductDetails = localStorage.getItem("productDetails");
-  const productDetails = storedProductDetails
-    ? JSON.parse(storedProductDetails)
-    : {};
-
-  const [name, setName] = useState(productDetails.name || "");
-  const [category, setCategory] = useState(productDetails.category || "");
-  const [description, setDescription] = useState(
-    productDetails.description || ""
-  );
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
 
   // Optionally, you can use useEffect to handle updates to localStorage
   useEffect(() => {

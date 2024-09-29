@@ -6,12 +6,13 @@ import { verify } from "jsonwebtoken";
 import AppError from "@/components/util/appError";
 import { Email } from "@/components/util/email";
 import { createUserTokens, detectUnusualLogin } from "./refreshTokenController";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { authControllerTranslate } from "../_Translate/authControllerTranslate";
 import { lang } from "@/components/util/lang";
+import { Schema } from "mongoose";
 
 export type UserAuthType = {
-  _id: string;
+  _id: Schema.Types.ObjectId;
   name: string;
   email: string;
   emailVerify: boolean;
@@ -170,7 +171,7 @@ export const register = async (req: NextRequest) => {
     await user.save();
     // Send the verification email
     await user.sendVerificationCode();
-    const accessToken = await createUserTokens(user._id, req);
+    const accessToken = await createUserTokens(String(user._id), req);
     return modifyFinalResponse(
       user,
       accessToken,
@@ -253,7 +254,7 @@ export const logIn = async (req: NextRequest) => {
     req.user = user;
     await detectUnusualLogin(req);
 
-    const accessToken = await createUserTokens(user._id, req);
+    const accessToken = await createUserTokens(String(user._id), req);
     return modifyFinalResponse(user, accessToken, 200);
   } catch (error) {
     throw error;
@@ -378,7 +379,7 @@ export const validateToken = async (req: NextRequest) => {
 
     if (
       !user.passwordResetToken ||
-      user.passwordResetExpires < new Date() ||
+      (user.passwordResetExpires && user.passwordResetExpires < new Date()) ||
       token !== user.passwordResetToken
     ) {
       user.passwordResetAttempts = (user.passwordResetAttempts || 0) + 1;
@@ -403,7 +404,10 @@ export const validateToken = async (req: NextRequest) => {
     }
 
     // Clear blocked state if it was previously set but expired
-    if (user.passwordResetBlockedUntil < new Date()) {
+    if (
+      user.passwordResetBlockedUntil &&
+      user.passwordResetBlockedUntil < new Date()
+    ) {
       user.passwordResetBlockedUntil = undefined;
       await user.save();
     }
@@ -535,8 +539,17 @@ export const restPassword = async (req: NextRequest) => {
     user.passwordResetAttempts = undefined;
     await user.save();
     // User.findByIdAndUpdate will NOT work as intended!
-    const accessToken = await createUserTokens(user._id, req);
-    return modifyFinalResponse(user, accessToken, 200);
+    /**
+     * no need accessToken or modifyFinalResponse in restPassword becuse user will login with password
+     */
+    // const accessToken = await createUserTokens(user._id, req);
+    // return modifyFinalResponse(user, accessToken, 200);
+
+    return {
+      message:
+        authControllerTranslate[lang].functions.restPassword.succussMessage,
+      statusCode: 200,
+    };
   } catch (error) {
     throw error;
   }
@@ -597,8 +610,9 @@ export const updatePassword = async (req: NextRequest) => {
 
     // 3) If so, update password
     user.password = newPassword;
+
     await user.save();
-    const accessToken = await createUserTokens(user._id, req);
+    const accessToken = await createUserTokens(String(user._id), req);
     return modifyFinalResponse(user, accessToken, 200);
   } catch (error) {
     throw error;

@@ -4,7 +4,7 @@ import AppError from "@/components/util/appError";
 import { cookies } from "next/headers";
 // import { promisify } from "util";
 import { sendEmailOnDetectedUnusualActivity } from "@/components/util/email";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { refreshTokenControllerTranslate } from "../_Translate/refreshTokenControllerTranslate";
 import { lang } from "@/components/util/lang";
 import { userControllerTranslate } from "../_Translate/userControllerTranslate";
@@ -12,7 +12,8 @@ import { userControllerTranslate } from "../_Translate/userControllerTranslate";
 /**  
  * token: { type: String, required: true },
   userId: {
-    type: Schema.ObjectId,
+    type:Schema.Types.ObjectId;
+
     ref: "User",
     required: true,
   },
@@ -131,7 +132,7 @@ export const refreshAccessToken = async (req: NextRequest) => {
 
     const accessToken = createAccessToken(userId);
 
-    return { accessToken };
+    return { accessToken, statusCode: 200 };
   } catch (error) {
     throw error; // return res.status(401).json({ message: "Invalid refresh token" });
   }
@@ -154,7 +155,7 @@ const verifyRefreshToken = async (
     );
   }
 
-  if (refreshToken.expiresAt < Date.now()) {
+  if (refreshToken.expiresAt.getTime() < Date.now()) {
     await RefreshToken.findByIdAndDelete(refreshToken._id);
     throw new AppError(
       refreshTokenControllerTranslate[

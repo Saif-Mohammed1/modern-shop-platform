@@ -43,14 +43,12 @@ export const CartContext = createContext<CartContextType>({
   setIsCartOpen: () => {},
   clearProductFromCartItem: async () => {},
 });
-const storedCart = localStorage.getItem("cart");
-const parseStoredCart = storedCart ? JSON.parse(storedCart) : [];
+
 // Create a CartProvider component
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   // Define the state for the cart
   const [cartItems, setCartItems] = useState<CartItemsType[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [LocalCart] = useState(parseStoredCart);
   const { user } = useUser();
   // Function to update the cart
   const addToCartItems = async (product: ProductType) => {
@@ -130,8 +128,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [cartItems, user]);
   useEffect(() => {
+    const getLocalCart = localStorage.getItem("cart") || [];
     const mergeLocalCart = async () => {
-      if (user && LocalCart.length > 0) {
+      if (user) {
         try {
           await mergeLocalCartWithDB();
           toast.success(
@@ -149,8 +148,10 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     };
-    mergeLocalCart();
-  }, [user, LocalCart.length]);
+    if (getLocalCart?.length > 0) {
+      mergeLocalCart();
+    }
+  }, [user]);
 
   return (
     <CartContext.Provider

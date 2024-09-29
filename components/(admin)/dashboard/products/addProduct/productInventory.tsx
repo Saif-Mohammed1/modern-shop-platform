@@ -7,17 +7,13 @@ type ProductInventoryProps = {
   prevStep: () => void;
   setInventoryDetails: (inventoryDetails: any) => void;
 };
-const storedInventoryDetails = localStorage.getItem("inventoryDetails");
-const inventoryDetails = storedInventoryDetails
-  ? JSON.parse(storedInventoryDetails)
-  : {};
 
 export default function ProductInventory({
   nextStep,
   prevStep,
   setInventoryDetails,
 }: ProductInventoryProps) {
-  const [stock, setStock] = useState(inventoryDetails.stock || "");
+  const [stock, setStock] = useState("");
 
   const handleNext = () => {
     setInventoryDetails({ stock });

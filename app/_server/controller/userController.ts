@@ -36,7 +36,7 @@ export const sendNewVerificationCode = async (req: NextRequest) => {
         );
       }
     }
-    if (user.verificationAttempts >= 5) {
+    if (user.verificationAttempts && user.verificationAttempts >= 5) {
       // Check if the number of attempts is exceeded before even checking the code
       user.verificationAttempts = undefined; // Increment attempts on susses
       user.verificationCodeBlockedUntil = new Date(Date.now() + 3600000); // 1 hour in milliseconds
@@ -99,7 +99,7 @@ export const verifyEmail = async (req: NextRequest) => {
       }
     }
     // Check if the number of attempts is exceeded before even checking the code
-    if (user.verificationAttempts >= 5) {
+    if (user.verificationAttempts && user.verificationAttempts >= 5) {
       user.verificationAttempts = undefined; // Increment attempts on susses
       user.verificationCodeBlockedUntil = new Date(Date.now() + 3600000); // 1 hour in milliseconds
       // await user.save({ validateBeforeSave: false });
@@ -113,7 +113,8 @@ export const verifyEmail = async (req: NextRequest) => {
     // Now check if the provided code matches and is not expired
     if (
       user.verificationCode !== verificationCode ||
-      user.verificationCodeExpires < Date.now()
+      (user.verificationCodeExpires &&
+        user.verificationCodeExpires.getTime() < Date.now())
     ) {
       user.verificationAttempts = (user.verificationAttempts || 0) + 1; // Increment attempts on failure
       await user.save();
@@ -176,6 +177,7 @@ export const createUserByAdmin = async (req: NextRequest) => {
     // Send the verification email
     await user.sendVerificationCode();
     // const accessToken = await createUserTokens(user._id, req);
+
     return modifyFinalResponse(
       user,
       null, // accessToken,is null when admen create userno need access token here or it will modify users

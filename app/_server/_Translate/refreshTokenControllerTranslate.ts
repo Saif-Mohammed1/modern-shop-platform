@@ -1,5 +1,22 @@
 export const refreshTokenControllerTranslate = {
   en: {
+    model: {
+      schema: {
+        user: {
+          required: "User must be required",
+        },
+        deviceInfo: {
+          required: "DeviceInfo must be required",
+        },
+        ipAddress: {
+          required: "IpAddress must be required",
+        },
+
+        expiresAt: {
+          required: "ExpiresAt must be required",
+        },
+      },
+    },
     functions: {
       refreshAccessToken: {
         requiredFields: "Missing required fields",
@@ -24,6 +41,23 @@ export const refreshTokenControllerTranslate = {
     },
   },
   uk: {
+    model: {
+      schema: {
+        user: {
+          required: "Користувач має бути обов'язковим",
+        },
+        deviceInfo: {
+          required: "Інформація про пристрій має бути обов'язковою",
+        },
+        ipAddress: {
+          required: "IP-адреса має бути обов'язковою",
+        },
+
+        expiresAt: {
+          required: "ExpiresAt має бути обов'язковим",
+        },
+      },
+    },
     functions: {
       refreshAccessToken: {
         requiredFields: "Відсутні обов'язкові поля",
