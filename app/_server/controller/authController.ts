@@ -70,12 +70,12 @@ export const isAuth = async (req: NextRequest) => {
     //not working with promisify
     // const decoded = await promisify(verify)(
     //   token,
-    //   process.env.CHANGE_EMAIL_SECRET as string
+    //        process.env.JWT_ACCESS_TOKEN_SECRET as string
     // ) as { userId: string; newEmail: string };
 
     const decoded = verify(
       token,
-      process.env.CHANGE_EMAIL_SECRET as string
+      process.env.JWT_ACCESS_TOKEN_SECRET as string
     ) as {
       userId: string;
 

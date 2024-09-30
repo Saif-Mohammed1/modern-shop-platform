@@ -30,7 +30,7 @@ const SessionExpiredOverlay = () => {
   const handleLogin = async () => {
     try {
       await signOut();
-      deleteCookies("refreshAccessToken");
+    await deleteCookies("refreshAccessToken");
 
       await api.post("/auth/logout");
       // Handle login logic here

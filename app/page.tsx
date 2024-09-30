@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { rootStaticPagesTranslate } from "./_translate/rootStaticPagesTranslate";
 import { lang } from "@/components/util/lang";
+import ComponentLoading from "@/components/spinner/componentLoading";
 export const metadata: Metadata = {
   title: rootStaticPagesTranslate[lang].home.metadata.title,
   description: rootStaticPagesTranslate[lang].home.metadata.description,
@@ -24,11 +25,13 @@ export default async function Home() {
     const topRating = data.topRating;
 
     return (
-      <HomeComponent
-        topOfferProducts={topOfferProducts}
-        newProducts={newProducts}
-        topRating={topRating}
-      />
+      <ComponentLoading>
+        <HomeComponent
+          topOfferProducts={topOfferProducts}
+          newProducts={newProducts}
+          topRating={topRating}
+        />
+      </ComponentLoading>
     );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;

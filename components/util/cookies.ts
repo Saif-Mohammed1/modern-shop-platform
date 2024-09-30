@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-export const deleteCookies = (cookiesName: string) =>
+export const deleteCookies = async (cookiesName: string) =>
   cookies().delete(cookiesName);
-export const getCookiesValue = (cookiesName: string) =>
+export const getCookiesValue = async (cookiesName: string) =>
   cookies()?.get(cookiesName)?.value;

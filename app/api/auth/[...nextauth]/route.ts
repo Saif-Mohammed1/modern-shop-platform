@@ -139,7 +139,7 @@ const authOptions: AuthOptions = {
     },
   },
   pages: {
-    // signIn: "/auth"
+    signIn: "/auth",
 
     newUser: "/auth/register",
   },

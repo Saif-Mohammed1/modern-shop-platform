@@ -68,7 +68,7 @@ const Sidebar: FC = () => {
     try {
       toastLoading = toast.loading("Logging out...");
       await signOut();
-      deleteCookies("refreshAccessToken");
+      await deleteCookies("refreshAccessToken");
 
       await api.post("/auth/logout");
 

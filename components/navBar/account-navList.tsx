@@ -27,7 +27,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
     try {
       await signOut();
       toast.success(navBarTranslate[lang].functions.logOut.success);
-      deleteCookies("refreshAccessToken");
+   await deleteCookies("refreshAccessToken");
       await api.post("/auth/logout");
     } catch (error: unknown) {
       const errorMessage =

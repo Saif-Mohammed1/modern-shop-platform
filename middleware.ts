@@ -1,6 +1,7 @@
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse, type NextRequest } from "next/server";
+import { rateLimitIp } from "./components/util/rateLimitIp";
 const protectedRoutes = [
   "/account",
   "/checkout",
@@ -9,14 +10,21 @@ const protectedRoutes = [
 ]; // only this shoud be proteted othwr routes should be public
 const authMiddleware = async (req: NextRequest) => {
   const forwardedFor = req.headers.get("x-forwarded-for");
-  const lang = req.headers.get("lang") ?? "uk";
+  const lang = req.cookies.get("lang");
+
+  if (!lang) {
+    req.cookies.set("lang", "uk");
+  }
   const clientIp = forwardedFor
     ? forwardedFor
-    : req.headers.get("x-real-ip") ?? "";
+    : (req.headers.get("x-real-ip") ?? "");
   // Store client IP in request headers or cookies for further use
-
+  const { failed } = rateLimitIp(clientIp);
+  if (failed) {
+    return NextResponse.rewrite(new URL("/custom-error/429", req.url));
+  }
   req.headers.set("x-client-ip", clientIp);
-  req.headers.set("lang", lang);
+
   const pathname = req.nextUrl.pathname;
   const isAuth = await getToken({ req });
   const isProtectedRoute = protectedRoutes.some((route) =>
@@ -32,7 +40,9 @@ const authMiddleware = async (req: NextRequest) => {
   }
 
   if (pathname.startsWith("/dashboard") && isAuth && isAuth.role === "admin") {
-    return NextResponse.next();
+    return NextResponse.next({
+      request: req,
+    });
   } else if (
     pathname.startsWith("/dashboard") &&
     isAuth &&
@@ -40,10 +50,15 @@ const authMiddleware = async (req: NextRequest) => {
   ) {
     return NextResponse.rewrite(new URL("/not-found", req.url));
   }
+  if (pathname.startsWith("/custom-error")) {
+    return NextResponse.rewrite(new URL("/not-found", req.url));
+  }
   // if (isAuth &&isAuth. &&pathname.startsWith("/dashboard")) {
   //   return NextResponse.json
   // Allow other routes like / to be accessible
-  return NextResponse.next();
+  return NextResponse.next({
+    request: req,
+  });
 };
 export default withAuth(authMiddleware, {
   callbacks: {
@@ -86,6 +101,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    // "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };

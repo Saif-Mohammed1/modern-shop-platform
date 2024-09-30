@@ -42,7 +42,7 @@ const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
       await api.delete("/customer/");
 
       await signOut();
-      deleteCookies("refreshAccessToken");
+      await deleteCookies("refreshAccessToken");
 
       await api.post("/auth/logout");
 
@@ -117,7 +117,7 @@ const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
       );
       await api.delete("/auth/refresh-token");
       await signOut();
-      deleteCookies("refreshAccessToken");
+      await deleteCookies("refreshAccessToken");
 
       toast.success(
         accountSettingsTranslate[lang].functions.handleSignoutAll.success

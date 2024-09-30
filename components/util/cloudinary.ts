@@ -19,7 +19,7 @@ export const uploadImage = async (image: string, folder: string) => {
     throw error;
   }
 };
-export const destroyImage = async (public_id: string, folder?: string) => {
+export const destroyImage = async (public_id: string) => {
   try {
     // const url =
     await cloudinary.uploader.destroy(public_id, {

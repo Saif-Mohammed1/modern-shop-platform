@@ -167,7 +167,7 @@ const verifyRefreshToken = async (
   //not working with promisify
   // const payload = await promisify(verify)(
   //   token,
-  //   process.env.CHANGE_EMAIL_SECRET as string
+  //   process.env.JWT_REFRESH_TOKEN_SECRET as string
   // ) as { userId: string; newEmail: string };
 
   const payload = verify(

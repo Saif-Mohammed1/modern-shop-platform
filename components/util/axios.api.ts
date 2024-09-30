@@ -54,9 +54,8 @@ api.interceptors.response.use(
         data.accessToken;
         // }
         // Update the original request with the new token and retry
-        api.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${data.accessToken}`;
+        api.defaults.headers.common["Authorization"] =
+          `Bearer ${data.accessToken}`;
         originalRequest.headers["Authorization"] = `Bearer ${data.accessToken}`;
         tokenManager.setAccessToken(data.accessToken);
 
