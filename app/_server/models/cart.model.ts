@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Document, Model, model, models, Schema } from "mongoose";
+import { Document, Model, model, models, Query, Schema } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Product, { IProductSchema } from "./product.model";
 import { lang } from "@/components/util/lang";
@@ -28,7 +28,16 @@ const CartSchema = new Schema<ICartSchema>({
   },
   quantity: { type: Number, default: 1 },
 });
+CartSchema.pre<Query<any, ICartSchema>>(/^find/, function (next) {
+  this.populate({
+    path: "product",
+  }).populate({
+    path: "user",
+    select: "name email",
+  });
 
+  next();
+});
 CartSchema.post(/^find/, function (docs, next) {
   // Ensure `docs` is an array (it should be for `find`)
   if (Array.isArray(docs)) {
