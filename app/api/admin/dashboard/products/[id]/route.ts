@@ -6,7 +6,7 @@ import {
   updateProduct,
 } from "@/app/_server/controller/productController";
 import { connectDB } from "@/app/_server/db/db";
-import Product from "@/app/_server/models/product.model";
+import Product, { IProductSchema } from "@/app/_server/models/product.model";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
@@ -23,7 +23,7 @@ export const GET = async (
     await isAuth(req);
     await restrictTo(req, "admin");
     req.id = id;
-    const { data, statusCode } = await getOne(req, Product);
+    const { data, statusCode } = await getOne<IProductSchema>(req, Product);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

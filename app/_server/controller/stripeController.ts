@@ -14,18 +14,19 @@ const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
 type ItemType = {
   quantity: number;
 } & ProductType;
-const fetchActiveProducts = async () => {
-  try {
-    const products = await stripe.products.list(); // Use the stripe client instance to call the API
-    const activeProducts = products.data.filter((product) => product.active);
-    return activeProducts;
-  } catch (error) {
-    throw new AppError(
-      stripeControllerTranslate[lang].functions.fetchActiveProducts.message,
-      400
-    );
-  }
-};
+// no need for this function
+// const fetchActiveProducts = async () => {
+//   try {
+//     const products = await stripe.products.list(); // Use the stripe client instance to call the API
+//     const activeProducts = products.data.filter((product) => product.active);
+//     return activeProducts;
+//   } catch (error) {
+//     throw new AppError(
+//       stripeControllerTranslate[lang].functions.fetchActiveProducts.message,
+//       400
+//     );
+//   }
+// };
 
 export const createStripeProduct = async (req: NextRequest) => {
   try {

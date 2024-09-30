@@ -128,7 +128,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [cartItems, user]);
   useEffect(() => {
-    const getLocalCart = localStorage.getItem("cart") || [];
+    const storedCart = localStorage.getItem("cart");
+    const getLocalCart = storedCart ? JSON.parse(storedCart) : [];
     const mergeLocalCart = async () => {
       if (user) {
         try {
@@ -148,7 +149,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     };
-    if (getLocalCart?.length > 0) {
+    if (getLocalCart.length > 0) {
       mergeLocalCart();
     }
   }, [user]);

@@ -11,16 +11,6 @@ import { lang } from "@/components/util/lang";
 // import fs from "fs/promises";
 // import { UTApi } from "uploadthing/server";
 
-/**uploadedImages [
-  'https://res.cloudinary.com/dv0qpha02/image/upload/v1725776922/shop/products/njzfaobweakcfzdi0bl8.jpg',
-  'https://res.cloudinary.com/dv0qpha02/image/upload/v1725776932/shop/products/wgdtl8trpmiejrs5vzfa.jpg',
-  'https://res.cloudinary.com/dv0qpha02/image/upload/v1725776940/shop/products/iisd7x20m7ylr7kygxdp.jpg'
-]
-public_ids [
-  'shop/products/njzfaobweakcfzdi0bl8',
-  'shop/products/wgdtl8trpmiejrs5vzfa',
-  'shop/products/iisd7x20m7ylr7kygxdp'
-] */
 export const createProduct = async (
   req: NextRequest,
   Model: Model<IProductSchema>

@@ -1,8 +1,9 @@
+// @ts-ignore
 import { Schema, model, models, Model, Document } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import { refreshTokenControllerTranslate } from "../_Translate/refreshTokenControllerTranslate";
 import { lang } from "@/components/util/lang";
-interface IRefreshTokenSchema extends Document {
+export interface IRefreshTokenSchema extends Document {
   _id: Schema.Types.ObjectId;
 
   token: string;

@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Document, Model, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import { contactUsControllerTranslate } from "../_Translate/contactUsControllerTranslate";

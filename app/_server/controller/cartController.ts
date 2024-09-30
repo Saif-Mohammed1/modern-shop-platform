@@ -1,6 +1,6 @@
 import AppError from "@/components/util/appError";
 import Product from "../models/product.model";
-import { Document, Model } from "mongoose";
+import { Model } from "mongoose";
 import type { NextRequest } from "next/server";
 import { ICartSchema } from "../models/cart.model";
 import { cartControllerTranslate } from "../_Translate/cartControllerTranslate";

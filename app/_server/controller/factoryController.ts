@@ -153,7 +153,7 @@ export const getOne = async <T extends Document>(
   }
 };
 export const getAggregate = async <T extends Document>(
-  req: NextRequest,
+  // req: NextRequest,
   Model: Model<T>,
   popOptions?: PopOptions
 ) => {
@@ -285,9 +285,9 @@ export const getAll = async <T extends BaseDocument>(
   }
 };
 export const getAllWithoutLimit = async <T extends Document>(
-  req: NextRequest,
+  // req: NextRequest,
   Model: Model<T>,
-  popOptions: PopOptions
+  popOptions?: PopOptions
 ) => {
   let doc;
   try {
@@ -321,7 +321,7 @@ export const getAllWithoutLimit = async <T extends Document>(
 export const getDataByUser = async <
   T extends Document & {
     user: UserAuthType["_id"];
-  }
+  },
 >(
   req: NextRequest,
   Model: Model<T>,

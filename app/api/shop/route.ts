@@ -1,18 +1,19 @@
 import { isAuth, restrictTo } from "@/app/_server/controller/authController";
 import ErrorHandler from "@/app/_server/controller/errorController";
-import {
-  getAll,
-  getUniqueCategories,
-} from "@/app/_server/controller/factoryController";
+import { createOne, getAll } from "@/app/_server/controller/factoryController";
+import { getUniqueCategories } from "@/app/_server/controller/productController";
 import { connectDB } from "@/app/_server/db/db";
-import Product from "@/app/_server/models/product.model";
+import Product, { IProductSchema } from "@/app/_server/models/product.model";
 import { type NextRequest, NextResponse } from "next/server";
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
     const categories = await getUniqueCategories(Product);
 
-    const { data, statusCode, pageCount } = await getAll(req, Product);
+    const { data, statusCode, pageCount } = await getAll<IProductSchema>(
+      req,
+      Product
+    );
 
     return NextResponse.json(
       { data, categories, pageCount },
@@ -22,14 +23,14 @@ export const GET = async (req: NextRequest) => {
     return ErrorHandler(error, req);
   }
 };
-export const POST = async (req) => {
+export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
     await isAuth(req);
     await restrictTo(req, "admin");
 
-    const { data, statusCode } = await create(req, Product);
-    return NextResponse.json({ data: [], categories }, { status: 200 });
+    const { data, statusCode } = await createOne<IProductSchema>(req, Product);
+    return NextResponse.json({ data: data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
   }

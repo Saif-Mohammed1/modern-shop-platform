@@ -31,20 +31,78 @@ export const shopPageTranslate = {
       addToCart: "Add to Cart",
       description: "Description",
     },
+    shopPage: {
+      Metadata: {
+        title: "Online Shop - Buy the Best Products",
+        description:
+          "Welcome to our online shop where you can find a wide range of high-quality products. Shop now and enjoy great deals and fast shipping!",
+        keywords: "shop, online shop, products, buy products, shop online",
+      },
+      content: {
+        title: "Shop Product Page",
+        select: {
+          categoryFilter: {
+            label: "Filter by Category:",
+            all: "All",
+          },
+          priceFilter: {
+            label: "Filter by Price:",
+            all: "All",
+            lowestPrice: "Lowest price",
+            highestPrice: "Highest price",
+          },
+          ratingFilter: {
+            label: "Filter by Rating:",
+            all: "All",
+          },
+        },
+      },
+    },
     RelatedProducts: {
       off: " OFF",
       discountedPrice: "Discounted Price: ",
       title: "Related Products",
       message: "No related product exists",
     },
+    productCard: {
+      toggleWishlist: {
+        loadingAdding: "Adding to wishlist...",
+        loadingRemoving: "Removing from wishlist...",
+        success: "Product Added to wishlist",
+        removed: "Product Removed from wishlist",
+        failed: "Failed to add to wishlist",
+      },
+
+      handleAddToCart: {
+        loading: "Adding to cart...",
+        success: "Product added to cart",
+        failed: "Failed to add to cart",
+      },
+      copyProductLink: {
+        pending: "Promise is pending",
+        success: "Product link copied to clipboard👌",
+        error: "Error copying product link to clipboard",
+        warn: "Clipboard API not supported in this browser.",
+      },
+    },
     button: {
       prev: "Previous",
       next: "Next",
+      addToCart: "Add to Cart",
     },
     errors: {
       noProductFound: "There is no Product Found",
     },
   },
+
+  button: {
+    prev: "Previous",
+    next: "Next",
+  },
+  errors: {
+    noProductFound: "There is no Product Found",
+  },
+
   uk: {
     metadata: {
       title: "Магазин - Деталі продукту",
@@ -77,15 +135,64 @@ export const shopPageTranslate = {
       addToCart: "Додати в кошик",
       description: "Опис",
     },
+    shopPage: {
+      Metadata: {
+        title: "Онлайн магазин - Купуйте найкращі продукти",
+        description:
+          "Ласкаво просимо до нашого онлайн магазину, де ви знайдете широкий асортимент високоякісних продуктів. Покупайте зараз і насолоджуйтеся вигідними угодами та швидкою доставкою!",
+        keywords:
+          "магазин, онлайн магазин, продукти, купити продукти, магазин онлайн",
+      },
+      content: {
+        title: "Сторінка продукту магазину",
+        select: {
+          categoryFilter: {
+            label: "Фільтрувати за категорією:",
+            all: "Всі",
+          },
+          priceFilter: {
+            label: "Фільтрувати за ціною:",
+            all: "Всі",
+            lowestPrice: "Найнижча ціна",
+            highestPrice: "Найвища ціна",
+          },
+          ratingFilter: {
+            label: "Фільтрувати за рейтингом:",
+            all: "Всі",
+          },
+        },
+      },
+    },
     RelatedProducts: {
       off: " ЗНИЖКА",
       discountedPrice: "Знижена ціна: ",
       title: "Схожі продукти",
       message: "Схожих продуктів не існує",
     },
+    productCard: {
+      toggleWishlist: {
+        loadingAdding: "Додається до списку бажань...",
+        loadingRemoving: "Видаляється зі списку бажань...",
+        success: "Продукт додано до списку бажань",
+        removed: "Продукт видалено зі списку бажань",
+        failed: "Не вдалося додати до списку бажань",
+      },
+      handleAddToCart: {
+        loading: "Додається до кошика...",
+        success: "Продукт додано до кошика",
+        failed: "Не вдалося додати до кошика",
+      },
+      copyProductLink: {
+        pending: "Promise is pending",
+        success: "Product link copied to clipboard👌",
+        error: "Error copying product link to clipboard",
+        warn: "Clipboard API not supported in this browser.",
+      },
+    },
     button: {
       prev: "Попередній",
       next: "Наступний",
+      addToCart: "Додати в кошик",
     },
     errors: {
       noProductFound: "Продукт не знайдено",

@@ -58,7 +58,7 @@ export const deleteReport = async (
   model: Model<IReportSchema>
 ) => {
   try {
-    const doc = await model.findOneAndDelete(
+    await model.findOneAndDelete(
       { product: req.id, user: req.user?._id } // Condition to find the document
     );
     return {

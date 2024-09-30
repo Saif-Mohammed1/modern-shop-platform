@@ -7,8 +7,8 @@ type ProductPricingProps = {
   nextStep: () => void;
   prevStep: () => void;
   setPricingDetails: (details: {
-    price: number | string;
-    discount: number | string;
+    price: number;
+    discount: number;
     discountExpire: string;
   }) => void;
 };
@@ -23,7 +23,11 @@ export default function productPricing({
   const [discountExpire, setDiscountExpire] = useState("");
 
   const handleNext = () => {
-    setPricingDetails({ price, discount, discountExpire });
+    setPricingDetails({
+      price: Number(price),
+      discount: Number(discount),
+      discountExpire,
+    });
     nextStep();
     localStorage.setItem(
       "pricingDetails",

@@ -1,12 +1,14 @@
 import AppError from "@/components/util/appError";
 import type { NextRequest } from "next/server";
-import { ICartSchema } from "../models/cart.model";
 import { lang } from "@/components/util/lang";
 import { Model } from "mongoose";
 import { cartControllerTranslate } from "../_Translate/cartControllerTranslate";
-type Cart = Model<ICartSchema>;
+import { IFavoriteSchema } from "../models/favorite.model";
 
-export const getFav = async (req: NextRequest, model: Cart) => {
+export const getFav = async (
+  req: NextRequest,
+  model: Model<IFavoriteSchema>
+) => {
   try {
     const doc = await model.find({ user: { $eq: req.user?._id } });
 
@@ -19,7 +21,10 @@ export const getFav = async (req: NextRequest, model: Cart) => {
     throw error;
   }
 };
-export const createFav = async (req: NextRequest, model: Cart) => {
+export const createFav = async (
+  req: NextRequest,
+  model: Model<IFavoriteSchema>
+) => {
   let doc;
   try {
     doc = await model.create({
@@ -40,7 +45,10 @@ export const createFav = async (req: NextRequest, model: Cart) => {
     }
   }
 };
-export const deleteFav = async (req: NextRequest, model: Cart) => {
+export const deleteFav = async (
+  req: NextRequest,
+  model: Model<IFavoriteSchema>
+) => {
   try {
     const doc = await model.findOneAndDelete(
       { product: req.id, user: req.user?._id } // Condition to find the document

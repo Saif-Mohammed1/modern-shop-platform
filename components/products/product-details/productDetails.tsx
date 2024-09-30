@@ -21,7 +21,7 @@ const ReviewSection = dynamic(
 //   () =>
 //     import("@/components/products/reuseableComponents/relatedProductsComponent")
 // );
-const ProductDetailV2 = ({ product }: { product: ProductType }) => {
+const ProductDetail = ({ product }: { product: ProductType }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -58,7 +58,9 @@ const ProductDetailV2 = ({ product }: { product: ProductType }) => {
       toast.success(shopPageTranslate[lang].functions.handleAddToCart.success);
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to add to cart";
+        error instanceof Error
+          ? error.message
+          : shopPageTranslate[lang].functions.toggleWishlist.failed;
 
       toast.error(errorMessage);
     } finally {
@@ -252,4 +254,4 @@ const ProductDetailV2 = ({ product }: { product: ProductType }) => {
   );
 };
 
-export default ProductDetailV2;
+export default ProductDetail;

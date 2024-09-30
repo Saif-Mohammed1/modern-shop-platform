@@ -3,7 +3,7 @@ import ErrorHandler from "@/app/_server/controller/errorController";
 import { getAll } from "@/app/_server/controller/factoryController";
 import { createUserByAdmin } from "@/app/_server/controller/userController";
 import { connectDB } from "@/app/_server/db/db";
-import User from "@/app/_server/models/user.model";
+import User, { IUserSchema } from "@/app/_server/models/user.model";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {
@@ -11,7 +11,10 @@ export const GET = async (req: NextRequest) => {
     await connectDB();
     await isAuth(req);
     await restrictTo(req, "admin");
-    const { data, pageCount, statusCode } = await getAll(req, User);
+    const { data, pageCount, statusCode } = await getAll<IUserSchema>(
+      req,
+      User
+    );
     return NextResponse.json({ data, pageCount }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

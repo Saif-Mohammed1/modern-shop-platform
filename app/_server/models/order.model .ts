@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import { Document } from "mongoose";

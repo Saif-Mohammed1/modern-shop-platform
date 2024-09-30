@@ -45,7 +45,7 @@ export const mainDashboard = async () => {
     // Calculate differences from last week
     const userGrowth = lastWeekUserCount;
     const reportGrowth = lastWeekReportCount;
-    const refundGrowth = currentRefundCount;
+    // const refundGrowth = currentRefundCount;
 
     // res.status(200).json({
     //   users: { count: currentUserCount, growth: userGrowth },

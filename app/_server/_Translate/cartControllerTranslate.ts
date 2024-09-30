@@ -1,5 +1,3 @@
-import { controllers } from "chart.js";
-
 export const cartControllerTranslate = {
   en: {
     model: {
