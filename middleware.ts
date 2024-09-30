@@ -9,6 +9,12 @@ const protectedRoutes = [
   // "/dashboard",
 ]; // only this shoud be proteted othwr routes should be public
 const authMiddleware = async (req: NextRequest) => {
+  const pathname = req.nextUrl.pathname;
+  const isAuth = await getToken({ req });
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
   const forwardedFor = req.headers.get("x-forwarded-for");
   const lang = req.cookies.get("lang");
 
@@ -19,17 +25,13 @@ const authMiddleware = async (req: NextRequest) => {
     ? forwardedFor
     : (req.headers.get("x-real-ip") ?? "");
   // Store client IP in request headers or cookies for further use
-  const { failed } = rateLimitIp(clientIp);
-  if (failed) {
-    return NextResponse.rewrite(new URL("/custom-error/429", req.url));
+  if (pathname.startsWith("/api")) {
+    const { failed } = rateLimitIp(clientIp);
+    if (failed) {
+      return NextResponse.rewrite(new URL("/custom-error/429", req.url));
+    }
   }
   req.headers.set("x-client-ip", clientIp);
-
-  const pathname = req.nextUrl.pathname;
-  const isAuth = await getToken({ req });
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
 
   if (isAuth && pathname.startsWith("/auth")) {
     return NextResponse.redirect(new URL("/", req.url));
