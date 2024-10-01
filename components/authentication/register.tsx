@@ -43,7 +43,7 @@ const RegisterPage = () => {
         password,
         confirmPassword,
       });
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false, // Important: Prevent automatic redirect on failure
@@ -51,9 +51,9 @@ const RegisterPage = () => {
         // redirect: callbackUrl ? true : false,
         // callbackUrl: callbackUrl || "/",
       });
-      // if (error) {
-      //   throw error;
-      // }
+      if (result?.error) {
+        throw result?.error;
+      }
       router.push(callbackUrl || "/");
 
       toast.success(registerTranslate[lang].functions.handleRegister.success);

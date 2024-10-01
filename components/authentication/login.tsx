@@ -27,16 +27,16 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       // const { error } =
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false, // Important: Prevent automatic redirect on failure
 
         // callbackUrl: callbackUrl || "/",
       });
-      // if (error) {
-      //   throw error;
-      // }
+      if (result?.error) {
+        throw result?.error;
+      }
       toast.success(loginTranslate[lang].functions.handleLogin.success);
       setEmail("");
       setPassword("");
