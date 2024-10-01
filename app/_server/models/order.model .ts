@@ -1,9 +1,9 @@
 // @ts-ignore
 import { Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
+import Product, { IProductSchema } from "./product.model";
 import { Document } from "mongoose";
-import { orderControllerTranslate } from "../_Translate/orderControllerTranslate";
-import { lang } from "@/components/util/lang";
+
 // import Address from "./address.model";
 type status = "pending" | "completed" | "refunded" | "processing" | "cancelled";
 interface IShippingInfo {
@@ -15,7 +15,7 @@ interface IShippingInfo {
   country: string;
 }
 interface IItems {
-  _id: Schema.Types.ObjectId;
+  _id: IProductSchema["_id"];
   name: string;
   quantity: number;
   price: number;
@@ -39,60 +39,33 @@ const OrderSchema = new Schema<IOrderSchema>({
     type: Schema.Types.ObjectId,
 
     ref: "User",
-    required: [true, orderControllerTranslate[lang].model.schema.user.required],
+    required: true,
   },
   shippingInfo: {
     street: {
       type: String,
-      required: [
-        true,
-
-        orderControllerTranslate[lang].model.schema.shippingInfo.street
-          .required,
-      ],
+      required: true,
     },
     city: {
       type: String,
-      required: [
-        true,
-
-        orderControllerTranslate[lang].model.schema.shippingInfo.city.required,
-      ],
+      required: true,
     },
     state: {
       type: String,
-      required: [
-        true,
-
-        orderControllerTranslate[lang].model.schema.shippingInfo.state.required,
-      ],
+      required: true,
     },
     postalCode: {
       type: String,
-      required: [
-        true,
-
-        orderControllerTranslate[lang].model.schema.shippingInfo.postalCode
-          .required,
-      ],
+      required: true,
     },
     phone: {
       type: String,
-      required: [
-        true,
-
-        orderControllerTranslate[lang].model.schema.shippingInfo.phone.required,
-      ],
+      required: true,
     },
 
     country: {
       type: String,
-      required: [
-        true,
-
-        orderControllerTranslate[lang].model.schema.shippingInfo.country
-          .required,
-      ],
+      required: true,
     },
   },
   items: [
@@ -101,35 +74,19 @@ const OrderSchema = new Schema<IOrderSchema>({
         type: Schema.Types.ObjectId,
 
         ref: "Product",
-        required: [
-          true,
-
-          orderControllerTranslate[lang].model.schema.items._id.required,
-        ],
+        required: true,
       },
       name: {
         type: String,
-        required: [
-          true,
-
-          orderControllerTranslate[lang].model.schema.items.name.required,
-        ],
+        required: true,
       },
       quantity: {
         type: Number,
-        required: [
-          true,
-
-          orderControllerTranslate[lang].model.schema.items.quantity.required,
-        ],
+        required: true,
       },
       price: {
         type: Number,
-        required: [
-          true,
-
-          orderControllerTranslate[lang].model.schema.items.price.required,
-        ],
+        required: true,
       },
       discount: {
         type: Number,
@@ -137,11 +94,7 @@ const OrderSchema = new Schema<IOrderSchema>({
       },
       finalPrice: {
         type: Number,
-        required: [
-          true,
-
-          orderControllerTranslate[lang].model.schema.items.finalPrice.required,
-        ],
+        required: true,
       },
       discountExpire: Date,
     },
@@ -155,24 +108,15 @@ const OrderSchema = new Schema<IOrderSchema>({
   },
   invoiceId: {
     type: String,
-    required: [
-      true,
-      orderControllerTranslate[lang].model.schema.invoiceId.required,
-    ],
+    required: true,
   },
   invoiceLink: {
     type: String,
-    required: [
-      true,
-      orderControllerTranslate[lang].model.schema.invoiceLink.required,
-    ],
+    required: true,
   },
   totalPrice: {
     type: Number,
-    required: [
-      true,
-      orderControllerTranslate[lang].model.schema.totalPrice.required,
-    ],
+    required: true,
   },
   createdAt: {
     type: Date,

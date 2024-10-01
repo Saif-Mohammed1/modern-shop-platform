@@ -50,12 +50,12 @@ export interface IUserSchema extends IUserInput, Document {
 const UserSchema = new Schema<IUserSchema>({
   name: {
     type: String,
-    required: [true, userControllerTranslate[lang].model.schema.name.required],
+    required: true,
     trim: true,
   },
   email: {
     type: String,
-    required: [true, userControllerTranslate[lang].model.schema.email.required],
+    required: true,
     unique: true,
     index: true,
     trim: true,
@@ -74,41 +74,23 @@ const UserSchema = new Schema<IUserSchema>({
   },
   password: {
     type: String,
-    required: [
-      true,
-      userControllerTranslate[lang].model.schema.password.required,
-    ],
+    required: true,
     select: false,
-    minlength: [
-      10,
-      userControllerTranslate[lang].model.schema.password.minlength,
-    ],
-    maxlength: [
-      60,
-      userControllerTranslate[lang].model.schema.password.maxlength,
-    ],
+    minlength: 10,
+    maxlength: 60,
   },
   passwordConfirm: {
     type: String,
-    required: [
-      true,
-      userControllerTranslate[lang].model.schema.confirmPassword.required,
-    ],
-    minlength: [
-      10,
-      userControllerTranslate[lang].model.schema.confirmPassword.minlength,
-    ],
-    maxlength: [
-      60,
-      userControllerTranslate[lang].model.schema.confirmPassword.maxlength,
-    ],
+    required: true,
+    minlength: 10,
+    maxlength: 60,
     validate: {
       // This only works on CREATE and SAVE!!!
       validator: function (value) {
         return value === this.password;
       },
-      message:
-        userControllerTranslate[lang].model.schema.confirmPassword.validator,
+      message: "passwords are not the same",
+      type: "passwordsNotTheSame",
     },
   },
 

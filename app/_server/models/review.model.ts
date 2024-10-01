@@ -2,8 +2,7 @@
 import { Document, Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Product, { IProductSchema } from "./product.model";
-import { reviewControllerTranslate } from "../_Translate/reviewControllerTranslate";
-import { lang } from "@/components/util/lang";
+
 export interface IReviewSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUserSchema["_id"]; // Only store the ObjectId of the User
@@ -25,43 +24,25 @@ const ReviewSchema = new Schema<IReviewSchema>(
       type: Schema.Types.ObjectId,
 
       ref: "User",
-      required: [
-        true,
-        reviewControllerTranslate[lang].model.schema.user.required,
-      ],
+      required: true,
     },
     product: {
       type: Schema.Types.ObjectId,
 
       ref: "Product",
-      required: [
-        true,
-        reviewControllerTranslate[lang].model.schema.product.required,
-      ],
+      required: true,
     },
     rating: {
       type: Number,
-      min: [1, reviewControllerTranslate[lang].model.schema.rating.min],
-      max: [5, reviewControllerTranslate[lang].model.schema.rating.max],
-      required: [
-        true,
-        reviewControllerTranslate[lang].model.schema.rating.required,
-      ],
+      min: 1,
+      max: 5,
+      required: true,
     },
     reviewText: {
       type: String,
-      minlength: [
-        4,
-        reviewControllerTranslate[lang].model.schema.reviewText.minlength,
-      ],
-      maxlength: [
-        200,
-        reviewControllerTranslate[lang].model.schema.reviewText.maxlength,
-      ],
-      required: [
-        true,
-        reviewControllerTranslate[lang].model.schema.reviewText.required,
-      ],
+      minlength: 4,
+      maxlength: 200,
+      required: true,
     },
     createdAt: {
       type: Date,

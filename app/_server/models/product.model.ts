@@ -2,8 +2,7 @@
 import { Document, Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Review from "./review.model";
-import { productControllerTranslate } from "../_Translate/productControllerTranslate";
-import { lang } from "@/components/util/lang";
+
 export interface IProductSchema extends Document {
   _id: Schema.Types.ObjectId;
   name: string;
@@ -24,34 +23,29 @@ const ProductSchema = new Schema<IProductSchema>(
   {
     name: {
       type: String,
-      required: [
-        true,
-        productControllerTranslate[lang].model.schema.name.required,
-      ],
+
+      required: true,
+
       trim: true,
       lowercase: true,
     },
     category: {
       type: String,
-      required: [
-        true,
-        productControllerTranslate[lang].model.schema.category.required,
-      ],
+
+      required: true,
 
       trim: true,
       lowercase: true,
     },
     price: {
       type: Number,
-      required: [
-        true,
-        productControllerTranslate[lang].model.schema.price.required,
-      ],
-      min: [1, productControllerTranslate[lang].model.schema.price.min],
+
+      required: true,
+
+      min: 1,
     },
     discount: {
       type: Number,
-      // required: [true, "discount must be required"],
       default: 0,
       validate: {
         validator: function (discount: number) {
@@ -59,8 +53,8 @@ const ProductSchema = new Schema<IProductSchema>(
           // Check if the discount is less than the price
           return discount < price;
         },
-        message:
-          productControllerTranslate[lang].model.schema.discount.required,
+        message: "{VALUE} must be less than the price",
+        type: "discountValidation", // Custom error type
       },
       min: 0,
     },
@@ -71,62 +65,44 @@ const ProductSchema = new Schema<IProductSchema>(
       {
         link: {
           type: String,
-          required: [
-            true,
-            productControllerTranslate[lang].model.schema.images.link.required,
-          ],
+
+          required: true,
         },
         public_id: {
           type: String,
-          required: [
-            true,
-            productControllerTranslate[lang].model.schema.images.public_id
-              .required,
-          ],
+          required: true,
         },
         _id: false, // Disable _id for images array
       },
     ],
-    // required: [true, "public_id  must be required"],
-    // select: false,
-    // default: "",
     user: {
       type: Schema.Types.ObjectId,
 
       ref: "User",
-      required: [
-        true,
-        productControllerTranslate[lang].model.schema.user.required,
-      ],
+
+      required: true,
     },
     description: {
       type: String,
       trim: true,
-      required: [
-        true,
-        productControllerTranslate[lang].model.schema.description.required,
-      ],
+      // [
+      required: true,
     },
     stock: {
       type: Number,
       trim: true,
-      required: [
-        true,
-        productControllerTranslate[lang].model.schema.stock.required,
-      ],
-      min: [0, productControllerTranslate[lang].model.schema.stock.min],
+
+      required: true,
+
+      min: 0,
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
-      min: [
-        1,
-        productControllerTranslate[lang].model.schema.ratingsAverage.min,
-      ],
-      max: [
-        5,
-        productControllerTranslate[lang].model.schema.ratingsAverage.max,
-      ],
+      min: 1,
+
+      max: 5,
+
       set: (val: number) => Math.round(val * 10) / 10, // 4.666666, 46.6666, 47, 4.7
     },
     ratingsQuantity: {

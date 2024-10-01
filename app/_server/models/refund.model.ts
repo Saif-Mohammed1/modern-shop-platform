@@ -1,8 +1,7 @@
 // @ts-ignore
 import { Document, Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
-import { refundUsControllerTranslate } from "../_Translate/refundControllerTranslate";
-import { lang } from "@/components/util/lang";
+
 export interface IRefundSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUserSchema["_id"];
@@ -17,37 +16,25 @@ const RefundSchema = new Schema<IRefundSchema>({
     type: Schema.Types.ObjectId,
 
     ref: "User",
-    required: [
-      true,
-      refundUsControllerTranslate[lang].model.schema.user.required,
-    ],
+    required: true,
   },
   status: {
     type: String,
-    required: true,
+    // required: true,
     enum: ["pending", "processing", "accepted", "refused"],
     default: "pending",
   },
   issue: {
     type: String,
-    required: [
-      true,
-      refundUsControllerTranslate[lang].model.schema.issue.required,
-    ],
+    required: true,
   },
   reason: {
     type: String,
-    required: [
-      true,
-      refundUsControllerTranslate[lang].model.schema.reason.required,
-    ],
+    required: true,
   },
   invoiceId: {
     type: String,
-    required: [
-      true,
-      refundUsControllerTranslate[lang].model.schema.invoiceId.required,
-    ],
+    required: true,
   },
   createdAt: {
     type: Date,

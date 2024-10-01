@@ -12,13 +12,13 @@ const FavoriteSchema = new Schema<IFavoriteSchema>({
     type: Schema.Types.ObjectId,
 
     ref: "User",
-    required: [true, "Product must belong to a user."],
+    required: true,
   },
   product: {
     type: Schema.Types.ObjectId,
 
     ref: "Product",
-    required: [true, "Product must belong to a product."],
+    required: true,
   },
   // favorite: {
   //   type: Boolean,

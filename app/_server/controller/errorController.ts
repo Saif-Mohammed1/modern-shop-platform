@@ -37,10 +37,21 @@ interface DuplicateFieldsError {
   errmsg: string;
 }
 
+// interface ValidationError {
+//   errors: { [key: string]: { message: string } };
+// }
 interface ValidationError {
-  errors: { [key: string]: { message: string } };
+  _message: string;
+  errors: {
+    [key: string]: {
+      properties: {
+        type: string;
+        path: string;
+        value: any;
+      };
+    };
+  };
 }
-
 const handleCastErrorDB = (err: CastError): AppError => {
   // const message = `Invalid ${err.path}: ${err.value}.`;
   const message = errorControllerTranslate[lang].controllers.handleCastErrorDB(
@@ -60,13 +71,27 @@ const handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
   return new AppError(message, 400);
 };
 
-const handleValidationErrorDB = (err: ValidationError): AppError => {
-  const errors = Object.values(err.errors).map((el) => el.message);
-  // const message = `Invalid input data. ${errors.join(". ")}`;
-  const message = errorControllerTranslate[
-    lang
-  ].controllers.handleValidationErrorDB(errors.join(". ")).message;
-  return new AppError(message, 400);
+const handleValidationErrorDB = (err: ValidationError) => {
+  const schemaName = err._message.split(" ")[0].toLowerCase() ?? " ";
+  const errors = Object.values(err.errors).map((el: any) => {
+    const type = el.properties.type; //u need to check this if exist in error object
+    const path = el.properties.path;
+
+    // Add checks before accessing dynamic properties
+    const schemaErrors = (
+      errorControllerTranslate[lang].controllers.handleValidationErrorDB as any
+    )[schemaName];
+
+    let message = "An error occurred";
+
+    if (schemaErrors && schemaErrors[path] && schemaErrors[path][type]) {
+      message = schemaErrors[path][type];
+    }
+
+    return message;
+  });
+
+  return new AppError(errors.join(","), 400);
 };
 
 const handleJWTError = (): AppError =>

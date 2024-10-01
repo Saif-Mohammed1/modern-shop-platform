@@ -1,6 +1,7 @@
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
+import ComponentLoading from "@/components/spinner/componentLoading";
 // import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import { lang } from "@/components/util/lang";
@@ -49,7 +50,11 @@ const page = async ({ params }: Props) => {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
     const product = data.data;
-    return <ProductDetail product={product} />;
+    return (
+      <ComponentLoading>
+        <ProductDetail product={product} />
+      </ComponentLoading>
+    );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;
 

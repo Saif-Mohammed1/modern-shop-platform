@@ -148,7 +148,7 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
       <div className="relative w-full imgParent">
         <Image
           src={
-            product.images[currentImageIndex].link || "/products/product.png"
+            product.images[currentImageIndex]?.link || "/products/product.png"
           }
           alt={product.name}
           className="w-full h-full object-cover rounded-lg"

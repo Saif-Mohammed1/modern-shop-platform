@@ -2,8 +2,7 @@
 import { Document, Model, model, models, Query, Schema } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Product, { IProductSchema } from "./product.model";
-import { lang } from "@/components/util/lang";
-import { cartControllerTranslate } from "../_Translate/cartControllerTranslate";
+
 export interface ICartSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUserSchema["_id"]; // Only store the ObjectId of the User
@@ -15,16 +14,13 @@ const CartSchema = new Schema<ICartSchema>({
     type: Schema.Types.ObjectId,
 
     ref: "User",
-    required: [true, cartControllerTranslate[lang].model.schema.user.required],
+    required: true,
   },
   product: {
     type: Schema.Types.ObjectId,
 
     ref: "Product",
-    required: [
-      true,
-      cartControllerTranslate[lang].model.schema.product.required,
-    ],
+    required: true,
   },
   quantity: { type: Number, default: 1 },
 });

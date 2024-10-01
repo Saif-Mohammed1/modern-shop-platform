@@ -2,8 +2,7 @@
 import { Document, Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Product, { IProductSchema } from "./product.model";
-import { reportUsControllerTranslate } from "../_Translate/reportControllerTranslate";
-import { lang } from "@/components/util/lang";
+
 export interface IReportSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUserSchema["_id"];
@@ -19,47 +18,32 @@ const ReportSchema = new Schema<IReportSchema>({
     type: Schema.Types.ObjectId,
 
     ref: "User",
-    required: [
-      true,
-      reportUsControllerTranslate[lang].model.schema.user.required,
-    ],
+    required: true,
   },
   product: {
     type: Schema.Types.ObjectId,
 
     ref: "Product",
-    required: [
-      true,
-      reportUsControllerTranslate[lang].model.schema.product.required,
-    ],
+    required: true,
   },
   status: {
     type: String,
-    required: true,
+    // required: true,
     enum: ["pending", "reviewing", "completed"],
     default: "pending",
   },
   name: {
     type: String,
-    required: [
-      true,
-      reportUsControllerTranslate[lang].model.schema.name.required,
-    ],
+    required: true,
   },
   issue: {
     type: String,
-    required: [
-      true,
-      reportUsControllerTranslate[lang].model.schema.issue.required,
-    ],
+    required: true,
     // Added descriptive error message
   },
   message: {
     type: String,
-    required: [
-      true,
-      reportUsControllerTranslate[lang].model.schema.message.required,
-    ],
+    required: true,
     // Added descriptive error message
   },
   createdAt: {
