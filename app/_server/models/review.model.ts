@@ -23,13 +23,13 @@ const ReviewSchema = new Schema<IReviewSchema>(
     user: {
       type: Schema.Types.ObjectId,
 
-      ref: "User",
+      ref: User, //"User",
       required: true,
     },
     product: {
       type: Schema.Types.ObjectId,
 
-      ref: "Product",
+      ref: Product, //"Product",
       required: true,
     },
     rating: {
@@ -67,7 +67,7 @@ ReviewSchema.pre<Query<any, IReviewSchema>>(/^find/, function (next) {
 
   this.populate({
     path: "user",
-    select: "name ",
+    select: "name email  ",
   });
   next();
 });

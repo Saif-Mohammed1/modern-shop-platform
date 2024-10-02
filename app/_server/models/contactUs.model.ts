@@ -15,7 +15,7 @@ export interface IContactUsSchema extends Document {
 const ContactUsSchema = new Schema<IContactUsSchema>({
   user: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: User, //"User",
     required: true,
   },
   subject: {

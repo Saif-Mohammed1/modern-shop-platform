@@ -15,7 +15,7 @@ const RefundSchema = new Schema<IRefundSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: "User",
+    ref: User, //"User",
     required: true,
   },
   status: {
@@ -44,6 +44,7 @@ const RefundSchema = new Schema<IRefundSchema>({
 RefundSchema.pre<Query<any, IRefundSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
+    select: "name email  ",
   });
   next();
 });

@@ -81,7 +81,7 @@ const UserSchema = new Schema<IUserSchema>({
   },
   passwordConfirm: {
     type: String,
-    required: true,
+    // required: true,
     minlength: 10,
     maxlength: 60,
     validate: {

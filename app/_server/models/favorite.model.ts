@@ -11,13 +11,13 @@ const FavoriteSchema = new Schema<IFavoriteSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: "User",
+    ref: User, //"User",
     required: true,
   },
   product: {
     type: Schema.Types.ObjectId,
 
-    ref: "Product",
+    ref: Product, // "Product",
     required: true,
   },
   // favorite: {
@@ -28,7 +28,7 @@ const FavoriteSchema = new Schema<IFavoriteSchema>({
 FavoriteSchema.pre<Query<any, IFavoriteSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
-    select: "name price",
+    // select: "name price",
   }).populate({
     path: "user",
     select: "name email",

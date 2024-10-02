@@ -11,7 +11,7 @@ export interface IProductSchema extends Document {
   discount?: number;
   discountExpire?: Date;
   images: { link: string; public_id: string }[];
-  user?: IUserSchema["_id"];
+  user: IUserSchema["_id"] | null;
   description: string;
   stock: number;
   ratingsAverage: number;
@@ -76,9 +76,9 @@ const ProductSchema = new Schema<IProductSchema>(
       },
     ],
     user: {
-      type: Schema.Types.ObjectId,
+      type: Schema.ObjectId,
 
-      ref: "User",
+      ref: User, //"User",
 
       required: true,
     },
@@ -118,7 +118,7 @@ const ProductSchema = new Schema<IProductSchema>(
 );
 // Virtual populate
 ProductSchema.virtual("reviews", {
-  ref: "Review",
+  ref: Review, // "Review",
   foreignField: "product",
   localField: "_id",
 });
@@ -129,7 +129,7 @@ ProductSchema.pre<Query<any, IProductSchema>>(/^find/, function (next) {
 
   this.populate({
     path: "user",
-    select: "name",
+    select: "name email",
   });
   next();
 });

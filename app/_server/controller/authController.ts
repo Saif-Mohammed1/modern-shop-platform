@@ -191,7 +191,6 @@ export const logIn = async (req: NextRequest) => {
     const user = await User.findOne({
       email: email.toLowerCase(),
     }).select("+password");
-
     if (!user) {
       // User not found or password incorrect you throw this error to avoid user enumeration
       throw new AppError(
@@ -209,6 +208,8 @@ export const logIn = async (req: NextRequest) => {
     if (user.passwordLoginBlockedUntil) {
       if (user.passwordLoginBlockedUntil < new Date()) {
         user.passwordLoginBlockedUntil = undefined;
+        //in case if u save confirm password turn on this line instedd of await user.save();
+        // await user.save({ validateBeforeSave: false });
         await user.save();
       } else {
         throw new AppError(
@@ -223,6 +224,7 @@ export const logIn = async (req: NextRequest) => {
     const passwordCorrect = await user.CheckPassword(password, user.password);
     if (!passwordCorrect) {
       user.passwordLoginAttempts = (user.passwordLoginAttempts || 0) + 1;
+      //in case if u save confirm password turn on this line instedd of await user.save();
       // await user.save({ validateBeforeSave: false });
       await user.save();
 
@@ -231,6 +233,7 @@ export const logIn = async (req: NextRequest) => {
         user.passwordLoginAttempts = undefined;
 
         user.passwordLoginBlockedUntil = new Date(Date.now() + 3600000); // 1 hour in milliseconds
+        //in case if u save confirm password turn on this line instedd of await user.save();
         // await user.save({ validateBeforeSave: false });
         await user.save();
         throw new AppError(
@@ -249,6 +252,8 @@ export const logIn = async (req: NextRequest) => {
     // Reset counters on successful login
     user.passwordLoginAttempts = undefined;
     user.passwordLoginBlockedUntil = undefined;
+    // 4) If everything is correct, send the JWT to the client
+    //in case if u save confirm password turn on this line instedd of await user.save();
     // await user.save({ validateBeforeSave: false });
     await user.save();
     req.user = user;

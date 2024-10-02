@@ -13,13 +13,13 @@ const CartSchema = new Schema<ICartSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: "User",
+    ref: User, //"User",
     required: true,
   },
   product: {
     type: Schema.Types.ObjectId,
 
-    ref: "Product",
+    ref: Product, //"Product",
     required: true,
   },
   quantity: { type: Number, default: 1 },

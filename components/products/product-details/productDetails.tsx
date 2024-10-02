@@ -148,7 +148,7 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
       <div className="relative w-full imgParent">
         <Image
           src={
-            product.images[currentImageIndex]?.link || "/products/product.png"
+            product?.images[currentImageIndex]?.link || "/products/product.png"
           }
           alt={product.name}
           className="w-full h-full object-cover rounded-lg"
@@ -157,7 +157,7 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
           priority
           style={{ objectFit: "cover" }}
         />
-        {product.images.length > 1 && (
+        {product?.images?.length > 1 && (
           <div className="absolute top-1/2 left-0 right-0 flex justify-between px-4 transform -translate-y-1/2">
             <button
               onClick={() => handleImageChange("prev")}

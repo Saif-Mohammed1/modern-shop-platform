@@ -15,7 +15,14 @@ export const GET = async (
   try {
     await connectDB();
     req.id = id;
-    const { data, statusCode } = await getOne<IProductSchema>(req, Product);
+    const { data, statusCode } = await getOne<IProductSchema>(
+      req,
+      Product
+      //   {
+      //   path: "user",
+      //   select: "name email",
+      // }
+    );
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

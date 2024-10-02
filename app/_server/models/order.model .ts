@@ -38,7 +38,7 @@ const OrderSchema = new Schema<IOrderSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: "User",
+    ref: User, //"User",
     required: true,
   },
   shippingInfo: {
@@ -73,7 +73,7 @@ const OrderSchema = new Schema<IOrderSchema>({
       _id: {
         type: Schema.Types.ObjectId,
 
-        ref: "Product",
+        ref: Product, // "Product",
         required: true,
       },
       name: {
@@ -126,6 +126,7 @@ const OrderSchema = new Schema<IOrderSchema>({
 OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
+    select: "name email  ",
   });
   //.populate({
   //   path: "shippingInfo",

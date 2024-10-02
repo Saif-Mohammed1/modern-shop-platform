@@ -9,18 +9,6 @@ import { refreshTokenControllerTranslate } from "../_Translate/refreshTokenContr
 import { lang } from "@/components/util/lang";
 import { userControllerTranslate } from "../_Translate/userControllerTranslate";
 
-/**  
- * token: { type: String, required: true },
-  userId: {
-    type:Schema.Types.ObjectId;
-
-    ref: "User",
-    required: true,
-  },
-  deviceInfo: { type: String, required: true }, // e.g., "iPhone 12, iOS 14.4"
-  ipAddress: { type: String, required: true },
-  expiresAt: { type: Date, required: true },
-  createdAt: { type: Date, default: Date.now }, */
 const createAccessToken = (userId: string) => {
   return sign({ userId }, process.env.JWT_ACCESS_TOKEN_SECRET as string, {
     expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
