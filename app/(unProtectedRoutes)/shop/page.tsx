@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
+// import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 
 export const metadata: Metadata = {
   title: shopPageTranslate[lang].shopPage.Metadata.title,
@@ -85,15 +86,21 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
     max: searchParams.max || undefined,
   };
   try {
-    const { data, categories, pageCount } = await queryParams(
-      defaultSearchParams
-    );
+    const { data, categories, pageCount } =
+      await queryParams(defaultSearchParams);
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 12000); // Simulate a 12-second delay
+    });
     return (
+      // <ComponentLoading>
       <Shop
         products={data || []}
         categories={categories || []}
         totalPages={pageCount || 1}
       />
+      // </ComponentLoading>
     );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;

@@ -1,7 +1,7 @@
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
-import ComponentLoading from "@/components/spinner/componentLoading";
+// import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 // import AppError from "@/components/util/appError";
 import api from "@/components/util/axios.api";
 import { lang } from "@/components/util/lang";
@@ -51,9 +51,9 @@ const page = async ({ params }: Props) => {
     });
     const product = data.data;
     return (
-      <ComponentLoading>
-        <ProductDetail product={product} />
-      </ComponentLoading>
+      // <ComponentLoading>
+      <ProductDetail product={product} />
+      // </ComponentLoading>
     );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;
