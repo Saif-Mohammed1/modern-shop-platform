@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   keywords: ordersTranslate.metadata[lang].keywords,
 };
 type SearchParams = {
-  user?: string;
+  "order-id"?: string;
   status?: string;
   date?: string;
   sort?: string;
@@ -24,8 +24,8 @@ const queryParams = async (searchParams: SearchParams) => {
   const url = new URLSearchParams();
 
   // Append each parameter only if it's not undefined
-  if (searchParams.user !== undefined) {
-    // url.append("user", searchParams.user);
+  if (searchParams["order-id"] !== undefined) {
+    url.append("order-id", searchParams["order-id"]);
   }
   if (searchParams.status !== undefined) {
     url.append("status", searchParams.status);
@@ -65,7 +65,7 @@ type PageProps = {
 };
 const page: FC<PageProps> = async ({ searchParams }) => {
   const defaultSearchParams = {
-    user: searchParams.user || undefined,
+    "order-id": searchParams["order-id"] || undefined,
     status: searchParams.status || undefined,
     date: searchParams.date || undefined,
     sort: searchParams.sort || undefined,

@@ -60,9 +60,12 @@ const queryParams = async (searchParams: ProductsSearchParams) => {
         pageCount,
         categories: { categories },
       },
-    } = await api.get("/shop/" + (queryString ? `?${queryString}` : ""), {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-    });
+    } = await api.get(
+      "/admin/dashboard/products/" + (queryString ? `?${queryString}` : ""),
+      {
+        headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+      }
+    );
     return { data, pageCount, categories };
   } catch (error: any) {
     throw new AppError(error.message, error.status);
@@ -82,9 +85,8 @@ const page = async ({ searchParams }: Props) => {
     max: searchParams.max || undefined,
   };
   try {
-    const { data, categories, pageCount } = await queryParams(
-      defaultSearchParams
-    );
+    const { data, categories, pageCount } =
+      await queryParams(defaultSearchParams);
     return (
       <div className="p-8 bg-gray-100 min-h-screen">
         <h1 className="text-3xl font-bold mb-6">

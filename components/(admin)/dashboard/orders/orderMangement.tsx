@@ -87,13 +87,21 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
       clearTimeout(debounceTimeout.current);
     }
 
-    debounceTimeout.current = setTimeout(() => {
-      updateQueryParams(
-        { user: value },
-        searchParamsReadOnly,
-        router,
-        pathName
-      );
+    debounceTimeout.current = setTimeout(async () => {
+      // updateQueryParams(
+      //   { "order-id": value },
+      //   searchParamsReadOnly,
+      //   router,
+      //   pathName
+      // );
+      await api
+        .get(`/admin/dashboard/orders/${value}`)
+        .then((res) => {
+          setOrdersList([res.data.data]);
+        })
+        .catch(() => {
+          setOrdersList([]);
+        });
     }, 1000); // Adjust the debounce delay as needed
   };
   const handleFilterDate = (event: Event) => {
@@ -162,8 +170,8 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
     if (searchParamsReadOnly.has("date")) {
       setFilterDate(searchParamsReadOnly.get("date") ?? "");
     }
-    if (searchParamsReadOnly.has("user")) {
-      setSearchQuery(searchParamsReadOnly.get("user") ?? "");
+    if (searchParamsReadOnly.has("order-id")) {
+      setSearchQuery(searchParamsReadOnly.get("order-id") ?? "");
     }
     if (searchParamsReadOnly.has("page")) {
       if (Number(searchParamsReadOnly.get("page")) == 1) {
@@ -187,10 +195,10 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
         {ordersTranslate.orders[lang].title}
       </h2>
       {/* Search Bar */}
-      <div className="flex flex-col sm:flex-row /items-center space-x-4 mb-6">
+      <div className="flex flex-col gap-2 sm:flex-row /items-center space-x-4 mb-6">
         <input
           type="text"
-          readOnly
+          // readOnly
           placeholder={
             ordersTranslate.orders[lang].filter.input.search.placeholder
           }
@@ -236,7 +244,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
         </button> */}
       </div>
       {/* Orders Table */}{" "}
-      <div className="max-h-[70vh] overflow-y-auto overflow-x-auto">
+      <div className="h-[70vh] overflow-y-auto overflow-x-auto">
         <table className="min-w-full  table-auto">
           <thead>
             <tr>
@@ -261,75 +269,83 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
             </tr>
           </thead>
           <tbody>
-            {ordersList.map((order) => (
-              <tr key={order._id}>
-                <td className="border px-4 py-2">{order._id}</td>
-                <td className="border px-4 py-2">{order.user.email}</td>
-                <td className="border px-4 py-2">
-                  {moment(order.createdAt).format("DD/MM/YYYY")}
-                </td>
-                <td className="border px-4 py-2">${order.totalPrice}</td>
-                <td className="border px-4 py-2">
-                  <select
-                    value={order.status}
-                    className="p-1 border border-gray-300 rounded-md"
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                      handleStatusUpdate(
-                        order._id,
-                        e.target.value as OrderStatus
-                      )
-                    }
-                  >
-                    <option value="pending">
-                      {
-                        ordersTranslate.orders[lang].filter.select.options
-                          .pending
-                      }
-                    </option>
-                    <option value="completed">
-                      {
-                        ordersTranslate.orders[lang].filter.select.options
-                          .completed
-                      }
-                    </option>
-                    <option value="refunded">
-                      {
-                        ordersTranslate.orders[lang].filter.select.options
-                          .refunded
-                      }
-                    </option>
-                    <option value="processing">
-                      {
-                        ordersTranslate.orders[lang].filter.select.options
-                          .processing
-                      }
-                    </option>
-                    <option value="cancelled">
-                      {
-                        ordersTranslate.orders[lang].filter.select.options
-                          .cancelled
-                      }
-                    </option>
-                  </select>
-                </td>
-                <td className="border px-4 py-2">
-                  <button className="p-2 bg-green-500 text-white rounded-md">
-                    <Link
-                      href={`/dashboard/orders/${order._id}`}
-                      target="_blank"
-                    >
-                      {ordersTranslate.orders[lang].tbody.view}{" "}
-                    </Link>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(order._id)}
-                    className="ml-2 p-2 bg-red-500 text-white rounded-md"
-                  >
-                    {ordersTranslate.orders[lang].tbody.delete}{" "}
-                  </button>
+            {ordersList?.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center empty mt-10">
+                  {ordersTranslate.orders[lang].tbody.noOrders}
                 </td>
               </tr>
-            ))}
+            ) : (
+              ordersList.map((order) => (
+                <tr key={order._id}>
+                  <td className="border px-4 py-2">{order._id}</td>
+                  <td className="border px-4 py-2">{order.user.email}</td>
+                  <td className="border px-4 py-2">
+                    {moment(order.createdAt).format("DD/MM/YYYY")}
+                  </td>
+                  <td className="border px-4 py-2">${order.totalPrice}</td>
+                  <td className="border px-4 py-2">
+                    <select
+                      value={order.status}
+                      className="p-1 border border-gray-300 rounded-md"
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                        handleStatusUpdate(
+                          order._id,
+                          e.target.value as OrderStatus
+                        )
+                      }
+                    >
+                      <option value="pending">
+                        {
+                          ordersTranslate.orders[lang].filter.select.options
+                            .pending
+                        }
+                      </option>
+                      <option value="completed">
+                        {
+                          ordersTranslate.orders[lang].filter.select.options
+                            .completed
+                        }
+                      </option>
+                      <option value="refunded">
+                        {
+                          ordersTranslate.orders[lang].filter.select.options
+                            .refunded
+                        }
+                      </option>
+                      <option value="processing">
+                        {
+                          ordersTranslate.orders[lang].filter.select.options
+                            .processing
+                        }
+                      </option>
+                      <option value="cancelled">
+                        {
+                          ordersTranslate.orders[lang].filter.select.options
+                            .cancelled
+                        }
+                      </option>
+                    </select>
+                  </td>
+                  <td className="border px-4 py-2">
+                    <button className="p-2 bg-green-500 text-white rounded-md">
+                      <Link
+                        href={`/dashboard/orders/${order._id}`}
+                        target="_blank"
+                      >
+                        {ordersTranslate.orders[lang].tbody.view}{" "}
+                      </Link>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(order._id)}
+                      className="ml-2 p-2 bg-red-500 text-white rounded-md"
+                    >
+                      {ordersTranslate.orders[lang].tbody.delete}{" "}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

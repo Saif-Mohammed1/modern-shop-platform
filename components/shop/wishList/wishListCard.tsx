@@ -1,16 +1,42 @@
 // components/ProductCard.js
 import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { accountWishlistTranslate } from "@/app/_translate/(protectedRoute)/account/wishlistTranslate";
+import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
+import { useCartItems } from "@/components/context/cart.context";
 import { useWishlist } from "@/components/context/whishList.context";
 import { lang } from "@/components/util/lang";
 import imageSrc from "@/components/util/productImageHandler";
 import Image from "next/image";
 import toast from "react-hot-toast";
-import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import {
+  AiOutlineHeart,
+  AiFillHeart,
+  AiOutlineShoppingCart,
+} from "react-icons/ai"; // Import cart icon
 
 const WishListCard = ({ product }: { product: ProductType }) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-
+  const { addToCartItems } = useCartItems();
+  const handelAddToCart = async () => {
+    let toastLoading;
+    try {
+      toastLoading = toast.loading(
+        shopPageTranslate[lang].productCard.handleAddToCart.loading
+      );
+      await addToCartItems(product);
+      toast.success(
+        shopPageTranslate[lang].productCard.handleAddToCart.success
+      );
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : shopPageTranslate[lang].productCard.handleAddToCart.failed
+      );
+    } finally {
+      toast.dismiss(toastLoading);
+    }
+  };
   const handleWishlistClick = async () => {
     try {
       if (isInWishlist(product._id)) {
@@ -52,21 +78,30 @@ const WishListCard = ({ product }: { product: ProductType }) => {
       />
       <h3 className="text-xl font-semibold mt-2">{product.name}</h3>
       <p className="text-gray-600">${product.price}</p>
-      <button
-        onClick={handleWishlistClick}
-        className="mt-2 flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg"
-      >
-        {isInWishlist(product._id) ? (
-          <AiFillHeart className="text-red-500 mr-2" />
-        ) : (
-          <AiOutlineHeart className="mr-2" />
-        )}
-        {isInWishlist(product._id)
-          ? accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
-              .remove
-          : accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
-              .add}
-      </button>
+      <div className="flex justify-between mt-2">
+        {" "}
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
+          onClick={handelAddToCart}
+        >
+          <AiOutlineShoppingCart className="text-xl" /> {/* Cart Icon */}
+        </button>
+        <button
+          onClick={handleWishlistClick}
+          // className="mt-2 flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg"
+        >
+          {isInWishlist(product._id) ? (
+            <AiFillHeart className="text-red-500 mr-2 text-3xl" />
+          ) : (
+            <AiOutlineHeart className="mr-2  text-3xl" />
+          )}
+          {/* {isInWishlist(product._id)
+            ? accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
+                .remove
+            : accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
+                .add} */}
+        </button>
+      </div>
     </div>
   );
 };

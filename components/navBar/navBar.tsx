@@ -77,9 +77,9 @@ const NavBar = () => {
             onClick={toggleCart}
           >
             <AiOutlineShoppingCart className="text-2xl text-gray-800 mx-3" />
-            {cartItems.length > 0 && (
+            {cartItems?.length > 0 && (
               <span className="absolute -top-2 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                {cartItems.length}
+                {cartItems?.length}
               </span>
             )}
           </div>

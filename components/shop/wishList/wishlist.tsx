@@ -6,6 +6,8 @@ import {
 } from "@/components/context/whishList.context";
 import WishListCard from "./wishListCard";
 import { useEffect, useState } from "react";
+import { accountWishlistTranslate } from "@/app/_translate/(protectedRoute)/account/wishlistTranslate";
+import { lang } from "@/components/util/lang";
 
 const WishlistPage = () => {
   const { wishlist } = useWishlist();
@@ -16,9 +18,13 @@ const WishlistPage = () => {
   }, [wishlist]);
   return (
     <div className="container mx-auto mt-8 max-h-screen overflow-y-auto">
-      <h1 className="text-3xl font-bold mb-4 ">My Wishlist</h1>
+      <h1 className="text-3xl font-bold mb-4 ">
+        {accountWishlistTranslate[lang].wishlistPage.title}
+      </h1>
       {wishlistProduct.length === 0 ? (
-        <p className="empty">Your wishlist is empty.</p>
+        <p className="empty">
+          {accountWishlistTranslate[lang].wishlistPage.emptyWhishlist}
+        </p>
       ) : (
         <div className="grid col gap-4">
           {wishlistProduct.map((product) => {

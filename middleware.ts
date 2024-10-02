@@ -11,6 +11,7 @@ const protectedRoutes = [
 const authMiddleware = async (req: NextRequest) => {
   const pathname = req.nextUrl.pathname;
   const isAuth = await getToken({ req });
+  const isAdmin = isAuth && isAuth?.user?.role === "admin";
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
@@ -36,20 +37,16 @@ const authMiddleware = async (req: NextRequest) => {
   if (isAuth && pathname.startsWith("/auth")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
-
   if (isProtectedRoute && !isAuth) {
     return NextResponse.redirect(new URL("/auth", req.url));
   }
 
-  if (pathname.startsWith("/dashboard") && isAuth && isAuth.role === "admin") {
+  if (pathname.startsWith("/dashboard") && isAdmin) {
     return NextResponse.next({
       request: req,
     });
-  } else if (
-    pathname.startsWith("/dashboard") &&
-    isAuth &&
-    isAuth.role !== "admin"
-  ) {
+  }
+  if (pathname.startsWith("/dashboard")) {
     return NextResponse.rewrite(new URL("/not-found", req.url));
   }
   if (pathname.startsWith("/custom-error")) {

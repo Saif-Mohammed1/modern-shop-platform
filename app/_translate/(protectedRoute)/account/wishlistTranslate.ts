@@ -5,6 +5,10 @@ export const accountWishlistTranslate = {
       description: "Wishlist for the customer",
       keywords: "customer, wishlist, customer wishlist",
     },
+    wishlistPage: {
+      title: "My Wishlist",
+      emptyWhishlist: "Your wishlist is empty.",
+    },
     wishListContext: {
       loadWishlist: {
         loading: "Loading wishlist...",
@@ -35,6 +39,10 @@ export const accountWishlistTranslate = {
       title: "Список бажань",
       description: "Список бажань для клієнта",
       keywords: "клієнт, список бажань, список бажань клієнта",
+    },
+    wishlistPage: {
+      title: "Мій список бажань",
+      emptyWhishlist: "Ваш список бажань порожній.",
     },
     wishListContext: {
       loadWishlist: {

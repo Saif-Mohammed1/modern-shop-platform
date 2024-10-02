@@ -52,8 +52,8 @@ export const ordersTranslate = {
       filter: {
         input: {
           search: {
-            label: "Search by user",
-            placeholder: "Search by user email",
+            label: "Search by order id",
+            placeholder: "Search by order id",
           },
           date: {
             label: "Filter by date",
@@ -84,6 +84,7 @@ export const ordersTranslate = {
         view: "View",
         delete: "Delete",
         updateStatus: "Update Status",
+        noOrders: "No orders found",
       },
       details: {
         metadata: {
@@ -116,8 +117,8 @@ export const ordersTranslate = {
       filter: {
         input: {
           search: {
-            label: "Пошук за користувачем",
-            placeholder: "Пошук за електронною поштою користувача",
+            label: "Пошук за ID замовлення",
+            placeholder: "Пошук за ID замовлення",
           },
           date: {
             label: "Фільтрувати за датою",
@@ -148,6 +149,7 @@ export const ordersTranslate = {
         view: "Переглянути",
         delete: "Видалити",
         updateStatus: "Оновити статус",
+        noOrders: "Замовлень не знайдено",
       },
 
       details: {
