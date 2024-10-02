@@ -78,7 +78,7 @@ const ProductSchema = new Schema<IProductSchema>(
     user: {
       type: Schema.ObjectId,
 
-      ref: User, //"User",
+      ref: "User",
 
       required: true,
     },
@@ -118,7 +118,7 @@ const ProductSchema = new Schema<IProductSchema>(
 );
 // Virtual populate
 ProductSchema.virtual("reviews", {
-  ref: Review, // "Review",
+  ref: "Review",
   foreignField: "product",
   localField: "_id",
 });

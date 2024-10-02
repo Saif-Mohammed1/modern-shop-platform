@@ -38,7 +38,7 @@ const OrderSchema = new Schema<IOrderSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: User, //"User",
+    ref: "User",
     required: true,
   },
   shippingInfo: {
@@ -73,7 +73,7 @@ const OrderSchema = new Schema<IOrderSchema>({
       _id: {
         type: Schema.Types.ObjectId,
 
-        ref: Product, // "Product",
+        ref: "Product",
         required: true,
       },
       name: {

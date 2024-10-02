@@ -11,13 +11,13 @@ const FavoriteSchema = new Schema<IFavoriteSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: User, //"User",
+    ref: "User",
     required: true,
   },
   product: {
     type: Schema.Types.ObjectId,
 
-    ref: Product, // "Product",
+    ref: "Product",
     required: true,
   },
   // favorite: {

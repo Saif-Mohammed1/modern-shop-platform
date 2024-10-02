@@ -19,7 +19,7 @@ const refreshTokenSchema = new Schema<IRefreshTokenSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: User, //"User",
+    ref: "User",
     required: true,
   },
   deviceInfo: {

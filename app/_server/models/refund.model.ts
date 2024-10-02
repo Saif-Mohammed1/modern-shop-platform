@@ -15,7 +15,7 @@ const RefundSchema = new Schema<IRefundSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: User, //"User",
+    ref: "User",
     required: true,
   },
   status: {

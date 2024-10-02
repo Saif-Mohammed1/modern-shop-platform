@@ -50,7 +50,7 @@ const AddressSchema = new Schema<IAddressSchema>({
   user: {
     type: Schema.Types.ObjectId,
 
-    ref: User, //"User",
+    ref: "User",
     required: true,
   },
 });
