@@ -5,13 +5,15 @@ import { AiOutlineShoppingCart } from "react-icons/ai";
 
 import { VscAccount } from "react-icons/vsc";
 
-// import CartDropdown from "../cart/cartDropdown";
 import { useUser } from "../context/user.context";
 import { useCartItems } from "../context/cart.context";
-// import AccountNavList from "./account-navList";
-import dynamic from "next/dynamic";
-const AccountNavList = dynamic(() => import("./account-navList"));
-const CartDropdown = dynamic(() => import("../cart/cartDropdown"));
+// import dynamic from "next/dynamic";
+import AccountNavList from "./account-navList";
+import CartDropdown from "../cart/cartDropdown";
+import { navBarTranslate } from "@/app/_translate/navBarTranslate";
+import { lang } from "../util/lang";
+// const AccountNavList = dynamic(() => import("./account-navList"));
+// const CartDropdown = dynamic(() => import("../cart/cartDropdown"));
 const NavBar = () => {
   const { user } = useUser();
   const { isCartOpen, toggleCartStatus, setIsCartOpen, cartItems } =
@@ -65,8 +67,10 @@ const NavBar = () => {
             onMouseEnter={() => setAccountMenuOpen(true)}
           >
             <VscAccount className="text-2xl" />
-            <span className="ml-2">Account</span>
-            <span className="hidden md:block  ml-2">Hi,</span>
+            <span className="ml-2">{navBarTranslate[lang].navBar.account}</span>
+            <span className="hidden md:block  ml-2">
+              {navBarTranslate[lang].navBar.hi},
+            </span>
           </div>
           <div
             className="relative flex items-center cursor-pointer shopping-cart"

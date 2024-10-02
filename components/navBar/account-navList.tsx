@@ -26,8 +26,10 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
   const logOut = async () => {
     try {
       await signOut();
-      toast.success(navBarTranslate[lang].functions.logOut.success);
-   await deleteCookies("refreshAccessToken");
+      toast.success(
+        navBarTranslate[lang].accountNavList.functions.logOut.success
+      );
+      await deleteCookies("refreshAccessToken");
       await api.post("/auth/logout");
     } catch (error: unknown) {
       const errorMessage =
@@ -61,15 +63,18 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
       {/* Welcome */}
       <div className="px-4 py-2 font-bold text-black border-b border-gray-300">
         {user
-          ? navBarTranslate[lang].content.accountMenu.welcome +
+          ? navBarTranslate[lang].accountNavList.content.accountMenu.welcome +
             `, ${user.name.split(" ")[0]}`
-          : navBarTranslate[lang].content.accountMenu.welcome}
+          : navBarTranslate[lang].accountNavList.content.accountMenu.welcome}
       </div>
       {user && user.role === "admin" && (
         <Link href="/dashboard">
           <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
             <MdDashboard className="mr-2" />{" "}
-            {navBarTranslate[lang].content.accountMenu.adminDashboard}
+            {
+              navBarTranslate[lang].accountNavList.content.accountMenu
+                .adminDashboard
+            }
           </span>
         </Link>
       )}
@@ -78,7 +83,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
         <Link href="/account/dashboard">
           <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
             <VscAccount className="mr-2" />{" "}
-            {navBarTranslate[lang].content.accountMenu.myAccount}
+            {navBarTranslate[lang].accountNavList.content.accountMenu.myAccount}
           </span>
         </Link>
       )}
@@ -87,13 +92,16 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
           <Link href="/auth/">
             <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
               <VscSignIn className="mr-2" />{" "}
-              {navBarTranslate[lang].content.accountMenu.signIn}
+              {navBarTranslate[lang].accountNavList.content.accountMenu.signIn}
             </span>
           </Link>
           <Link href="/auth/register">
             <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
               <VscSignOut className="mr-2" />
-              {navBarTranslate[lang].content.accountMenu.createAccount}
+              {
+                navBarTranslate[lang].accountNavList.content.accountMenu
+                  .createAccount
+              }
             </span>
           </Link>
         </>
@@ -102,7 +110,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
         <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
           <AiOutlineShoppingCart className="mr-2" />
 
-          {navBarTranslate[lang].content.accountMenu.shop}
+          {navBarTranslate[lang].accountNavList.content.accountMenu.shop}
         </span>
       </Link>
       {/* <Link href="/account/track-order">
@@ -115,14 +123,20 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
           <Link href="/account/orders/">
             <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
               <VscPackage className="mr-2" />{" "}
-              {navBarTranslate[lang].content.accountMenu.yourOrders}
+              {
+                navBarTranslate[lang].accountNavList.content.accountMenu
+                  .yourOrders
+              }
             </span>
           </Link>
 
           <Link href="/account/wishlist">
             <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
               <VscHeart className="mr-2" />{" "}
-              {navBarTranslate[lang].content.accountMenu.yourWishlist}
+              {
+                navBarTranslate[lang].accountNavList.content.accountMenu
+                  .yourWishlist
+              }
             </span>
           </Link>
 
@@ -131,7 +145,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
             onClick={logOut}
           >
             <VscSignOut className="mr-2" />
-            {navBarTranslate[lang].content.accountMenu.logOut}
+            {navBarTranslate[lang].accountNavList.content.accountMenu.logOut}
           </span>
         </>
       )}

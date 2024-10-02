@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="uk">
       <body className={`${inter.className} `}>
         <Providers>
           <main className="space-y-3 p-2 sm:p-4">
