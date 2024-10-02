@@ -45,6 +45,7 @@ RefundSchema.pre<Query<any, IRefundSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
     select: "name email  ",
+    model: User,
   });
   next();
 });

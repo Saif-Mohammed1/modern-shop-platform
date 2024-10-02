@@ -28,10 +28,12 @@ const FavoriteSchema = new Schema<IFavoriteSchema>({
 FavoriteSchema.pre<Query<any, IFavoriteSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
+    model: Product,
     // select: "name price",
   }).populate({
     path: "user",
     select: "name email",
+    model: User,
   });
   next();
 });

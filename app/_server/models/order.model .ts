@@ -127,6 +127,7 @@ OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
     select: "name email  ",
+    model: User,
   });
   //.populate({
   //   path: "shippingInfo",

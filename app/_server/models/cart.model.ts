@@ -27,9 +27,11 @@ const CartSchema = new Schema<ICartSchema>({
 CartSchema.pre<Query<any, ICartSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
+    model: Product,
   }).populate({
     path: "user",
     select: "name email",
+    model: User,
   });
 
   next();

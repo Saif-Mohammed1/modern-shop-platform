@@ -68,6 +68,7 @@ ReviewSchema.pre<Query<any, IReviewSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
     select: "name email  ",
+    model: User,
   });
   next();
 });

@@ -54,10 +54,12 @@ const ReportSchema = new Schema<IReportSchema>({
 ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
+    model: Product,
     // select: "name description price",
   }).populate({
     path: "user",
     select: "name email",
+    model: User,
   });
 
   next();

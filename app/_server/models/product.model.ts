@@ -76,7 +76,7 @@ const ProductSchema = new Schema<IProductSchema>(
       },
     ],
     user: {
-      type: Schema.ObjectId,
+      type: Schema.Types.ObjectId,
 
       ref: "User",
 
@@ -130,6 +130,7 @@ ProductSchema.pre<Query<any, IProductSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
     select: "name email",
+    model: User,
   });
   next();
 });
@@ -173,36 +174,58 @@ ProductSchema.pre("save", function (next) {
   next();
 });
 
-ProductSchema.post(/^find/, async function (docs, next) {
+// ProductSchema.post(/^find/, async function (docs, next) {
+//   const currentDate = new Date();
+
+//   try {
+//     // Ensure `docs` is an array (it should be for `find`)
+//     if (!Array.isArray(docs)) {
+//       if (docs?.discountExpire && docs?.discountExpire < currentDate) {
+//         docs.discount = 0;
+
+//         docs.discountExpire = undefined;
+//         await docs.save();
+//       }
+//       return next();
+//     }
+
+//     // Filter out documents with null user and update discount if discountExpire is less than the current date
+//     const filteredDocs = docs.filter((doc) => doc.user !== null);
+//     const savePromises = filteredDocs.map(async (doc) => {
+//       if (doc?.discountExpire && doc?.discountExpire < currentDate) {
+//         doc.discount = 0;
+
+//         doc.discountExpire = undefined;
+//         await doc.save();
+//       }
+//     });
+
+//     // Wait for all save operations to complete
+//     await Promise.all(savePromises);
+//     // Replace the original documents array with the filtered and updated documents
+//     docs.splice(0, docs.length, ...filteredDocs);
+
+//     next();
+//   } catch (error) {
+//     next(error as Error); // Pass any error to the next middleware
+//   }
+// });
+ProductSchema.post(/^find/, async function (docs: IProductSchema[], next) {
   const currentDate = new Date();
 
   try {
-    // Ensure `docs` is an array (it should be for `find`)
-    if (!Array.isArray(docs)) {
-      if (docs?.discountExpire && docs?.discountExpire < currentDate) {
-        docs.discount = 0;
+    // Check and update all documents in one go for expired discounts
+    await Product.updateMany(
+      { discountExpire: { $lt: currentDate } },
+      { $set: { discount: 0 }, $unset: { discountExpire: "" } }
+    );
 
-        docs.discountExpire = undefined;
-        await docs.save();
-      }
-      return next();
+    // If `docs` is an array (it should be for `find`), filter it
+    if (Array.isArray(docs)) {
+      const filteredDocs = docs.filter((doc) => doc.user !== null);
+      // Optionally perform additional actions with filteredDocs
+      docs.splice(0, docs.length, ...filteredDocs);
     }
-
-    // Filter out documents with null user and update discount if discountExpire is less than the current date
-    const filteredDocs = docs.filter((doc) => doc.user !== null);
-    const savePromises = filteredDocs.map(async (doc) => {
-      if (doc?.discountExpire && doc?.discountExpire < currentDate) {
-        doc.discount = 0;
-
-        doc.discountExpire = undefined;
-        await doc.save();
-      }
-    });
-
-    // Wait for all save operations to complete
-    await Promise.all(savePromises);
-    // Replace the original documents array with the filtered and updated documents
-    docs.splice(0, docs.length, ...filteredDocs);
 
     next();
   } catch (error) {
