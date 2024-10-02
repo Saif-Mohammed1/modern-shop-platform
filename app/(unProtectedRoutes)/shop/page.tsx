@@ -88,11 +88,11 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
   try {
     const { data, categories, pageCount } =
       await queryParams(defaultSearchParams);
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 12000); // Simulate a 12-second delay
-    });
+    // await new Promise<void>((resolve) => {
+    //   setTimeout(() => {
+    //     resolve();
+    //   }, 12000); // Simulate a 12-second delay
+    // });
     return (
       // <ComponentLoading>
       <Shop
