@@ -73,9 +73,7 @@ export default withAuth(authMiddleware, {
       * if (pathname.startsWith("/account")) {
         return !!token;
             }
-
       * or return pathname.startsWith("/account") ? !!token : true;
-
  */
       if (isProtectedRoute) {
         return !!token;
