@@ -2,7 +2,7 @@ export const navBarTranslate = {
   en: {
     navBar: {
       account: "Account",
-      hi: "Hi,",
+      hi: "Hi",
     },
     accountNavList: {
       functions: {
@@ -30,7 +30,7 @@ export const navBarTranslate = {
   uk: {
     navBar: {
       account: "Обліковий запис",
-      hi: "Привіт,",
+      hi: "Привіт",
     },
     accountNavList: {
       functions: {
