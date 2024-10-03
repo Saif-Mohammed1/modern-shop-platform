@@ -3,6 +3,7 @@ import ErrorHandler from "@/app/_server/controller/errorController";
 import {
   createOne,
   getAllWithoutLimit,
+  getDataByUser,
 } from "@/app/_server/controller/factoryController";
 import { connectDB } from "@/app/_server/db/db";
 import Address, { IAddressSchema } from "@/app/_server/models/address.model";
@@ -13,7 +14,9 @@ export const GET = async (req: NextRequest) => {
     await connectDB();
     await isAuth(req);
     req.id = String(req.user?._id);
-    const { data, statusCode } = await getAllWithoutLimit<IAddressSchema>(
+
+    const { data, statusCode } = await getDataByUser<IAddressSchema>(
+      req,
       // req, no need to pass req
       Address
     );
