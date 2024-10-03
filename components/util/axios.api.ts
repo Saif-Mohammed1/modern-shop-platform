@@ -1,5 +1,6 @@
 import axios from "axios";
 import tokenManager from "./TokenManager";
+import AppError from "./appError";
 
 // Create an Axios instance
 const api = axios.create({
@@ -67,19 +68,34 @@ api.interceptors.response.use(
           window.dispatchEvent(new Event("sessionExpired"));
         }
 
-        return Promise.reject({
-          status: refreshError?.response?.status || 500,
-          message:
-            refreshError.response?.data?.message ||
-            "Network response was not ok.",
-        });
+        // return Promise.reject({
+        //   status: refreshError?.response?.status || 500,
+        //   message:
+        //     refreshError.response?.data?.message ||
+        //     "Network response was not ok.",
+        // });
+        return Promise.reject(
+          new AppError(
+            refreshError?.response?.data?.message ||
+              "Network response was not ok.",
+            refreshError?.response?.status || 500
+          )
+        );
       }
     }
 
-    return Promise.reject({
-      status: error?.response?.status || 500,
-      message: error.response?.data?.message || "Network response was not ok.",
-    });
+    // return Promise.reject({
+    //   status: error?.response?.status || 500,
+    //   message: error.response?.data?.message || "Network response was not ok.",
+
+    // });
+
+    return Promise.reject(
+      new AppError(
+        error?.response?.data?.message || "Network response was not ok.",
+        error?.response?.status || 500
+      )
+    );
   }
 );
 
