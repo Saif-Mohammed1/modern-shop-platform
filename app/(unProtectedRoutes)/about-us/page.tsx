@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 const AboutPage = () => {
   return (
-    <div className="p-4 md:p-8 lg:p-12 bg-gray-100 rounded-lg shadow-lg">
+    <div className="p-4 md:p-8 lg:p-12 bg-gray-100 rounded-lg shadow-lg h-screen">
       <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-4">
         {aboutUsTranslate[lang].content.title}
       </h1>
