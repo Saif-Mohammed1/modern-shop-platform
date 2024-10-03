@@ -6,6 +6,14 @@ export const stripeControllerTranslate = {
       },
 
       createStripeProduct: {
+        shippingInfo: {
+          name: "Shipping Information",
+          noShippingInfo: "Please provide your shipping information",
+        },
+        products: {
+          name: "Products",
+          noProducts: "You need at least one product to proceed",
+        },
         productNotAvailableAnymore: (name: string) =>
           `Product ${name} is not available anymore please remove it from your cart for success payment `,
         insufficientStock: (name: string) =>
@@ -38,6 +46,14 @@ export const stripeControllerTranslate = {
         message: "Активних продуктів не знайдено",
       },
       createStripeProduct: {
+        shippingInfo: {
+          name: "Інформація про доставку",
+          noShippingInfo: "Будь ласка, надайте інформацію про доставку",
+        },
+        products: {
+          name: "Продукти",
+          noProducts: "Вам потрібно щонайменше один продукт для продовження",
+        },
         productNotAvailableAnymore: (name: string) =>
           `Продукт ${name} більше не доступний, будь ласка, видаліть його з кошика для успішної оплати`,
         insufficientStock: (name: string) => `Недостатньо товару ${name}`,

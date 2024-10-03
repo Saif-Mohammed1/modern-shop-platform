@@ -30,7 +30,25 @@ type ItemType = {
 
 export const createStripeProduct = async (req: NextRequest) => {
   try {
-    const { products, shippingInfo } = await req.json(); // Assuming 'products' is an array of product objects from the request body
+    const { products, shippingInfo } = await req.json();
+    if (!shippingInfo) {
+      throw new AppError(
+        stripeControllerTranslate[
+          lang
+        ].functions.createStripeProduct.shippingInfo.noShippingInfo,
+        400
+      );
+    }
+    if (products.length === 0) {
+      throw new AppError(
+        stripeControllerTranslate[
+          lang
+        ].functions.createStripeProduct.products.noProducts,
+        400
+      );
+    }
+
+    // Assuming 'products' is an array of product objects from the request body
     // Optionally, create a new tax rate or use an existing tax rate ID
     const taxRate = await stripe.taxRates.create({
       display_name: "Standard Tax",
