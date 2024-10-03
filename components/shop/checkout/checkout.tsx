@@ -20,7 +20,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
   const [addresses, setAddresses] = useState<AddressType[]>(address || []);
 
   const [selectedAddress, setSelectedAddress] = useState(
-    addresses.length ? addresses[0]._id : ""
+    addresses.length ? addresses[0] : ""
   );
   const [newAddress, setNewAddress] = useState({
     street: "",
@@ -55,7 +55,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       (address) => address._id === e.target.value
     );
     if (selectedAddress) {
-      setSelectedAddress(selectedAddress._id);
+      setSelectedAddress(selectedAddress);
     }
   };
 
@@ -172,7 +172,9 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
           {checkoutPageTranslate[lang].title}
         </h2>
         <select
-          value={selectedAddress}
+          value={
+            typeof selectedAddress === "object" ? selectedAddress?._id : ""
+          }
           onChange={handleSelectAddress}
           className="w-full p-2 border rounded-md mb-4"
         >
