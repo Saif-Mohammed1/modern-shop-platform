@@ -1,104 +1,92 @@
-/*
-// // pages/api/db.js
+/** 
+ * pre code connection first javaScript version
 
-// import mongoose from "mongoose";
 
-// const uri = process.env.MONGODB_URI; // Replace this with your MongoDB connection URI
-
-// mongoose.connect(uri, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-
-// const db = mongoose.connection;
-
-// db.on("error", //console.error.bind(//console, "connection error:"));
-// db.once("open", function () {
-//   ////console.log("Connected to MongoDB");
-// });
-
-// // Define your schema and models here
-
-// // API logic using MongoDB models and operations
-// // You can perform CRUD operations here
 import mongoose from "mongoose";
+
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) {
+    return;
+  }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = true;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const disconnectDB = async () => {
+  if (!isConnected) {
+    return;
+  }
+  try {
+    await mongoose.disconnect();
+    isConnected = false;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getDB = () => {
+  if (!isConnected) {
+    throw new Error("No active connection to MongoDB");
+  }
+  return mongoose.connection;
+};
+
+export { connectDB, disconnectDB, getDB };
 */
-// import mongoose from "mongoose";
 
-// let isConnected = false;
+/**
+ *   pre code connection  typeScript version
+ 
+import mongoose, { Connection } from "mongoose";
 
-// const connectDB = async () => {
-//   if (isConnected) {
-//     return;
-//   }
-//   try {
-//     await mongoose.connect(process.env.MONGODB_URI);
-//     isConnected = true;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+let isConnected = false;
 
-// const disconnectDB = async () => {
-//   if (!isConnected) {
-//     return;
-//   }
-//   try {
-//     await mongoose.disconnect();
-//     isConnected = false;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+const connectDB = async (): Promise<void> => {
+  if (isConnected) {
+    return;
+  }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI as string);
+    isConnected = true;
+  } catch (error) {
+    throw new Error(
+      `Failed to connect to MongoDB: ${(error as Error).message}`
+    );
+  }
+};
 
-// const getDB = () => {
-//   if (!isConnected) {
-//     throw new Error("No active connection to MongoDB");
-//   }
-//   return mongoose.connection;
-// };
+const disconnectDB = async (): Promise<void> => {
+  if (!isConnected) {
+    return;
+  }
+  try {
+    await mongoose.disconnect();
+    isConnected = false;
+  } catch (error) {
+    throw new Error(
+      `Failed to disconnect from MongoDB: ${(error as Error).message}`
+    );
+  }
+};
 
-// export { connectDB, disconnectDB, getDB };
+const getDB = (): Connection => {
+  if (!isConnected) {
+    throw new Error("No active connection to MongoDB");
+  }
+  return mongoose.connection;
+};
 
-/// new code
-// import mongoose, { Connection } from "mongoose";
-
-// let isConnected = false;
-
-// const connectDB = async (): Promise<void> => {
-//   if (isConnected) {
-//     return;
-//   }
-//   try {
-//     await mongoose.connect(process.env.MONGODB_URI as string);
-//     isConnected = true;
-//   } catch (error) {
-//     throw new Error(
-//       `Failed to connect to MongoDB: ${(error as Error).message}`
-//     );
-//   }
-// };
-
-// const disconnectDB = async (): Promise<void> => {
-//   if (!isConnected) {
-//     return;
-//   }
-//   try {
-//     await mongoose.disconnect();
-//     isConnected = false;
-//   } catch (error) {
-//     throw new Error(
-//       `Failed to disconnect from MongoDB: ${(error as Error).message}`
-//     );
-//   }
-// };
-
-// const getDB = (): Connection => {
-//   if (!isConnected) {
-//     throw new Error("No active connection to MongoDB");
-//   }
-//   return mongoose.connection;
-// };
+export { connectDB, disconnectDB, getDB };
+*/
+/**
+ *  update pre code connection second typeScript version
+ * */
 import mongoose, { Connection } from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
