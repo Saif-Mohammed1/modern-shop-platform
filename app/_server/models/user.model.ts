@@ -157,19 +157,45 @@ const UserSchema = new Schema<IUserSchema>({
 });
 //make sure index created in db
 UserSchema.index({ email: 1 });
+UserSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 12);
+    this.passwordConfirm = undefined;
+    this.passwordChangedAt = this.isNew
+      ? undefined
+      : new Date(Date.now() - 1000); // - 1000 to make sure the token is created after the passwordChangedAt
+  }
 
+  if (this.isModified("email") || this.isNew) {
+    const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
+    if (!emailRegex.test(this.email)) {
+      return next(
+        new AppError(
+          userControllerTranslate[lang].model.schema.email.validator,
+          400
+        )
+      );
+    }
+  }
+
+  next();
+});
+/** 
 UserSchema.pre("save", async function (next) {
   // Only run this function if password was actually modified
-  // if (!this.isModified("password")) return next();
-  if (!this.isModified("password") || this.isNew) return next();
+  if (!this.isModified("password")) return next();
 
   // Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
-  // this.passwordChangedAt = Date.now() - 1000;
-  // typeScript case date.now return number
-  this.passwordChangedAt = new Date(Date.now() - 1000);
+
   // Delete passwordConfirm field
-  this.passwordConfirm = undefined;
+  // this.passwordConfirm = undefined;
+  next();
+});
+UserSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) return next();
+
+  this.passwordChangedAt = new Date(Date.now() - 1000); // - 1000 to make sure the token is created after the passwordChangedAt
   next();
 });
 UserSchema.pre("save", function (next) {
@@ -189,16 +215,7 @@ UserSchema.pre("save", function (next) {
   }
 
   next();
-});
-// UserSchema.pre("save", function (next) {
-//   if (!this.isModified("password") || this.isNew) return next();
-
-//   // this.passwordChangedAt = Date.now() - 1000;
-//   // typeScript case date.now return number
-//   this.passwordChangedAt = new Date(Date.now() - 1000);
-
-//   next();
-// });
+});*/
 UserSchema.methods.CheckPassword = async function (
   candidatePassword: string,
   userPassword: string
@@ -247,7 +264,7 @@ UserSchema.methods.createPasswordResetToken = function (): string {
 
   // ////console.log({ resetToken }, this.passwordResetToken);
 
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };
@@ -255,7 +272,7 @@ UserSchema.methods.createPasswordResetToken = function (): string {
 UserSchema.methods.generateVerificationCode = function (): void {
   const verificationCode = crypto.randomBytes(8).toString("hex"); // Generate a 4-digit verification code
   this.verificationCode = verificationCode;
-  this.verificationCodeExpires = Date.now() + 10 * 60 * 1000; // Code expires in 10 minutes
+  this.verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // Date.now() + 10 * 60 * 1000; // Code expires in 10 minutes
 };
 
 // Define a method to send the verification email
