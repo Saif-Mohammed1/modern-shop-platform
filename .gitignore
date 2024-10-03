@@ -40,6 +40,7 @@ requierments.md
 data.ts
 dbConnect.js
 route_to_count.js
+countJsFiles.js
 
 # SSL certificates
 localhost.pem
