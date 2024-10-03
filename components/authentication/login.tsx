@@ -35,7 +35,7 @@ const LoginPage = () => {
         // callbackUrl: callbackUrl || "/",
       });
       if (result?.error) {
-        throw result?.error;
+        throw new Error(result.error);
       }
       toast.success(loginTranslate[lang].functions.handleLogin.success);
       setEmail("");
