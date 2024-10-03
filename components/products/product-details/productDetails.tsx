@@ -239,7 +239,10 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
         <p className="text-gray-700">{product.description}</p>
       </div>
       <div>
-        <RelatedProducts relatedProducts={relatedProducts} />
+        <RelatedProducts
+          relatedProducts={relatedProducts}
+          slidesPerView={true}
+        />
       </div>
       <div>
         <ReviewSection reviews={reviews} productId={product._id} user={user} />

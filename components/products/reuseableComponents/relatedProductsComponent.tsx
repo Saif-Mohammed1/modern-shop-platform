@@ -20,6 +20,7 @@ type RelatedProductsProps = {
   reverseDirection?: boolean;
   delay?: number;
   lastChid?: boolean;
+  slidesPerView?: boolean;
 };
 const RelatedProducts = ({
   title = shopPageTranslate[lang].RelatedProducts.title,
@@ -28,10 +29,44 @@ const RelatedProducts = ({
   reverseDirection = false,
   delay = 3000,
   lastChid = false,
+  slidesPerView,
 }: RelatedProductsProps) => {
   const [relatedProductsList, setRelatedProductsList] = useState<ProductType[]>(
     relatedProducts || []
   );
+  const swiperConfig = slidesPerView
+    ? {
+        slidesPerView: "auto" as const,
+        spaceBetween: 30,
+      }
+    : {
+        breakpoints: {
+          0: {
+            slidesPerView: 1,
+            spaceBetween: 10,
+          },
+          640: {
+            slidesPerView: 2,
+            spaceBetween: 20,
+          },
+          768: {
+            slidesPerView: 3,
+            spaceBetween: 40,
+          },
+          1024: {
+            slidesPerView: 5,
+            spaceBetween: 50,
+          },
+          1280: {
+            slidesPerView: 6,
+            spaceBetween: 60,
+          },
+          1536: {
+            slidesPerView: 7,
+            spaceBetween: 70,
+          },
+        },
+      };
   useEffect(() => {
     setRelatedProductsList(relatedProducts);
   }, [relatedProducts]);
@@ -44,13 +79,15 @@ const RelatedProducts = ({
         <Swiper
           navigation={true}
           // pagination={{ clickable: true }}
-          spaceBetween={30}
+          // spaceBetween={30}
           autoplay={{
             delay,
             reverseDirection,
           }}
           modules={[Pagination, Autoplay, Navigation]}
-          slidesPerView={"auto"}
+          // slidesPerView={"auto"}
+          loop={true}
+          {...swiperConfig}
         >
           {relatedProductsList.map((product) => (
             <SwiperSlide key={product._id} style={{ width: "auto" }}>
@@ -58,8 +95,9 @@ const RelatedProducts = ({
                 {/* Discount Badge */}
                 {product.discount > 0 && (
                   <div className="absolute top-4 -left-9 text-center -rotate-45 bg-red-500 text-white px-2 py-1 rounded-tl-md rounded-br-md shadow-md w-[149px]">
-                    {((product.discount / product.price) * 100).toFixed(0)}%{" "}
-                    {shopPageTranslate[lang].RelatedProducts.off}
+                    {((product.discount / product.price) * 100).toFixed(0)}%
+                    {/* {shopPageTranslate[lang].RelatedProducts.off} */}
+                    {lang === "en" ? " off" : "-"}
                   </div>
                 )}
                 <Link href={`/shop/${product._id}`}>
