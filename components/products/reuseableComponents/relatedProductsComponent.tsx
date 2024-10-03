@@ -38,7 +38,7 @@ const RelatedProducts = ({
   return (
     <div className={`mt-8 ${lastChid ? "mb-6" : " mb-3 "}`}>
       <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      {relatedProducts.length === 0 ? (
+      {relatedProductsList.length === 0 ? (
         <p className="text-gray-500">{message}</p>
       ) : (
         <Swiper
