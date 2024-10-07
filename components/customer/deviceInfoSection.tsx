@@ -86,7 +86,7 @@ const DeviceInfoSectionV2 = ({
     <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-md ">
       {/* OS Icon and IP Address */}
 
-      <div className="flex items-center">
+      <div className="flex items-center flex-grow">
         {/* Display OS Icon */}
         {getOSIcon()}
 
@@ -106,11 +106,11 @@ const DeviceInfoSectionV2 = ({
         </div>
       </div>
       {/* Active Status Indicator */}
-      <div className="relative flex items-center">
+      <div className="relative flex items-center  ">
         <span
           className={`w-3 h-3 rounded-full ${
             isActive ? "bg-green-500" : "bg-red-500"
-          } absolute right-0 top-0`}
+          } absolute right-0 -top-1`}
         ></span>
       </div>
       {/* Delete Icon */}

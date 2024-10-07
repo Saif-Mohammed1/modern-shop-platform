@@ -8,6 +8,7 @@ const deviceInfoTranslate = {
         error: "failed to delete device",
       },
     },
+    noDevices: "No devices found",
     details: {
       ip: "IP Address",
       lastActive: "Last Active",
@@ -25,6 +26,7 @@ const deviceInfoTranslate = {
         error: "не вдалося видалити пристрій",
       },
     },
+    noDevices: "Пристрої не знайдено",
     details: {
       ip: "IP адреса",
       lastActive: "Остання активність",
