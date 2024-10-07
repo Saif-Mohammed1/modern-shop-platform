@@ -335,6 +335,18 @@ export const changeEmailRequest = async (req: NextRequest) => {
         400
       );
     }
+
+    const user = await User.findOne({ email: newEmail.toLowerCase() });
+    if (user) {
+      throw new AppError(
+        userControllerTranslate[
+          lang
+        ].controllers.changeEmailRequest.emailAlreadyExist,
+
+        400
+      );
+    }
+
     // Generate a confirmation token
     const token = sign(
       { userId: req.user?._id, newEmail },
@@ -367,7 +379,6 @@ export const changeEmailRequest = async (req: NextRequest) => {
 
 export const updateUserEmail = async (req: NextRequest) => {
   const token = new URLSearchParams(req.nextUrl.searchParams).get("token");
-
   try {
     if (!token) {
       throw new AppError(
@@ -398,7 +409,6 @@ export const updateUserEmail = async (req: NextRequest) => {
         404
       );
     }
-
     user.email = decoded.newEmail;
     user.emailVerify = false;
     await user.save();
@@ -408,32 +418,35 @@ export const updateUserEmail = async (req: NextRequest) => {
         userControllerTranslate[lang].controllers.updateUserEmail.message,
       statusCode: 200,
     };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      if (error.name === "TokenExpiredError") {
-        throw new AppError(
-          userControllerTranslate[
-            lang
-          ].controllers.updateUserEmail.errors.TokenExpiredError,
-          400
-        );
-      } else if (error.name === "JsonWebTokenError") {
-        throw new AppError(
-          userControllerTranslate[
-            lang
-          ].controllers.updateUserEmail.errors.JsonWebTokenError,
-          400
-        );
-      }
-      throw new AppError(
-        userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
-        500
-      );
-    }
-    throw new AppError(
-      userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
-      500
-    );
+  } catch (error) {
+    //   if (error instanceof Error) {
+    //     if (error.name === "TokenExpiredError") {
+    //       throw new AppError(
+    //         userControllerTranslate[
+    //           lang
+    //         ].controllers.updateUserEmail.errors.TokenExpiredError,
+    //         400
+    //       );
+    //     } else if (error.name === "JsonWebTokenError") {
+    //       throw new AppError(
+    //         userControllerTranslate[
+    //           lang
+    //         ].controllers.updateUserEmail.errors.JsonWebTokenError,
+    //         400
+    //       );
+    //     }
+    //     throw new AppError(
+    //       userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
+    //       500
+    //     );
+    //   }
+    //   throw new AppError(
+    //     userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
+    //     500
+    //   );
+    // }
+
+    throw error;
   }
 };
 

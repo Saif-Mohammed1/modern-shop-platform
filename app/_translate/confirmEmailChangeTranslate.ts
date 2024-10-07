@@ -5,6 +5,7 @@ export const confirmEmailChangeTranslate = {
       description: "Confirm Email Change for the customer",
       keywords: "customer, confirm email change, customer confirm email change",
     },
+    emptyToken: "Token is missing",
   },
   uk: {
     metadata: {
@@ -13,5 +14,6 @@ export const confirmEmailChangeTranslate = {
       keywords:
         "клієнт, підтвердити зміну електронної пошти, клієнт підтвердити зміну електронної пошти",
     },
+    emptyToken: "Відсутній токен",
   },
 } as const;

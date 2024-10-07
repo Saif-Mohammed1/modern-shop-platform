@@ -43,6 +43,8 @@ export const userControllerTranslate = {
         invalidEmail: "Invalid email format for newEmail",
         confirmationEmailSent:
           "Confirmation email sent to your current email address.",
+        emailAlreadyExist:
+          "Email already exist in our system please try another email",
       },
       updateUserEmail: {
         requiredToken: "Token must be required",
@@ -114,6 +116,8 @@ export const userControllerTranslate = {
           "Недійсний формат електронної пошти для нової електронної пошти",
         confirmationEmailSent:
           "Лист з підтвердженням відправлено на вашу поточну електронну адресу.",
+        emailAlreadyExist:
+          "Електронна пошта вже існує в нашій системі, спробуйте іншу електронну пошту",
       },
       updateUserEmail: {
         requiredToken: "Токен має бути обов'язковим",
