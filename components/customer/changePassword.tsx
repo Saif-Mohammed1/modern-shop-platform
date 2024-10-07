@@ -270,13 +270,19 @@ const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
           {accountSettingsTranslate[lang].devices.title}
         </h1>{" "}
         <div className="max-h-[50vh] md:max-h-[70vh] overflow-y-auto">
-          {devicesList.map((device) => (
-            <DeviceInfoSection
-              key={device._id}
-              devices={device}
-              deleteDevice={() => deleteDevice(device._id)}
-            />
-          ))}
+          {devicesList.length > 1 ? (
+            devicesList.map((device) => (
+              <DeviceInfoSection
+                key={device._id}
+                devices={device}
+                deleteDevice={() => deleteDevice(device._id)}
+              />
+            ))
+          ) : (
+            <p className="text-gray-500 text-center">
+              {accountSettingsTranslate[lang].devices.noDevices}
+            </p>
+          )}
         </div>
         <button
           onClick={handleSignoutAll}
