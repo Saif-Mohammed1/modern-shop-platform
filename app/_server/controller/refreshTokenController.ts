@@ -301,6 +301,32 @@ export const detectUnusualLogin = async (req: NextRequest) => {
 export const getUniqueRefreshTokens = async (req: NextRequest) => {
   try {
     await deleteExpiredRefreshTokensFromUser(req);
+    // const uniqueTokens = await RefreshToken.aggregate([
+    //   {
+    //     $match: { user: req?.user?._id }, // Match tokens for the specific user
+    //   },
+    //   {
+    //     $group: {
+    //       _id: {
+    //         deviceInfo: "$deviceInfo",
+    //         ipAddress: "$ipAddress",
+    //       },
+    //       token: { $first: "$token" }, // Get the first token for this combination
+    //       createdAt: { $first: "$createdAt" }, // Include createdAt if needed
+    //       lastActiveAt: { $first: "$lastActiveAt" }, // Include lastActiveAt if needed
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       deviceInfo: "$_id.deviceInfo",
+    //       ipAddress: "$_id.ipAddress",
+    //       token: 1,
+    //       createdAt: 1,
+    //       lastActiveAt: 1,
+    //     },
+    //   },
+    // ]);
     const uniqueTokens = await RefreshToken.aggregate([
       {
         $match: { user: req?.user?._id }, // Match tokens for the specific user
@@ -314,11 +340,12 @@ export const getUniqueRefreshTokens = async (req: NextRequest) => {
           token: { $first: "$token" }, // Get the first token for this combination
           createdAt: { $first: "$createdAt" }, // Include createdAt if needed
           lastActiveAt: { $first: "$lastActiveAt" }, // Include lastActiveAt if needed
+          originalId: { $first: "$_id" }, // Include the original _id
         },
       },
       {
         $project: {
-          _id: 0,
+          _id: "$originalId", // Return the original _id
           deviceInfo: "$_id.deviceInfo",
           ipAddress: "$_id.ipAddress",
           token: 1,
@@ -326,8 +353,17 @@ export const getUniqueRefreshTokens = async (req: NextRequest) => {
           lastActiveAt: 1,
         },
       },
+      {
+        $sort: { lastActiveAt: -1 }, // Sort by lastActiveAt in descending order
+      },
     ]);
-
+    const uniqueIds = uniqueTokens.map((token) => token._id);
+    if (uniqueIds.length > 1) {
+      await RefreshToken.deleteMany({
+        _id: { $nin: uniqueIds },
+        user: req?.user?._id, // Ensure we are deleting tokens for the specific user
+      });
+    }
     return { data: uniqueTokens, statusCode: 200 };
   } catch (error) {
     throw error;
