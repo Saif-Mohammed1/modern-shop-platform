@@ -31,7 +31,7 @@ const ConfirmEmailChange = () => {
             .confirmingRequest
         );
         const { data } = await api.put(
-          `/customer/update-data/confirm-email-change?` + token
+          `/customer/update-data/confirm-email-change?token=` + token
         );
         toast.success(data.message);
         setMessage(data.message);
