@@ -101,15 +101,17 @@ const RelatedProducts = ({
                   </div>
                 )}
                 <Link href={`/shop/${product._id}`}>
-                  <Image
-                    src={imageSrc(product)}
-                    alt={product.name}
-                    width={100}
-                    height={100}
-                    style={{ objectFit: "cover" }}
-                    className="mb-4"
-                    priority
-                  />
+                  <div className="w-full h-40 overflow-hidden rounded-lg">
+                    <Image
+                      src={imageSrc(product)}
+                      alt={product.name}
+                      width={100}
+                      height={100}
+                      style={{ objectFit: "cover" }}
+                      className="mb-4"
+                      priority
+                    />
+                  </div>
                   <div className="space-y-1">
                     <div className="ratings">
                       <StarRatings
@@ -125,14 +127,17 @@ const RelatedProducts = ({
                     {product.discount ? (
                       <div>
                         <p className="text-sm font-light text-gray-600 line-through">
-                          ${product.price}
+                          ${parseFloat(product.price.toString()).toFixed(2)}
                         </p>
                         <p className="text-sm font-light text-gray-600">
                           {
                             shopPageTranslate[lang].RelatedProducts
                               .discountedPrice
                           }
-                          : ${product.price - product.discount}
+                          : $
+                          {parseFloat(
+                            (product.price - product.discount).toString()
+                          ).toFixed(2)}
                         </p>
                       </div>
                     ) : (

@@ -5,11 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   try {
-    //console.log("register route");
-
     await connectDB();
-    // .then((re) => ////console.log("success connect to db"))
-    // .catch((re) => ////console.log("failed connect to db"));
     const { message, accessToken, statusCode } = await register(req);
 
     return NextResponse.json(

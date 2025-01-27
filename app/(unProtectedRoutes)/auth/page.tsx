@@ -9,7 +9,11 @@ export const metadata: Metadata = {
 };
 
 const page = () => {
-  return <LoginPage />;
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <LoginPage />
+    </div>
+  );
 };
 
 export default page;

@@ -2,6 +2,7 @@
 
 import ErrorHandler from "@/components/Error/errorHandler";
 import { FC, useEffect, useState } from "react";
+import "./globals.css";
 
 type ErrorProps = {
   error: {
@@ -19,7 +20,15 @@ const Error: FC<ErrorProps> = ({ error, reset }) => {
     }
   }, [error]);
 
-  return <ErrorHandler message={message} reset={reset} />;
+  return (
+    <html lang="en">
+      <body>
+        <main>
+          <ErrorHandler message={message} reset={reset} />
+        </main>
+      </body>
+    </html>
+  );
 };
 
 export default Error;

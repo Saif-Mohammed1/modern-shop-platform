@@ -8,22 +8,27 @@ export interface ICartSchema extends Document {
   user: IUserSchema["_id"]; // Only store the ObjectId of the User
   product: IProductSchema["_id"]; // Only store the ObjectId of the Product
   quantity: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
-const CartSchema = new Schema<ICartSchema>({
-  user: {
-    type: Schema.Types.ObjectId,
+const CartSchema = new Schema<ICartSchema>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
 
-    ref: "User",
-    required: true,
-  },
-  product: {
-    type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    product: {
+      type: Schema.Types.ObjectId,
 
-    ref: "Product",
-    required: true,
+      ref: "Product",
+      required: true,
+    },
+    quantity: { type: Number, default: 1 },
   },
-  quantity: { type: Number, default: 1 },
-});
+  { timestamps: true }
+);
 CartSchema.pre<Query<any, ICartSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",

@@ -37,6 +37,7 @@
     "util": "^0.12.5"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.4.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^22.5.5",

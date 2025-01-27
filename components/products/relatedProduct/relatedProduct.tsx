@@ -53,7 +53,10 @@ const RelatedProducts = ({
                         ${product.price}
                       </p>
                       <p className="text-sm font-light text-gray-600">
-                        Discounted Price: ${product.price - product.discount}
+                        Discounted Price: $
+                        {parseFloat(
+                          (product.price - product.discount).toString()
+                        ).toFixed(2)}
                       </p>
                     </div>
                   ) : (

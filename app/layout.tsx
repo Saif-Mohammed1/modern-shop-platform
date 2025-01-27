@@ -17,11 +17,13 @@ export const metadata = {
 
 export default function RootLayout({
   children,
+  interceptor,
 }: {
   children: React.ReactNode;
+  interceptor: React.ReactNode;
 }) {
   return (
-    <html lang="uk">
+    <html lang={lang}>
       <body className={`${inter.className} `}>
         <Providers>
           <main className="space-y-3 p-2 sm:p-4">
@@ -31,7 +33,7 @@ export default function RootLayout({
                 <p>{rootStaticPagesTranslate[lang].layout.fixed.message}</p>
               </div>
             </div>
-
+            {interceptor}
             {children}
             <SessionExpiredOverlay />
             <Footer />

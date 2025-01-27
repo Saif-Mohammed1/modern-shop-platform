@@ -12,45 +12,47 @@ export interface IReportSchema extends Document {
   issue: string;
   message: string;
   createdAt: Date;
+  updatedAt: Date;
 }
-const ReportSchema = new Schema<IReportSchema>({
-  user: {
-    type: Schema.Types.ObjectId,
+const ReportSchema = new Schema<IReportSchema>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
 
-    ref: "User",
-    required: true,
-  },
-  product: {
-    type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    product: {
+      type: Schema.Types.ObjectId,
 
-    ref: "Product",
-    required: true,
+      ref: "Product",
+      required: true,
+    },
+    status: {
+      type: String,
+      // required: true,
+      enum: ["pending", "reviewing", "completed"],
+      default: "pending",
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    issue: {
+      type: String,
+      required: true,
+      // Added descriptive error message
+    },
+    message: {
+      type: String,
+      required: true,
+      // Added descriptive error message
+    },
   },
-  status: {
-    type: String,
-    // required: true,
-    enum: ["pending", "reviewing", "completed"],
-    default: "pending",
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  issue: {
-    type: String,
-    required: true,
-    // Added descriptive error message
-  },
-  message: {
-    type: String,
-    required: true,
-    // Added descriptive error message
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",

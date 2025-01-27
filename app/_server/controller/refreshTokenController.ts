@@ -100,10 +100,6 @@ export const refreshAccessToken = async (req: NextRequest) => {
     req.headers.get("x-real-ip") ||
     "0.0.0.0";
 
-  //console.log("refreshAccessToken From  refreshAccessToken", token);
-  //console.log("deviceInfo", deviceInfo);
-  //console.log("ipAddress", ipAddress);
-
   try {
     if (!token || !deviceInfo || !ipAddress) {
       throw new AppError(

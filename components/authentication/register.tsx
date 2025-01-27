@@ -76,95 +76,93 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-          {registerTranslate[lang].form.title}
-        </h2>
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block text-gray-600">
-              {registerTranslate[lang].form.name.label}
-            </label>
-            <input
-              type="text"
-              value={name}
-              placeholder={registerTranslate[lang].form.name.placeholder}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-600">
-              {registerTranslate[lang].form.email.label}
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder={registerTranslate[lang].form.email.placeholder}
-              className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-600">
-              {registerTranslate[lang].form.password.label}
-            </label>
-            <div className="flex  relative items-center">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder={registerTranslate[lang].form.password.placeholder}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
-              <span
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
-              >
-                {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-              </span>
-            </div>
-          </div>
-          <div>
-            <label className="block text-gray-600">
-              {registerTranslate[lang].form.confirmPassword.label}
-            </label>
-            <div className="flex  relative items-center">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="password"
-                placeholder={
-                  registerTranslate[lang].form.confirmPassword.placeholder
-                }
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
-              <span
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
-              >
-                {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-              </span>
-            </div>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
-            disabled={isLoading}
-          >
-            {isLoading ? <Spinner /> : registerTranslate[lang].form.submit}
-          </button>
-        </form>
-        <div className="text-center mt-4">
-          <Link href="/auth" className="text-blue-500 hover:underline">
-            {registerTranslate[lang].form.login}
-          </Link>
+    <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+        {registerTranslate[lang].form.title}
+      </h2>
+      <form onSubmit={handleRegister} className="space-y-4">
+        <div>
+          <label className="block text-gray-600">
+            {registerTranslate[lang].form.name.label}
+          </label>
+          <input
+            type="text"
+            value={name}
+            placeholder={registerTranslate[lang].form.name.placeholder}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
         </div>
+        <div>
+          <label className="block text-gray-600">
+            {registerTranslate[lang].form.email.label}
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder={registerTranslate[lang].form.email.placeholder}
+            className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-600">
+            {registerTranslate[lang].form.password.label}
+          </label>
+          <div className="flex  relative items-center">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder={registerTranslate[lang].form.password.placeholder}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
+            >
+              {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
+            </span>
+          </div>
+        </div>
+        <div>
+          <label className="block text-gray-600">
+            {registerTranslate[lang].form.confirmPassword.label}
+          </label>
+          <div className="flex  relative items-center">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="password"
+              placeholder={
+                registerTranslate[lang].form.confirmPassword.placeholder
+              }
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <span
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
+            >
+              {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
+            </span>
+          </div>
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
+          disabled={isLoading}
+        >
+          {isLoading ? <Spinner /> : registerTranslate[lang].form.submit}
+        </button>
+      </form>
+      <div className="text-center mt-4">
+        <Link href="/auth" className="text-blue-500 hover:underline">
+          {registerTranslate[lang].form.login}
+        </Link>
       </div>
     </div>
   );

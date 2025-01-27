@@ -426,62 +426,6 @@ export const validateToken = async (req: NextRequest) => {
     throw error;
   }
 };
-
-// export const validateToken = async (req) => {
-//   let user;
-//   try {
-//     const { email, token } = await req?.json();
-//     user = await User.findOne({
-//       email: email, //.toLowerCase(),
-//     });
-//     if (!user) {
-//       throw new AppError("User doesn't exist", 404);
-//     }
-//     if (user.passwordResetBlockedUntil) {
-//       if (user.passwordResetBlockedUntil < new Date()) {
-//         user.passwordResetBlockedUntil = undefined;
-//         await user.save();
-//       } else {
-//         throw new AppError(
-//           "Your Rest Password attempts are currently blocked. Please wait for an hour before attempting again.",
-//           400
-//         );
-//       }
-//     }
-//     if (!user.passwordResetToken) {
-//       throw new AppError(
-//         "Your rest password token has been invalid anymore please request new one.",
-//         400
-//       );
-//     }
-//     if (
-//       (user.passwordResetExpires && user.passwordResetExpires < new Date()) ||
-//       (user.passwordResetToken && token !== user.passwordResetToken)
-//     ) {
-//       user.passwordResetAttempts = (user.passwordResetAttempts || 0) + 1;
-//       // await user.save({ validateBeforeSave: false });
-//       await user.save(); // If the user has made 5 unsuccessful attempts, block them for 1 hour
-//       if (user.passwordResetAttempts >= 5) {
-//         // Block the user for 1 hour
-//         user.passwordResetBlockedUntil = new Date(Date.now() + 3600000); // 1 hour in milliseconds
-//         user.passwordResetAttempts = undefined;
-
-//         // await user.save({ validateBeforeSave: false });
-//         await user.save();
-//         throw new AppError(
-//           "Too many unsuccessful password reset attempts. Please try again later.",
-//           400
-//         );
-//       }
-//       throw new AppError("Invalid token Or has been expired.", 400);
-//     }
-//     return {
-//       message: "succuss",
-//       statusCode: 200,
-//     };
-//   } catch (error) {
-//     throw error//   }
-// };
 export const restPassword = async (req: NextRequest) => {
   try {
     const { newPassword, confirmPassword, token } = await req.json();

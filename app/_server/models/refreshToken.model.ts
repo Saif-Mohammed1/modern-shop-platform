@@ -10,33 +10,38 @@ export interface IRefreshTokenSchema extends Document {
   deviceInfo: string;
   ipAddress: string;
   expiresAt: Date;
-  createdAt: Date;
   lastActiveAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 // const refreshTokenSchema = new Schema<IRefreshToken>({
-const refreshTokenSchema = new Schema<IRefreshTokenSchema>({
-  token: { type: String, required: true },
-  user: {
-    type: Schema.Types.ObjectId,
+const refreshTokenSchema = new Schema<IRefreshTokenSchema>(
+  {
+    token: { type: String, required: true },
+    user: {
+      type: Schema.Types.ObjectId,
 
-    ref: "User",
-    required: true,
+      ref: "User",
+      required: true,
+    },
+    deviceInfo: {
+      type: String,
+      required: true,
+    }, // e.g., "iPhone 12, iOS 14.4"
+    ipAddress: {
+      type: String,
+      required: true,
+    },
+    expiresAt: {
+      type: Date,
+      required: true,
+    },
+    lastActiveAt: { type: Date, default: Date.now }, // New field to track last activity
   },
-  deviceInfo: {
-    type: String,
-    required: true,
-  }, // e.g., "iPhone 12, iOS 14.4"
-  ipAddress: {
-    type: String,
-    required: true,
-  },
-  expiresAt: {
-    type: Date,
-    required: true,
-  },
-  createdAt: { type: Date, default: Date.now },
-  lastActiveAt: { type: Date, default: Date.now }, // New field to track last activity
-});
+  {
+    timestamps: true,
+  }
+);
 
 const RefreshToken: Model<IRefreshTokenSchema> =
   models.RefreshToken ||

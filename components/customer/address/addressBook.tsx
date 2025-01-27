@@ -47,7 +47,6 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
       );
       return;
     }
-    // //console.log("newAddress", newAddress);
     if (
       !newAddress.city ||
       !newAddress.street ||
@@ -166,8 +165,6 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
   const handleInputChange = (e: Event) => {
     const { name, value } = e.target;
 
-    //console.log("name", name);
-    //console.log("value", value);
     setNewAddress((prevAddress) => ({ ...prevAddress, [name]: value }));
   };
   const handleIsEditInputChange = (e: Event) => {

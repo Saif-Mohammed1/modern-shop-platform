@@ -10,37 +10,39 @@ export interface IRefundSchema extends Document {
   reason: string;
   invoiceId: string;
   createdAt: Date;
+  updatedAt: Date;
 }
-const RefundSchema = new Schema<IRefundSchema>({
-  user: {
-    type: Schema.Types.ObjectId,
+const RefundSchema = new Schema<IRefundSchema>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
 
-    ref: "User",
-    required: true,
+      ref: "User",
+      required: true,
+    },
+    status: {
+      type: String,
+      // required: true,
+      enum: ["pending", "processing", "accepted", "refused"],
+      default: "pending",
+    },
+    issue: {
+      type: String,
+      required: true,
+    },
+    reason: {
+      type: String,
+      required: true,
+    },
+    invoiceId: {
+      type: String,
+      required: true,
+    },
   },
-  status: {
-    type: String,
-    // required: true,
-    enum: ["pending", "processing", "accepted", "refused"],
-    default: "pending",
-  },
-  issue: {
-    type: String,
-    required: true,
-  },
-  reason: {
-    type: String,
-    required: true,
-  },
-  invoiceId: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 RefundSchema.pre<Query<any, IRefundSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",

@@ -10,7 +10,11 @@ export const metadata: Metadata = {
 };
 
 const page = () => {
-  return <RegisterPage />;
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <RegisterPage />
+    </div>
+  );
 };
 
 export default page;

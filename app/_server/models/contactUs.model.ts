@@ -11,33 +11,35 @@ export interface IContactUsSchema extends Document {
   message: string;
   status: status;
   createdAt: Date;
+  updatedAt: Date;
 }
-const ContactUsSchema = new Schema<IContactUsSchema>({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+const ContactUsSchema = new Schema<IContactUsSchema>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    subject: {
+      type: String,
+      required: true,
+      maxlength: 150,
+    },
+    message: {
+      type: String,
+      required: true,
+      maxlength: 1000,
+    },
+    status: {
+      type: String,
+      enum: ["received", "read", "responded"],
+      default: "received",
+    },
   },
-  subject: {
-    type: String,
-    required: true,
-    maxlength: 150,
-  },
-  message: {
-    type: String,
-    required: true,
-    maxlength: 1000,
-  },
-  status: {
-    type: String,
-    enum: ["received", "read", "responded"],
-    default: "received",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const ContactUs: Model<IContactUsSchema> =
   models.ContactUs || model<IContactUsSchema>("ContactUs", ContactUsSchema);

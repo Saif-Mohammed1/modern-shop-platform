@@ -11,7 +11,11 @@ export const metadata: Metadata = {
 };
 
 const page = () => {
-  return <ForgotPasswordPage />;
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <ForgotPasswordPage />
+    </div>
+  );
 };
 
 export default page;

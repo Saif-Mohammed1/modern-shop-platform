@@ -43,6 +43,7 @@ export const forgetPasswordTranslate = {
           email: {
             alreadyHaveToken: "Already have a token?",
           },
+          rememberPassword: "Remembered your password?",
         },
       },
       errors: {
@@ -95,6 +96,7 @@ export const forgetPasswordTranslate = {
           email: {
             alreadyHaveToken: "Вже маєте токен?",
           },
+          rememberPassword: "Згадали свій пароль?",
         },
       },
       errors: {

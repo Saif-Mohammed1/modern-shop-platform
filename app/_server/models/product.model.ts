@@ -17,6 +17,7 @@ export interface IProductSchema extends Document {
   ratingsAverage: number;
   ratingsQuantity: number;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const ProductSchema = new Schema<IProductSchema>(
@@ -109,9 +110,10 @@ const ProductSchema = new Schema<IProductSchema>(
       type: Number,
       default: 0,
     },
-    createdAt: { type: Date, default: Date.now },
+    // createdAt: { type: Date, default: Date.now },
   },
   {
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -122,11 +124,18 @@ ProductSchema.virtual("reviews", {
   foreignField: "product",
   localField: "_id",
 });
-
+ProductSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    //  return price or descount to 2 decimal places for example 10.9999 will be 10.99
+    ret.price = parseFloat(ret.price.toFixed(2));
+    if (ret.discount) {
+      ret.discount = parseFloat(ret.discount.toFixed(2));
+    }
+    return ret;
+  },
+});
 // Populate user before executing the find query
 ProductSchema.pre<Query<any, IProductSchema>>(/^find/, function (next) {
-  // //console.log("worked populate");
-
   this.populate({
     path: "user",
     select: "name email",
@@ -135,36 +144,6 @@ ProductSchema.pre<Query<any, IProductSchema>>(/^find/, function (next) {
   next();
 });
 
-// Update discount and expire discounts before executing the find query doesn't work
-// ProductSchema.pre(/^find/, async function (next) {
-//   //console.log("worked updated");
-
-//   try {
-//     const currentDate = new Date();
-//     this.find({ discountExpire: { $lt: currentDate } })
-//       .updateMany({
-//         $set: { discount: 0 },
-//         $unset: { discountExpire: 1 },
-//       })
-//       ;
-//     // Filter out documents where `product` is null
-//     // this.where("user").ne(null);
-//     // // Update discount if discountExpire is less than the current date
-//     // this.where("discountExpire")
-//     //   .lt(currentDate)
-//     //   .updateMany({ $set: { discount: 0, discountExpire: undefined } });
-//     // // // Execute the find query to get the updated documents
-//     // // // const updatedDocuments =
-//     this.find();
-//     // Replace the original documents with the updated documents
-//     // this.splice(0, this.length, ...updatedDocuments);
-//     next();
-//   } catch (error) {
-//     next(error); // Pass any error to the next middleware
-//   }
-// });
-
-// Set discount expiration date before saving the document
 ProductSchema.pre("save", function (next) {
   // this points to the current query
   if (this.discount && this.discount > 0 && this.isNew) {
@@ -174,42 +153,6 @@ ProductSchema.pre("save", function (next) {
   next();
 });
 
-// ProductSchema.post(/^find/, async function (docs, next) {
-//   const currentDate = new Date();
-
-//   try {
-//     // Ensure `docs` is an array (it should be for `find`)
-//     if (!Array.isArray(docs)) {
-//       if (docs?.discountExpire && docs?.discountExpire < currentDate) {
-//         docs.discount = 0;
-
-//         docs.discountExpire = undefined;
-//         await docs.save();
-//       }
-//       return next();
-//     }
-
-//     // Filter out documents with null user and update discount if discountExpire is less than the current date
-//     const filteredDocs = docs.filter((doc) => doc.user !== null);
-//     const savePromises = filteredDocs.map(async (doc) => {
-//       if (doc?.discountExpire && doc?.discountExpire < currentDate) {
-//         doc.discount = 0;
-
-//         doc.discountExpire = undefined;
-//         await doc.save();
-//       }
-//     });
-
-//     // Wait for all save operations to complete
-//     await Promise.all(savePromises);
-//     // Replace the original documents array with the filtered and updated documents
-//     docs.splice(0, docs.length, ...filteredDocs);
-
-//     next();
-//   } catch (error) {
-//     next(error as Error); // Pass any error to the next middleware
-//   }
-// });
 ProductSchema.post(/^find/, async function (docs: IProductSchema[], next) {
   const currentDate = new Date();
 
@@ -232,25 +175,6 @@ ProductSchema.post(/^find/, async function (docs: IProductSchema[], next) {
     next(error as Error); // Pass any error to the next middleware
   }
 });
-
-// // Pre-save hook to set discount to 0 if discountExpire is less than current date
-// ProductSchema.pre(/^find/, function (next) {
-//   if (this.discountExpire < Date.now()) {
-//     this.discount = 0;
-//   }
-//   next();
-// });
-// ProductSchema.pre(/^find/, async function (next) {
-//   const doc = this;
-//   const price = await doc.get("price");
-//   const discount = await doc.get("discount");
-//   ////console.log("guess what");
-//   if (discount > price) {
-//     throw new Error("Discount must be less than price");
-//   }
-
-//   next();
-// });
 
 const Product: Model<IProductSchema> =
   models.Product || model<IProductSchema>("Product", ProductSchema);

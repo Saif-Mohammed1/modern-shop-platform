@@ -14,19 +14,6 @@ const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
 type ItemType = {
   quantity: number;
 } & ProductType;
-// no need for this function
-// const fetchActiveProducts = async () => {
-//   try {
-//     const products = await stripe.products.list(); // Use the stripe client instance to call the API
-//     const activeProducts = products.data.filter((product) => product.active);
-//     return activeProducts;
-//   } catch (error) {
-//     throw new AppError(
-//       stripeControllerTranslate[lang].functions.fetchActiveProducts.message,
-//       400
-//     );
-//   }
-// };
 
 export const createStripeProduct = async (req: NextRequest) => {
   try {
@@ -195,63 +182,6 @@ export const createStripeProduct = async (req: NextRequest) => {
   }
 };
 
-// export const captureSuccessPayment = async (req, sessionId) => {
-//   let doc;
-//   try {
-//     const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-//     // Process the payment session details
-//     const { payment_status, invoice } = session;
-
-//     if (payment_status === "paid" && invoice) {
-//       const lineItems = await stripe.checkout.sessions.listLineItems(
-//         session.id,
-//         {
-//           expand: ["data.price.product"],
-//         }
-//       );
-
-//       const invoiceDe = await stripe.invoices.retrieve(invoice);
-//       const existingInvoice = await Order.findOne({
-//         invoiceId: invoiceDe.number,
-//         user: req?.user?._id,
-//       });
-
-//       if (!existingInvoice) {
-//         lineItems.data.forEach(async (item) => {
-//           const productId = item.price.product.metadata._id; // Assuming you stored _id in metadata
-//           const quantity = item.quantity;
-//           const product = await Product.findById(productId);
-
-//           if (product) {
-//             product.stock -= quantity;
-//             await product.save();
-//           }
-//         });
-//         const shippingId = JSON.parse(session.metadata.shippingInfo)._id;
-
-//         doc = await Order.create({
-//           user: req?.user?._id,
-//           invoiceId: invoiceDe.number,
-//           invoiceLink: invoiceDe.hosted_invoice_url,
-//           amount: session.amount_total / 100,
-
-//           shippingInfo: shippingId,
-//         });
-//         await sendEmailWithInvoice(req?.user, invoiceDe.hosted_invoice_url);
-//         return { session, statusCode: 200 };
-//       }
-//     } else {
-//       throw new AppError("you need to complete your payment", 400);
-//     }
-//     return { data: null, statusCode: 200 };
-//   } catch (error) {
-//     //console.log("error", error);
-//     if (doc) {
-//       await Order.findByIdAndDelete(doc._id);
-//     }
-//     throw error//   }
-// };
 export const handleStripeWebhook = async (req: NextRequest) => {
   // const sig = req.headers["stripe-signature"];
   let event;

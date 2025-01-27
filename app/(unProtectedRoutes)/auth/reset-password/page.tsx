@@ -12,7 +12,11 @@ export const metadata: Metadata = {
 const page = () => {
   // Add your component logic here
 
-  return <ResetPasswordPage />;
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <ResetPasswordPage />
+    </div>
+  );
 };
 
 export default page;

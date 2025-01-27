@@ -33,96 +33,98 @@ export interface IOrderSchema extends Document {
   invoiceLink: string;
   totalPrice: number;
   createdAt: Date;
+  updatedAt: Date;
 }
-const OrderSchema = new Schema<IOrderSchema>({
-  user: {
-    type: Schema.Types.ObjectId,
+const OrderSchema = new Schema<IOrderSchema>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
 
-    ref: "User",
-    required: true,
-  },
-  shippingInfo: {
-    street: {
-      type: String,
+      ref: "User",
       required: true,
     },
-    city: {
-      type: String,
-      required: true,
-    },
-    state: {
-      type: String,
-      required: true,
-    },
-    postalCode: {
-      type: String,
-      required: true,
-    },
-    phone: {
-      type: String,
-      required: true,
-    },
-
-    country: {
-      type: String,
-      required: true,
-    },
-  },
-  items: [
-    {
-      _id: {
-        type: Schema.Types.ObjectId,
-
-        ref: "Product",
-        required: true,
-      },
-      name: {
+    shippingInfo: {
+      street: {
         type: String,
         required: true,
       },
-      quantity: {
-        type: Number,
+      city: {
+        type: String,
         required: true,
       },
-      price: {
-        type: Number,
+      state: {
+        type: String,
         required: true,
       },
-      discount: {
-        type: Number,
-        default: 0,
-      },
-      finalPrice: {
-        type: Number,
+      postalCode: {
+        type: String,
         required: true,
       },
-      discountExpire: Date,
-    },
-  ],
-  status: {
-    type: String,
-    // required: true,
+      phone: {
+        type: String,
+        required: true,
+      },
 
-    enum: ["pending", "completed", "refunded", "processing", "cancelled"],
-    default: "pending",
+      country: {
+        type: String,
+        required: true,
+      },
+    },
+    items: [
+      {
+        _id: {
+          type: Schema.Types.ObjectId,
+
+          ref: "Product",
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+        discount: {
+          type: Number,
+          default: 0,
+        },
+        finalPrice: {
+          type: Number,
+          required: true,
+        },
+        discountExpire: Date,
+      },
+    ],
+    status: {
+      type: String,
+      // required: true,
+
+      enum: ["pending", "completed", "refunded", "processing", "cancelled"],
+      default: "pending",
+    },
+    invoiceId: {
+      type: String,
+      required: true,
+    },
+    invoiceLink: {
+      type: String,
+      required: true,
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
   },
-  invoiceId: {
-    type: String,
-    required: true,
-  },
-  invoiceLink: {
-    type: String,
-    required: true,
-  },
-  totalPrice: {
-    type: Number,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",

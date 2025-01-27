@@ -198,8 +198,6 @@ export const editUserByAdmin = async (
   try {
     let data: Partial<IUserSchema> = {};
     const { active, role } = await req.json();
-    ////console.log("active", active);
-    ////console.log("role", role);
 
     if (typeof active !== "boolean" && !role) {
       throw new AppError(
@@ -215,7 +213,6 @@ export const editUserByAdmin = async (
     if (role) {
       data.role = role;
     }
-    ////console.log("data", data);
     const doc = await Model.findByIdAndUpdate(
       req.id,
 
@@ -288,32 +285,6 @@ export const deleteUser = async (
     throw error;
   }
 };
-// export const deleteProductByUser = async (req: NextRequest, Model) => {
-//   try {
-//     const doc = await Model.findOne({
-//       _id: req.id,
-//       user: req.user?._id,
-//     }); //.select("+public_id");
-
-//     if (!doc) {
-//       throw new AppError("No document found with that ID", 404);
-//     }
-//     if (doc.public_id) {
-//       const utapi = new UTApi();
-//       for (const public_id of doc.public_id) {
-//         await utapi.deleteFiles(public_id);
-
-//         // for cloudainry
-//         // await destroyImage(public_id);
-//       }
-//     }
-//     await Model.findByIdAndDelete(req.id); // or Model.findByIdAndDelete(req.params.id) if you prefer
-
-//     return { data: null, statusCode: 200 };
-//   } catch (error) {
-//     throw error;
-//   }
-// };
 export const changeEmailRequest = async (req: NextRequest) => {
   const { newEmail } = await req.json();
   if (!newEmail) {
@@ -419,88 +390,6 @@ export const updateUserEmail = async (req: NextRequest) => {
       statusCode: 200,
     };
   } catch (error) {
-    //   if (error instanceof Error) {
-    //     if (error.name === "TokenExpiredError") {
-    //       throw new AppError(
-    //         userControllerTranslate[
-    //           lang
-    //         ].controllers.updateUserEmail.errors.TokenExpiredError,
-    //         400
-    //       );
-    //     } else if (error.name === "JsonWebTokenError") {
-    //       throw new AppError(
-    //         userControllerTranslate[
-    //           lang
-    //         ].controllers.updateUserEmail.errors.JsonWebTokenError,
-    //         400
-    //       );
-    //     }
-    //     throw new AppError(
-    //       userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
-    //       500
-    //     );
-    //   }
-    //   throw new AppError(
-    //     userControllerTranslate[lang].controllers.updateUserEmail.errors.global,
-    //     500
-    //   );
-    // }
-
     throw error;
   }
 };
-
-// export const updateUserPhoto = async (req, Model) => {
-//   try {
-//     const { photo, public_id } = await req.json();
-//     if (!photo) {
-//       throw new AppError("photo must be required", 400);
-//     }
-//     if (!public_id) {
-//       throw new AppError("public_id must be required", 400);
-//     }
-//     const user = await Model.findById(req.user?._id); //.select("+public_id");
-
-//     if (!user) {
-//       throw new AppError("No user found with that ID", 404);
-//     }
-//     if (user.public_id) {
-//       const utapi = new UTApi();
-//       await utapi.deleteFiles(user.public_id);
-
-//       // for cloudainry
-//       // await destroyImage(public_id);
-//     }
-//     user.public_id = public_id;
-//     user.photo = photo;
-//     await user.save();
-//     return { data: user, statusCode: 200 };
-//   } catch (error) {
-//     throw error//   }
-// };
-// export const updatePassword = async (req) => {
-//   try {
-//     const { password, confirmPassword, newPassword, email } = await req.json();
-
-//     if (!newPassword) {
-//       const user = await User.findById({ email });
-//       //   const user = await User.findById(req.user.id).select("+password");
-
-//       if (!user) {
-//         //       // User not found
-//         throw new AppError("User does not exist", 400);
-//       }
-
-//       // 3) If so, update password
-//       user.password = password;
-//       user.passwordConfirm = confirmPassword;
-//       await user.save();
-//       // User.findByIdAndUpdate will NOT work as intended!
-
-//       // 4) Log user in, send JWT
-//       createSendToken(user, 200, req, res);
-//     }
-//   } catch (error) {
-
-//   }
-// };

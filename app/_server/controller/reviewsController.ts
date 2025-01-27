@@ -48,7 +48,6 @@ export const createReviews = async (
       statusCode: 201,
     };
   } catch (error) {
-    ////console.log("error createReviews", error);
     if (doc) {
       await model.findOneAndDelete(
         { product: req?.id, user: req.user?._id } // Condition to find the document

@@ -231,7 +231,6 @@ export const getAggregate = async <T extends Document>(
 
     return { data: paginatedResult, statusCode: 200, pageCount };
   } catch (error) {
-    //////console.log("error", error);
     throw error;
   }
 };
@@ -258,8 +257,7 @@ export const getAll = async <T extends BaseDocument>(
     if (popOptions) features.query = features.query.populate(popOptions);
 
     let doc = await features.query;
-    // //////console.log("doc product 1S", doc);
-    //////console.log("doc product 1S", doc.length);
+
     const allData = doc;
     const limit = features.limit ?? 15;
     const pageCount = Math.ceil(doc.length / limit);

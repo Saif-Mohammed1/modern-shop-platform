@@ -14,12 +14,7 @@ import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
 import { UserType, useUser } from "./user.context";
 export type UserInCart = Partial<UserType> | undefined;
-// export type CartItemsType = {
-//   _id: string;
-//   quantity: number;
-//   product: ProductType;
-//   user?: UserInCart;
-// };
+
 export type CartItemsType = {
   quantity: number;
 } & ProductType;

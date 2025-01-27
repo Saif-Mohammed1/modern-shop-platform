@@ -14,41 +14,6 @@ export const metadata: Metadata = {
   keywords: confirmEmailChangeTranslate[lang].metadata.keywords,
 };
 
-// type Params = {
-//   searchParams: {
-//     token: string;
-//   };
-// };
-// const page = async ({ searchParams }: Params) => {
-//   const { token } = searchParams;
-//   try {
-//     if (!token) {
-//       throw new Error(confirmEmailChangeTranslate[lang].emptyToken);
-//     }
-
-//     const { data } = await api.put(
-//       `/customer/update-data/confirm-email-change?token=` + token,
-//       {
-//         headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-//       }
-//     );
-
-//     // return (
-//     //   <div className="messageBox">
-//     //     <h2 className="heading">
-//     //       {/* {message.includes("successfully") */}
-//     //       {data.message &&
-//     //         emailUpdatedStatusTranslate[lang].functions.onSuccess}
-//     //       {/* emailUpdatedStatusTranslate[lang].functions.onFail */}
-//     //     </h2>
-//     //     {data.message && <p className="message">{data.message}</p>}
-//     //   </div>
-//     // );
-//     return <ConfirmEmailChange  />;
-//   } catch (error: any) {
-//     return <ErrorHandler message={error?.message} />;
-//   }
-// };
 const page = () => {
   return <ConfirmEmailChange />;
 };

@@ -6,25 +6,32 @@ export interface IFavoriteSchema extends Document {
   user: IUserSchema["_id"];
   product: IProductSchema["_id"];
   // favorite: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
-const FavoriteSchema = new Schema<IFavoriteSchema>({
-  user: {
-    type: Schema.Types.ObjectId,
+const FavoriteSchema = new Schema<IFavoriteSchema>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
 
-    ref: "User",
-    required: true,
-  },
-  product: {
-    type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    product: {
+      type: Schema.Types.ObjectId,
 
-    ref: "Product",
-    required: true,
+      ref: "Product",
+      required: true,
+    },
+    // favorite: {
+    //   type: Boolean,
+    //   default: true,
+    // },
   },
-  // favorite: {
-  //   type: Boolean,
-  //   default: true,
-  // },
-});
+  {
+    timestamps: true,
+  }
+);
 FavoriteSchema.pre<Query<any, IFavoriteSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",

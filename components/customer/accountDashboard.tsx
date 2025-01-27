@@ -220,17 +220,6 @@ const AccountDashboard = () => {
       toast.dismiss(loadingToast);
     }
   };
-  // useEffect(() => {
-  //   if (session?.user) {
-  //     console.log("session?.user", session?.user);
-  //     setUserData({
-  //       name: session?.user?.name ?? "",
-  //       email: session?.user?.email ?? "",
-  //       phone: session?.user?.phone ?? "",
-  //       emailVerify: session?.user?.emailVerify ?? false,
-  //     });
-  //   }
-  // }, [session?.user]);
 
   return (
     <div className="w-full max-w-3xl /mx-auto bg-white p-8 shadow-lg rounded-lg">

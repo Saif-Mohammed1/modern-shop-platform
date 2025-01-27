@@ -247,11 +247,11 @@ const ProductList: FC<ProductListProps> = ({
               </p>
               <p className="text-gray-600 mb-2">
                 {productsTranslate.products[lang].details.price}: $
-                {product.price}
+                {parseFloat(product.price.toString()).toFixed(2)}
               </p>
               <p className="text-gray-600 mb-2">
                 {productsTranslate.products[lang].details.discount}: $
-                {product.discount}
+                {parseFloat(product.discount.toString()).toFixed(2)}
               </p>
               <p className="text-gray-600 mb-2">
                 {productsTranslate.products[lang].details.discountExpiry}:{" "}

@@ -8,11 +8,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   try {
-    //console.log("forget-password route");
     await connectDB();
-    //   .then((re) => ////console.log("success connect to db"))
-    //   .catch((re) => ////console.log("failed connect to db"));
-
     const { message, statusCode } = await forgetPassword(req);
 
     return NextResponse.json(
@@ -28,8 +24,6 @@ export const POST = async (req: NextRequest) => {
 export const PATCH = async (req: NextRequest) => {
   try {
     await connectDB();
-    //   .then((re) => ////console.log("success connect to db"))
-    //   .catch((re) => ////console.log("failed connect to db"));
 
     const { message, statusCode } = await validateToken(req);
 

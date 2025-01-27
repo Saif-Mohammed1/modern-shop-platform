@@ -32,8 +32,6 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  // ////console.log("POST", req
-
   const { id } = params;
   try {
     await connectDB();

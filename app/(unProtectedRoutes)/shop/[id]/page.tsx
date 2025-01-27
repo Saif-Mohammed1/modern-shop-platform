@@ -8,11 +8,6 @@ import { lang } from "@/components/util/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-// export const metadata = {
-//   title: "Shop - Product Details", // Update the title here
-//   description:
-//     "Explore the details of our wide range of products. Find the perfect item for your needs and make a purchase with confidence.", // Update the description here
-// };
 type Props = {
   params: {
     id: string;

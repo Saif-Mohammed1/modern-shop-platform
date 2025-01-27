@@ -10,6 +10,7 @@ export interface IReviewSchema extends Document {
   rating: number;
   reviewText: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 interface IReviewModel extends Model<IReviewSchema> {
   calcAverageRatings(productId: string): Promise<void>;
@@ -44,12 +45,9 @@ const ReviewSchema = new Schema<IReviewSchema>(
       maxlength: 200,
       required: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -86,7 +84,6 @@ ReviewSchema.statics.calcAverageRatings = async function (productId: string) {
       },
     },
   ]);
-  // ////console.log(stats);
 
   if (stats.length > 0) {
     await Product.findByIdAndUpdate(productId, {
@@ -111,7 +108,6 @@ ReviewSchema.post("save", function () {
 // findByIdAndDelete
 ReviewSchema.pre<IReviewQuery>(/^findOneAnd/, async function (next) {
   this.r = await this.findOne();
-  // ////console.log(this.r);
   next();
 });
 

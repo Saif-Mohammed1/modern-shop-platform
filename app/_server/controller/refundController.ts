@@ -15,9 +15,6 @@ export const createRefund = async (
   try {
     let { issue, message, invoiceId } = await req.json();
 
-    ////console.log("issue", issue);
-    ////console.log("message", message);
-    ////console.log("invoiceId", invoiceId);
     if (!issue || !invoiceId || !message) {
       throw new AppError(
         refundUsControllerTranslate[lang].controller.dataRequired,

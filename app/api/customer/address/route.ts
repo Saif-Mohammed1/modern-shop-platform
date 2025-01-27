@@ -29,7 +29,6 @@ export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
     await isAuth(req);
-    //console.log("called");
 
     const { data, statusCode } = await createOne<IAddressSchema>(req, Address);
     return NextResponse.json({ data }, { status: statusCode });

@@ -177,7 +177,8 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
       {/* Price and Discount */}
       <div className="mt-4 text-2xl">
         <span className="font-bold text-blue-600">
-          ${product.price - product.discount}
+          $
+          {parseFloat((product.price - product.discount).toString()).toFixed(2)}
         </span>
         {product.discount > 0 && (
           <span className="ml-3 text-gray-500 line-through text-xl">
