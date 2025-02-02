@@ -169,7 +169,7 @@ export const TwoFactorAuthManager = () => {
 
           {view === "audit" && (
             <AuditLogViewer
-              userId={session?.user?._id.toString() ?? ""}
+              // userId={session?.user?._id.toString() ?? ""}
               onClose={() => setView("main")}
             />
           )}
@@ -364,10 +364,10 @@ const RecoveryCodeManagement = ({
 );
 
 const AuditLogViewer = ({
-  userId,
+  // userId,
   onClose,
 }: {
-  userId: string;
+  // userId: string;
   onClose: () => void;
 }) => (
   <div className="space-y-6">
