@@ -2,7 +2,7 @@ import { ordersTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashb
 import AdminOrdersDashboard from "@/components/(admin)/dashboard/orders/orderMangement";
 import ErrorHandler from "@/components/Error/errorHandler";
 import AppError from "@/components/util/appError";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { lang } from "@/components/util/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";

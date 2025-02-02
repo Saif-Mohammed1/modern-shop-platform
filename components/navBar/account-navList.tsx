@@ -11,14 +11,14 @@ import {
   VscHeart,
 } from "react-icons/vsc";
 import { MdDashboard } from "react-icons/md";
-import api from "../util/axios.api";
+import api from "../util/api";
 import { deleteCookies } from "../util/cookies";
 import { useEffect, useRef } from "react";
-import { UserType } from "../context/user.context";
 import { navBarTranslate } from "@/app/_translate/navBarTranslate";
 import { lang } from "../util/lang";
+import { UserAuthType } from "@/app/_types/users";
 type AccountNavListProps = {
-  user: UserType | null;
+  user: UserAuthType | null;
   setAccountMenuOpen: (open: boolean) => void;
 };
 const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {

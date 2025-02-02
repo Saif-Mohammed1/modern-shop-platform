@@ -1,5 +1,5 @@
 import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import OverlayWrapper from "@/components/util/OverlayWrapper";
 import { headers } from "next/headers";
 import ModelProductDetail from "@/components/util/ModelProductDetail";

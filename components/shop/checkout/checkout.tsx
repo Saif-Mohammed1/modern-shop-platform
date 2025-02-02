@@ -1,7 +1,7 @@
 "use client";
 
 import { useCartItems } from "@/components/context/cart.context";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import imageSrc from "@/components/util/productImageHandler";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -324,22 +324,30 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
                   key={index}
                   className="flex items-center border-b-2 py-2 gap-3"
                 >
-                  <Image
-                    src={imageSrc(item)}
-                    width={50}
-                    height={50}
-                    style={{ objectFit: "cover" }}
-                    alt={item.name}
-                    priority
-                  />
+                  <div
+                    className="imgParent"
+                    style={{ width: "100px", height: "100px" }}
+                  >
+                    <Image
+                      src={imageSrc(item)}
+                      width={50}
+                      height={50}
+                      style={{ objectFit: "cover" }}
+                      alt={item.name}
+                      priority
+                    />
+                  </div>
                   <div className="w-full">
                     <p className="font-normal text-lg">{item.name}</p>
 
                     <p className="flex w-full justify-between items-center ">
                       <span className=" text-gray-700">
-                        {item.quantity} x ${price}
+                        {item.quantity} x ${parseFloat(price.toFixed(2))}
                       </span>
-                      <span> ${item.quantity * price}</span>
+                      <span>
+                        {" "}
+                        ${parseFloat((item.quantity * price).toFixed(2))}
+                      </span>
                     </p>
                   </div>
                 </div>

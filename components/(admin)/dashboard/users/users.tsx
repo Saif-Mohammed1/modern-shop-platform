@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import toast from "react-hot-toast";
 import Pagination from "@/components/pagination/Pagination";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

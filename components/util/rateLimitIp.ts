@@ -1,7 +1,7 @@
 const rateLimitMap = new Map(); // In-memory store
 
 export const rateLimitIp = (ip: string) => {
-  const limit = 15; // Max requests per window (for example, 10 requests)
+  const limit = 30; // Max requests per window (for example, 10 requests)
   const windowMs = 60 * 1000; // 1 minute window
 
   const now = Date.now();

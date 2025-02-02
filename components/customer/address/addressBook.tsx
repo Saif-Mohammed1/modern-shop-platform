@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getCities } from "countries-cities"; // Importing to use Ukraine cities
 import toast from "react-hot-toast";
-import api from "../../util/axios.api";
+import api from "../../util/api";
 import dynamic from "next/dynamic";
 import {
   addressTranslate,
@@ -10,6 +10,7 @@ import {
 } from "@/app/_translate/(protectedRoute)/account/addressTranslate";
 import { lang } from "@/components/util/lang";
 import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import CustomButton from "@/components/button/button";
 // import { useRouter } from "next/navigation";
 const AddAddressComponent = dynamic(
   () => import("./addAddressReuseableComponent")
@@ -17,10 +18,16 @@ const AddAddressComponent = dynamic(
 
 type AddressBookProps = {
   addressList: AddressType[];
+  hasNextPage: boolean;
 };
 
-const AddressBook = ({ addressList }: AddressBookProps) => {
-  const [addresses, setAddresses] = useState<AddressType[]>([]);
+const AddressBook = ({ addressList, hasNextPage }: AddressBookProps) => {
+  const [moreResults, setMoreResults] = useState<AddressType[]>(
+    addressList || []
+  );
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [showMore, setShowMore] = useState(hasNextPage);
 
   const [showForm, setShowForm] = useState(false);
   const [newAddress, setNewAddress] = useState<Partial<AddressType>>({
@@ -38,6 +45,21 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
   const ukraineCities = getCities("Ukraine");
   // const router = useRouter();
 
+  const getMoreResults = async () => {
+    try {
+      setLoading(true);
+      const newPage = page + 1;
+      setPage((prevPage) => prevPage++);
+      const { data } = await api.get(`/customer/address/?page=${newPage}`);
+      setMoreResults([...moreResults, ...data.data]);
+      setPage(newPage);
+      setShowMore(data.hasNextPage);
+    } catch (error) {
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleAddAddress = async () => {
     let toastLoading;
 
@@ -66,7 +88,7 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
       } = await api.post("/customer/address", newAddress);
 
       toast.success(addressTranslate[lang].function.handleAddAddress.success);
-      setAddresses([...addresses, data]);
+      setMoreResults([...moreResults, data]);
       // router.refresh();
       setNewAddress({
         street: "",
@@ -87,7 +109,7 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
       toast.dismiss(toastLoading);
     }
 
-    // setAddresses([...addresses, newAddress]);
+    // setMoreResults([...moreResults, newAddress]);
   };
 
   const handleDeleteAddress = async (id: string) => {
@@ -101,7 +123,7 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
       toast.success(
         addressTranslate[lang].function.handleDeleteAddress.success
       );
-      setAddresses(addresses.filter((address) => address._id !== id));
+      setMoreResults(moreResults.filter((address) => address._id !== id));
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error?.message || addressTranslate[lang].error.global);
@@ -111,12 +133,13 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
     } finally {
       toast.dismiss(toastLoading);
     }
-    // setAddresses(addresses.filter((_, i) => i !== index));
+    // setMoreResults(moreResults.filter((_, i) => i !== index));
   };
 
   const handleEditClick = (id: string) => {
     setIsEditing(id);
-    const findAddress = addresses.find((address) => address._id === id) || null;
+    const findAddress =
+      moreResults.find((address) => address._id === id) || null;
 
     setEditAddress(findAddress);
   };
@@ -148,7 +171,7 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
       );
       await api.patch(`/customer/address/${id}`, editAddress);
       toast.success(addressTranslate[lang].function.handleSaveEdit.success);
-      setAddresses((prev) =>
+      setMoreResults((prev) =>
         prev.map((address) => (address._id === id ? editAddress : address))
       );
       setIsEditing(null);
@@ -188,22 +211,20 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
       country: "Ukraine",
     });
   };
-  useEffect(() => {
-    setAddresses(addressList);
-  }, [addressList]);
+
   return (
     <div className="container mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg min-h-screen overflow-hidden">
       <h1 className="text-3xl font-bold mb-6">
         {addressTranslate[lang].title.main}
       </h1>
-      {/* List of existing addresses */}
+      {/* List of existing moreResults */}
       <div className="mb-4">
         <h2 className="text-2xl font-semibold">
           {" "}
           {addressTranslate[lang].title.subTitle}
         </h2>
         <ul className="mt-4 space-y-2 max-h-[90vh] md:max-h-[60vh] overflow-y-auto">
-          {addresses.map((address) => (
+          {moreResults.map((address) => (
             <li key={address._id} className="p-4 bg-white rounded shadow">
               {isEditing === address._id ? (
                 <div>
@@ -322,13 +343,24 @@ const AddressBook = ({ addressList }: AddressBookProps) => {
       </div>
       {/* Button to toggle form for adding new address */}
       {!showForm && (
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-6 py-2 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition duration-200"
-        >
-          {addressTranslate[lang].button.addNewAddress}
-        </button>
+        // <div className="flex justify-between my-4">
+        <>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-6 py-2 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition duration-200"
+          >
+            {addressTranslate[lang].button.addNewAddress}test
+          </button>
+          {/* Button to show more results */}
+          <CustomButton
+            showMore={showMore}
+            getMoreResults={getMoreResults}
+            loading={loading}
+          />
+        </>
+        // </div>
       )}
+
       {/* Form to add new address (hidden by default) */}
       {showForm && (
         <AddAddressComponent

@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { dashboardTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/dashboardTranslate";
 import { lang } from "@/components/util/lang";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import Dashboard from "@/components/(admin)/dashboard/dashboard";
 import ErrorHandler from "@/components/Error/errorHandler";
 
@@ -20,7 +20,7 @@ const page = async () => {
     } = await api.get("/admin/dashboard", {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
-    return <Dashboard data={data} />;
+    return <Dashboard dashboardData={data} />;
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;
 

@@ -5,7 +5,7 @@ import {
 } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
 import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import Pagination from "@/components/pagination/Pagination";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { lang } from "@/components/util/lang";
 import { updateQueryParams } from "@/components/util/updateQueryParams";
 import moment from "moment/moment";

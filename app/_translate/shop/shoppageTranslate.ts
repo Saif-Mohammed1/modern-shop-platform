@@ -90,6 +90,13 @@ export const shopPageTranslate = {
       next: "Next",
       addToCart: "Add to Cart",
     },
+    modelProductDetails: {
+      reviews: "Reviews",
+      category: "Category",
+      Offer: "Offer ends",
+      getMoreDetails: "Get More Details",
+    },
+
     errors: {
       noProductFound: "There is no Product Found",
     },
@@ -193,6 +200,12 @@ export const shopPageTranslate = {
       prev: "Попередній",
       next: "Наступний",
       addToCart: "Додати в кошик",
+    },
+    modelProductDetails: {
+      reviews: "Відгуки",
+      category: "Категорія",
+      Offer: "Пропозиція закінчується",
+      getMoreDetails: "Дізнатися більше",
     },
     errors: {
       noProductFound: "Продукт не знайдено",

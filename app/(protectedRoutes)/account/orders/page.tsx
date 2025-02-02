@@ -1,7 +1,7 @@
 // import OrderHistory from "@/components/shop/orders/orderHistory";
 export const dynamic = "force-dynamic";
 import UserOrderTracking from "@/components/shop/orders/orderTracking";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
@@ -16,11 +16,23 @@ export const metadata: Metadata = {
   description: accountOrdersTranslate[lang].metadata.description,
   keywords: accountOrdersTranslate[lang].metadata.keywords,
 };
-const page = async () => {
+type Props = {
+  searchParams: { page?: string };
+};
+const page = async ({ searchParams }: Props) => {
+  const url = new URLSearchParams();
+  if (searchParams.page !== undefined) {
+    url.append("page", searchParams.page);
+  }
   try {
-    const { data } = await api.get("/customer/orders", {
-      headers: Object.fromEntries(headers().entries()), //convert headers to javascript object
-    });
+    const queryString = url.toString();
+
+    const { data } = await api.get(
+      "/customer/orders" + (queryString ? `?${queryString}` : ""),
+      {
+        headers: Object.fromEntries(headers().entries()), //convert headers to javascript object
+      }
+    );
     const orders = data.data;
     // return <OrderHistory ordersList={orders} />;
     return (
@@ -28,20 +40,17 @@ const page = async () => {
         <h1 className="text-3xl font-semibold mb-6 text-center">
           {accountOrdersTranslate[lang].title}
         </h1>
-        <div className="max-h-[80vh] overflow-y-auto">
-          {/* <OrderHistory ordersList={orders} />; */}
+        {/* <div className="max-h-[80vh] overflow-y-auto"> */}
+        {/* <OrderHistory ordersList={orders} />; */}
 
-          {orders.length > 0 ? (
-            orders.map((order: OrdersType) => (
-              <UserOrderTracking order={order} />
-            ))
-          ) : (
-            // <h1 className="text-3xl font-semibold mb-6 text-center">
-            <h1 className="empty">
-              {accountOrdersTranslate[lang].noOrdersFound}
-            </h1>
-          )}
-        </div>
+        {orders.length > 0 ? (
+          <UserOrderTracking orders={orders} hasNextPage={data.hasNextPage} />
+        ) : (
+          // <h1 className="text-3xl font-semibold mb-6 text-center">
+          <h1 className="empty">
+            {accountOrdersTranslate[lang].noOrdersFound}
+          </h1>
+        )}
       </div>
     );
   } catch (error: any) {

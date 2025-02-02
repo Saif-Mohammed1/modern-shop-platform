@@ -67,15 +67,17 @@ const WishListCard = ({ product }: { product: ProductType }) => {
 
   return (
     <div className="border rounded-lg shadow-lg p-4">
-      <Image
-        src={imageSrc(product)}
-        alt={product.name}
-        className="w-full h-auto object-cover rounded-lg"
-        width={200}
-        height={200}
-        style={{ objectFit: "cover" }}
-        priority
-      />
+      <div className="imgParent">
+        <Image
+          src={imageSrc(product)}
+          alt={product.name}
+          // className="w-full h-full #h-auto object-cover rounded-lg"
+          width={200}
+          height={200}
+          style={{ objectFit: "cover" }}
+          priority
+        />
+      </div>
       <h3 className="text-xl font-semibold mt-2">{product.name}</h3>
       <p className="text-gray-600">${product.price}</p>
       <div className="flex justify-between mt-2">

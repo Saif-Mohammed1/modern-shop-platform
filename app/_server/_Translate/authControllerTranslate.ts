@@ -29,6 +29,7 @@ export const authControllerTranslate = {
           "Your logIn attempts are currently blocked. Please wait for an hour before attempting again.",
         tooManyUnsuccessfulPasswordAttemptsMessage:
           "Too many unsuccessful password attempts. Please try again later.",
+        // emailOrPasswordIncorrect: "Email or Password are ",
       },
 
       forgetPassword: {

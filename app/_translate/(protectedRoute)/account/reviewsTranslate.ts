@@ -37,5 +37,6 @@ export type ReviewType = {
   createdAt: string;
   product: {
     name: string;
+    _id: string;
   };
 };

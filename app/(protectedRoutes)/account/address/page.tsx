@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import AddressBook from "@/components/customer/address/addressBook";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
@@ -21,7 +21,7 @@ const page = async () => {
     });
     const address = data.data;
 
-    return <AddressBook addressList={address} />;
+    return <AddressBook addressList={address} hasNextPage={data.hasNextPage} />;
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
 

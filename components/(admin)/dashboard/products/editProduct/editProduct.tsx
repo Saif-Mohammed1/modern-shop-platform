@@ -6,7 +6,7 @@ import EditProductPrice from "./editProductPrice";
 import EditProductInventory from "./editProductInventory";
 import EditProductImages from "./editProductImages";
 import EditProductSubmit from "./editProductSubmit";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import toast from "react-hot-toast";
 import {
   Event,

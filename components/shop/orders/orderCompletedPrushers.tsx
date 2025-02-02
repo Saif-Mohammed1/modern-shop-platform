@@ -31,9 +31,7 @@ const OrderCompleted = ({ order }: { order: OrdersType }) => {
           </p>
           <p className="text-lg mb-4">
             {accountOrdersTranslate[lang].orderCompleted.summery.totalAmount}:{" "}
-            <span className="font-semibold">
-              ${order.totalPrice.toFixed(2)}
-            </span>
+            <span className="font-semibold">${order.totalPrice}</span>
           </p>
 
           {/* Products */}
@@ -61,7 +59,7 @@ const OrderCompleted = ({ order }: { order: OrdersType }) => {
                         accountOrdersTranslate[lang].orderCompleted.summery
                           .Items.discountApplied
                       }
-                      : ${item.discount.toFixed(2)}
+                      : ${item.discount}
                     </p>
                   )}
                   {item.discountExpire && (
@@ -78,14 +76,14 @@ const OrderCompleted = ({ order }: { order: OrdersType }) => {
                   {item.discount > 0 ? (
                     <>
                       <p className="line-through text-sm text-gray-500">
-                        ${item.price.toFixed(2)}
+                        ${item.price}
                       </p>
                       <p className="font-semibold text-green-600">
-                        ${item.finalPrice.toFixed(2)}
+                        ${item.finalPrice}
                       </p>
                     </>
                   ) : (
-                    <p className="font-semibold">${item.price.toFixed(2)}</p>
+                    <p className="font-semibold">${item.price}</p>
                   )}
                 </div>
               </li>

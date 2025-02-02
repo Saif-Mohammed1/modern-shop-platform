@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa"; // OS/Browser icons
 import moment from "moment";
 import { useEffect, useState } from "react";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {

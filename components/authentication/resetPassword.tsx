@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Spinner from "../spinner/spinner";
-import api from "../util/axios.api";
+import api from "../util/api";
 import { resetPasswordTranslate } from "@/app/_translate/auth/resetPasswordTranslate";
 import { lang } from "../util/lang";
 

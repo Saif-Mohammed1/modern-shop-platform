@@ -1,7 +1,7 @@
 "use client";
 import React, { FC, useState } from "react";
 import toast from "react-hot-toast";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import {
   OrderStatus,
   ordersTranslate,

@@ -9,48 +9,42 @@ import { createUserTokens, detectUnusualLogin } from "./refreshTokenController";
 import type { NextRequest } from "next/server";
 import { authControllerTranslate } from "../_Translate/authControllerTranslate";
 import { lang } from "@/components/util/lang";
-import { Schema } from "mongoose";
+import { UserAuthType } from "@/app/_types/users";
 
-export type UserAuthType = {
-  _id: Schema.Types.ObjectId;
-  name: string;
-  email: string;
-  emailVerify: boolean;
-  role: string;
-  createdAt: Date;
-  phone?: string;
-};
 type UserTokenType = {
   user: UserAuthType;
-  accessToken: string | null;
+  // accessToken: string | null;
   statusCode: number;
   message?: string;
 };
 
 export const modifyFinalResponse = (
   user: UserAuthType,
-  accessToken: string | null,
   statusCode: number,
   message?: string
 ): UserTokenType => {
   let userData = {} as { user: UserAuthType };
+  const accessTokenExpires =
+    Date.now() + Number(process.env.NEXTAUTH_SESSION_MAX_AGE || 15) * 60 * 1000; // 15 minutes
   userData.user = {
     _id: user._id,
     name: user.name,
     email: user.email,
     emailVerify: user.emailVerify,
+    isTwoFactorAuthEnabled: user.isTwoFactorAuthEnabled,
     // password: user.password,
     // photo: user.photo,
     role: user.role,
     createdAt: user.createdAt,
     phone: user.phone,
+    accessToken: user.accessToken,
+    accessTokenExpires,
   };
   return {
     message:
       message &&
       authControllerTranslate[lang].functions.modifyFinalResponse.message,
     user: userData.user,
-    accessToken,
     statusCode,
   };
 };
@@ -65,7 +59,6 @@ export const isAuth = async (req: NextRequest) => {
       401
     );
   }
-
   try {
     //not working with promisify
     // const decoded = await promisify(verify)(
@@ -97,17 +90,16 @@ export const isAuth = async (req: NextRequest) => {
         401
       );
     }
-
-    if (
-      currentUser?.updatedAt &&
-      currentUser?.updatedAt?.getTime() !== decoded?.iat
-    ) {
-      throw new AppError(
-        authControllerTranslate[lang].functions.isAuth.invalidSession,
-        401
-      );
-    }
-
+    // console.log(currentUser?.updatedAt, decoded?.iat);
+    // if (
+    //   currentUser?.passwordChangedAt &&
+    //   currentUser?.passwordChangedAt?.getTime() !== decoded?.iat
+    // ) {
+    //   throw new AppError(
+    //     authControllerTranslate[lang].functions.isAuth.invalidSession,
+    //     401
+    //   );
+    // }
     if (currentUser.changedPasswordAfter(decoded?.iat)) {
       throw new AppError(
         authControllerTranslate[lang].functions.isAuth.recentlyChangedPassword,
@@ -172,9 +164,13 @@ export const register = async (req: NextRequest) => {
     // Send the verification email
     await user.sendVerificationCode();
     const accessToken = await createUserTokens(String(user._id), req);
+
     return modifyFinalResponse(
-      user,
-      accessToken,
+      {
+        ...user.toObject(),
+        accessToken,
+        // accessTokenExpires: Date.now() + Number(process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || 15) * 60 * 1000
+      },
       201,
       "User created successfully"
     );
@@ -188,6 +184,12 @@ export const register = async (req: NextRequest) => {
 export const logIn = async (req: NextRequest) => {
   try {
     const { email, password } = await req?.json();
+    if (!email || !password) {
+      throw new AppError(
+        authControllerTranslate[lang].functions.logIn.invalidEmailOrPassword,
+        400
+      );
+    }
     const user = await User.findOne({
       email: email.toLowerCase(),
     }).select("+password");
@@ -260,7 +262,7 @@ export const logIn = async (req: NextRequest) => {
     await detectUnusualLogin(req);
 
     const accessToken = await createUserTokens(String(user._id), req);
-    return modifyFinalResponse(user, accessToken, 200);
+    return modifyFinalResponse({ ...user.toObject(), accessToken }, 200);
   } catch (error) {
     throw error;
   }
@@ -562,7 +564,7 @@ export const updatePassword = async (req: NextRequest) => {
 
     await user.save();
     const accessToken = await createUserTokens(String(user._id), req);
-    return modifyFinalResponse(user, accessToken, 200);
+    return modifyFinalResponse({ ...user.toObject(), accessToken }, 200);
   } catch (error) {
     throw error;
   }

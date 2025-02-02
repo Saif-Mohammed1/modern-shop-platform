@@ -2,7 +2,7 @@
 import "./emailUpdatedStatus.css";
 import { useEffect, useState } from "react";
 
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { emailUpdatedStatusTranslate } from "@/app/_translate/emailUpdatedStatusTranslate";

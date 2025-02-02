@@ -10,8 +10,11 @@ export const GET = async (req: NextRequest) => {
     await connectDB();
     await isAuth(req);
     req.id = String(req.user?._id);
-    const { data, statusCode } = await getDataByUser<IOrderSchema>(req, Order);
-    return NextResponse.json({ data }, { status: statusCode });
+    const { data, statusCode, hasNextPage } = await getDataByUser<IOrderSchema>(
+      req,
+      Order
+    );
+    return NextResponse.json({ data, hasNextPage }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
   }

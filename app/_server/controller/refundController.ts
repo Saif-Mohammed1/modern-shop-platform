@@ -13,9 +13,9 @@ export const createRefund = async (
 ) => {
   let doc;
   try {
-    let { issue, message, invoiceId } = await req.json();
+    let { issue, message, invoiceId, amount } = await req.json();
 
-    if (!issue || !invoiceId || !message) {
+    if (!issue || !invoiceId || !message || !amount) {
       throw new AppError(
         refundUsControllerTranslate[lang].controller.dataRequired,
         400
@@ -34,7 +34,7 @@ export const createRefund = async (
     }
     doc = await Model.create({
       user: req?.user?._id,
-
+      amount,
       issue,
       invoiceId,
       reason: message,

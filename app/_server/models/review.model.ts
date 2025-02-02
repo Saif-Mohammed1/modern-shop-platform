@@ -55,19 +55,21 @@ const ReviewSchema = new Schema<IReviewSchema>(
 
 ReviewSchema.index({ product: 1, user: 1 }, { unique: true });
 ReviewSchema.pre<Query<any, IReviewSchema>>(/^find/, function (next) {
-  // this.populate({
-  //   path: 'product',
-  //   select: 'name'
-  // }).populate({
-  //   path: 'user',
-  //   select: 'name photo'
-  // });
-
   this.populate({
+    path: "product",
+    select: "name",
+    model: Product,
+  }).populate({
     path: "user",
-    select: "name email  ",
+    select: "name",
     model: User,
   });
+
+  // this.populate({
+  //   path: "user",
+  //   select: "name email  ",
+  //   model: User,
+  // });
   next();
 });
 

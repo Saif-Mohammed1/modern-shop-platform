@@ -3,7 +3,7 @@ import { FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import Spinner from "../spinner/spinner";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { forgetPasswordTranslate } from "@/app/_translate/auth/forgetPasswordTranslate";
 import { lang } from "../util/lang";
 

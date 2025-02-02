@@ -96,27 +96,35 @@ const ProductCard = ({ product }: { product: ProductType }) => {
 
   const discountPrice =
     product.discount > 0
-      ? (product.price - product.price * (product.discount / 100)).toFixed(2)
+      ? (product.price - product.discount).toFixed(2)
       : product.price;
+  // product.discount > 0
+  //   ? (product.price - product.price * (product.discount / 100)).toFixed(2)
+  //   : product.price;
 
   return (
     <div className="bg-white overflow-hidden rounded-lg shadow-md p-5 relative transition-transform transform hover:scale-105 cursor-pointer">
       {product.discount > 0 && (
         <div className="absolute top-4 -left-5 text-center transform -rotate-[35deg] p-1 leading-5 custom-shadow  bg-red-500 text-white text-xs font-bold rounded-br-lg w-[40%]">
-          {product.discount}% {shopPageTranslate[lang].RelatedProducts.off}
+          {((product.discount / product.price) * 100).toFixed(0)}%
+          {shopPageTranslate[lang].RelatedProducts.off}
         </div>
       )}
-      <Link href={"/shop/" + product._id} className="imgParent">
-        <Image
-          src={imageSrc(product)}
-          alt={product.name}
-          className=" h-auto object-cover mb-4 rounded-md  max-w-[100%]"
-          width={1200}
-          height={1200}
-          style={{ objectFit: "cover" }}
-          priority
-        />
+      <Link href={"/shop/" + product._id}>
+        <div className="imgParent">
+          <Image
+            src={imageSrc(product)}
+            alt={product.name}
+            // className="w-full h-full #h-auto object-cover rounded-lg"
+            // className=" h-auto object-cover mb-4 rounded-md  max-w-[100%]"
+            width={1000}
+            height={1000}
+            style={{ objectFit: "cover" }}
+            priority
+          />
+        </div>
       </Link>
+
       <h2 className="text-xl font-semibold text-gray-800 mb-2">
         {product.name}
       </h2>

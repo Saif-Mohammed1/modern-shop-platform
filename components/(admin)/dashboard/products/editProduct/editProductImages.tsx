@@ -63,13 +63,18 @@ const EditProductImages = ({
       <div className="flex flex-wrap mt-4 gap-4">
         {newImages.map((image, index) => (
           <div key={index} className="relative w-24 h-24">
-            <Image
-              width={100}
-              height={100}
-              src={image}
-              alt="New Product"
-              className="w-full h-full object-cover rounded-md"
-            />
+            <div
+              className="imgParent"
+              style={{ width: "100px", height: "100px" }}
+            >
+              <Image
+                width={100}
+                height={100}
+                src={image}
+                alt="New Product"
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
             {/* Delete Button for new images */}
             <button
               className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-300"
@@ -93,13 +98,18 @@ const EditProductImages = ({
           <div className="flex flex-wrap mt-4 gap-4">
             {oldImages.map((image) => (
               <div key={image.public_id} className="relative w-24 h-24">
-                <Image
-                  width={100}
-                  height={100}
-                  src={image.link}
-                  alt="Old Product"
-                  className="w-full h-full object-cover rounded-md"
-                />
+                <div
+                  className="imgParent"
+                  style={{ width: "100px", height: "100px" }}
+                >
+                  <Image
+                    width={100}
+                    height={100}
+                    src={image.link}
+                    alt="Old Product"
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                </div>
                 {/* Delete Button for old images */}
                 <button
                   className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-300"

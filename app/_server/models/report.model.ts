@@ -7,7 +7,7 @@ export interface IReportSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUserSchema["_id"];
   product: IProductSchema["_id"];
-  status: "pending" | "reviewing" | "completed";
+  status: "pending" | "resolved" | "rejected";
   name: string;
   issue: string;
   message: string;
@@ -31,7 +31,8 @@ const ReportSchema = new Schema<IReportSchema>(
     status: {
       type: String,
       // required: true,
-      enum: ["pending", "reviewing", "completed"],
+      // enum: ["pending", "reviewing", "completed"],
+      enum: ["resolved", "pending", "rejected"],
       default: "pending",
     },
     name: {

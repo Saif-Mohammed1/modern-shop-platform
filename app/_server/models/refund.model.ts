@@ -5,10 +5,11 @@ import User, { IUserSchema } from "./user.model";
 export interface IRefundSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUserSchema["_id"];
-  status: "pending" | "processing" | "accepted" | "refused";
+  status: "pending" | "approved" | "rejected";
   issue: string;
   reason: string;
   invoiceId: string;
+  amount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,7 +24,7 @@ const RefundSchema = new Schema<IRefundSchema>(
     status: {
       type: String,
       // required: true,
-      enum: ["pending", "processing", "accepted", "refused"],
+      enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
     issue: {
@@ -33,6 +34,11 @@ const RefundSchema = new Schema<IRefundSchema>(
     reason: {
       type: String,
       required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+      min: 1,
     },
     invoiceId: {
       type: String,
@@ -46,7 +52,7 @@ const RefundSchema = new Schema<IRefundSchema>(
 RefundSchema.pre<Query<any, IRefundSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
-    select: "name email  ",
+    select: "name email",
     model: User,
   });
   next();

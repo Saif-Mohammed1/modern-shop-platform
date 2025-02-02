@@ -70,13 +70,15 @@ export default function ProductImages({
       <div className="flex flex-wrap mt-4 gap-4">
         {images.map((image, index) => (
           <div key={index} className="relative w-24 h-24">
-            <Image
-              width={100}
-              height={100}
-              src={image}
-              alt="Product"
-              className="w-full h-full object-cover rounded-md"
-            />
+            <div className="imgParent">
+              <Image
+                width={100}
+                height={100}
+                src={image}
+                alt="Product"
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
             {/* Delete Button */}
             <button
               className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-300"

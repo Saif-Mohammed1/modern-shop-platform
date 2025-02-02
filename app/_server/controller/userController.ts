@@ -179,8 +179,8 @@ export const createUserByAdmin = async (req: NextRequest) => {
     // const accessToken = await createUserTokens(user._id, req);
 
     return modifyFinalResponse(
-      user,
-      null, // accessToken,is null when admen create userno need access token here or it will modify users
+      user.toObject(),
+      // null, // accessToken,is null when admen create userno need access token here or it will modify users
       201,
       "sendVerificationCode" // for passing typescript strick mode
     );

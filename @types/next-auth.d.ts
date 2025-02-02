@@ -1,16 +1,34 @@
-import { UserType } from "@/components/context/user.context";
-
+import { UserAuthType } from "@/app/_types/users";
+import "next-auth";
+import "next-auth/jwt";
+// declare module "next-auth" {
+//   /**
+//    * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+//    */
+//   interface Session {
+//     user: UserAuthType;
+//   }
+// }
 declare module "next-auth" {
-  /**
-   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
-   */
   interface Session {
-    user: UserType;
+    user: UserAuthType;
+  }
+
+  interface User extends UserAuthType {
+    accessTokenExpires?: number;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    user: UserType;
+    user: UserAuthType;
+    accessTokenExpires?: number;
+  }
+}
+
+// If using a database adapter
+declare module "next-auth/adapters" {
+  interface AdapterUser extends UserAuthType {
+    accessTokenExpires?: number;
   }
 }

@@ -46,6 +46,7 @@ export interface IUserSchema extends IUserInput, Document {
   createPasswordResetToken(): string;
   generateVerificationCode(): void;
   sendVerificationCode(): Promise<void>;
+  isTwoFactorAuthEnabled: boolean;
 }
 const UserSchema = new Schema<IUserSchema>(
   {
@@ -114,6 +115,11 @@ const UserSchema = new Schema<IUserSchema>(
     active: {
       type: Boolean,
       default: true,
+      // select: false,
+    },
+    isTwoFactorAuthEnabled: {
+      type: Boolean,
+      default: false,
       // select: false,
     },
     // updatedAt: Date,

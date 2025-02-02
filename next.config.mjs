@@ -22,6 +22,36 @@ const nextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          // "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Feature-Policy",
+            value: "camera 'none'; microphone 'none'",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 const bundleAnalyzerConfig = withBundleAnalyzer({

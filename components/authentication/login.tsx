@@ -43,6 +43,7 @@ const LoginPage = () => {
       if (callbackUrl) {
         router.push(callbackUrl);
       } else {
+        router.back(); // Go back to previous page (closes modal)
         router.push("/");
       }
     } catch (error: unknown) {

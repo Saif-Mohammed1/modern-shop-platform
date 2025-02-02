@@ -15,12 +15,13 @@ export const GET = async (req: NextRequest) => {
     await isAuth(req);
     req.id = String(req.user?._id);
 
-    const { data, statusCode } = await getDataByUser<IAddressSchema>(
-      req,
-      // req, no need to pass req
-      Address
-    );
-    return NextResponse.json({ data }, { status: statusCode });
+    const { data, hasNextPage, statusCode } =
+      await getDataByUser<IAddressSchema>(
+        req,
+        // req, no need to pass req
+        Address
+      );
+    return NextResponse.json({ data, hasNextPage }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
   }

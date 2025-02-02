@@ -1,5 +1,5 @@
 import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { lang } from "@/components/util/lang";
 import { toast } from "react-hot-toast";
 

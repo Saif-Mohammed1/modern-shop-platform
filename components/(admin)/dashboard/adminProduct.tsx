@@ -8,7 +8,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/pagination/Pagination";
 import moment from "moment";
 import toast from "react-hot-toast";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import imageSrc from "@/components/util/productImageHandler";
 import { updateQueryParams } from "@/components/util/updateQueryParams";
 import {
@@ -230,16 +230,19 @@ const ProductList: FC<ProductListProps> = ({
               key={product._id}
               className="bg-white p-4 rounded-lg shadow-md overflow-hidden"
             >
-              <Image
-                src={imageSrc(product)}
-                alt={product.name}
-                //w-full h-40 object-cover
-                className=" rounded-md mb-4"
-                width={150}
-                height={150}
-                style={{ objectFit: "cover" }}
-                priority
-              />
+              <div className="imgParent">
+                <Image
+                  src={imageSrc(product)}
+                  alt={product.name}
+                  //w-full h-40 object-cover
+                  // className="  "
+                  // className="w-full h-full #h-auto object-cover rounded-lg"
+                  width={150}
+                  height={150}
+                  style={{ objectFit: "cover" }}
+                  priority
+                />
+              </div>
               <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
               <p className="text-gray-600 mb-2">
                 {productsTranslate.products[lang].details.category}:{" "}

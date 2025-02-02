@@ -141,7 +141,20 @@ OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
   // });
   next();
 });
-
+// comvert price to two decimal places
+OrderSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret.totalPrice = parseFloat(ret.totalPrice.toFixed(2));
+    ret.items.forEach((item: any) => {
+      item.price = parseFloat(item.price.toFixed(2));
+      item.finalPrice = parseFloat(item.finalPrice.toFixed(2));
+      if (item.discount) {
+        item.discount = parseFloat(item.discount.toFixed(2));
+      }
+    });
+    return ret;
+  },
+});
 OrderSchema.post(/^find/, function (docs, next) {
   // Ensure `docs` is an array (it should be for `find`)
   if (Array.isArray(docs)) {

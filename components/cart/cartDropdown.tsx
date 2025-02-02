@@ -153,14 +153,19 @@ const CartDropdown = ({
 
             return (
               <div key={index} className="flex items-center gap-4 mb-4">
-                <Image
-                  src={imageSrc(item)}
-                  alt={item.name}
-                  width={60}
-                  height={60}
-                  className="rounded-md"
-                  priority
-                />
+                <div
+                  className="imgParent"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <Image
+                    src={imageSrc(item)}
+                    alt={item.name}
+                    width={60}
+                    height={60}
+                    className="rounded-md"
+                    priority
+                  />
+                </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-medium text-gray-700">
                     {item.name}

@@ -1,7 +1,7 @@
 "use client";
 
 import { dashboardTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/dashboardTranslate";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { deleteCookies } from "@/components/util/cookies";
 import { lang } from "@/components/util/lang";
 import { signOut } from "next-auth/react";

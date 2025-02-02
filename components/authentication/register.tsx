@@ -6,7 +6,7 @@ import Spinner from "../spinner/spinner";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import api from "../util/axios.api";
+import api from "../util/api";
 import { registerTranslate } from "@/app/_translate/auth/registerTranslate";
 import { lang } from "../util/lang";
 

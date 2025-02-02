@@ -10,7 +10,7 @@ export const getFav = async (
   model: Model<IFavoriteSchema>
 ) => {
   try {
-    const doc = await model.find({ user: { $eq: req.user?._id } });
+    const doc = await model.find({ user: req?.user?._id });
 
     return {
       // data: doc,

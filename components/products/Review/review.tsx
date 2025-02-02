@@ -2,26 +2,51 @@ import Image from "next/image";
 // import CreateReview from "./createReview";
 import StarRatings from "react-star-ratings";
 import dynamic from "next/dynamic";
-import { UserType } from "@/components/context/user.context";
 import { reviewsTranslate } from "@/app/_translate/reviewsTranslate";
 import { lang } from "@/components/util/lang";
 import { useState } from "react";
+import api from "@/components/util/api";
+import CustomButton from "@/components/button/button";
+import { UserAuthType } from "@/app/_types/users";
 const CreateReview = dynamic(() => import("./createReview"));
-type Review = {
+export type ReviewsType = {
   _id: string;
-  user: Partial<UserType>;
+  user: Partial<UserAuthType>;
   rating: number;
   reviewText: string;
   createdAt: string;
 };
 type ReviewSectionProps = {
-  reviews: Review[];
+  reviews: {
+    data: ReviewsType[];
+    hasNextPage: boolean;
+  };
   productId: string;
-  user: UserType | null;
+  user: UserAuthType | null;
 };
 const ReviewSection = ({ reviews, productId, user }: ReviewSectionProps) => {
   const [loading, setLoading] = useState(false);
-  const [moreReviews, setMoreReviews] = useState(reviews);
+  const [moreResults, setMoreResults] = useState(reviews.data || []);
+  const [page, setPage] = useState(1);
+  const [showMore, setShowMore] = useState(reviews.hasNextPage);
+
+  const getMoreResults = async () => {
+    try {
+      setLoading(true);
+      const newPage = page + 1;
+      setPage((prevPage) => prevPage++);
+      const { data } = await api.get(
+        `/customer/reviews/${productId}/?page=${newPage}`
+      );
+      setMoreResults([...moreResults, ...data.data]);
+      setPage(newPage);
+      setShowMore(data.hasNextPage);
+    } catch (error) {
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div
     // className="review-section /bg-blue-100 /p-4 /bg-white rounded-md shadow-md"
@@ -29,13 +54,13 @@ const ReviewSection = ({ reviews, productId, user }: ReviewSectionProps) => {
       <h2 className="text-2xl font-bold mb-4">
         {reviewsTranslate[lang].ReviewSection.title}
       </h2>
-      {moreReviews.length === 0 ? (
+      {moreResults.length === 0 ? (
         <p className="text-gray-500">
           {reviewsTranslate[lang].ReviewSection.content.noReviews}
         </p>
       ) : (
         <div className="grid gap-4">
-          {moreReviews.map((review) => (
+          {moreResults.map((review) => (
             <div
               key={review._id}
               // className="bg-gray-100 p-4 rounded-md shadow-md"
@@ -74,12 +99,19 @@ const ReviewSection = ({ reviews, productId, user }: ReviewSectionProps) => {
           ))}
         </div>
       )}
-      <div className={user?.email ? "" : "hidden"}>
-        <CreateReview
-          productId={productId}
-          reviewsLength={moreReviews.length}
-        />{" "}
-      </div>
+      <CustomButton
+        showMore={showMore}
+        getMoreResults={getMoreResults}
+        loading={loading}
+      />
+      {user?.email && (
+        <div>
+          <CreateReview
+            productId={productId}
+            reviewsLength={moreResults.length}
+          />
+        </div>
+      )}
     </div>
   );
 };

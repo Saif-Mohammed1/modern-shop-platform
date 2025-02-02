@@ -3,24 +3,35 @@ import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 // import AppError from "@/components/util/appError";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { lang } from "@/components/util/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { cache } from "react";
 
 type Props = {
   params: {
     id: string;
   };
 };
+const getProductData = cache(async (id: string) => {
+  const { data } = await api.get("/shop/" + id, {
+    headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+  });
+  return data.data;
+});
+const getReviewsData = cache(async (id: string) => {
+  const { data } = await api.get(`/customer/reviews/${id}`, {
+    headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+  });
+  return data;
+});
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = params;
-
+  // api.get(`/customer/reviews/${product._id}
   try {
-    const { data } = await api.get("/shop/" + id, {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-    });
-    const product = data.data;
+    const product = await getProductData(id);
+
     return {
       title: shopPageTranslate[lang].metadata.title + " - " + product.name,
       description:
@@ -41,13 +52,17 @@ const page = async ({ params }: Props) => {
   const { id } = params;
 
   try {
-    const { data } = await api.get("/shop/" + id, {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-    });
-    const product = data.data;
+    const [product, reviews] = await Promise.all([
+      // const { data } = await api.get("/shop/" + id, {
+      //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+      // });
+      getProductData(id),
+      getReviewsData(id),
+    ]);
+
     return (
       // <ComponentLoading>
-      <ProductDetail product={product} />
+      <ProductDetail product={product} reviews={reviews} />
       // </ComponentLoading>
     );
   } catch (error: any) {

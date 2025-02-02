@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import ReviewHistory from "@/components/customer/reviewHistory";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
@@ -17,7 +17,9 @@ const page = async () => {
       headers: Object.fromEntries(headers().entries()), //convert headers to object
     });
     const reviews = data.data;
-    return <ReviewHistory reviewsList={reviews} />;
+    return (
+      <ReviewHistory reviewsList={reviews} hasNextPage={data.hasNextPage} />
+    );
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
 

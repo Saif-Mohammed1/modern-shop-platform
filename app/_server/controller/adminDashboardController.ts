@@ -1,75 +1,615 @@
-import Order from "../models/order.model ";
+import { act } from "react";
+import Order, { IOrderSchema } from "../models/order.model ";
 import Product from "../models/product.model";
-import Refund from "../models/refund.model";
+import Refund, { IRefundSchema } from "../models/refund.model";
 import Report from "../models/report.model";
 import User from "../models/user.model";
 
-// provide all data
-export const mainDashboard = async () => {
-  // Get current date and last week’s date
-  const currentDate = new Date();
-  const lastWeekDate = new Date(currentDate);
-  lastWeekDate.setDate(currentDate.getDate() - 7);
+export interface DashboardData {
+  users: {
+    total: number;
+    growthPercentage: number;
+    lastWeek: number;
+    active: number;
+  };
+  orders: {
+    total: number;
+    completed: number;
+    pending: number;
+    cancelled: number;
+    earnings: {
+      current: number;
+      trend: number;
+      daily: number;
+      // daily: { date: string; amount: number }[];
+    };
+  };
+  products: {
+    total: number;
+    outOfStock: number;
+    lowStock: number;
+    active: number;
+    categoryDistribution: Record<string, number>;
+    growthPercentage: number;
+    lastWeek: number;
+  };
+  sales: {
+    total: number;
+    averageOrderValue: number;
+    conversionRate: number;
+  };
+  refunds: {
+    total: number;
+    amount: number;
+    trend: number;
+    // recent: IRefundSchema[];
+  };
+  inventory: {
+    totalValue: number;
+    stockAlerts: number;
+  };
+  reports: {
+    total: number;
+    resolved: number;
+    unresolved: number;
+    resolutionRate: number;
+  };
+  recentActivities: {
+    orders: IOrderSchema[];
+    refunds: IRefundSchema[];
+  };
+}
+// export const mainDashboard = async (): Promise<{
+//   data: DashboardData;
+//   statusCode: number;
+// }> => {
+//   try {
+//     const currentDate = new Date();
+//     const lastWeekDate = new Date();
+//     lastWeekDate.setDate(currentDate.getDate() - 7);
+//     const oneMonthAgo = new Date();
+//     oneMonthAgo.setMonth(currentDate.getMonth() - 1);
 
+//     // Parallelize database queries
+//     const [
+//       usersDetails,
+//       ordersDetails,
+//       earningsData,
+//       productsDetails,
+//       reportsDetails,
+//       refundsDetails,
+//       inventoryValue,
+//       recentActivitiesOrders,
+//       recentActivitiesRefunds,
+//     ] = await Promise.all([
+//       User.aggregate([
+//         {
+//           $group: {
+//             _id: null,
+//             total: { $sum: 1 },
+//             active: { $sum: { $cond: [{ $eq: ["$active", true] }, 1, 0] } },
+//             lastWeek: {
+//               $sum: { $cond: [{ $gte: ["$createdAt", lastWeekDate] }, 1, 0] },
+//             },
+//           },
+//         },
+//       ]),
+//       Order.aggregate([
+//         {
+//           $group: {
+//             _id: "$status",
+//             count: { $sum: 1 },
+//           },
+//         },
+//       ]),
+//       Order.aggregate([
+//         {
+//           $match: { status: "completed" },
+//         },
+//         {
+//           $group: {
+//             _id: null,
+//             totalEarnings: { $sum: "$totalPrice" },
+//             weeklyEarnings: {
+//               $sum: {
+//                 $cond: [
+//                   { $gte: ["$createdAt", lastWeekDate] },
+//                   "$totalPrice",
+//                   0,
+//                 ],
+//               },
+//             },
+//             dailyEarnings: {
+//               $sum: {
+//                 $cond: [
+//                   // current day
+//                   {
+//                     $eq: [
+//                       {
+//                         $dateToString: {
+//                           format: "%Y-%m-%d",
+//                           date: "$createdAt",
+//                         },
+//                       },
+//                       {
+//                         $dateToString: { format: "%Y-%m-%d", date: new Date() },
+//                       },
+//                     ],
+//                   },
+//                   "$totalPrice",
+//                   0,
+//                 ],
+//               },
+//             },
+//           },
+//         },
+//       ]),
+//       Product.aggregate([
+//         {
+//           $group: {
+//             _id: null,
+//             total: { $sum: 1 },
+//             outOfStock: { $sum: { $cond: [{ $lte: ["$stock", 0] }, 1, 0] } },
+//             lowStock: { $sum: { $cond: [{ $lte: ["$stock", 10] }, 1, 0] } },
+//             active: { $sum: { $cond: [{ $eq: ["$active", true] }, 1, 0] } },
+//             categoryDistribution: {
+//               $push: { category: "$category", count: 1 },
+//             },
+//             lastWeek: {
+//               $sum: { $cond: [{ $gte: ["$createdAt", lastWeekDate] }, 1, 0] },
+//             },
+//           },
+//         },
+//       ]),
+//       Report.aggregate([
+//         {
+//           $group: {
+//             _id: "$status",
+//             count: { $sum: 1 },
+//           },
+//         },
+//       ]),
+//       Refund.aggregate([
+//         {
+//           $group: {
+//             _id: null,
+//             total: { $sum: 1 },
+//             trend: {
+//               $sum: { $cond: [{ $gte: ["$createdAt", lastWeekDate] }, 1, 0] },
+//             },
+//             amount: { $sum: "$amount" },
+//           },
+//         },
+//       ]),
+//       Product.aggregate([
+//         {
+//           $group: {
+//             _id: null,
+//             totalValue: { $sum: { $multiply: ["$price", "$stock"] } },
+//           },
+//         },
+//       ]),
+//       Order.find().sort({ createdAt: -1 }).limit(5).lean(),
+//       Refund.find().sort({ createdAt: -1 }).limit(5).lean(),
+//     ]);
+//     // console.dir(usersDetails, { depth: null });
+//     // console.dir(ordersDetails, { depth: null });
+//     // console.dir(earningsData, { depth: null });
+//     console.dir(productsDetails, { depth: null });
+//     // console.dir(reportsDetails, { depth: null });
+//     // console.dir(refundsDetails, { depth: null });
+//     // console.dir(inventoryValue, { depth: null });
+//     // console.dir(recentActivities, { depth: null });
+
+//     // Extract values safely
+//     const {
+//       total: totalUsers = 0,
+//       active: activeUsers = 0,
+//       lastWeek: lastWeekUsers = 0,
+//     } = usersDetails[0] || {};
+//     const orderCounts = ordersDetails.reduce(
+//       (acc, { _id, count }) => ({ ...acc, [_id]: count }),
+//       {}
+//     );
+//     const {
+//       totalEarnings = 0,
+//       weeklyEarnings = 0,
+//       dailyEarnings = 0,
+//     } = earningsData[0] || {};
+//     const {
+//       total: totalProducts = 0,
+//       outOfStock = 0,
+//       lowStock = 0,
+//       active: activeProducts = 0,
+//       categoryDistribution = [],
+//       lastWeek: lastWeekProducts = 0,
+//     } = productsDetails[0] || {};
+//     const reportCounts = reportsDetails.reduce((acc, { _id, count }) => {
+//       acc["total"] = (acc["total"] || 0) + count;
+
+//       return {
+//         ...acc,
+//         [_id]: count,
+//       };
+//     }, {});
+//     const {
+//       total: totalRefunds = 0,
+//       trend: trendRefunds = 0,
+//       amount: totalRefundAmount = 0,
+//     } = refundsDetails[0] || {};
+//     const inventoryTotalValue = inventoryValue[0]?.totalValue || 0;
+
+//     return {
+//       data: {
+//         users: {
+//           total: totalUsers,
+//           growthPercentage:
+//             ((totalUsers - lastWeekUsers) / Math.max(lastWeekUsers, 1)) * 100,
+//           lastWeek: lastWeekUsers,
+//           active: activeUsers,
+//         },
+//         orders: {
+//           total: orderCounts.total || 0,
+//           completed: orderCounts.completed || 0,
+//           pending: orderCounts.pending || 0,
+//           cancelled: orderCounts.cancelled || 0,
+//           earnings: {
+//             current: parseFloat(totalEarnings.toFixed(2)),
+//             trend: parseFloat(weeklyEarnings.toFixed(2)),
+//             daily: parseFloat(dailyEarnings.toFixed(2)), // Consider fetching daily earnings separately
+//           },
+//         },
+//         products: {
+//           total: totalProducts,
+//           outOfStock,
+//           lowStock,
+//           active: activeProducts,
+//           categoryDistribution: categoryDistribution.reduce(
+//             (
+//               acc: Record<string, number>,
+//               item: { category: string; count: number }
+//             ) => {
+//               acc[item.category] = (acc[item.category] || 0) + item.count;
+//               return acc;
+//             },
+//             {}
+//           ),
+//           // issue why it connected to users whats is matter
+//           growthPercentage: parseFloat(
+//             (
+//               ((totalProducts - lastWeekProducts) /
+//                 Math.max(totalProducts, 1)) *
+//               100
+//             ).toFixed(2)
+//           ),
+//           lastWeek: lastWeekProducts,
+//         },
+//         sales: {
+//           total: orderCounts.completed || 0,
+//           averageOrderValue:
+//             // return float value 2 decimal places
+//             // totalEarnings / Math.max(orderCounts.completed || 1, 1),
+//             parseFloat(
+//               (totalEarnings / Math.max(orderCounts.completed || 1, 1)).toFixed(
+//                 2
+//               )
+//             ),
+//           conversionRate:
+//             ((orderCounts.completed || 0) /
+//               Math.max(orderCounts.total || 1, 1)) *
+//             100,
+//         },
+//         refunds: {
+//           total: totalRefunds,
+//           amount: parseFloat(totalRefundAmount.toFixed(2)), // Consider summing refund amounts if available
+//           trend: trendRefunds,
+//           // recent: [], // Fetch separately if needed
+//         },
+//         inventory: {
+//           totalValue: inventoryTotalValue,
+//           stockAlerts: outOfStock + lowStock,
+//         },
+//         reports: {
+//           total: reportCounts.total || 0,
+//           resolved: reportCounts.resolved || 0,
+//           unresolved: (reportCounts.total || 0) - (reportCounts.resolved || 0),
+//           resolutionRate: parseFloat(
+//             (
+//               ((reportCounts.resolved || 0) /
+//                 Math.max(reportCounts.total || 1, 1)) *
+//               100
+//             ).toFixed(2)
+//           ),
+//         },
+//         recentActivities: {
+//           orders: recentActivitiesOrders, // Fetch separately
+//           refunds: recentActivitiesRefunds, // Fetch separately
+//         },
+//       },
+//       statusCode: 200,
+//     };
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+export const mainDashboard = async (): Promise<{
+  data: DashboardData;
+  statusCode: number;
+}> => {
   try {
-    // Users
-    const currentUserCount = await User.countDocuments();
-    const lastWeekUserCount = await User.countDocuments({
-      createdAt: { $gte: lastWeekDate },
-    });
+    const currentDate = new Date();
+    const lastWeekDate = new Date(currentDate);
+    lastWeekDate.setDate(currentDate.getDate() - 7);
+    const oneMonthAgo = new Date(currentDate);
+    oneMonthAgo.setMonth(currentDate.getMonth() - 1);
 
-    // Orders (Completed only for earnings)
-    const currentOrderCount = await Order.countDocuments();
-    const completedOrders = await Order.aggregate([
-      { $match: { status: "completed", createdAt: { $gte: lastWeekDate } } },
-      { $group: { _id: null, totalEarnings: { $sum: "$totalPrice" } } },
+    // Optimized parallel queries with proper aggregation
+    const [
+      usersDetails,
+      ordersDetails,
+      earningsData,
+      productsDetails,
+      reportsDetails,
+      refundsDetails,
+      inventoryValue,
+      recentActivitiesOrders,
+      recentActivitiesRefunds,
+    ] = await Promise.all([
+      // User Analytics
+      User.aggregate([
+        {
+          $facet: {
+            total: [{ $count: "total" }],
+            active: [{ $match: { active: true } }, { $count: "active" }],
+            lastWeek: [
+              { $match: { createdAt: { $gte: lastWeekDate } } },
+              { $count: "lastWeek" },
+            ],
+          },
+        },
+      ]),
+
+      // Order Status Breakdown
+      Order.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+            totalPrice: { $sum: "$totalPrice" },
+          },
+        },
+      ]),
+
+      // Earnings Analysis
+      Order.aggregate([
+        {
+          $match: { status: "completed" },
+        },
+        {
+          $facet: {
+            totalEarnings: [
+              { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+            ],
+            weeklyEarnings: [
+              { $match: { createdAt: { $gte: lastWeekDate } } },
+              { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+            ],
+            dailyEarnings: [
+              {
+                $match: {
+                  createdAt: {
+                    //  here we set hours to 0,0,0,0 to avoid midnight time erorr
+                    $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+                  },
+                },
+              },
+              { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+            ],
+          },
+        },
+      ]),
+
+      // Product Analytics
+      Product.aggregate([
+        {
+          $facet: {
+            stockInfo: [
+              {
+                $group: {
+                  _id: null,
+                  total: { $sum: 1 },
+                  outOfStock: {
+                    $sum: { $cond: [{ $lte: ["$stock", 0] }, 1, 0] },
+                  },
+                  lowStock: {
+                    $sum: { $cond: [{ $lte: ["$stock", 10] }, 1, 0] },
+                  },
+                  active: {
+                    $sum: { $cond: [{ $eq: ["$active", true] }, 1, 0] },
+                  },
+                  lastWeek: {
+                    $sum: {
+                      $cond: [{ $gte: ["$createdAt", lastWeekDate] }, 1, 0],
+                    },
+                  },
+                },
+              },
+            ],
+            categoryDistribution: [
+              {
+                $group: {
+                  _id: "$category",
+                  count: { $sum: 1 },
+                },
+              },
+            ],
+          },
+        },
+      ]),
+
+      // Report Analysis
+      Report.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+
+      // Refund Analysis
+      Refund.aggregate([
+        {
+          $facet: {
+            total: [{ $count: "total" }],
+            trend: [
+              { $match: { createdAt: { $gte: lastWeekDate } } },
+              { $count: "trend" },
+            ],
+            amount: [{ $group: { _id: null, total: { $sum: "$amount" } } }],
+          },
+        },
+      ]),
+
+      // Inventory Valuation
+      Product.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalValue: { $sum: { $multiply: ["$price", "$stock"] } },
+          },
+        },
+      ]),
+
+      // Recent Activities
+      Order.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select("totalPrice status createdAt")
+        .lean(),
+
+      Refund.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select("amount status createdAt")
+        .lean(),
     ]);
+    // console.dir(usersDetails, { depth: null });
+    // console.dir(ordersDetails, { depth: null });
+    // console.dir(earningsData, { depth: null });
+    // console.dir(productsDetails, { depth: null });
+    // console.dir(reportsDetails, { depth: null });
+    // console.dir(refundsDetails, { depth: null });
+    // console.dir(inventoryValue, { depth: null });
+    // console.dir(recentActivities, { depth: null });
+    // Data Transformation
+    const userData = usersDetails[0];
+    const orderCounts = ordersDetails.reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr._id]: curr.count,
+        total: (acc.total || 0) + curr.count,
+      }),
+      {}
+    );
 
-    const totalEarnings = completedOrders[0]?.totalEarnings || 0;
+    const earnings = earningsData[0];
+    const productData = productsDetails[0];
+    const reportCounts = reportsDetails.reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr._id]: curr.count,
+        total: (acc.total || 0) + curr.count,
+      }),
+      {}
+    );
 
-    // Reports
-    const currentReportCount = await Report.countDocuments();
-    const lastWeekReportCount = await Report.countDocuments({
-      createdAt: { $gte: lastWeekDate },
-    });
+    const refundData = refundsDetails[0];
+    const inventoryTotal = inventoryValue[0]?.totalValue || 0;
 
-    // Refunds
-    const currentRefundCount = await Refund.countDocuments();
-    const refunds = await Refund.aggregate([
-      { $match: { createdAt: { $gte: lastWeekDate } } },
-      { $group: { _id: null, totalRefundLoss: { $sum: "$refundAmount" } } },
-    ]);
+    // Calculate growth percentages safely
+    const calculateGrowth = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return ((current - previous) / previous) * 100;
+    };
 
-    const totalRefundLoss = refunds[0]?.totalRefundLoss || 0;
-
-    // Calculate differences from last week
-    const userGrowth = lastWeekUserCount;
-    const reportGrowth = lastWeekReportCount;
-    // const refundGrowth = currentRefundCount;
-
-    // res.status(200).json({
-    //   users: { count: currentUserCount, growth: userGrowth },
-    //   orders: { count: currentOrderCount, earnings: totalEarnings },
-    //   reports: { count: currentReportCount, growth: reportGrowth },
-    //   refunds: { count: currentRefundCount, loss: totalRefundLoss },
-    // });
-
-    // Inside your handler function:
-    const currentProductCount = await Product.countDocuments();
-    const lastWeekProductCount = await Product.countDocuments({
-      createdAt: { $gte: lastWeekDate },
-    });
-
-    const productGrowth = currentProductCount - lastWeekProductCount;
-
-    // Include this in your response
     return {
       data: {
-        users: { count: currentUserCount, growth: userGrowth },
-        orders: { count: currentOrderCount, earnings: totalEarnings },
-        reports: { count: currentReportCount, growth: reportGrowth },
-        refunds: { count: currentRefundCount, loss: totalRefundLoss },
-        products: { count: currentProductCount, growth: productGrowth }, // Add product data
+        users: {
+          total: userData?.total[0]?.total || 0,
+          active: userData?.active[0]?.active || 0,
+          lastWeek: userData?.lastWeek[0]?.lastWeek || 0,
+          growthPercentage: calculateGrowth(
+            userData?.lastWeek[0]?.lastWeek || 0,
+            userData?.total[0]?.total || 0
+          ),
+        },
+        orders: {
+          total: orderCounts.total || 0,
+          completed: orderCounts.completed || 0,
+          pending: orderCounts.pending || 0,
+          cancelled: orderCounts.cancelled || 0,
+          earnings: {
+            current: earnings?.totalEarnings[0]?.total || 0,
+            trend: earnings?.weeklyEarnings[0]?.total || 0,
+            daily: earnings?.dailyEarnings[0]?.total || 0,
+          },
+        },
+        products: {
+          total: productData?.stockInfo[0]?.total || 0,
+          outOfStock: productData?.stockInfo[0]?.outOfStock || 0,
+          lowStock: productData?.stockInfo[0]?.lowStock || 0,
+          active: productData?.stockInfo[0]?.active || 0,
+          categoryDistribution:
+            productData?.categoryDistribution?.reduce(
+              (acc: Record<string, number>, curr: Record<string, number>) => ({
+                ...acc,
+                [curr._id]: curr.count,
+              }),
+              {}
+            ) || {},
+          growthPercentage: calculateGrowth(
+            productData?.stockInfo[0]?.lastWeek || 0,
+            productData?.stockInfo[0]?.total || 0
+          ),
+          lastWeek: productData?.stockInfo[0]?.lastWeek || 0,
+        },
+        sales: {
+          total: orderCounts.completed || 0,
+          averageOrderValue:
+            orderCounts.completed > 0
+              ? (earnings?.totalEarnings[0]?.total || 0) / orderCounts.completed
+              : 0,
+          conversionRate:
+            orderCounts.total > 0
+              ? (orderCounts.completed / orderCounts.total) * 100
+              : 0,
+        },
+        refunds: {
+          total: refundData?.total[0]?.total || 0,
+          amount: refundData?.amount[0]?.total || 0,
+          trend: refundData?.trend[0]?.trend || 0,
+        },
+        inventory: {
+          totalValue: inventoryTotal,
+          stockAlerts:
+            (productData?.stockInfo[0]?.outOfStock || 0) +
+            (productData?.stockInfo[0]?.lowStock || 0),
+        },
+        reports: {
+          total: reportCounts.total || 0,
+          resolved: reportCounts.resolved || 0,
+          unresolved: reportCounts.total - reportCounts.resolved,
+          resolutionRate:
+            reportCounts.total > 0
+              ? (reportCounts.resolved / reportCounts.total) * 100
+              : 0,
+        },
+        recentActivities: {
+          orders: recentActivitiesOrders,
+          refunds: recentActivitiesRefunds,
+        },
       },
       statusCode: 200,
     };

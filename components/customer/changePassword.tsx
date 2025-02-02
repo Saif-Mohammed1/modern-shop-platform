@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { signOut } from "next-auth/react";
 import DeviceInfoSection from "./deviceInfoSection";
-import api from "../util/axios.api";
+import api from "../util/api";
 import { deleteCookies } from "../util/cookies";
 import {
   accountSettingsTranslate,

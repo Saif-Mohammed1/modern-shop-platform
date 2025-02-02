@@ -1,5 +1,5 @@
 import Shop from "@/components/shop/shop";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";

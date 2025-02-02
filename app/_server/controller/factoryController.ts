@@ -2,7 +2,7 @@ import APIFeatures from "@/components/util/APIFeatures";
 import AppError from "@/components/util/appError";
 import { Document, Model } from "mongoose";
 import type { NextRequest } from "next/server";
-import { UserAuthType } from "./authController";
+import { UserAuthType } from "@/app/_types/users";
 import { factoryControllerTranslate } from "../_Translate/factoryControllerTranslate";
 import { lang } from "@/components/util/lang";
 // import { uploadImage } from "@/components/util/cloudinary";
@@ -326,12 +326,31 @@ export const getDataByUser = async <
   popOptions?: PopOptions
 ) => {
   try {
-    let doc = Model.find({ user: req.user?._id });
-    if (popOptions) doc = doc.populate(popOptions);
+    const searchParams = new URLSearchParams(req.nextUrl.searchParams);
+    const page = searchParams.get("page") ?? "1";
+    const limit = 3;
+    const currentPage = parseInt(page, 10);
+    const skip = (currentPage - 1) * limit;
+    // if (!req.id) {
+    //   throw new AppError("Invalid product id", 400);
+    // }
+    let load = Model.find({ user: req.user?._id })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+    if (popOptions) load = load.populate(popOptions);
+    const [doc, totalCount] = await Promise.all([
+      load,
+      Model.countDocuments({ user: req.user?._id }),
+    ]);
+    const hasNextPage = totalCount > currentPage * limit;
 
-    const data = await doc;
+    // let doc = Model.find({ user: req.user?._id });
+    // if (popOptions) doc = doc.populate(popOptions);
 
-    return { data, statusCode: 200 };
+    // const data = await doc;
+
+    return { data: doc, hasNextPage, statusCode: 200 };
   } catch (error) {
     throw error;
   }

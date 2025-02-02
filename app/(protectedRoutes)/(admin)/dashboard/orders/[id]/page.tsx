@@ -1,4 +1,4 @@
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import AdminOrderDetails from "@/components/(admin)/dashboard/orders/OrderDetails";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";

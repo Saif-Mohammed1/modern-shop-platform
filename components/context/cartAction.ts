@@ -1,11 +1,11 @@
 import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import AppError from "@/components/util/appError";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { CartItemsType } from "./cart.context";
 import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
-import { UserType } from "./user.context";
-type User = UserType | null;
+import { UserAuthType } from "@/app/_types/users";
+type User = UserAuthType | null;
 // Add item to cart
 export const addToCart = async (
   product: ProductType,

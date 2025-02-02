@@ -12,8 +12,9 @@ import toast from "react-hot-toast";
 import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
-import { UserType, useUser } from "./user.context";
-export type UserInCart = Partial<UserType> | undefined;
+import { useUser } from "./user.context";
+import { UserAuthType } from "@/app/_types/users";
+export type UserInCart = Partial<UserAuthType> | undefined;
 
 export type CartItemsType = {
   quantity: number;

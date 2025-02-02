@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import toast from "react-hot-toast";
 import { deleteCookies } from "@/components/util/cookies";
 import { sessionExpiredOverlayTranslate } from "@/app/_translate/sessionExpiredOverlayTranslate";
@@ -30,7 +30,7 @@ const SessionExpiredOverlay = () => {
   const handleLogin = async () => {
     try {
       await signOut();
-    await deleteCookies("refreshAccessToken");
+      await deleteCookies("refreshAccessToken");
 
       await api.post("/auth/logout");
       // Handle login logic here

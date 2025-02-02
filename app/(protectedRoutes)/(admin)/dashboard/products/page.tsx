@@ -3,7 +3,7 @@
 import ErrorHandler from "@/components/Error/errorHandler";
 import AdminProducts from "@/components/(admin)/dashboard/adminProduct";
 import AppError from "@/components/util/appError";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { headers } from "next/headers";
 import {
   ProductsSearchParams,

@@ -135,10 +135,30 @@ export const getReviews = async (
   model: Model<IReviewSchema>
 ) => {
   try {
-    const reviews = await model.find({ product: req.id });
+    const searchParams = new URLSearchParams(req.nextUrl.searchParams);
+    const page = searchParams.get("page") ?? "1";
+    const limit = 10;
+    const currentPage = parseInt(page, 10);
+    const skip = (currentPage - 1) * limit;
+    // const reviews = await model.find({ product: req.id });
+    // get ten documents from the collection and return number of documents in the collection
+    if (!req.id) {
+      throw new AppError("Invalid product id", 400);
+    }
 
+    const [reviews, totalCount] = await Promise.all([
+      model
+        .find({ product: req.id })
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
+      model.countDocuments({ product: req.id }),
+    ]);
+
+    const hasNextPage = totalCount > currentPage * limit;
     return {
       data: reviews || [],
+      hasNextPage,
       statusCode: 200,
     };
   } catch (error) {

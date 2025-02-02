@@ -5,7 +5,21 @@ import type { NextRequest } from "next/server";
 import { ICartSchema } from "../models/cart.model";
 import { cartControllerTranslate } from "../_Translate/cartControllerTranslate";
 import { lang } from "@/components/util/lang";
+export const getCartModel = async (
+  req: NextRequest,
+  Model: Model<ICartSchema>
+) => {
+  try {
+    const doc = await Model.find({ user: req?.user?._id });
 
+    return {
+      data: doc,
+      statusCode: 200,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
 export const addToCartModel = async (
   req: NextRequest,
   Model: Model<ICartSchema>

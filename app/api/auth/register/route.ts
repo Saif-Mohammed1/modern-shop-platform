@@ -6,12 +6,11 @@ import { type NextRequest, NextResponse } from "next/server";
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
-    const { message, accessToken, statusCode } = await register(req);
+    const { message, statusCode } = await register(req);
 
     return NextResponse.json(
       {
         message,
-        accessToken,
       },
       { status: statusCode }
     );

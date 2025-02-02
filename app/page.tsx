@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import ErrorHandler from "@/components/Error/errorHandler";
 import HomeComponent from "@/components/home/home";
 // import AppError from "@/components/util/appError";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { rootStaticPagesTranslate } from "./_translate/rootStaticPagesTranslate";

@@ -8,13 +8,17 @@ import { type NextRequest, NextResponse } from "next/server";
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
-    const categories = await getUniqueCategories(Product);
+    // const categories = await getUniqueCategories(Product);
 
-    const { data, statusCode, pageCount } = await getAll<IProductSchema>(
-      req,
-      Product
-    );
-
+    // const { data, statusCode, pageCount } = await getAll<IProductSchema>(
+    //   req,
+    //   Product
+    // );
+    // Use Promise.all to run multiple asynchronous operations concurrently
+    const [categories, { data, statusCode, pageCount }] = await Promise.all([
+      getUniqueCategories(Product),
+      getAll<IProductSchema>(req, Product),
+    ]);
     return NextResponse.json(
       { data, categories, pageCount },
       { status: statusCode }

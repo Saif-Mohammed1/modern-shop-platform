@@ -8,17 +8,15 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
   },
 });
 
 // Request interceptor to attach access token if available
 api.interceptors.request.use(
   (config) => {
-    //disable cache
-
-    config.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
-    config.headers["Pragma"] = "no-cache";
-    config.headers["Expires"] = "0";
     const token = tokenManager.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -45,13 +43,13 @@ api.interceptors.response.use(
       originalRequest._retry = true; // Prevent infinite retry loop
       // let accessToken;
       try {
-        const { data } = await axios.post(
+        const { data } = await api.post(
           // here user augent is  axios/1.7.7 how is it possible
-          `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`,
+          `/auth/refresh-token`,
           undefined,
           { headers: originalRequest.headers }
         );
-        data.accessToken;
+
         // }
         // Update the original request with the new token and retry
         api.defaults.headers.common["Authorization"] =
@@ -61,10 +59,12 @@ api.interceptors.response.use(
 
         return api(originalRequest); // Retry the original request with updated token
       } catch (refreshError: any) {
+        // console.log("refreshError", refreshError);
         // if (process.env.NODE_ENV === "production") {
         if (typeof window !== "undefined" && window) {
-          tokenManager.clearAccessToken();
-          window.dispatchEvent(new Event("sessionExpired"));
+          //  tokenManager.clearAccessToken();
+          //  window.dispatchEvent(new Event("sessionExpired"));
+          window.location.href = "/auth";
         }
 
         // return Promise.reject({

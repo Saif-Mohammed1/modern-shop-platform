@@ -3,12 +3,39 @@ import {
   accountReviewsTranslate,
   ReviewType,
 } from "@/app/_translate/(protectedRoute)/account/reviewsTranslate";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { lang } from "@/components/util/lang";
+import api from "../util/api";
+import CustomButton from "../button/button";
+import Link from "next/link";
 
-const ReviewHistory = ({ reviewsList }: { reviewsList: ReviewType[] }) => {
-  const [reviews, setReviews] = useState(reviewsList || []);
-  // const [loading, setLoading] = useState(true);
+const ReviewHistory = ({
+  reviewsList,
+  hasNextPage,
+}: {
+  hasNextPage: boolean;
+  reviewsList: ReviewType[];
+}) => {
+  const [loading, setLoading] = useState(false);
+  const [moreResults, setMoreResults] = useState(reviewsList || []);
+  const [page, setPage] = useState(1);
+  const [showMore, setShowMore] = useState(hasNextPage);
+
+  const getMoreResults = async () => {
+    try {
+      setLoading(true);
+      const newPage = page + 1;
+      setPage((prevPage) => prevPage++);
+      const { data } = await api.get(`/customer/reviews?page=${newPage}`);
+      setMoreResults([...moreResults, ...data.data]);
+      setPage(newPage);
+      setShowMore(data.hasNextPage);
+    } catch (error) {
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
   // const [error, setError] = useState(null);
 
   //   useEffect(() => {
@@ -30,44 +57,61 @@ const ReviewHistory = ({ reviewsList }: { reviewsList: ReviewType[] }) => {
   //   if (loading) return <div>Loading...</div>;
   //   if (error) return <div>Error: {error}</div>;
 
-  useEffect(() => {
-    setReviews(reviewsList);
-  }, [reviewsList]);
+  // useEffect(() => {
+  //   setReviews(reviewsList);
+  // }, [reviewsList]);
   return (
     <div className="container mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
       <h1 className="text-3xl font-bold mb-6">
         {accountReviewsTranslate[lang].title}
       </h1>
       <div
-        className="max-h-[80vh] overscroll-y-auto mx-auto p-6 bg-gray-100 rounded-lg shadow-lg
+        className="max-h-[80vh] overflow-y-scroll mx-auto p-6 bg-gray-100 rounded-lg shadow-lg
 "
       >
-        {reviews.length > 0 ? (
-          reviews.map((review) => (
-            <div
-              key={review._id}
-              className="p-4 mb-4 bg-white rounded shadow-lg border border-gray-200"
-            >
-              <h2 className="text-xl font-semibold mb-2">
-                {accountReviewsTranslate[lang].review.product}:{" "}
-                {review.product.name}
-              </h2>
-              <p className="mb-2">
-                <strong>{accountReviewsTranslate[lang].review.rating}:</strong>{" "}
-                <span className="text-yellow-500">
-                  {"★".repeat(review.rating)} {"☆".repeat(5 - review.rating)}
-                </span>
-              </p>
-              <p className="mb-2">
-                <strong>{accountReviewsTranslate[lang].review.review}:</strong>{" "}
-                {review.reviewText}
-              </p>
-              <p className="text-gray-500 text-sm">
-                {accountReviewsTranslate[lang].review.reviewedOn}:{" "}
-                {new Date(review.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          ))
+        {moreResults.length > 0 ? (
+          <div>
+            {moreResults.map((review) => (
+              <div
+                key={review._id}
+                className="p-4 mb-4 bg-white rounded shadow-lg border border-gray-200"
+              >
+                <Link
+                  className="text-blue-500"
+                  href={`/shop/${review.product._id}`}
+                  target="_blank"
+                >
+                  <h2 className="text-xl font-semibold mb-2">
+                    {accountReviewsTranslate[lang].review.product}:{" "}
+                    {review.product.name}
+                  </h2>
+                </Link>
+                <p className="mb-2">
+                  <strong>
+                    {accountReviewsTranslate[lang].review.rating}:
+                  </strong>{" "}
+                  <span className="text-yellow-500">
+                    {"★".repeat(review.rating)} {"☆".repeat(5 - review.rating)}
+                  </span>
+                </p>
+                <p className="mb-2">
+                  <strong>
+                    {accountReviewsTranslate[lang].review.review}:
+                  </strong>{" "}
+                  {review.reviewText}
+                </p>
+                <p className="text-gray-500 text-sm">
+                  {accountReviewsTranslate[lang].review.reviewedOn}:{" "}
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+            <CustomButton
+              showMore={showMore}
+              getMoreResults={getMoreResults}
+              loading={loading}
+            />
+          </div>
         ) : (
           <p className="empty">{accountReviewsTranslate[lang].noReviewFound}</p>
         )}

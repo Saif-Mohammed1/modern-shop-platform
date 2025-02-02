@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import OrderCompleted from "@/components/shop/orders/orderCompletedPrushers";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";

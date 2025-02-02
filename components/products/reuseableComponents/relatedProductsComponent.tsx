@@ -12,7 +12,7 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import imageSrc from "@/components/util/productImageHandler";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 type RelatedProductsProps = {
   title?: string;
   relatedProducts: ProductType[];
@@ -31,9 +31,9 @@ const RelatedProducts = ({
   lastChid = false,
   slidesPerView,
 }: RelatedProductsProps) => {
-  const [relatedProductsList, setRelatedProductsList] = useState<ProductType[]>(
-    relatedProducts || []
-  );
+  // const [relatedProducts, setRelatedProductsList] = useState<ProductType[]>(
+  //   relatedProducts || []
+  // );
   const swiperConfig = slidesPerView
     ? {
         slidesPerView: "auto" as const,
@@ -67,13 +67,13 @@ const RelatedProducts = ({
           },
         },
       };
-  useEffect(() => {
-    setRelatedProductsList(relatedProducts);
-  }, [relatedProducts]);
+  // useEffect(() => {
+  //   setRelatedProductsList(relatedProducts);
+  // }, [relatedProducts]);
   return (
     <div className={`mt-8 ${lastChid ? "mb-6" : " mb-3 "}`}>
       <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      {relatedProductsList.length === 0 ? (
+      {relatedProducts.length === 0 ? (
         <p className="text-gray-500">{message}</p>
       ) : (
         <Swiper
@@ -89,7 +89,7 @@ const RelatedProducts = ({
           loop={true}
           {...swiperConfig}
         >
-          {relatedProductsList.map((product) => (
+          {relatedProducts.map((product) => (
             <SwiperSlide key={product._id} style={{ width: "auto" }}>
               <div className="card border p-4 hover:shadow-lg transition-shadow relative /w-fit shadow-lg rounded bg-gray-200/70 min-w-[160px] overflow-hidden">
                 {/* Discount Badge */}
@@ -101,7 +101,7 @@ const RelatedProducts = ({
                   </div>
                 )}
                 <Link href={`/shop/${product._id}`}>
-                  <div className="w-full h-40 overflow-hidden rounded-lg">
+                  <div className="imgParent" style={{ height: "160px" }}>
                     <Image
                       src={imageSrc(product)}
                       alt={product.name}

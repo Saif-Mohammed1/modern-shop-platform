@@ -21,8 +21,8 @@ export const GET = async (
   try {
     await connectDB();
     req.id = id;
-    const { data, statusCode } = await getReviews(req, Review);
-    return NextResponse.json({ data }, { status: statusCode });
+    const { data, statusCode, hasNextPage } = await getReviews(req, Review);
+    return NextResponse.json({ data, hasNextPage }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
   }

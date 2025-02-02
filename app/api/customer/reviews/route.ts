@@ -10,11 +10,18 @@ export const GET = async (req: NextRequest) => {
     await connectDB();
     await isAuth(req);
     req.id = String(req.user?._id);
-    const { data, statusCode } = await getDataByUser<IReviewSchema>(
-      req,
-      Review
-    );
-    return NextResponse.json({ data }, { status: statusCode });
+    const { data, hasNextPage, statusCode } =
+      await getDataByUser<IReviewSchema>(
+        req,
+        Review
+        //   {
+
+        //   path: "user",
+        //   select: "name email",
+
+        // }
+      );
+    return NextResponse.json({ data, hasNextPage }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
   }

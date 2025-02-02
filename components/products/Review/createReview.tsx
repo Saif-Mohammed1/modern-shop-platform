@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import StarRatings from "react-star-ratings";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { reviewsTranslate } from "@/app/_translate/reviewsTranslate";
 import { lang } from "@/components/util/lang";
 type CreateReviewProps = {
@@ -107,10 +107,10 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
           ? reviewsTranslate[lang].createReviewsSection.content.button
               .checkButton.loading
           : reviewsLength > 0
-          ? reviewsTranslate[lang].createReviewsSection.content.button
-              .checkButton.writeReview
-          : reviewsTranslate[lang].createReviewsSection.content.button
-              .checkButton.firstReview}
+            ? reviewsTranslate[lang].createReviewsSection.content.button
+                .checkButton.writeReview
+            : reviewsTranslate[lang].createReviewsSection.content.button
+                .checkButton.firstReview}
       </button>
       {openReviewer && (
         <div className="flex flex-col items-start space-y-4  ">

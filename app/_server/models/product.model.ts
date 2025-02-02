@@ -18,6 +18,7 @@ export interface IProductSchema extends Document {
   ratingsQuantity: number;
   createdAt: Date;
   updatedAt: Date;
+  active: boolean;
 }
 
 const ProductSchema = new Schema<IProductSchema>(
@@ -110,6 +111,10 @@ const ProductSchema = new Schema<IProductSchema>(
       type: Number,
       default: 0,
     },
+    active: {
+      type: Boolean,
+      default: true,
+    },
     // createdAt: { type: Date, default: Date.now },
   },
   {
@@ -127,7 +132,9 @@ ProductSchema.virtual("reviews", {
 ProductSchema.set("toJSON", {
   transform: function (doc, ret) {
     //  return price or descount to 2 decimal places for example 10.9999 will be 10.99
-    ret.price = parseFloat(ret.price.toFixed(2));
+    if (ret.price) {
+      ret.price = parseFloat(ret.price.toFixed(2));
+    }
     if (ret.discount) {
       ret.discount = parseFloat(ret.discount.toFixed(2));
     }
@@ -138,7 +145,8 @@ ProductSchema.set("toJSON", {
 ProductSchema.pre<Query<any, IProductSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
-    select: "name email",
+    // select: "name email",
+    select: "name",
     model: User,
   });
   next();

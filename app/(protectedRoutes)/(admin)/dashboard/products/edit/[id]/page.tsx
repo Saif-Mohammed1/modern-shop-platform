@@ -1,7 +1,7 @@
 import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import EditProduct from "@/components/(admin)/dashboard/products/editProduct/editProduct";
 import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import { lang } from "@/components/util/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";

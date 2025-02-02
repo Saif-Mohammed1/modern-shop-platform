@@ -5,6 +5,8 @@ export const reviewsTranslate = {
       content: {
         noReviews: "No reviews yet",
         date: "Date",
+        loading: "Loading...",
+        showMore: "Show More",
       },
     },
 
@@ -50,6 +52,8 @@ export const reviewsTranslate = {
       content: {
         noReviews: "Поки що немає відгуків",
         date: "Дата",
+        loading: "Завантаження...",
+        showMore: "Показати більше",
       },
     },
     createReviewsSection: {

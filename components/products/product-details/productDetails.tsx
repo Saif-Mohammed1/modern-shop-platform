@@ -4,7 +4,7 @@ import { useUser } from "@/components/context/user.context";
 import { useWishlist } from "@/components/context/whishList.context";
 import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
 // import ReviewSection from "@/components/products/Review/review";
-import api from "@/components/util/axios.api";
+import api from "@/components/util/api";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -14,6 +14,7 @@ import dynamic from "next/dynamic";
 import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
+import { ReviewsType } from "@/components/products/Review/review";
 const ReviewSection = dynamic(
   () => import("@/components/products/Review/review")
 );
@@ -21,11 +22,21 @@ const ReviewSection = dynamic(
 //   () =>
 //     import("@/components/products/reuseableComponents/relatedProductsComponent")
 // );
-const ProductDetail = ({ product }: { product: ProductType }) => {
+
+const ProductDetail = ({
+  product,
+  reviews,
+}: {
+  product: ProductType;
+  reviews: {
+    data: ReviewsType[];
+    hasNextPage: boolean;
+  };
+}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const [reviews, setReviews] = useState([]);
+  // const [reviews, setReviews] = useState([]);
   const { addToCartItems } = useCartItems();
   const [isWishlisted, setIsWishlisted] = useState(isInWishlist(product._id)); // Wishlist state
   const { user } = useUser();
@@ -116,19 +127,19 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
     }
   }, [product]);
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const {
-          data: { data },
-        } = await api.get(`/customer/reviews/${product._id}`);
-        setReviews(data);
-      } catch (error) {
-        setReviews([]);
-      }
-    };
-    fetchReviews();
-  }, [product]);
+  // useEffect(() => {
+  //   const fetchReviews = async () => {
+  //     try {
+  //       const {
+  //         data: { data },
+  //       } = await api.get(`/customer/reviews/${product._id}`);
+  //       setReviews(data);
+  //     } catch (error) {
+  //       setReviews([]);
+  //     }
+  //   };
+  //   fetchReviews();
+  // }, [product]);
   return product ? (
     <div className="product-detail max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
       {/* Product Header */}
@@ -151,7 +162,7 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
             product?.images[currentImageIndex]?.link || "/products/product.png"
           }
           alt={product.name}
-          className="w-full h-full object-cover rounded-lg"
+          // className="w-full h-full object-cover rounded-lg"
           width={700}
           height={700}
           priority
@@ -239,12 +250,14 @@ const ProductDetail = ({ product }: { product: ProductType }) => {
         </h3>
         <p className="text-gray-700">{product.description}</p>
       </div>
+      {/* Related Products */}
       <div>
         <RelatedProducts
           relatedProducts={relatedProducts}
           slidesPerView={true}
         />
       </div>
+      {/* Reviews */}
       <div>
         <ReviewSection reviews={reviews} productId={product._id} user={user} />
       </div>

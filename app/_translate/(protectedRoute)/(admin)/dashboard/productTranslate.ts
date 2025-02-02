@@ -1,4 +1,4 @@
-import { UserType } from "@/components/context/user.context";
+import { UserAuthType } from "@/app/_types/users";
 
 const addProduct = {
   en: {
@@ -523,7 +523,7 @@ type OldImage = {
   public_id: string;
   link: string;
 };
-// type UserType = {
+// type UserAuthType = {
 //   name: string;
 //   _id: string;
 // };
@@ -534,7 +534,7 @@ export type ProductType = {
   discount: number;
   discountExpire: Date | undefined;
   images: OldImage[] | [];
-  user: Partial<UserType>;
+  user: Partial<UserAuthType>;
   description: string;
   stock: number;
   _id: string;

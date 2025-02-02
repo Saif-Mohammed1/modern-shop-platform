@@ -2,21 +2,9 @@
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import tokenManager from "@/components/util/TokenManager";
-export type UserType = {
-  /** The user's postal address. */
+import { UserAuthType } from "@/app/_types/users";
 
-  _id: string;
-  name: string;
-  email: string;
-  emailVerify: boolean;
-  // password: user.password,
-  // photo: user.photo,
-  role: string;
-  createdAt: string;
-  accessToken: string;
-  phone?: string;
-};
-type User = UserType | null;
+type User = UserAuthType | null;
 type UserContextType = {
   user: User;
   updateUser: (newUser: User) => void;
@@ -42,7 +30,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (session && session?.user) {
       updateUser(session.user);
-      tokenManager.setAccessToken(session.user.accessToken);
+      if (session?.user?.accessToken)
+        tokenManager.setAccessToken(session?.user?.accessToken);
     } else {
       updateUser(null);
     }
