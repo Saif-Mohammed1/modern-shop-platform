@@ -20,16 +20,17 @@ export default async function Home() {
     } = await api.get("/shop/home-page", {
       headers: Object.fromEntries(headers().entries()), // convert headers to plain object
     });
-    const topOfferProducts = data.topOfferProducts;
-    const newProducts = data.newProducts;
-    const topRating = data.topRating;
+    // const topOfferProducts = data.topOfferProducts;
+    // const newProducts = data.newProducts;
+    // const topRating = data.topRating;
 
     return (
       // <ComponentLoading>
       <HomeComponent
-        topOfferProducts={topOfferProducts}
-        newProducts={newProducts}
-        topRating={topRating}
+        productData={data}
+        // topOfferProducts={topOfferProducts}
+        // newProducts={newProducts}
+        // topRating={topRating}
       />
       // </ComponentLoading>
     );

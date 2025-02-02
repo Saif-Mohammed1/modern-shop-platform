@@ -35,8 +35,8 @@ interface IProductInput {
   user: string | null;
   description: string;
   stock: number;
-  ratingsAverage: number;
-  ratingsQuantity: number;
+  // ratingsAverage: number;
+  // ratingsQuantity: number;
   //   createdAt: Date;
 }
 export const createRandomProducts = (count: number, userId: string) => {
@@ -72,8 +72,8 @@ export const createRandomProducts = (count: number, userId: string) => {
       images,
       description: randomDescription,
       stock: randomStock,
-      ratingsAverage: randomRating,
-      ratingsQuantity: randomRatingQuantity,
+      // ratingsAverage: randomRating,
+      // ratingsQuantity: randomRatingQuantity,
       user: userId,
     });
   }

@@ -6,15 +6,20 @@ import RelatedProducts from "@/components/products/reuseableComponents/relatedPr
 import { lang } from "../util/lang";
 import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 type HomeComponentProps = {
-  topOfferProducts: ProductType[];
-  newProducts: ProductType[];
-  topRating: ProductType[];
+  productData: {
+    topOfferProducts: ProductType[];
+    newProducts: ProductType[];
+    topRating: ProductType[];
+  };
 };
+
 const HomeComponent = ({
-  topOfferProducts,
-  newProducts,
-  topRating,
+  // topOfferProducts,
+  // newProducts,
+  // topRating,
+  productData,
 }: HomeComponentProps) => {
+  const { topOfferProducts, newProducts, topRating } = productData;
   return (
     <section>
       <Slider />
