@@ -158,7 +158,7 @@ UserSchema.pre("save", async function (next) {
 });
 // its return only the user data without password and __v
 UserSchema.set("toJSON", {
-  transform: function (doc, ret) {
+  transform: function (_, ret) {
     delete ret.password;
     delete ret.__v;
 

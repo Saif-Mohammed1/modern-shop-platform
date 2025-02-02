@@ -130,7 +130,7 @@ ProductSchema.virtual("reviews", {
   localField: "_id",
 });
 ProductSchema.set("toJSON", {
-  transform: function (doc, ret) {
+  transform: function (_, ret) {
     //  return price or descount to 2 decimal places for example 10.9999 will be 10.99
     if (ret.price) {
       ret.price = parseFloat(ret.price.toFixed(2));
