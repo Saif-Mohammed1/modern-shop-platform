@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import tokenManager from "@/components/util/TokenManager";
 import { UserAuthType } from "@/app/_types/users";
@@ -28,12 +28,20 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    const logOutUser = async () => {
+      await signOut();
+      updateUser(null);
+      tokenManager.clearAccessToken();
+    };
     if (session && session?.user) {
       updateUser(session.user);
       if (session?.user?.accessToken)
         tokenManager.setAccessToken(session?.user?.accessToken);
     } else {
       updateUser(null);
+    }
+    if (session?.error === "RefreshAccessTokenError") {
+      logOutUser();
     }
   }, [session, status]);
 

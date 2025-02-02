@@ -12,6 +12,7 @@ import "next-auth/jwt";
 declare module "next-auth" {
   interface Session {
     user: UserAuthType;
+    error?: string;
   }
 
   interface User extends UserAuthType {

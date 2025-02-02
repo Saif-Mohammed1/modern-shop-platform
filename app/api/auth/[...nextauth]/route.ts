@@ -300,10 +300,13 @@ const authOptions: AuthOptions = {
 async function refreshAccessToken(token: any) {
   console.log("Refreshing access token...");
   try {
-    const refreshAccessToken = cookies().get("refreshAccessToken");
+    const refreshAccessToken = cookies().get("refreshAccessToken")?.value;
     console.log("refreshAccessToken", refreshAccessToken);
     const { data } = await api.post(`/auth/refresh-token`, {
-      headers: Object.fromEntries(headers().entries()),
+      // headers: Object.fromEntries(headers().entries()),
+      headers: {
+        "set-cookie": `refreshAccessToken=${refreshAccessToken}`,
+      },
     });
     return {
       ...token,
