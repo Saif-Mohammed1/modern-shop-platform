@@ -7,11 +7,13 @@ import { useUser } from "../context/user.context";
 import imageSrc from "../util/productImageHandler";
 import { cartDropdownTranslate } from "@/app/_translate/cartDropdownTranslate";
 import { lang } from "../util/lang";
+
 type CartDropdownProps = {
   toggleIsCartOpen: () => void;
   setIsCartOpen: (value: boolean) => void;
   cartItems: CartItemsType[];
 };
+
 const CartDropdown = ({
   toggleIsCartOpen,
   setIsCartOpen,
@@ -19,89 +21,55 @@ const CartDropdown = ({
 }: CartDropdownProps) => {
   const { removeCartItem, addToCartItems, clearProductFromCartItem } =
     useCartItems();
-
   const { user } = useUser();
   const router = useRouter();
-  const cartRef = useRef<HTMLDivElement | null>(null);
-  const handleIncrease = async (item: CartItemsType) => {
-    let toastLoading;
-    try {
-      toastLoading = toast.loading(
-        cartDropdownTranslate[lang].functions.handleIncrease.addingToCart
-      );
-      await addToCartItems(item);
+  const cartRef = useRef<HTMLDivElement>(null);
 
-      toast.success(
-        cartDropdownTranslate[lang].functions.handleIncrease.success
-      );
+  const handleCartAction = async (
+    action: () => Promise<void>,
+    loadingMessage: string,
+    successMessage: string,
+    errorMessage: string
+  ) => {
+    let toastId: string | undefined;
+    try {
+      toastId = toast.loading(loadingMessage);
+      await action();
+      toast.success(successMessage);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(
-          error?.message ||
-            cartDropdownTranslate[lang].functions.handleIncrease.error
-        );
-      } else {
-        toast.error(cartDropdownTranslate[lang].errors.global);
-      }
+      const message = error instanceof Error ? error.message : errorMessage;
+      toast.error(message);
     } finally {
-      toast.dismiss(toastLoading);
+      if (toastId) toast.dismiss(toastId);
     }
   };
 
-  const handleDecrease = async (item: CartItemsType) => {
-    let toastLoading;
-    try {
-      toastLoading = toast.loading(
-        cartDropdownTranslate[lang].functions.handleDecrease.removingFromCart
-      );
-      await removeCartItem(item);
-      toast.success(
-        cartDropdownTranslate[lang].functions.handleDecrease.success
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(
-          error?.message ||
-            cartDropdownTranslate[lang].functions.handleDecrease.error
-        );
-      } else {
-        toast.error(cartDropdownTranslate[lang].errors.global);
-      }
-    } finally {
-      toast.dismiss(toastLoading);
-    }
-    // if (quantities[itemId] > 1) {
-    //   const newQuantities = { ...quantities, [itemId]: quantities[itemId] - 1 };
-    //   setQuantities(newQuantities);
-    //   updateCartQuantity(itemId, newQuantities[itemId]); // Call to update quantity in the cart state
-    // }
-  };
-  const handelClearItem = async (item: CartItemsType) => {
-    let toastLoading;
-    try {
-      toastLoading = toast.loading(
-        cartDropdownTranslate[lang].functions.handelClearItem.clearingProduct
-      );
-      await clearProductFromCartItem(item);
-      toast.success(
-        cartDropdownTranslate[lang].functions.handelClearItem.success
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(
-          error?.message ||
-            cartDropdownTranslate[lang].functions.handelClearItem.error
-        );
-      } else {
-        toast.error(cartDropdownTranslate[lang].errors.global);
-      }
-    } finally {
-      toast.dismiss(toastLoading);
-    }
-  };
+  const handleIncrease = (item: CartItemsType) =>
+    handleCartAction(
+      () => Promise.resolve(addToCartItems(item)),
+      cartDropdownTranslate[lang].functions.handleIncrease.addingToCart,
+      cartDropdownTranslate[lang].functions.handleIncrease.success,
+      cartDropdownTranslate[lang].functions.handleIncrease.error
+    );
+
+  const handleDecrease = (item: CartItemsType) =>
+    handleCartAction(
+      () => Promise.resolve(removeCartItem(item)),
+      cartDropdownTranslate[lang].functions.handleDecrease.removingFromCart,
+      cartDropdownTranslate[lang].functions.handleDecrease.success,
+      cartDropdownTranslate[lang].functions.handleDecrease.error
+    );
+
+  const handelClearItem = (item: CartItemsType) =>
+    handleCartAction(
+      () => Promise.resolve(clearProductFromCartItem(item)),
+      cartDropdownTranslate[lang].functions.handelClearItem.clearingProduct,
+      cartDropdownTranslate[lang].functions.handelClearItem.success,
+      cartDropdownTranslate[lang].functions.handelClearItem.error
+    );
 
   const handelOnCheckout = () => {
-    if (cartItems && cartItems.length === 0) {
+    if (!cartItems?.length) {
       toast.error(
         cartDropdownTranslate[lang].functions.handelOnCheckout.noProduct
       );
@@ -113,27 +81,44 @@ const CartDropdown = ({
       );
       return;
     }
-
     router.push("/checkout");
   };
+
   useEffect(() => {
-    const shoppingCart = document.querySelector(".shopping-cart");
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        cartRef.current &&
-        !cartRef.current.contains(event.target as Node) &&
-        shoppingCart &&
-        !shoppingCart.contains(event.target as Node)
-      ) {
+      if (cartRef.current && !cartRef.current.contains(event.target as Node)) {
         setIsCartOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setIsCartOpen]);
+  // useEffect(() => {
+  //   const shoppingCart = document.querySelector(".shopping-cart");
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       cartRef.current &&
+  //       !cartRef.current.contains(event.target as Node) &&
+  //       shoppingCart &&
+  //       !shoppingCart.contains(event.target as Node)
+  //     ) {
+  //       setIsCartOpen(false);
+  //     }
+  //   };
+
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [setIsCartOpen]);
+  const calculatePrice = (item: CartItemsType) => {
+    const isValidDiscount =
+      item.discount && item.discountExpire && item.discountExpire > new Date();
+
+    return isValidDiscount ? item.price - item.discount : item.price;
+  };
+
   return (
     <div
       ref={cartRef}
@@ -141,69 +126,79 @@ const CartDropdown = ({
       onMouseLeave={toggleIsCartOpen}
     >
       <div className="p-4 min-h-[40vh] max-h-[60vh] overflow-y-auto">
-        {/* Cart Items */}
-        {cartItems && cartItems.length > 0 ? (
-          cartItems.map((item, index) => {
-            const price =
-              item.discount &&
-              item.discountExpire &&
-              item.discountExpire > new Date()
-                ? item.price - item.discount
-                : item.price;
-
+        {cartItems?.length > 0 ? (
+          cartItems.map((item) => {
+            const price = calculatePrice(item);
+            const total = (price * item.quantity).toFixed(2);
             return (
-              <div key={index} className="flex items-center gap-4 mb-4">
-                <div
-                  className="imgParent"
-                  style={{ width: "60px", height: "60px" }}
-                >
+              <div key={item._id} className="flex items-center gap-4 mb-4">
+                <div className="relative w-16 h-16">
                   <Image
                     src={imageSrc(item)}
                     alt={item.name}
-                    width={60}
-                    height={60}
-                    className="rounded-md"
-                    priority
+                    fill
+                    className="rounded-md object-cover"
+                    sizes="64px"
                   />
                 </div>
+
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-700">
+                  <h3 className="text-sm font-medium text-gray-700 truncate">
                     {item.name}
                   </h3>
-                  <p className=" flex justify-between items-center my-1">
-                    <span className="text-sm text-gray-500">${price}</span>
-
-                    <span className="text-sm font-semibold text-gray-800">
-                      ${price * item.quantity}
+                  <div className="flex justify-between items-center my-1">
+                    <span className="text-sm text-gray-500">
+                      ${price.toFixed(2)}
                     </span>
-                  </p>
+                    <span className="text-sm font-semibold text-gray-800">
+                      ${total}
+                    </span>
+                  </div>
 
-                  {/* Quantity Controls */}
                   <div className="flex items-center gap-2 mt-2">
                     <button
-                      className="px-2 py-1 bg-gray-200 text-gray-600 rounded"
+                      className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
                       onClick={() => handleDecrease(item)}
                     >
                       -
                     </button>
-                    <span className="text-sm">{item.quantity}</span>
+                    <input
+                      type="number"
+                      className="text-sm w-8 text-center bg-transparent"
+                      value={item.quantity}
+                      // readOnly
+                      max={item.stock}
+                      onKeyDown={(e) => {
+                        // Prevent arrow key changes if desired
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        if (value > item.stock) {
+                          return;
+                        }
+                        if (value < 1) {
+                          return;
+                        }
+                        addToCartItems(item, value);
+                      }}
+                    />
                     <button
-                      className="px-2 py-1 bg-gray-200 text-gray-600 rounded"
+                      className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
                       onClick={() => handleIncrease(item)}
                     >
                       +
                     </button>
                     <button
-                      className="px-2 py-1 text-red-600 rounded text-lg ml-auto"
+                      className="px-2 py-1 text-red-600 hover:text-red-700 text-lg ml-auto"
                       onClick={() => handelClearItem(item)}
                     >
-                      x
+                      ×
                     </button>
                   </div>
                 </div>
-                {/* <div className="text-sm font-semibold text-gray-800">
-                ${item.price * item.quantity}
-              </div> */}
               </div>
             );
           })
@@ -214,10 +209,9 @@ const CartDropdown = ({
         )}
       </div>
 
-      {/* Checkout Button */}
       <div className="p-4 border-t border-gray-200">
         <button
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition duration-200"
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition-colors duration-200"
           onClick={handelOnCheckout}
         >
           {cartDropdownTranslate[lang].content.proceedToCheckout}

@@ -24,7 +24,7 @@ type CartContextType = {
   isCartOpen: boolean;
   toggleCartStatus: () => void;
   cartItems: CartItemsType[];
-  addToCartItems: (product: ProductType) => void;
+  addToCartItems: (product: ProductType, quantity?: number) => void;
   removeCartItem: (product: ProductType) => void;
   setIsCartOpen: (status: boolean) => void;
   clearProductFromCartItem: (product: ProductType) => void;
@@ -47,7 +47,10 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const { user } = useUser();
   // Function to update the cart
-  const addToCartItems = async (product: ProductType) => {
+  const addToCartItems = async (
+    product: ProductType,
+    quantityValue: number = 1
+  ) => {
     try {
       await addToCart(product, user);
 
@@ -58,7 +61,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           // If the product already exists, update its quantity
           return pre.map((item) =>
             item._id === product._id
-              ? { ...item, quantity: item.quantity + 1 }
+              ? {
+                  ...item,
+                  quantity:
+                    quantityValue > 1 ? quantityValue : item.quantity + 1,
+                }
               : item
           );
         } else {
