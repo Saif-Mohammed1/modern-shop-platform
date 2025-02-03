@@ -24,6 +24,7 @@ const CartDropdown = ({
   const { user } = useUser();
   const router = useRouter();
   const cartRef = useRef<HTMLDivElement>(null);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleCartAction = async (
     action: () => Promise<void>,
@@ -83,7 +84,29 @@ const CartDropdown = ({
     }
     router.push("/checkout");
   };
+  const quantityUpdate = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    item: CartItemsType
+  ) => {
+    const value = e.target.value;
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      if (value === "") {
+        return;
+      }
+      const quantity = Math.max(1, Number(value));
+      if (quantity > item.stock) {
+        toast.error(
+          cartDropdownTranslate[lang].functions.quantityUpdate.notEnoughStock
+        );
+        return;
+      }
 
+      addToCartItems(item, quantity);
+    }, 500);
+  };
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cartRef.current && !cartRef.current.contains(event.target as Node)) {
@@ -174,16 +197,7 @@ const CartDropdown = ({
                           e.preventDefault();
                         }
                       }}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        if (value > item.stock) {
-                          return;
-                        }
-                        if (value < 1) {
-                          return;
-                        }
-                        addToCartItems(item, value);
-                      }}
+                      onChange={(e) => quantityUpdate(e, item)}
                     />
                     <button
                       className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"

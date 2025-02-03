@@ -52,7 +52,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     quantityValue: number = 1
   ) => {
     try {
-      await addToCart(product, user);
+      await addToCart(product, user, quantityValue);
 
       setCartItems((pre) => {
         const existingProduct = pre.find((item) => item._id === product._id);

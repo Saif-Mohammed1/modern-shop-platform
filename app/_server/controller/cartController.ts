@@ -24,11 +24,24 @@ export const addToCartModel = async (
   req: NextRequest,
   Model: Model<ICartSchema>
 ) => {
-  let doc;
+  // let doc;
   let statusCode;
   try {
-    const existingProduct = await Product.findById(req.id);
+    // const {quantity}
+    // const existingProduct = await Product.findById(req.id);
 
+    const [body, existingProduct] = await Promise.all([
+      req.json(),
+      Product.findById(req.id).lean(),
+    ]);
+    // Validate input quantity
+    const quantity = Math.max(1, Number(body.quantity) || 1);
+    if (!Number.isInteger(quantity)) {
+      throw new AppError(
+        cartControllerTranslate[lang].controllers.addToCart.QuantityNotInteger,
+        400
+      );
+    }
     if (!existingProduct) {
       await Model.findOneAndDelete({ user: req.user?._id, product: req.id });
       throw new AppError(
@@ -37,33 +50,42 @@ export const addToCartModel = async (
       );
     }
     // Check if there is enough stock
-    if (existingProduct.stock < 1) {
+    // if (existingProduct.stock < 1) {
+    if (existingProduct.stock < quantity) {
       throw new AppError(
         cartControllerTranslate[lang].controllers.addToCart.notEnoughStock,
         400
       );
     }
-    doc = await Model.findOne({ user: req.user?._id, product: req.id });
-
-    if (doc) {
-      if (existingProduct.stock < doc.quantity + 1) {
-        throw new AppError(
-          cartControllerTranslate[lang].controllers.addToCart.notEnoughStock,
-          400
-        );
-      }
-      doc.quantity += 1;
-      await doc.save();
-      statusCode = 200;
-    } else {
-      doc = await Model.create({
-        user: req.user?._id,
-        product: req.id,
-        quantity: 1,
-      });
-      statusCode = 201;
-    }
-
+    // doc = await Model.findOne({ user: req.user?._id, product: req.id });
+    // if (doc) {
+    //   const CheckQuantity = quantity > 1 ? quantity : doc.quantity + quantity;
+    //   // if (existingProduct.stock < doc.quantity + 1) {
+    //   if (existingProduct.stock < CheckQuantity) {
+    //     throw new AppError(
+    //       cartControllerTranslate[lang].controllers.addToCart.notEnoughStock,
+    //       400
+    //     );
+    //   }
+    //   // doc.quantity += 1;
+    //   doc.quantity += quantity;
+    //   await doc.save();
+    //   statusCode = 200;
+    // } else {
+    //   doc = await Model.create({
+    //     user: req.user?._id,
+    //     product: req.id,
+    //     // quantity: 1,
+    //     quantity: quantity,
+    //   });
+    //   statusCode = 201;
+    // }
+    const doc = await Model.findOneAndUpdate(
+      { user: req.user?._id, product: req.id },
+      { $set: { quantity } },
+      { upsert: true, new: true, runValidators: true }
+    );
+    statusCode = doc.isNew ? 201 : 200;
     return {
       data: {
         // Assuming the product has a name field

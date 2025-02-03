@@ -13,6 +13,7 @@ export const cartControllerTranslate = {
     controllers: {
       addToCart: {
         notEnoughStock: "Not enough stock available",
+        QuantityNotInteger: "Quantity must be an integer",
       },
     },
     errors: {
@@ -36,6 +37,7 @@ export const cartControllerTranslate = {
     controllers: {
       addToCart: {
         notEnoughStock: "Недостатньо товару на складі",
+        QuantityNotInteger: "Кількість повинна бути цілим числом",
       },
     },
     errors: {

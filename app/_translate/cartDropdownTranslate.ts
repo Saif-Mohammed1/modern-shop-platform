@@ -21,6 +21,7 @@ export const cartDropdownTranslate = {
           "You need at least one product in the cart to proceed to checkout",
         noUser: "You need to be login to proceed to checkout",
       },
+      quantityUpdate: { notEnoughStock: "Not enough stock" },
     },
     errors: {
       global: "an expected error happen please try again later",
@@ -52,6 +53,7 @@ export const cartDropdownTranslate = {
           "Вам потрібно мати принаймні один продукт у кошику, щоб перейти до оформлення замовлення",
         noUser: "Вам потрібно увійти, щоб перейти до оформлення замовлення",
       },
+      quantityUpdate: { notEnoughStock: "Недостатньо запасів" },
     },
     errors: {
       global: "очікувана помилка, будь ласка, спробуйте ще раз пізніше",

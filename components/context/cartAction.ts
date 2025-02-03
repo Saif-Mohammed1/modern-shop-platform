@@ -15,7 +15,7 @@ export const addToCart = async (
   try {
     if (user) {
       // User is signed in, store cart in DB
-      const data = await saveCartToDB(product._id);
+      const data = await saveCartToDB(product._id, quantity);
 
       return data;
     } else {
@@ -104,9 +104,11 @@ export const clearItemFromCart = async (product: ProductType, user: User) => {
     return cart;
   }
 };
-export const saveCartToDB = async (productId: string) => {
+export const saveCartToDB = async (productId: string, quantity: number) => {
   try {
-    const { data } = await api.post("/customer/cart/" + productId);
+    const { data } = await api.post("/customer/cart/" + productId, {
+      quantity,
+    });
 
     return data.data;
   } catch (error) {
