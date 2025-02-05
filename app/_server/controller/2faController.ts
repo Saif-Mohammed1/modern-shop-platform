@@ -9,8 +9,13 @@ import type { NextRequest } from "next/server";
 import * as crypto from "crypto";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
-import { v4 as uuidv4 } from "uuid";
-import { IUserSchema } from "../models/user.model";
+import User, { IUserSchema } from "../models/user.model";
+import { cookies } from "next/headers";
+import { modifyFinalResponse } from "./authController";
+import { createUserTokens } from "./refreshTokenController";
+import { authControllerTranslate } from "../_Translate/authControllerTranslate";
+import { lang } from "@/components/util/lang";
+import { sendMessageForNewPassword } from "@/components/util/email";
 
 // Configuration Constants
 const SECURITY_CONFIG = {
@@ -166,14 +171,20 @@ export class TwoFactorAuthService {
 
   static async verify2FA(req: NextRequest) {
     let twoFA;
-    const metadata = collectSecurityMetadata(req);
 
+    const metadata = collectSecurityMetadata(req);
+    let token;
     try {
       if (!req.user) throw new AppError("User not found", 404);
 
       twoFA = await TwoFactorAuth.findOne({ userId: req.user._id });
       if (!twoFA) throw new AppError("2FA not configured", 404);
-      const { token } = await req.json();
+
+      if (req?.token) {
+        token = req.token;
+      } else {
+        token = await req.json();
+      }
       if (!token) throw new AppError("Verification code is required", 400);
 
       this.checkLockoutStatus(twoFA);
@@ -205,52 +216,282 @@ export class TwoFactorAuthService {
       throw error;
     }
   }
+  static async verify2FAOnLogin(req: NextRequest) {
+    try {
+      const tempToken =
+        cookies().get("tempToken")?.value ||
+        req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
+      if (!tempToken) throw new AppError("Temporary token not found", 400);
+      const { code } = await req.json();
+      if (!code) throw new AppError("Verification code is required", 400);
+      //  check code if its 6 digit
+      if (!/^\d+$/.test(code))
+        throw new AppError("Invalid verification code", 400);
+      const user = await User.findOne({
+        twoFactorTempToken: tempToken,
+        twoFactorTempTokenExpires: { $gt: new Date() },
+      });
 
+      if (!user) throw new AppError("Invalid or expired token", 400);
+      await this.rateLimitUser(user);
+
+      req.user = user;
+      req.token = code;
+      // Your 2FA validation logic here
+      // const isValid = await this.verify2FA(req);
+      await this.verify2FA(req);
+
+      // if (!isValid) {
+      //   throw new AppError("Invalid verification code", 400);
+      // }
+
+      // Clear temporary token after successful verification
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $unset: {
+            twoFactorTempToken: 1,
+            twoFactorTempTokenExpires: 1,
+          },
+        }
+      );
+
+      // Proceed with final login
+      const accessToken = await createUserTokens(String(user._id), req);
+      return modifyFinalResponse({ ...user.toObject(), accessToken }, 200);
+    } catch (error) {
+      throw error;
+    }
+  }
   static async verifyBackupCode(req: NextRequest) {
     const user = req.user;
-    if (!user) throw new AppError("User not found", 404);
-    const metadata = collectSecurityMetadata(req);
-    const { code } = await req.json();
-    if (!code) throw new AppError("Backup code is required", 400);
-    const twoFA = await TwoFactorAuth.findOne({ userId: user._id }).select(
-      "+backupCodes"
-    );
-    if (!twoFA) throw new AppError("2FA not configured", 404);
+    try {
+      if (!user) throw new AppError("User not found", 404);
+      const metadata = collectSecurityMetadata(req);
+      const { code } = await req.json();
+      if (!code) throw new AppError("Backup code is required", 400);
+      const twoFA = await TwoFactorAuth.findOne({ userId: user._id }).select(
+        "+backupCodes"
+      );
+      if (!twoFA) throw new AppError("2FA not configured", 404);
 
-    this.checkLockoutStatus(twoFA);
+      this.checkLockoutStatus(twoFA);
 
-    const sanitizedCode = code.replace(/-/g, "");
-    const validCodeIndex = twoFA.backupCodes.findIndex((hash) =>
-      CryptoService.verifyBackupCode(sanitizedCode, hash)
-    );
+      const sanitizedCode = code.replace(/-/g, "");
+      const validCodeIndex = twoFA.backupCodes.findIndex((hash) =>
+        CryptoService.verifyBackupCode(sanitizedCode, hash)
+      );
 
-    if (validCodeIndex === -1) {
-      await this.handleFailedAttempt(twoFA, metadata);
-      throw new AppError("Invalid backup code", 401);
+      if (validCodeIndex === -1) {
+        await this.handleFailedAttempt(twoFA, metadata);
+        throw new AppError("Invalid backup code", 401);
+      }
+
+      await this.handleValidBackupCode(user, twoFA, validCodeIndex, metadata);
+      // return this.generateSessionToken();
+      return {
+        // token: this.generateSessionToken(),
+        message: "Backup code verification successful",
+        // remainingCodes: twoFA.backupCodes.length - 1, // After removal
+        statusCode: 200,
+      };
+    } catch (error) {
+      throw error;
     }
-
-    await this.handleValidBackupCode(user, twoFA, validCodeIndex, metadata);
-    // return this.generateSessionToken();
-    return {
-      // token: this.generateSessionToken(),
-      message: "Backup code verification successful",
-      // remainingCodes: twoFA.backupCodes.length - 1, // After removal
-      statusCode: 200,
-    };
   }
 
-  static async disable2FA(user: IUserSchema, metadata: SecurityMetadata) {
-    const result = await TwoFactorAuth.findOneAndDelete({ userId: user._id });
-    if (!result) throw new AppError("2FA not enabled", 400);
+  static async disable2FA(req: NextRequest) {
+    const user = req.user;
+    try {
+      if (!user) throw new AppError("User not found", 404);
+      const metadata = collectSecurityMetadata(req);
+      const result = await TwoFactorAuth.findOneAndDelete({ userId: user._id });
+      if (!result) throw new AppError("2FA not enabled", 400);
 
-    user.isTwoFactorAuthEnabled = false;
-    await user.save();
+      user.isTwoFactorAuthEnabled = false;
+      await user.save();
 
-    const auditEntry = this.createAuditEntry("2FA_DISABLED", metadata);
-    result.auditLogs.push(auditEntry);
-    return { success: true };
+      const auditEntry = this.createAuditEntry("2FA_DISABLED", metadata);
+      result.auditLogs.push(auditEntry);
+      return { message: "2FA disabled", statusCode: 200 };
+    } catch (error) {
+      throw error;
+    }
   }
+  // In TwoFactorAuthService
+  static async reGenerateBackupCodes(req: NextRequest) {
+    const user = req.user;
+    try {
+      if (!user) throw new AppError("User not found", 404);
+      const newCodes = CryptoService.generateBackupCodes();
+      const twoFA = await TwoFactorAuth.findOneAndUpdate(
+        { userId: user._id },
+        {
+          $set: {
+            backupCodes: newCodes.map(CryptoService.hashCode),
+            recoveryAttempts: 0,
+          },
+        },
+        { new: true }
+      );
+      return { newCodes, statusCode: 200 };
+    } catch (error) {
+      throw error;
+    }
+  }
+  // static async validateBackupCode(req: NextRequest) {
+  //   // in this fun yuser at leat must provide 5 code buckup ['skd-dsdsd', 'sdsd-sdsd', 'sdsd-sdsd', 'sdsd-sdsd', 'sdsd-sdsd']
+  //   try {
+  //     const { codes, email } = await req.json();
 
+  //     // Validate email
+  //     if (!email) throw new AppError("Email is required", 400);
+
+  //     // Validate backup codes
+  //     if (!Array.isArray(codes) || codes.length === 0) {
+  //       throw new AppError("At least one backup code is required", 400);
+  //     }
+
+  //     // Fetch user
+  //     const user = await User.findOne({ email: email.toLowerCase() });
+  //     if (!user) throw new AppError("User not found", 404);
+
+  //     // Fetch 2FA settings
+  //     const twoFA = await TwoFactorAuth.findOne({ userId: user._id }).select(
+  //       "+backupCodes"
+  //     );
+  //     if (
+  //       !twoFA ||
+  //       !Array.isArray(twoFA.backupCodes) ||
+  //       twoFA.backupCodes.length === 0
+  //     ) {
+  //       throw new AppError(
+  //         "2FA is not configured or backup codes are missing",
+  //         404
+  //       );
+  //     }
+
+  //     // Sanitize codes (remove hyphens) and verify them
+  //     const sanitizedCodes = codes.map((code) => code.replace(/-/g, ""));
+
+  //     const validCodeIndex = sanitizedCodes.findIndex((sanitizedCode) =>
+  //       twoFA.backupCodes.some((hash) =>
+  //         CryptoService.verifyBackupCode(sanitizedCode, hash)
+  //       )
+  //     );
+
+  //     if (validCodeIndex === -1) {
+  //       throw new AppError("Invalid backup code", 401);
+  //     }
+
+  //     // Generate a secure random password
+  //     const newPassword = crypto.randomBytes(16).toString("hex");
+  //     user.password = newPassword;
+  //     await user.save();
+
+  //     // Send email with the new password
+  //     await sendMessageForNewPassword(user, newPassword);
+
+  //     return {
+  //       message:
+  //         "Validation successful! Please check your email for the new password.",
+  //       statusCode: 200,
+  //     };
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+  static async validateBackupCode(req: NextRequest) {
+    try {
+      const { codes, email } = await req.json();
+
+      // Validate input format
+      if (!email) throw new AppError("Email is required", 400);
+      if (!Array.isArray(codes) || codes.length < 5) {
+        throw new AppError("At least 5 backup codes are required", 400);
+      }
+      if (!codes.every((code) => typeof code === "string")) {
+        throw new AppError("Invalid backup code format", 400);
+      }
+
+      // Fetch user and 2FA settings
+      const user = await User.findOne({ email: email.toLowerCase() }).select(
+        "+_id"
+      );
+      if (!user) throw new AppError("User not found", 404);
+      await this.rateLimitUser(user);
+      const twoFA = await TwoFactorAuth.findOne({ userId: user._id })
+        .select("+backupCodes")
+        .lean();
+      if (!twoFA?.backupCodes?.length) {
+        throw new AppError("2FA backup codes not configured", 404);
+      }
+      await TwoFactorAuth.findByIdAndUpdate(twoFA._id, {
+        $push: {
+          auditLogs: this.createAuditEntry(
+            "BACKUP_CODE_VALIDATION",
+            collectSecurityMetadata(req)
+          ),
+        },
+      });
+
+      // Sanitize and validate codes
+      const sanitizedCodes = codes.map((code) => code.trim());
+
+      let matchedHashIndex = -1;
+      const validCodeIndex = sanitizedCodes.findIndex((sanitizedCode) =>
+        twoFA.backupCodes.some((hash, index) => {
+          const isValid = CryptoService.verifyBackupCode(sanitizedCode, hash);
+          if (isValid) matchedHashIndex = index;
+          return isValid;
+        })
+      );
+
+      if (validCodeIndex === -1 || matchedHashIndex === -1) {
+        throw new AppError("Invalid backup codes", 400);
+      }
+
+      // Update records (using mongoose document for updates)
+      const updatedTwoFA = await TwoFactorAuth.findByIdAndUpdate(
+        twoFA._id,
+        { $pull: { backupCodes: twoFA.backupCodes[matchedHashIndex] } },
+        { new: true }
+      );
+
+      if (!updatedTwoFA) {
+        throw new AppError("Failed to update 2FA settings", 500);
+      }
+
+      // Generate and save new password
+      const newPassword = crypto.randomBytes(16).toString("hex");
+      user.password = newPassword;
+      user.passwordLoginAttempts = 0;
+      await user.save();
+
+      // Send password reset email
+      await sendMessageForNewPassword(user, newPassword);
+
+      return {
+        message:
+          "Password reset successful. Check your email for the new password.",
+        statusCode: 200,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async getAuditLogs(req: NextRequest) {
+    const user = req.user;
+    try {
+      if (!user) throw new AppError("User not found", 404);
+      const twoFA = await TwoFactorAuth.findOne({ userId: user._id })
+        .select("auditLogs")
+        .lean();
+      return { logs: twoFA?.auditLogs || [], statusCode: 200 };
+    } catch (error) {
+      throw error;
+    }
+  }
   // Helper Methods
   private static checkLockoutStatus(twoFA: ITwoFactorAuth) {
     if (
@@ -308,19 +549,60 @@ export class TwoFactorAuthService {
     await Promise.all([twoFA.save(), user.save()]);
   }
 
-  private static generateSessionToken() {
-    const sessionToken = uuidv4();
-    const expires = new Date(
-      Date.now() + SECURITY_CONFIG.SESSION_DAYS * 86400000
-    );
+  static async generateSessionToken(req: NextRequest) {
+    try {
+      const { email } = await req.json();
+      if (!email) throw new AppError("Email is required", 400);
+      const user = await User.findOne({
+        email,
+      });
+      if (!user) throw new AppError("User not found", 404);
+      const now = new Date();
 
-    return {
-      token: sessionToken,
-      expires,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict" as const,
-    };
+      if (user.twoFactorTempToken && user.twoFactorTempTokenExpires > now) {
+        return {
+          user: {
+            message: "Temporary token generated",
+            tempToken: user.twoFactorTempToken,
+            tempTokenExpires: user.twoFactorTempTokenExpires,
+          },
+          statusCode: 200,
+        };
+      }
+      await this.rateLimitUser(user);
+      // Generate new token only if none exists or expired
+      const tempToken = crypto.randomBytes(32).toString("hex");
+      const tempTokenExpires = new Date(now.getTime() + 300000); // 5 minutes
+      const expires = new Date(
+        Date.now() + 5 * 60 * 1000 // 5 minutes * 60 seconds * 1000 milliseconds
+      );
+
+      cookies().set("tempToken", tempToken, {
+        path: "/", // Ensure the cookie is available across all routes
+        expires,
+
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
+        secure: process.env.NODE_ENV === "production", // 'false' in development
+        // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
+        // secure: req?.secure || req?.headers["x-forwarded-proto"] === "https",
+      });
+      await User.updateOne(
+        { _id: user._id },
+        {
+          twoFactorTempToken: tempToken,
+          twoFactorTempTokenExpires: tempTokenExpires,
+        }
+      );
+      return {
+        message: "Temporary token generated",
+        tempToken,
+        tempTokenExpires,
+        statusCode: 200,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   private static createAuditEntry(
@@ -342,6 +624,57 @@ export class TwoFactorAuthService {
       .createHash("sha256")
       .update(`${metadata.ipAddress}-${metadata.userAgent}`)
       .digest("hex");
+  }
+  private static async rateLimitUser(user: IUserSchema) {
+    try {
+      if (user.passwordLoginBlockedUntil) {
+        if (user.passwordLoginBlockedUntil < new Date()) {
+          // user.passwordLoginBlockedUntil = undefined;
+          await User.updateOne(
+            { _id: user._id },
+            {
+              $unset: {
+                passwordLoginBlockedUntil: 1,
+                twoFactorTempToken: 1,
+                twoFactorTempTokenExpires: 1,
+              },
+            }
+          );
+          // await user.save();
+        } else {
+          throw new AppError(
+            authControllerTranslate[
+              lang
+            ].functions.logIn.logInAttemptsBlockedMessage,
+            400
+          );
+        }
+      }
+      user.passwordLoginAttempts = (user.passwordLoginAttempts || 0) + 1;
+
+      // Block the user after 4 unsuccessful attempts
+      if (user.passwordLoginAttempts >= 4) {
+        user.passwordLoginAttempts = undefined;
+
+        user.passwordLoginBlockedUntil = new Date(Date.now() + 3600000); // 1 hour in milliseconds
+      }
+      await user.save();
+
+      if (user.passwordLoginAttempts && user.passwordLoginAttempts >= 4) {
+        throw new AppError(
+          authControllerTranslate[
+            lang
+          ].functions.logIn.tooManyUnsuccessfulPasswordAttemptsMessage,
+          400
+        );
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+  static test() {
+    const backupCodes = CryptoService.generateBackupCodes();
+    // return { backupCodes, statusCode: 200 };
   }
 }
 

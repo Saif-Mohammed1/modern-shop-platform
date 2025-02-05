@@ -6,7 +6,7 @@ import {
 } from "@/app/_server/controller/refreshTokenController";
 import { connectDB } from "@/app/_server/db/db";
 import { type NextRequest, NextResponse } from "next/server";
-export const POST = async (req: NextRequest) => {
+export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
     const { accessToken, statusCode } = await refreshAccessToken(req);

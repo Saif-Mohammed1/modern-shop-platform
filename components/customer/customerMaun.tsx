@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 import { lang } from "@/components/util/lang";
 import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { RiShieldUserLine } from "react-icons/ri";
 
 const AccountMenuV2 = () => {
   const router = useRouter();
@@ -32,6 +33,13 @@ const AccountMenuV2 = () => {
       //Information",
       href: "/account/settings",
       icon: <FaUser />,
+    },
+    {
+      label: addressTranslate[lang].layout.navBar.options.twoFactor,
+      //Information",
+      href: "/account/two-factor",
+      icon: <RiShieldUserLine />,
+      // icon: <RiShieldUserLine className="w-6 h-6 text-blue-600" />,
     },
     {
       label: addressTranslate[lang].layout.navBar.options.myWishlist,

@@ -10,6 +10,19 @@ export const loginTranslate = {
         requiredFields: "Please fill all fields",
         success: "Login success 👌",
       },
+      handelVerify2fa: {
+        requiredFields: "Please fill all fields",
+        success: "Verification success 👌",
+      },
+      handelBackup2fa: {
+        requiredFields: "Please fill all fields",
+        success:
+          "Backup success please check your email for temporary password",
+      },
+      handelResend2fa: {
+        requiredFields: "Please fill all fields",
+        success: "Resend success 👌",
+      },
     },
     form: {
       title: "Login to Your Account",
@@ -45,7 +58,21 @@ export const loginTranslate = {
         requiredFields: "Будь ласка, заповніть всі поля",
         success: "Успішний вхід 👌",
       },
+      handelVerify2fa: {
+        requiredFields: "Будь ласка, заповніть всі поля",
+        success: "Успішна перевірка 👌",
+      },
+      handelBackup2fa: {
+        requiredFields: "Будь ласка, заповніть всі поля",
+        success:
+          "Резервне копіювання успішне, будь ласка, перевірте свою електронну пошту для тимчасового пароля",
+      },
+      handelResend2fa: {
+        requiredFields: "Будь ласка, заповніть всі поля",
+        success: "Успішне повторне надсилання 👌",
+      },
     },
+
     form: {
       title: "Увійдіть в свій обліковий запис",
       email: {

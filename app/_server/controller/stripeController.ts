@@ -14,6 +14,7 @@ const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
 type ItemType = {
   quantity: number;
 } & ProductType;
+const taxRateCache = new Map<string, Stripe.TaxRate>();
 
 export const createStripeProduct = async (req: NextRequest) => {
   try {
@@ -34,17 +35,24 @@ export const createStripeProduct = async (req: NextRequest) => {
         400
       );
     }
+    const countryCode =
+      shippingInfo.country.toUpperCase() || "Ukraine".toUpperCase();
+
+    let taxRate = taxRateCache.get(countryCode);
 
     // Assuming 'products' is an array of product objects from the request body
     // Optionally, create a new tax rate or use an existing tax rate ID
-    const taxRate = await stripe.taxRates.create({
-      display_name: "Standard Tax",
-      description: feePercentage + "% Sales Tax",
-      jurisdiction: shippingInfo.country || "Ukraine",
-      percentage: feePercentage,
-      inclusive: false, // false means the tax is added on top of the pricing
-    });
+    if (!taxRate) {
+      taxRate = await stripe.taxRates.create({
+        display_name: "Standard Tax",
+        description: feePercentage + "% Sales Tax",
+        jurisdiction: countryCode,
 
+        percentage: feePercentage,
+        inclusive: false, // false means the tax is added on top of the pricing
+      });
+      taxRateCache.set(countryCode, taxRate);
+    }
     // const shippingRates = {
     //   USA: 500, // $5.00 in cents
     //   Egypt: 1500, // $15.00 in cents
@@ -338,3 +346,242 @@ const captureSuccessPayment = async (sessionId: string) => {
     throw error;
   }
 };
+
+// class StripeService {
+//   private static stripe = new Stripe(process.env.STRIPE_SECRET!, {
+//     apiVersion: "2020-08-27",
+//     typescript: true,
+//   });
+
+//   private static FEE_PERCENTAGE =
+//     Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE) || 0;
+//   private static SHIPPING_RATES: Record<string, number> = {
+//     US: 500,
+//     CA: 500,
+//     GB: 700,
+//     DE: 800,
+//     EG: 1500,
+//     IN: 1300,
+//     BR: 1200,
+//     AU: 1500,
+//     JP: 1000,
+//     ZA: 1400,
+//     DEFAULT: 1000,
+//   };
+
+//   private static taxRateCache = new Map<string, Stripe.TaxRate>();
+
+//   public static async createStripeProduct(req: NextRequest) {
+//     const session = await mongoose.startSession();
+//     session.startTransaction();
+
+//     try {
+//       const { products, shippingInfo } = await req.json();
+//       if (!shippingInfo?.country || !products?.length)
+//         throw new AppError("Invalid input", 400);
+
+//       const countryCode = shippingInfo.country.toUpperCase();
+//       let taxRate = this.taxRateCache.get(countryCode);
+
+//       if (!taxRate) {
+//         taxRate = await this.stripe.taxRates.create({
+//           display_name: "Sales Tax",
+//           description: `${this.FEE_PERCENTAGE}% Tax`,
+//           jurisdiction: countryCode,
+//           percentage: this.FEE_PERCENTAGE,
+//           inclusive: false,
+//         });
+//         this.taxRateCache.set(countryCode, taxRate);
+//       }
+
+//       const lineItems = await Promise.all(
+//         products.map(async (item: ItemType) => {
+//           const product = await Product.findById(item._id).session(session);
+//           if (!product || product.stock < item.quantity)
+//             throw new AppError(`Insufficient stock for ${item.name}`, 400);
+
+//           product.stock -= item.quantity;
+//           await product.save({ session });
+
+//           return {
+//             price_data: {
+//               currency: "usd",
+//               product_data: {
+//                 name: product.name,
+//                 images: product.images.slice(0, 1).map((img) => img.link),
+//                 metadata: { _id: product._id.toString() },
+//               },
+//               unit_amount: Math.round(
+//                 this.calculateFinalPrice(product as ProductType) * 100
+//               ),
+//             },
+//             quantity: item.quantity,
+//             tax_rates: [taxRate.id],
+//           };
+//         })
+//       );
+
+//       lineItems.push(this.createShippingLineItem(shippingInfo.country));
+
+//       const stripeSession = await this.stripe.checkout.sessions.create({
+//         payment_method_types: ["card"],
+//         mode: "payment",
+//         customer_email: req.user?.email,
+//         client_reference_id: req.user?._id.toString(),
+//         line_items: lineItems,
+//         success_url: `${req.headers.get("origin")}/account/orders/success`,
+//         cancel_url: `${req.headers.get("origin")}/account/orders/cancel`,
+//         metadata: { shippingInfo: JSON.stringify(shippingInfo) },
+//         payment_intent_data: {
+//           shipping: this.formatShippingData(req.user, shippingInfo),
+//         },
+//         invoice_creation: { enabled: true },
+//       });
+
+//       await session.commitTransaction();
+//       return {
+//         sessionId: stripeSession.id,
+//         url: stripeSession.url,
+//         statusCode: 200,
+//       };
+//     } catch (error) {
+//       await session.abortTransaction();
+//       logger.error("Checkout session failed", error);
+//       throw new AppError("Payment processing failed", 500);
+//     } finally {
+//       session.endSession();
+//     }
+//   }
+
+//   public static async handleStripeWebhook(req: NextRequest) {
+//     const sig = headers().get("stripe-signature")!;
+//     const rawBody = await req.text();
+
+//     try {
+//       const event = this.stripe.webhooks.constructEvent(
+//         rawBody,
+//         sig,
+//         process.env.STRIPE_WEBHOOK_SECRET!
+//       );
+//       if (event.type === "checkout.session.completed") {
+//         await this.handleSuccessfulPayment(event.data.object);
+//       }
+//       return { received: true };
+//     } catch (err) {
+//       logger.error("Webhook error", err);
+//       throw new AppError("Invalid webhook signature", 400);
+//     }
+//   }
+
+//   private static async handleSuccessfulPayment(
+//     session: Stripe.Checkout.Session
+//   ) {
+//     const dbSession = await mongoose.startSession();
+//     dbSession.startTransaction();
+
+//     try {
+//       const user = await User.findById(session.client_reference_id).session(
+//         dbSession
+//       );
+//       if (!user) throw new AppError("User not found", 404);
+
+//       const [lineItems, invoice] = await Promise.all([
+//         this.stripe.checkout.sessions.listLineItems(session.id, {
+//           expand: ["data.price.product"],
+//         }),
+//         this.stripe.invoices.retrieve(session.invoice as string),
+//       ]);
+
+//       const orderItems = await this.processOrderItems(
+//         lineItems.data,
+//         dbSession
+//       );
+//       const orderTotal = this.calculateOrderTotal(orderItems);
+
+//       await new Order({
+//         user: user._id,
+//         invoiceId: invoice.number,
+//         totalPrice: orderTotal,
+//         items: orderItems,
+//         shippingInfo: JSON.parse(session.metadata!.shippingInfo),
+//       }).save({ session: dbSession });
+
+//       await this.sendInvoiceEmail(user, invoice.hosted_invoice_url!);
+//       await dbSession.commitTransaction();
+//     } catch (error) {
+//       await dbSession.abortTransaction();
+//       logger.error("Order processing failed", error);
+//       throw error;
+//     } finally {
+//       dbSession.endSession();
+//     }
+//   }
+
+//   private static calculateFinalPrice(product: ProductType) {
+//     const hasValidDiscount =
+//       product.discountExpire && new Date(product.discountExpire) > new Date();
+//     return hasValidDiscount
+//       ? product.price - (product.discount || 0)
+//       : product.price;
+//   }
+
+//   private static createShippingLineItem(country: string) {
+//     const shippingCost =
+//       this.SHIPPING_RATES[country.toUpperCase()] || this.SHIPPING_RATES.DEFAULT;
+//     return {
+//       price_data: {
+//         currency: "usd",
+//         product_data: { name: `Shipping to ${country}` },
+//         unit_amount: shippingCost,
+//       },
+//       quantity: 1,
+//     };
+//   }
+
+//   private static formatShippingData(user: UserAuthType, shippingInfo: any) {
+//     return {
+//       name: user.name || "Customer",
+//       address: {
+//         line1: shippingInfo.street,
+//         city: shippingInfo.city,
+//         state: shippingInfo.state,
+//         postal_code: shippingInfo.postalCode,
+//         country: shippingInfo.country,
+//       },
+//     };
+//   }
+
+//   private static async processOrderItems(
+//     items: Stripe.LineItem[],
+//     session: mongoose.ClientSession
+//   ) {
+//     return Promise.all(
+//       items.map(async (item) => {
+//         const product = await Product.findById(
+//           (item.price?.product as Stripe.Product).metadata._id
+//         ).session(session);
+//         return {
+//           productId: product!._id,
+//           name: product!.name,
+//           quantity: item.quantity || 1,
+//           price: item.price!.unit_amount! / 100,
+//           discount: product!.discount || 0,
+//         };
+//       })
+//     );
+//   }
+
+//   private static async sendInvoiceEmail(
+//     user: UserAuthType,
+//     invoiceUrl: string
+//   ) {
+//     try {
+//       await sendEmailWithInvoice(user, invoiceUrl);
+//     } catch (emailError) {
+//       logger.error("Failed to send invoice email", emailError);
+//       // Consider implementing a retry mechanism or logging the issue to a monitoring service
+//     }
+//   }
+// }
+
+// export default StripeService;

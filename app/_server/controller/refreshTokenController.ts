@@ -99,7 +99,9 @@ export const refreshAccessToken = async (req: NextRequest) => {
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
     "0.0.0.0";
-
+  console.log("refreshAccessToken", token);
+  console.log("deviceInfo", deviceInfo);
+  console.log("ipAddress", ipAddress);
   try {
     if (!token || !deviceInfo || !ipAddress) {
       throw new AppError(
@@ -118,6 +120,7 @@ export const refreshAccessToken = async (req: NextRequest) => {
 
     return { accessToken, statusCode: 200 };
   } catch (error) {
+    console.log("refreshAccessToken route error", error);
     throw error; // return res.status(401).json({ message: "Invalid refresh token" });
   }
 };

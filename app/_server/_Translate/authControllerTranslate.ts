@@ -30,6 +30,7 @@ export const authControllerTranslate = {
         tooManyUnsuccessfulPasswordAttemptsMessage:
           "Too many unsuccessful password attempts. Please try again later.",
         // emailOrPasswordIncorrect: "Email or Password are ",
+        twoFactorRequired: "Two Factor Authentication is required",
       },
 
       forgetPassword: {
@@ -118,6 +119,7 @@ export const authControllerTranslate = {
           "Ваші спроби входу в систему наразі заблоковані. Будь ласка, зачекайте годину, перш ніж повторити спробу.",
         tooManyUnsuccessfulPasswordAttemptsMessage:
           "Забагато невдалих спроб введення пароля. Будь ласка, спробуйте пізніше.",
+        twoFactorRequired: "Потрібна двофакторна аутентифікація",
       },
 
       forgetPassword: {

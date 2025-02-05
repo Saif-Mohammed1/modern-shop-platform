@@ -116,7 +116,7 @@ export const sendVerificationCode = async (
 ) => {
   try {
     await transporter.sendMail({
-      from: "fashFlash <no-reply@example.com>", // process.env.SENDER_EMAIL,
+      from: `${process.env.APP_NAME} <no-reply@example.com>`, // process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Email Verification Code",
       html: `
@@ -160,9 +160,9 @@ export const sendEmailWithInvoice = async (
       `,
     };*/
     let mailOptions = {
-      from: '"fashFlash" <no-reply@example.com>', // Sender address
+      from: `${process.env.APP_NAME} <no-reply@example.com>`, // Sender address
       to: user.email, // Recipient email from user object
-      subject: "Your Invoice from fashFlash",
+      subject: `Your Invoice from  ${process.env.APP_NAME}`,
       html: `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333333; max-width: 600px; margin: auto; border: 1px solid #eeeeee; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
           <header style="border-bottom: 1px solid #eeeeee; padding-bottom: 20px; margin-bottom: 20px;">
@@ -177,7 +177,7 @@ export const sendEmailWithInvoice = async (
           </section>
           <footer style="border-top: 1px solid #eeeeee; padding-top: 20px; margin-top: 20px;">
             <p>Kind regards,</p>
-            <p><strong>fashFlash</strong><br>Customer Service Team</p>
+            <p><strong>${process.env.APP_NAME}</strong><br>Customer Service Team</p>
           </footer>
         </div>
       `,
@@ -195,7 +195,7 @@ export const sendEmailOnDetectedUnusualActivity = async (
   ipAddress: string
 ) => {
   await transporter.sendMail({
-    from: "fashFlash <no-reply@example.com>",
+    from: `${process.env.APP_NAME} <no-reply@example.com>`,
     to: user.email,
     subject: "Unusual Login Activity Detected",
     html: `
@@ -213,7 +213,7 @@ export const sendRefundStatusUpdateEmail = (
   reason: string
 ) => {
   const subject = `Your Refund Request ${
-    status === "approved" ? "Approved" : "Refused"
+    status === "approved" ? "Approved" : "Rejected"
   }`;
 
   const html = `
@@ -244,4 +244,34 @@ export const sendRefundStatusUpdateEmail = (
     subject,
     html,
   });
+};
+export const sendMessageForNewPassword = async (
+  user: UserAuthType,
+  newPassword: string
+) => {
+  try {
+    await transporter.sendMail({
+      from: `Support <${process.env.APP_NAME}>`,
+      to: user.email,
+      subject: "Password Reset Successful",
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color: #0056b3; text-align: center;">Password Reset Successful</h2>
+          <p>Dear ${user.name || "User"},</p>
+          <p>Your password has been successfully reset. Below is your new password:</p>
+          <p style="text-align: center; font-size: 18px; font-weight: bold; color: #d63384; background: #f8f9fa; padding: 10px; border-radius: 5px;">${newPassword}</p>
+          <p><strong>For security reasons, we recommend that you change your password after logging in.</strong></p>
+          <p>Additionally, please download and store your <strong>2FA backup codes</strong> from your account settings.</p>
+          <p>If you did not request this change, please <a href="${process.env.APP_URL}/login" style="color: #0056b3; text-decoration: none;">log in</a> and update your credentials immediately.</p>
+          <p>If you need further assistance, feel free to contact our support team.</p>
+          <hr style="border: none; border-bottom: 1px solid #ccc; margin-top: 20px;">
+          <footer style="text-align: center; margin-top: 20px;">
+            <p style="color: #888;">This is an automated message, please do not reply.</p>
+          </footer>
+        </div>
+      `,
+    });
+  } catch (error) {
+    throw error;
+  }
 };

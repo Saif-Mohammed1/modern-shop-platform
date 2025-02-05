@@ -2,6 +2,7 @@ import User from "../models/user.model";
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";
 // import { promisify } from "util";
+import crypto from "crypto"; // Add import for the crypto module
 
 import AppError from "@/components/util/appError";
 import { Email } from "@/components/util/email";
@@ -36,7 +37,7 @@ export const modifyFinalResponse = (
     // photo: user.photo,
     role: user.role,
     createdAt: user.createdAt,
-    phone: user.phone,
+    // phone: user.phone,
     accessToken: user.accessToken,
     accessTokenExpires,
   };
@@ -206,6 +207,7 @@ export const logIn = async (req: NextRequest) => {
         401
       );
     }
+
     // Check if login attempts are already blocked
     if (user.passwordLoginBlockedUntil) {
       if (user.passwordLoginBlockedUntil < new Date()) {
@@ -226,29 +228,78 @@ export const logIn = async (req: NextRequest) => {
     const passwordCorrect = await user.CheckPassword(password, user.password);
     if (!passwordCorrect) {
       user.passwordLoginAttempts = (user.passwordLoginAttempts || 0) + 1;
-      //in case if u save confirm password turn on this line instedd of await user.save();
-      // await user.save({ validateBeforeSave: false });
-      await user.save();
 
       // Block the user after 3 unsuccessful attempts
       if (user.passwordLoginAttempts >= 3) {
         user.passwordLoginAttempts = undefined;
 
         user.passwordLoginBlockedUntil = new Date(Date.now() + 3600000); // 1 hour in milliseconds
-        //in case if u save confirm password turn on this line instedd of await user.save();
-        // await user.save({ validateBeforeSave: false });
-        await user.save();
+      }
+      await user.save();
+
+      if (user.passwordLoginAttempts && user.passwordLoginAttempts >= 3) {
         throw new AppError(
           authControllerTranslate[
             lang
           ].functions.logIn.tooManyUnsuccessfulPasswordAttemptsMessage,
           400
         );
+      } else {
+        throw new AppError(
+          authControllerTranslate[lang].functions.logIn.invalidEmailOrPassword,
+          400
+        );
       }
-      throw new AppError(
-        authControllerTranslate[lang].functions.logIn.invalidEmailOrPassword,
-        400
+    }
+    if (user.isTwoFactorAuthEnabled) {
+      const now = new Date();
+
+      // Check for existing valid token
+      if (user.twoFactorTempToken && user.twoFactorTempTokenExpires > now) {
+        return {
+          user: {
+            requires2FA: true,
+            tempToken: user.twoFactorTempToken,
+            message:
+              authControllerTranslate[lang].functions.logIn.twoFactorRequired,
+          },
+          statusCode: 202,
+        };
+      }
+
+      // Generate new token only if none exists or expired
+      const tempToken = crypto.randomBytes(32).toString("hex");
+      const tempTokenExpires = new Date(now.getTime() + 300000); // 5 minutes
+      const expires = new Date(
+        Date.now() + 5 * 60 * 1000 // 5 minutes * 60 seconds * 1000 milliseconds
       );
+      cookies().set("tempToken", tempToken, {
+        path: "/", // Ensure the cookie is available across all routes
+        expires,
+
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
+        secure: process.env.NODE_ENV === "production", // 'false' in development
+        // domain: process.env.NODE_ENV === "production" ? undefined : undefined, // No domain in localhost
+        // secure: req?.secure || req?.headers["x-forwarded-proto"] === "https",
+      });
+      await User.updateOne(
+        { _id: user._id },
+        {
+          twoFactorTempToken: tempToken,
+          twoFactorTempTokenExpires: tempTokenExpires,
+        }
+      );
+      return {
+        user: {
+          requires2FA: true,
+          tempToken: tempToken,
+          expires,
+          message:
+            authControllerTranslate[lang].functions.logIn.twoFactorRequired,
+        },
+        statusCode: 202,
+      };
     }
     // }
     // Reset counters on successful login

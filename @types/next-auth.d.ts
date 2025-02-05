@@ -9,13 +9,18 @@ import "next-auth/jwt";
 //     user: UserAuthType;
 //   }
 // }
+
 declare module "next-auth" {
   interface Session {
     user: UserAuthType;
     error?: string;
   }
 
-  interface User extends UserAuthType {
+  // interface User {
+  //   accessTokenExpires?: number;
+  //   // ... other fields
+  // }
+  interface User {
     accessTokenExpires?: number;
   }
 }
@@ -28,8 +33,8 @@ declare module "next-auth/jwt" {
 }
 
 // If using a database adapter
-declare module "next-auth/adapters" {
-  interface AdapterUser extends UserAuthType {
-    accessTokenExpires?: number;
-  }
-}
+// declare module "next-auth/adapters" {
+//   interface AdapterUser extends UserAuthType {
+//     accessTokenExpires?: number;
+//   }
+// }

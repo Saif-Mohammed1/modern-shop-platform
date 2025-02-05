@@ -37,6 +37,8 @@ export interface IUserSchema extends IUserInput, Document {
   active: boolean;
   passwordLoginAttempts?: number;
   passwordLoginBlockedUntil?: Date;
+  twoFactorTempToken?: string;
+  twoFactorTempTokenExpires: Date;
   CheckPassword(
     candidatePassword: string,
     userPassword: string
@@ -126,6 +128,8 @@ const UserSchema = new Schema<IUserSchema>(
     passwordLoginAttempts: Number,
 
     passwordLoginBlockedUntil: Date,
+    twoFactorTempToken: String,
+    twoFactorTempTokenExpires: Date,
   },
   {
     timestamps: true,

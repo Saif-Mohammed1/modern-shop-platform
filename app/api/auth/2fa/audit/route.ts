@@ -4,33 +4,15 @@ import ErrorHandler from "@/app/_server/controller/errorController";
 import { connectDB } from "@/app/_server/db/db";
 import { type NextRequest, NextResponse } from "next/server";
 
-export const POST = async (req: NextRequest) => {
+export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
     await isAuth(req);
-    const { message, statusCode } = await TwoFactorAuthService.verify2FA(req);
+    const { logs, statusCode } = await TwoFactorAuthService.getAuditLogs(req);
 
     return NextResponse.json(
       {
-        message,
-      },
-      { status: statusCode }
-    );
-  } catch (error) {
-    return ErrorHandler(error, req);
-  }
-};
-export const PUT = async (req: NextRequest) => {
-  try {
-    await connectDB();
-    // await isAuth(req);
-
-    const { user, statusCode } =
-      await TwoFactorAuthService.verify2FAOnLogin(req);
-
-    return NextResponse.json(
-      {
-        user,
+        logs: logs,
       },
       { status: statusCode }
     );
