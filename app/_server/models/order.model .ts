@@ -77,6 +77,7 @@ const OrderSchema = new Schema<IOrderSchema>(
 
           ref: "Product",
           required: true,
+          index: true,
         },
         name: {
           type: String,
@@ -125,6 +126,8 @@ const OrderSchema = new Schema<IOrderSchema>(
     timestamps: true,
   }
 );
+OrderSchema.index({ createdAt: 1 });
+// OrderSchema.index({ "items._id": 1 });
 OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
   this.populate({
     path: "user",
@@ -141,6 +144,7 @@ OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
   // });
   next();
 });
+
 // comvert price to two decimal places
 OrderSchema.set("toJSON", {
   transform: function (_, ret) {

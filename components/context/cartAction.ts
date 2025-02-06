@@ -4,7 +4,7 @@ import api from "@/components/util/api";
 import { CartItemsType } from "./cart.context";
 import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
-import { UserAuthType } from "@/app/_types/users";
+import { UserAuthType } from "@/app/types/users";
 type User = UserAuthType | null;
 // Add item to cart
 export const addToCart = async (

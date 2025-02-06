@@ -133,7 +133,9 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const { data } = await api.get("/auth/refresh-token");
+        const { data } = await api.get("/auth/refresh-token", {
+          headers: originalRequest.headers,
+        });
 
         tokenManager.setAccessToken(data.accessToken);
         api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;

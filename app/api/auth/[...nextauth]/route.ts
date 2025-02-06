@@ -66,7 +66,7 @@ const authOptions: AuthOptions = {
             }
             if ("_id" in user) {
               return {
-                user,
+                ...user,
                 id: String(user._id),
               };
             }

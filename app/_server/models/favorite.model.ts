@@ -22,6 +22,7 @@ const FavoriteSchema = new Schema<IFavoriteSchema>(
 
       ref: "Product",
       required: true,
+      index: true,
     },
     // favorite: {
     //   type: Boolean,
@@ -32,6 +33,9 @@ const FavoriteSchema = new Schema<IFavoriteSchema>(
     timestamps: true,
   }
 );
+// Index the `product` field
+// FavoriteSchema.index({ product: 1 });
+
 FavoriteSchema.pre<Query<any, IFavoriteSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",

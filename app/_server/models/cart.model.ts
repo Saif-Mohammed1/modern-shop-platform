@@ -24,11 +24,13 @@ const CartSchema = new Schema<ICartSchema>(
 
       ref: "Product",
       required: true,
+      index: true,
     },
     quantity: { type: Number, default: 1 },
   },
   { timestamps: true }
 );
+// CartSchema.index({ product: 1 });
 CartSchema.pre<Query<any, ICartSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",

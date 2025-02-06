@@ -1,4 +1,4 @@
-import { UserAuthType } from "@/app/_types/users";
+import { UserAuthType } from "@/app/types/users";
 import mongoose from "mongoose";
 
 const addProduct = {
@@ -542,4 +542,5 @@ export type ProductType = {
   ratingsAverage: number;
   ratingsQuantity: number;
   createdAt: string;
+  slug: string;
 };

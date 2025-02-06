@@ -54,7 +54,8 @@ const RegisterPage = () => {
       if (result?.error) {
         throw new Error(result.error);
       }
-      router.push(callbackUrl || "/");
+      router.back(); // Go back to previous page (closes modal)
+      router.replace("/");
 
       toast.success(registerTranslate[lang].functions.handleRegister.success);
       setEmail("");

@@ -19,6 +19,7 @@ export interface IProductSchema extends Document {
   createdAt: Date;
   updatedAt: Date;
   active: boolean;
+  slug: string;
 }
 
 const ProductSchema = new Schema<IProductSchema>(
@@ -38,6 +39,7 @@ const ProductSchema = new Schema<IProductSchema>(
 
       trim: true,
       lowercase: true,
+      index: true,
     },
     price: {
       type: Number,
@@ -45,6 +47,7 @@ const ProductSchema = new Schema<IProductSchema>(
       required: true,
 
       min: 1,
+      index: true,
     },
     discount: {
       type: Number,
@@ -106,6 +109,7 @@ const ProductSchema = new Schema<IProductSchema>(
       max: 5,
 
       set: (val: number) => Math.round(val * 10) / 10, // 4.666666, 46.6666, 47, 4.7
+      index: true,
     },
     ratingsQuantity: {
       type: Number,
@@ -115,6 +119,11 @@ const ProductSchema = new Schema<IProductSchema>(
       type: Boolean,
       default: true,
     },
+    slug: {
+      type: String,
+      unique: true,
+      index: true,
+    },
     // createdAt: { type: Date, default: Date.now },
   },
   {
@@ -123,6 +132,7 @@ const ProductSchema = new Schema<IProductSchema>(
     toObject: { virtuals: true },
   }
 );
+// By Indexing the price field, we can improve the performance of the queries that use the price field in the find method.
 // Virtual populate
 ProductSchema.virtual("reviews", {
   ref: "Review",
@@ -138,6 +148,7 @@ ProductSchema.set("toJSON", {
     if (ret.discount) {
       ret.discount = parseFloat(ret.discount.toFixed(2));
     }
+    ret._id = ret._id.toString();
     return ret;
   },
 });
@@ -157,6 +168,9 @@ ProductSchema.pre("save", function (next) {
   if (this.discount && this.discount > 0 && this.isNew) {
     // Default to 7 days from the current date
     this.discountExpire = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  }
+  if (this.name) {
+    this.slug = this.name.toLowerCase().split(" ").join("-");
   }
   next();
 });

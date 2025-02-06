@@ -2,7 +2,7 @@ import APIFeatures from "@/components/util/APIFeatures";
 import AppError from "@/components/util/appError";
 import { Document, Model } from "mongoose";
 import type { NextRequest } from "next/server";
-import { UserAuthType } from "@/app/_types/users";
+import { UserAuthType } from "@/app/types/users";
 import { factoryControllerTranslate } from "../_Translate/factoryControllerTranslate";
 import { lang } from "@/components/util/lang";
 // import { uploadImage } from "@/components/util/cloudinary";

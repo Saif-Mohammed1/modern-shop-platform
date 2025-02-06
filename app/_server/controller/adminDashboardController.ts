@@ -4,6 +4,8 @@ import Product from "../models/product.model";
 import Refund, { IRefundSchema } from "../models/refund.model";
 import Report from "../models/report.model";
 import User from "../models/user.model";
+import Cart from "../models/cart.model";
+import Favorite from "../models/favorite.model";
 
 export interface DashboardData {
   users: {
@@ -58,6 +60,9 @@ export interface DashboardData {
     orders: IOrderSchema[];
     refunds: IRefundSchema[];
   };
+  userInterestProducts: Array<{ productId: string; count: number }>;
+  topOrderedProducts: Array<{ productId: string; totalQuantity: number }>;
+  dailyOrders: number;
 }
 // export const mainDashboard = async (): Promise<{
 //   data: DashboardData;
@@ -343,7 +348,7 @@ export const mainDashboard = async (): Promise<{
     lastWeekDate.setDate(currentDate.getDate() - 7);
     const oneMonthAgo = new Date(currentDate);
     oneMonthAgo.setMonth(currentDate.getMonth() - 1);
-
+    const todayStart = new Date(currentDate.setHours(0, 0, 0, 0));
     // Optimized parallel queries with proper aggregation
     const [
       usersDetails,
@@ -355,6 +360,10 @@ export const mainDashboard = async (): Promise<{
       inventoryValue,
       recentActivitiesOrders,
       recentActivitiesRefunds,
+      topCartProducts,
+      topFavoriteProducts,
+      topOrderedProducts,
+      dailyOrdersCount,
     ] = await Promise.all([
       // User Analytics
       User.aggregate([
@@ -494,7 +503,63 @@ export const mainDashboard = async (): Promise<{
         .limit(5)
         .select("amount status createdAt")
         .lean(),
+      // New aggregations
+      // Top products in carts
+      Cart.aggregate([
+        { $group: { _id: "$product", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+
+      // Top products in favorites
+      Favorite.aggregate([
+        { $group: { _id: "$product", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+
+      // // Top ordered products
+      // Order.aggregate([
+      //   { $unwind: "$items" },
+      //   {
+      //     $group: {
+      //       _id: "$items.product",
+      //       totalQuantity: { $sum: "$items.quantity" },
+      //       totalOrders: { $sum: 1 },
+      //     },
+      //   },
+      //   { $sort: { totalQuantity: -1 } },
+      //   { $limit: 10 },
+      // ]),
+      Order.aggregate([
+        { $unwind: "$items" }, // Deconstruct the items array
+        {
+          $group: {
+            _id: "$items._id", // Group by product ID
+            name: { $first: "$items.name" }, // Capture product name
+            totalQuantity: { $sum: "$items.quantity" }, // Total quantity ordered
+            totalOrders: { $addToSet: "$_id" }, // Collect unique order IDs
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            totalQuantity: 1,
+            totalOrders: { $size: "$totalOrders" }, // Count unique orders
+          },
+        },
+        { $sort: { totalQuantity: -1 } }, // Sort by highest quantity
+        { $limit: 10 }, // Get top 10 products
+      ]),
+
+      // Daily orders count
+      Order.aggregate([
+        { $match: { createdAt: { $gte: todayStart } } },
+        { $count: "dailyOrders" },
+      ]),
     ]);
+
     // console.dir(usersDetails, { depth: null });
     // console.dir(ordersDetails, { depth: null });
     // console.dir(earningsData, { depth: null });
@@ -533,7 +598,26 @@ export const mainDashboard = async (): Promise<{
       if (previous === 0) return current > 0 ? 100 : 0;
       return ((current - previous) / previous) * 100;
     };
-
+    // Data transformation
+    const combinedInterestProducts = [
+      ...topCartProducts,
+      ...topFavoriteProducts,
+    ].reduce((acc, curr) => {
+      const productId = curr._id.toString();
+      acc.set(productId, (acc.get(productId) || 0) + curr.count);
+      return acc;
+    }, new Map<string, number>());
+    const topInterestProducts = Array.from(combinedInterestProducts.entries())
+      .map((entry) => {
+        const [productId, count] = entry as [string, number];
+        return { productId, count };
+      })
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+    // const topInterestProducts = Array.from(combinedInterestProducts.entries())
+    //   .map(([productId, count]: [string, number]) => ({ productId, count }))
+    //   .sort((a, b) => b.count - a.count)
+    //   .slice(0, 10);
     return {
       data: {
         users: {
@@ -610,6 +694,14 @@ export const mainDashboard = async (): Promise<{
           orders: recentActivitiesOrders,
           refunds: recentActivitiesRefunds,
         },
+        userInterestProducts: topInterestProducts,
+        topOrderedProducts: topOrderedProducts.map((p) => ({
+          productId: p._id,
+          productName: p.name,
+          totalQuantity: p.totalQuantity,
+          totalOrders: p.totalOrders,
+        })),
+        dailyOrders: dailyOrdersCount[0]?.dailyOrders || 0,
       },
       statusCode: 200,
     };
