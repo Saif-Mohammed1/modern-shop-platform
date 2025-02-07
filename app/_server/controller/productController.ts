@@ -410,3 +410,28 @@ const getRelatedProducts = async (category: string) => {
     throw error;
   }
 };
+
+export const updateProductActivity = async (req: NextRequest) => {
+  try {
+    const { active } = await req.json();
+    const doc = await Product.findByIdAndUpdate(
+      req.id,
+      { active },
+      { new: true }
+    );
+    if (!doc) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.noProductFoundWithId,
+        404
+      );
+    }
+    return {
+      message:
+        productControllerTranslate[lang].functions.updateProductActivity
+          .success,
+      statusCode: 200,
+    };
+  } catch (error) {
+    throw error;
+  }
+};

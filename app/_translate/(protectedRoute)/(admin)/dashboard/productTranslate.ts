@@ -294,6 +294,10 @@ export const productsTranslate = {
           loading: "Deleting product...",
           success: "Product deleted successfully",
         },
+        toggleProductStatus: {
+          loading: "Updating product status...",
+          success: "Product status updated successfully",
+        },
       },
       filter: {
         input: {
@@ -317,71 +321,13 @@ export const productsTranslate = {
         delete: "Delete",
         daysleft: "Days Left",
         expired: "Expired",
+        archived: {
+          title: "Archived",
+          yes: "Yes",
+          no: "No",
+        },
       },
-      //   addProduct: {
-      //     metadata: {
-      //       title: "Add Product",
-      //       description: "Add product for the admin",
-      //       keywords: "admin, add product, admin add product",
-      //     },
-      //     form: {
-      //       productDetails: {
-      //         title: "Product Details",
-      //         labels: {
-      //           name: "Product Name",
-      //           category: "Category",
-      //           description: "Description",
-      //         },
-      //         placeholders: {
-      //           name: "Enter product name",
-      //           category: "Enter category",
-      //           description: "Enter product description",
-      //         },
-      //       },
-      //       productPricing: {
-      //         title: "Pricing",
-      //         labels: {
-      //           price: "Price",
-      //           discount: "Discount",
-      //           discountExpire: "Discount Expiry",
-      //         },
-      //         placeholders: {
-      //           price: "Enter price",
-      //           discount: "Enter discount",
-      //           discountExpire: "Enter discount expiry",
-      //         },
-      //       },
-      //       inventoryDetails: {
-      //         title: "Inventory",
-      //         labels: {
-      //           stock: "Stock",
-      //         },
-      //         placeholders: {
-      //           stock: "Enter stock quantity",
-      //         },
-      //       },
-      //       productImages: {
-      //         title: "Upload Images",
 
-      //         description: "Drag & drop files here, or click to select files",
-      //       },
-      //       productSubmit: {
-      //         title: "Confirm and Submit",
-      //         productName: "Product Name",
-      //         category: "Category",
-      //         price: "Price",
-      //         stock: "Stock",
-      //         loading: "Adding product...",
-      //         success: "Product added successfully",
-      //       },
-      //       error: "An unexpected error occurred",
-      //       button: {
-      //         previous: "Previous",
-      //         next: "Next",
-      //         submit: "Submit",
-      //       },
-      //     },
-      //   },
       addProduct: addProduct.en,
       editProduct: editProduct.en,
       error: {
@@ -399,6 +345,10 @@ export const productsTranslate = {
         handleDelete: {
           loading: "Видалення продукту...",
           success: "Продукт видалено",
+        },
+        toggleProductStatus: {
+          loading: "Оновлення статусу продукту...",
+          success: "Статус продукту успішно оновлено",
         },
       },
 
@@ -424,72 +374,12 @@ export const productsTranslate = {
         delete: "Видалити",
         daysleft: "Днів залишилось",
         expired: "Закінчився",
+        archived: {
+          title: "Архівований",
+          yes: "Так",
+          no: "Ні",
+        },
       },
-      //   addProduct: {
-      //     metadata: {
-      //       title: "Додати продукт",
-      //       description: "Додати продукт для адміністратора",
-      //       keywords:
-      //         "адміністратор, додати продукт, адміністратор додати продукт",
-      //     },
-      //     form: {
-      //       productDetails: {
-      //         title: "Деталі продукту",
-      //         labels: {
-      //           name: "Назва продукту",
-      //           category: "Категорія",
-      //           description: "Опис",
-      //         },
-      //         placeholders: {
-      //           name: "Введіть назву продукту",
-      //           category: "Введіть категорію",
-      //           description: "Введіть опис продукту",
-      //         },
-      //       },
-      //       productPricing: {
-      //         title: "Ціноутворення",
-      //         labels: {
-      //           price: "Ціна",
-      //           discount: "Знижка",
-      //           discountExpire: "Термін дії знижки",
-      //         },
-      //         placeholders: {
-      //           price: "Введіть ціну",
-      //           discount: "Введіть знижку",
-      //           discountExpire: "Введіть термін дії знижки",
-      //         },
-      //       },
-      //       inventoryDetails: {
-      //         title: "Запаси",
-      //         labels: {
-      //           stock: "Запас",
-      //         },
-      //         placeholders: {
-      //           stock: "Введіть кількість запасу",
-      //         },
-      //       },
-      //       productImages: {
-      //         title: "Завантажити зображення",
-      //         description:
-      //           "Перетягніть файли сюди або клацніть, щоб вибрати файли",
-      //       },
-
-      //       productSubmit: {
-      //         title: "Підтвердити та надіслати",
-      //         productName: "Назва продукту",
-      //         category: "Категорія",
-      //         price: "Ціна",
-      //         stock: "Запас",
-      //         loading: "Додавання продукту...",
-      //         success: "Продукт успішно додано",
-      //       },
-      //       button: {
-      //         previous: "Назад",
-      //         next: "Далі",
-      //         submit: "Надіслати",
-      //       },
-      //     },
-      //   },
       addProduct: addProduct.uk,
       editProduct: editProduct.uk,
 
@@ -505,43 +395,3 @@ export const productsTranslate = {
     },
   },
 } as const;
-
-export type ProductsSearchParams = {
-  category?: string;
-  name?: string;
-  sort?: string;
-  fields?: string;
-  page?: string;
-  limit?: string;
-  rating?: string;
-  min?: string;
-  max?: string;
-};
-
-export type Event = React.ChangeEvent<HTMLInputElement | HTMLSelectElement>;
-
-type OldImage = {
-  public_id: string;
-  link: string;
-};
-// type UserAuthType = {
-//   name: string;
-//   _id: string;
-// };
-export type ProductType = {
-  name: string;
-  category: string;
-  price: number;
-  discount: number;
-  discountExpire?: Date;
-  images: OldImage[] | [];
-  user: Partial<UserAuthType>;
-  description: string;
-  stock: number;
-  // _id: mongoose.Schema.Types.ObjectId | string;
-  _id: string;
-  ratingsAverage: number;
-  ratingsQuantity: number;
-  createdAt: string;
-  slug: string;
-};

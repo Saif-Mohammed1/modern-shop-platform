@@ -1,10 +1,11 @@
 import { isAuth, restrictTo } from "@/app/_server/controller/authController";
 import ErrorHandler from "@/app/_server/controller/errorController";
-import { deleteProductImages } from "@/app/_server/controller/productController";
+import { getOne } from "@/app/_server/controller/factoryController";
+import { updateProductActivity } from "@/app/_server/controller/productController";
 import { connectDB } from "@/app/_server/db/db";
 import { type NextRequest, NextResponse } from "next/server";
 
-export const POST = async (
+export const PUT = async (
   req: NextRequest,
   {
     params,
@@ -18,7 +19,7 @@ export const POST = async (
     await isAuth(req);
     await restrictTo(req, "admin");
     req.id = id;
-    const { message, statusCode } = await deleteProductImages(req);
+    const { message, statusCode } = await updateProductActivity(req);
     return NextResponse.json({ message }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

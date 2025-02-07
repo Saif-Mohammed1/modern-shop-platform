@@ -8,7 +8,7 @@ import User from "../models/user.model";
 import type { NextRequest } from "next/server";
 import { stripeControllerTranslate } from "../_Translate/stripeControllerTranslate";
 import { lang } from "@/components/util/lang";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "@/app/types/products.types";
 const stripe = new Stripe(process.env.STRIPE_SECRET as string); // Replace `process.env.STRIPE_SECRET_KEY` with your actual secret key
 const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
 type ItemType = {

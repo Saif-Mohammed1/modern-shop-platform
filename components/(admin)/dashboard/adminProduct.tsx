@@ -1,23 +1,22 @@
 "use client";
 
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+// import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/pagination/Pagination";
 import moment from "moment";
 import toast from "react-hot-toast";
 import api from "@/components/util/api";
 import imageSrc from "@/components/util/productImageHandler";
-import { updateQueryParams } from "@/components/util/updateQueryParams";
-import {
-  Event,
-  productsTranslate,
-  ProductType,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+// import { updateQueryParams } from "@/components/util/updateQueryParams";
+import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { lang } from "@/components/util/lang";
-
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import Link from "next/link";
+import { Event, ProductType } from "@/app/types/products.types";
+import { TfiReload } from "react-icons/tfi";
 type Category = string;
 type ProductListProps = {
   products: ProductType[];
@@ -29,15 +28,29 @@ const ProductList: FC<ProductListProps> = ({
   categories,
   totalPages,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState("");
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "name",
+    parseAsString
+      .withDefault("")
+      .withOptions({ shallow: false, throttleMs: 1000 })
+  );
+  const [categoryFilter, setCategoryFilter] = useQueryState(
+    "category",
+    parseAsString.withDefault("").withOptions({ shallow: false })
+  );
+  const [currentPage, setCurrentPage] = useQueryState(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false })
+  );
+  const [sortOrder, setSortOrder] = useQueryState(
+    "sort",
+    parseAsString.withDefault("").withOptions({ shallow: false })
+  );
   const [productsList, setProductsList] = useState(products || []);
-  const router = useRouter();
-  const pathName = usePathname();
-  const searchParamsReadOnly = useSearchParams();
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  // const router = useRouter();
+  // const pathName = usePathname();
+  // const searchParamsReadOnly = useSearchParams();
+  // const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   // const updateQueryParams = (params) => {
   //   const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
   //   for (const key in params) {
@@ -54,78 +67,108 @@ const ProductList: FC<ProductListProps> = ({
   const handleCategoryFilterChange = (event: Event) => {
     const value = event.target.value;
     setCategoryFilter(value);
-    updateQueryParams(
-      { category: value },
-      searchParamsReadOnly,
-      router,
-      pathName
-    );
+    // updateQueryParams(
+    //   { category: value },
+    //   searchParamsReadOnly,
+    //   router,
+    //   pathName
+    // );
   };
   const handleSortFilterChange = (event: Event) => {
     const value = event.target.value;
     setSortOrder(value);
-    updateQueryParams({ sort: value }, searchParamsReadOnly, router, pathName);
+    // updateQueryParams({ sort: value }, searchParamsReadOnly, router, pathName);
   };
 
   const handleSearch = (event: Event) => {
     const value = event.target.value;
     setSearchQuery(value);
 
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
+    // if (debounceTimeout.current) {
+    //   clearTimeout(debounceTimeout.current);
+    // }
 
-    debounceTimeout.current = setTimeout(() => {
-      updateQueryParams(
-        { name: value },
-        searchParamsReadOnly,
-        router,
-        pathName
-      );
-    }, 1000); // Adjust the debounce delay as needed
+    // debounceTimeout.current = setTimeout(() => {
+    //   updateQueryParams(
+    //     { name: value },
+    //     searchParamsReadOnly,
+    //     router,
+    //     pathName
+    //   );
+    // }, 1000); // Adjust the debounce delay as needed
   };
 
   const onPaginationChange = (page: number) => {
-    const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
+    // const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
     setCurrentPage(page);
 
-    if (page === 1) {
-      paramsSearch.delete("page");
-      router.push(pathName + "?" + paramsSearch.toString());
-      return;
-    }
-    updateQueryParams({ page }, searchParamsReadOnly, router, pathName);
-  };
-
-  useEffect(() => {
-    if (searchParamsReadOnly.has("category")) {
-      setCategoryFilter(searchParamsReadOnly.get("category") ?? "");
-    }
-    // if (searchParamsReadOnly.has("price")) {
-    //   setPriceFilter(searchParamsReadOnly.get("price") ?? 1);
+    // if (page === 1) {
+    //   paramsSearch.delete("page");
+    //   router.push(pathName + "?" + paramsSearch.toString());
+    //   return;
     // }
-    if (searchParamsReadOnly.has("sort")) {
-      setSortOrder(searchParamsReadOnly.get("sort") ?? "");
-    }
-    if (searchParamsReadOnly.has("page")) {
-      if (Number(searchParamsReadOnly.get("page")) == 1) {
-        const paramsSearch = new URLSearchParams(
-          searchParamsReadOnly.toString()
-        );
-
-        paramsSearch.delete("page");
-        router.push(pathName + "?" + paramsSearch.toString());
-        setCurrentPage(1);
-        return;
-      }
-
-      setCurrentPage(Number(searchParamsReadOnly.get("page")));
-    }
-  }, [searchParamsReadOnly.toString()]);
-  const handleEdit = (id: string) => {
-    router.push(`/dashboard/products/edit/${id}`);
+    // updateQueryParams({ page }, searchParamsReadOnly, router, pathName);
   };
+  const toggleProductStatus = async (id: string) => {
+    let toastLoading;
+    try {
+      toastLoading = toast.loading(
+        productsTranslate.products[lang].function.toggleProductStatus.loading
+      );
+      await api.put(`/admin/dashboard/products/${id}/active`, {
+        active: !productsList.find((product) => product._id === id)?.active,
+      });
+      setProductsList((prevProducts) =>
+        prevProducts.map((product) =>
+          product._id === id ? { ...product, active: !product.active } : product
+        )
+      );
+      toast.success(
+        productsTranslate.products[lang].function.toggleProductStatus.success
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error?.message || productsTranslate.products[lang].error.general
+        );
+      } else {
+        toast.error(productsTranslate.products[lang].error.general);
+      }
+    } finally {
+      toast.dismiss(toastLoading);
+    }
+  };
+  // useEffect(() => {
+  //   if (searchParamsReadOnly.has("category")) {
+  //     setCategoryFilter(searchParamsReadOnly.get("category") ?? "");
+  //   }
+  //   // if (searchParamsReadOnly.has("price")) {
+  //   //   setPriceFilter(searchParamsReadOnly.get("price") ?? 1);
+  //   // }
+  //   if (searchParamsReadOnly.has("sort")) {
+  //     setSortOrder(searchParamsReadOnly.get("sort") ?? "");
+  //   }
+  //   if (searchParamsReadOnly.has("page")) {
+  //     if (Number(searchParamsReadOnly.get("page")) == 1) {
+  //       const paramsSearch = new URLSearchParams(
+  //         searchParamsReadOnly.toString()
+  //       );
 
+  //       paramsSearch.delete("page");
+  //       router.push(pathName + "?" + paramsSearch.toString());
+  //       setCurrentPage(1);
+  //       return;
+  //     }
+
+  //     setCurrentPage(Number(searchParamsReadOnly.get("page")));
+  //   }
+  // }, [searchParamsReadOnly.toString()]);
+  // const handleEdit = (id: string) => {
+  //   router.push(`/dashboard/products/edit/${id}`);
+  // };
+  useEffect(() => {
+    setProductsList(products);
+  }, [products]);
   const handleDelete = async (id: string) => {
     let toastLoading;
     try {
@@ -152,9 +195,9 @@ const ProductList: FC<ProductListProps> = ({
     }
     // Implement delete functionality here
   };
-  useEffect(() => {
-    setProductsList(products);
-  }, [products]);
+  // useEffect(() => {
+  //   setProductsList(products);
+  // }, [products]);
   return (
     <div className="p-2 bg-gray-100 /max-h-screen /overflow-hidden">
       <div className="flex flex-col sm:flex-row items-center mb-6 gap-2">
@@ -207,12 +250,14 @@ const ProductList: FC<ProductListProps> = ({
             {productsTranslate.products[lang].filter.select.lowestRated}
           </option>
         </select>
-        <button
-          className="ml-auto p-2 bg-blue-500 text-white rounded-lg w-full"
-          onClick={() => router.push("/dashboard/products/add")}
+        <Link
+          href="/dashboard/products/add"
+          className="ml-auto p-2 bg-blue-500 text-white rounded-lg w-full
+          cursor-pointer text-center"
+          /* onClick={() => router.push("/dashboard/products/add")} */
         >
           {productsTranslate.products[lang].filter.addProduct}
-        </button>
+        </Link>
       </div>
 
       <div
@@ -270,16 +315,34 @@ const ProductList: FC<ProductListProps> = ({
                 {productsTranslate.products[lang].details.rating}:{" "}
                 {product.ratingsAverage}
               </p>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
+                <p className="text-gray-600 mb-2">
+                  {productsTranslate.products[lang].details.archived.title}:{" "}
+                </p>
+                <p className="text-gray-600 mb-2 mx-1">
+                  {" "}
+                  {" " + product.active
+                    ? productsTranslate.products[lang].details.archived.no
+                    : productsTranslate.products[lang].details.archived.yes}
+                </p>
                 <button
-                  onClick={() => handleEdit(product._id)}
-                  className="text-blue-500 hover:underline"
+                  className="flex justify-end flex-1"
+                  onClick={() => toggleProductStatus(product._id)}
+                >
+                  <TfiReload size={20} />{" "}
+                </button>
+              </div>
+              <div className="flex justify-between">
+                <Link
+                  href={`/dashboard/products/edit/${product._id}`}
+                  /* onClick={() => handleEdit(product._id)} */
+                  className="text-blue-500 hover:underline   cursor-pointer text-center"
                 >
                   <FaEdit /> {productsTranslate.products[lang].details.edit}
-                </button>
+                </Link>
                 <button
                   onClick={() => handleDelete(product._id)}
-                  className="text-red-500 hover:underline"
+                  className="text-red-500 hover:underline   cursor-pointer text-center"
                 >
                   <FaTrash /> {productsTranslate.products[lang].details.delete}
                 </button>

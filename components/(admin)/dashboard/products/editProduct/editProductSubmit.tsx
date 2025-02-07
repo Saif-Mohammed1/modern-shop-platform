@@ -1,9 +1,7 @@
-import {
-  productsTranslate,
-  ProductType,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { lang } from "@/components/util/lang";
 import { FormEvent } from "react";
+import { ProductType } from "@/app/types/products.types";
 
 type EditProductSubmitProps = {
   prevStep: () => void;

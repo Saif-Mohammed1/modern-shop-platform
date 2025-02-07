@@ -52,7 +52,7 @@ export const PUT = async (
       stock,
       images,
       discountExpire, */
-    const { data, statusCode } = await updateProduct(req, Product);
+    const { data, statusCode } = await updateProduct(req);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
@@ -72,7 +72,7 @@ export const DELETE = async (
     await isAuth(req);
     await restrictTo(req, "admin");
     req.id = id;
-    const { data, statusCode } = await deleteProduct(req, Product);
+    const { data, statusCode } = await deleteProduct(req);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

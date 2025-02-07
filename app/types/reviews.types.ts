@@ -1,4 +1,4 @@
-import { ProductType } from "../_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "./products.types";
 import { UserAuthType } from "./users.types";
 
 export type ReviewsType = {

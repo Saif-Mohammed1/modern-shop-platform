@@ -1,4 +1,4 @@
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { Event } from "@/app/types/products.types";
 import {
   addressTranslate,
   AddressType,

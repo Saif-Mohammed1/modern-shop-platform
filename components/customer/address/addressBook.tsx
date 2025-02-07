@@ -9,7 +9,7 @@ import {
   AddressType,
 } from "@/app/_translate/(protectedRoute)/account/addressTranslate";
 import { lang } from "@/components/util/lang";
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { Event } from "@/app/types/products.types";
 import CustomButton from "@/components/button/button";
 // import { useRouter } from "next/navigation";
 const AddAddressComponent = dynamic(

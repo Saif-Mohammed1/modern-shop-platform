@@ -3,8 +3,7 @@ import StarRatings from "react-star-ratings";
 
 import Image from "next/image";
 import Link from "next/link";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-
+import { ProductType } from "@/app/types/products.types";
 const RelatedProducts = ({
   relatedProducts,
 }: {

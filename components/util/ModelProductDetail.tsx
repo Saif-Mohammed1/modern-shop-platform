@@ -1,6 +1,5 @@
 // "use client";
-// import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-// import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
+// import { ProductType } from "@/app/types/products.types";// import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 // import { lang } from "@/components/util/lang";
 // import Image from "next/image";
 // import { useRouter } from "next/navigation";
@@ -172,7 +171,7 @@
 
 // export default ModelProductDetail;
 "use client";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "@/app/types/products.types";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
 import Image from "next/image";

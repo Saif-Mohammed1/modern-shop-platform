@@ -1,20 +1,18 @@
 "use client";
-import {
-  accountReviewsTranslate,
-  ReviewType,
-} from "@/app/_translate/(protectedRoute)/account/reviewsTranslate";
+import { accountReviewsTranslate } from "@/app/_translate/(protectedRoute)/account/reviewsTranslate";
 import { useState } from "react";
 import { lang } from "@/components/util/lang";
 import api from "../util/api";
 import CustomButton from "../button/button";
 import Link from "next/link";
+import { ReviewsType } from "@/app/types/reviews.types";
 
 const ReviewHistory = ({
   reviewsList,
   hasNextPage,
 }: {
   hasNextPage: boolean;
-  reviewsList: ReviewType[];
+  reviewsList: ReviewsType[];
 }) => {
   const [loading, setLoading] = useState(false);
   const [moreResults, setMoreResults] = useState(reviewsList || []);
@@ -25,7 +23,6 @@ const ReviewHistory = ({
     try {
       setLoading(true);
       const newPage = page + 1;
-      setPage((prevPage) => prevPage++);
       const { data } = await api.get(`/customer/reviews?page=${newPage}`);
       setMoreResults([...moreResults, ...data.data]);
       setPage(newPage);
@@ -66,52 +63,55 @@ const ReviewHistory = ({
         {accountReviewsTranslate[lang].title}
       </h1>
       <div
-        className="max-h-[80vh] overflow-y-scroll mx-auto p-6 bg-gray-100 rounded-lg shadow-lg
+        className="mx-auto p-6 bg-gray-100 rounded-lg shadow-lg
 "
       >
         {moreResults.length > 0 ? (
-          <div>
-            {moreResults.map((review) => (
-              <div
-                key={review._id}
-                className="p-4 mb-4 bg-white rounded shadow-lg border border-gray-200"
-              >
-                <Link
-                  className="text-blue-500"
-                  href={`/shop/${review.product._id}`}
-                  target="_blank"
+          <>
+            <div className="max-h-[80vh] overflow-y-scroll ">
+              {moreResults.map((review) => (
+                <div
+                  key={review._id}
+                  className="p-4 mb-4 bg-white rounded shadow-lg border border-gray-200"
                 >
-                  <h2 className="text-xl font-semibold mb-2">
-                    {accountReviewsTranslate[lang].review.product}:{" "}
-                    {review.product.name}
-                  </h2>
-                </Link>
-                <p className="mb-2">
-                  <strong>
-                    {accountReviewsTranslate[lang].review.rating}:
-                  </strong>{" "}
-                  <span className="text-yellow-500">
-                    {"★".repeat(review.rating)} {"☆".repeat(5 - review.rating)}
-                  </span>
-                </p>
-                <p className="mb-2">
-                  <strong>
-                    {accountReviewsTranslate[lang].review.review}:
-                  </strong>{" "}
-                  {review.reviewText}
-                </p>
-                <p className="text-gray-500 text-sm">
-                  {accountReviewsTranslate[lang].review.reviewedOn}:{" "}
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
+                  <Link
+                    className="text-blue-500"
+                    href={`/shop/${review.product.slug}`}
+                    target="_blank"
+                  >
+                    <h2 className="text-xl font-semibold mb-2">
+                      {accountReviewsTranslate[lang].review.product}:{" "}
+                      {review.product.name}
+                    </h2>
+                  </Link>
+                  <p className="mb-2">
+                    <strong>
+                      {accountReviewsTranslate[lang].review.rating}:
+                    </strong>{" "}
+                    <span className="text-yellow-500">
+                      {"★".repeat(review.rating)}{" "}
+                      {"☆".repeat(5 - review.rating)}
+                    </span>
+                  </p>
+                  <p className="mb-2">
+                    <strong>
+                      {accountReviewsTranslate[lang].review.review}:
+                    </strong>{" "}
+                    {review.reviewText}
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    {accountReviewsTranslate[lang].review.reviewedOn}:{" "}
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>{" "}
             <CustomButton
               showMore={showMore}
               getMoreResults={getMoreResults}
               loading={loading}
             />
-          </div>
+          </>
         ) : (
           <p className="empty">{accountReviewsTranslate[lang].noReviewFound}</p>
         )}

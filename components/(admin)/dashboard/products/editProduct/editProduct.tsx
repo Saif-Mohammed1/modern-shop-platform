@@ -8,13 +8,10 @@ import EditProductImages from "./editProductImages";
 import EditProductSubmit from "./editProductSubmit";
 import api from "@/components/util/api";
 import toast from "react-hot-toast";
-import {
-  Event,
-  productsTranslate,
-  ProductType,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { FaTimesCircle } from "react-icons/fa";
 import { lang } from "@/components/util/lang";
+import { ProductType, Event } from "@/app/types/products.types";
 // import dynamic from "next/dynamic";
 // const EditProductDetails = dynamic(() => import("./editProductDetails"));
 // const EditProductPrice = dynamic(() => import("./editProductPrice"));

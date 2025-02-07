@@ -55,6 +55,10 @@ export const productControllerTranslate = {
           "Invalid image type. Only JPEG, PNG, and GIF are allowed.",
         imageSizeExceeds: "Image size exceeds 2MB.",
       },
+      updateProductActivity: {
+        success: "Product updated successfully",
+        error: "Error updating product",
+      },
     },
 
     errors: {
@@ -120,6 +124,10 @@ export const productControllerTranslate = {
         invalidImageType:
           "Недійсний тип зображення. Дозволені лише JPEG, PNG та GIF.",
         imageSizeExceeds: "Розмір зображення перевищує 2 МБ.",
+      },
+      updateProductActivity: {
+        success: "Продукт успішно оновлено",
+        error: "Помилка оновлення продукту",
       },
     },
 

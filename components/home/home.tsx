@@ -4,7 +4,7 @@ import Slider from "./slider/slider";
 
 import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
 import { lang } from "../util/lang";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "@/app/types/products.types";
 type HomeComponentProps = {
   productData: {
     topOfferProducts: ProductType[];

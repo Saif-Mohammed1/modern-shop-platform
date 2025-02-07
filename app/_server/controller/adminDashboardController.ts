@@ -61,7 +61,11 @@ export interface DashboardData {
     refunds: IRefundSchema[];
   };
   userInterestProducts: Array<{ productId: string; count: number }>;
-  topOrderedProducts: Array<{ productId: string; totalQuantity: number }>;
+  topOrderedProducts: Array<{
+    productId: string;
+    totalQuantity: number;
+    productSlug: string;
+  }>;
   dailyOrders: number;
 }
 // export const mainDashboard = async (): Promise<{
@@ -624,9 +628,11 @@ export const mainDashboard = async (): Promise<{
           total: userData?.total[0]?.total || 0,
           active: userData?.active[0]?.active || 0,
           lastWeek: userData?.lastWeek[0]?.lastWeek || 0,
-          growthPercentage: calculateGrowth(
-            userData?.lastWeek[0]?.lastWeek || 0,
-            userData?.total[0]?.total || 0
+          growthPercentage: parseFloat(
+            calculateGrowth(
+              userData?.lastWeek[0]?.lastWeek || 0,
+              userData?.total[0]?.total || 0
+            ).toFixed(2)
           ),
         },
         orders: {
@@ -635,9 +641,15 @@ export const mainDashboard = async (): Promise<{
           pending: orderCounts.pending || 0,
           cancelled: orderCounts.cancelled || 0,
           earnings: {
-            current: earnings?.totalEarnings[0]?.total || 0,
-            trend: earnings?.weeklyEarnings[0]?.total || 0,
-            daily: earnings?.dailyEarnings[0]?.total || 0,
+            current: parseFloat(
+              (earnings?.totalEarnings[0]?.total || 0).toFixed(2)
+            ),
+            trend: parseFloat(
+              (earnings?.weeklyEarnings[0]?.total || 0).toFixed(2)
+            ),
+            daily: parseFloat(
+              (earnings?.dailyEarnings[0]?.total || 0).toFixed(2)
+            ),
           },
         },
         products: {
@@ -661,19 +673,23 @@ export const mainDashboard = async (): Promise<{
         },
         sales: {
           total: orderCounts.completed || 0,
-          averageOrderValue:
-            orderCounts.completed > 0
+          averageOrderValue: parseFloat(
+            (orderCounts.completed > 0
               ? (earnings?.totalEarnings[0]?.total || 0) / orderCounts.completed
-              : 0,
-          conversionRate:
-            orderCounts.total > 0
+              : 0
+            ).toFixed(2)
+          ),
+          conversionRate: parseFloat(
+            (orderCounts.total > 0
               ? (orderCounts.completed / orderCounts.total) * 100
-              : 0,
+              : 0
+            ).toFixed(2)
+          ),
         },
         refunds: {
           total: refundData?.total[0]?.total || 0,
-          amount: refundData?.amount[0]?.total || 0,
-          trend: refundData?.trend[0]?.trend || 0,
+          amount: parseFloat((refundData?.amount[0]?.total || 0).toFixed(2)),
+          trend: parseFloat((refundData?.trend[0]?.trend || 0).toFixed(2)),
         },
         inventory: {
           totalValue: inventoryTotal,
@@ -685,10 +701,12 @@ export const mainDashboard = async (): Promise<{
           total: reportCounts.total || 0,
           resolved: reportCounts.resolved || 0,
           unresolved: reportCounts.total - reportCounts.resolved,
-          resolutionRate:
-            reportCounts.total > 0
+          resolutionRate: parseFloat(
+            (reportCounts.total > 0
               ? (reportCounts.resolved / reportCounts.total) * 100
-              : 0,
+              : 0
+            ).toFixed(2)
+          ),
         },
         recentActivities: {
           orders: recentActivitiesOrders,
@@ -698,6 +716,7 @@ export const mainDashboard = async (): Promise<{
         topOrderedProducts: topOrderedProducts.map((p) => ({
           productId: p._id,
           productName: p.name,
+          productSlug: p.name.toLowerCase().replace(/\s/g, "-"),
           totalQuantity: p.totalQuantity,
           totalOrders: p.totalOrders,
         })),

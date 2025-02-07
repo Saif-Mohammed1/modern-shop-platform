@@ -3,7 +3,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import api from "../util/api";
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { Event } from "@/app/types/products.types";
 import { accountDashboardTranslate } from "@/app/_translate/(protectedRoute)/account/dashboardTranslate";
 import { lang } from "@/components/util/lang";
 type EditableFields = "name" | "email" | "phone";

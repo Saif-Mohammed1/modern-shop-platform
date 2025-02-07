@@ -30,13 +30,3 @@ export const accountReviewsTranslate = {
     noReviewFound: "Відгуки не знайдено",
   },
 } as const;
-export type ReviewType = {
-  _id: string;
-  rating: number;
-  reviewText: string;
-  createdAt: string;
-  product: {
-    name: string;
-    _id: string;
-  };
-};

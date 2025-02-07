@@ -1,8 +1,7 @@
 "use client";
 import { reviewsTranslate } from "@/app/_translate/reviewsTranslate";
 import { lang } from "@/components/util/lang";
-import { updateQueryParams } from "@/components/util/updateQueryParams";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger } from "nuqs";
 import { useState } from "react";
 type CustomButtonProps = {
   showMore: boolean;
@@ -11,22 +10,23 @@ type CustomButtonProps = {
 };
 const FetchMoreOrders = ({ showMore }: CustomButtonProps) => {
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const router = useRouter();
-  const pathName = usePathname();
-  const searchParamsReadOnly = useSearchParams();
+  const [page, setPage] = useQueryState(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false })
+  );
+
   const getMoreResults = () => {
     setLoading(true);
     const nextPage = page + 1;
-    updateQueryParams(
-      { page: nextPage },
-      searchParamsReadOnly,
-      router,
-      pathName
-    );
+    // updateQueryParams(
+    //   { page: nextPage },
+    //   searchParamsReadOnly,
+    //   router,
+    //   pathName
+    // );
 
     setPage(nextPage);
-    new Promise((resolve) => setTimeout(resolve, 1000));
+    // new Promise((resolve) => setTimeout(resolve, 1000));
     setLoading(false);
   };
   return showMore ? (

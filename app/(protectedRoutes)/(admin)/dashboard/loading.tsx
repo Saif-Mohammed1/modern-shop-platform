@@ -1,5 +1,5 @@
 const DashboardSkeleton = () => (
-  <div className="animate-pulse bg-gray-900 p-6">
+  <div className="animate-pulse bg-gray-900 p-6 rounded-lg">
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="h-10 bg-gray-800 rounded w-64 mb-8"></div>
 

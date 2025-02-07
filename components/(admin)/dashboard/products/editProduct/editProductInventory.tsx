@@ -1,10 +1,8 @@
 import { lang } from "@/components/util/lang";
 import ButtonSteps from "../addProduct/ButtonSteps";
-import {
-  Event,
-  productsTranslate,
-  ProductType,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType, Event } from "@/app/types/products.types";
+
 type EditProductInventoryProps = {
   productData: Partial<ProductType>;
   onChange: (e: Event) => void;

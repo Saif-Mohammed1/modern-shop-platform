@@ -9,7 +9,7 @@ import {
   mergeLocalCartWithDB,
 } from "./cartAction";
 import toast from "react-hot-toast";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "@/app/types/products.types";
 import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
 import { useUser } from "./user.context";

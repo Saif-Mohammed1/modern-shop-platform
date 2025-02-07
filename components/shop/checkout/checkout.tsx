@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import dynamic from "next/dynamic";
 import { AddressType } from "@/app/_translate/(protectedRoute)/account/addressTranslate";
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { Event } from "@/app/types/products.types";
 import { checkoutPageTranslate } from "@/app/_translate/checkoutPageTranslate";
 import { lang } from "@/components/util/lang";
 const AddAddressComponent = dynamic(

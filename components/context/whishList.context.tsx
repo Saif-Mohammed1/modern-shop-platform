@@ -3,7 +3,7 @@ import { createContext, useState, useContext, useEffect } from "react";
 import api from "@/components/util/api";
 import { useUser } from "./user.context";
 import toast from "react-hot-toast";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "@/app/types/products.types";
 import { accountWishlistTranslate } from "@/app/_translate/(protectedRoute)/account/wishlistTranslate";
 import { lang } from "@/components/util/lang";
 export type WishlistType = {

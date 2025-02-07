@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import StarRatings from "react-star-ratings";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-
+import { ProductType } from "@/app/types/products.types";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";

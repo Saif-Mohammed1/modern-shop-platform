@@ -1,10 +1,7 @@
-import {
-  Event,
-  productsTranslate,
-  ProductType,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import ButtonSteps from "../addProduct/ButtonSteps";
 import { lang } from "@/components/util/lang";
+import { ProductType, Event } from "@/app/types/products.types";
 
 type EditProductPriceProps = {
   productData: Partial<ProductType>;

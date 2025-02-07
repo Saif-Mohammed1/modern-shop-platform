@@ -2,31 +2,12 @@
 import React, { FC, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/components/util/api";
-import {
-  OrderStatus,
-  ordersTranslate,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
+import { ordersTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
 import { lang } from "@/components/util/lang";
-type Order = {
-  _id: string;
-  shippingInfo: {
-    street: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    phone: string;
-    country: string;
-  };
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-  status: OrderStatus;
-};
+import { OrderStatus, OrderType } from "@/app/types/orders.types";
 
 type Props = {
-  order: Order;
+  order: OrderType;
 };
 
 const AdminOrderDetails: FC<Props> = ({ order }) => {

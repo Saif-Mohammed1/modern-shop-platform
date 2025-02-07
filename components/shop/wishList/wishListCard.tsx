@@ -1,5 +1,5 @@
 // components/ProductCard.js
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "@/app/types/products.types";
 import { accountWishlistTranslate } from "@/app/_translate/(protectedRoute)/account/wishlistTranslate";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { useCartItems } from "@/components/context/cart.context";

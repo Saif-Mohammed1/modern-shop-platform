@@ -1,7 +1,6 @@
 "use server";
 
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-
+import { ProductType } from "@/app/types/products.types";
 //fetch prodect using server side rendering
 
 export interface ProductParams {

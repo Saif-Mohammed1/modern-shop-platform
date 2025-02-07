@@ -1,4 +1,4 @@
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType } from "@/app/types/products.types";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { useCartItems } from "@/components/context/cart.context";
 import { useWishlist } from "@/components/context/whishList.context";

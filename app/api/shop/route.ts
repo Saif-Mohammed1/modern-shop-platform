@@ -16,7 +16,7 @@ export const GET = async (req: NextRequest) => {
     // );
     // Use Promise.all to run multiple asynchronous operations concurrently
     const [categories, { data, statusCode, pageCount }] = await Promise.all([
-      getUniqueCategories(Product),
+      getUniqueCategories(),
       getAll<IProductSchema>(req, Product),
     ]);
     return NextResponse.json(

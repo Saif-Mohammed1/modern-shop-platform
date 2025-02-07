@@ -180,11 +180,3 @@ export const ordersTranslate = {
     },
   },
 } as const;
-
-export enum OrderStatus {
-  pending = "pending",
-  completed = "completed",
-  refunded = "refunded",
-  processing = "processing",
-  cancelled = "cancelled",
-}

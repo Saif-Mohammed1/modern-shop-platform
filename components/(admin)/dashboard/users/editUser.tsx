@@ -4,9 +4,9 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/components/util/api";
 import toast from "react-hot-toast";
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { usersTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/usersTranslate";
 import { lang } from "@/components/util/lang";
+import { Event } from "@/app/types/products.types";
 
 type User = {
   _id: string;
@@ -61,7 +61,7 @@ const EditUser = ({ currentUser }: Props) => {
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-2xl font-bold mb-4">
         {usersTranslate.users[lang].editUsers.title}
       </h1>

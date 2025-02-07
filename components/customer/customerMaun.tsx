@@ -14,7 +14,7 @@ import {
   FaTicketAlt,
 } from "react-icons/fa";
 import { lang } from "@/components/util/lang";
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { Event } from "@/app/types/products.types";
 import { RiShieldUserLine } from "react-icons/ri";
 
 const AccountMenuV2 = () => {

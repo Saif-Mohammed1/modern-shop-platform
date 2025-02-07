@@ -1,8 +1,5 @@
-import {
-  Event,
-  productsTranslate,
-  ProductType,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ProductType, Event } from "@/app/types/products.types";
 import { lang } from "@/components/util/lang";
 import { ChangeEvent } from "react";
 

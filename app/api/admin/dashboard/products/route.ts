@@ -15,7 +15,7 @@ export const GET = async (req: NextRequest) => {
     await restrictTo(req, "admin");
     req.id = String(req.user?._id);
 
-    const categories = await getUniqueCategories(Product);
+    const categories = await getUniqueCategories();
 
     const { data, statusCode, pageCount } = await getAll<IProductSchema>(
       req,
@@ -37,7 +37,7 @@ export const POST = async (req: NextRequest) => {
     await restrictTo(req, "admin");
 
     req.id = String(req.user?._id);
-    const { data, statusCode } = await createProduct(req, Product);
+    const { data, statusCode } = await createProduct(req);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

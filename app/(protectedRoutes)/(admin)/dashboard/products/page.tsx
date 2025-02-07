@@ -5,12 +5,10 @@ import AdminProducts from "@/components/(admin)/dashboard/adminProduct";
 import AppError from "@/components/util/appError";
 import api from "@/components/util/api";
 import { headers } from "next/headers";
-import {
-  ProductsSearchParams,
-  productsTranslate,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { lang } from "@/components/util/lang";
 import type { Metadata } from "next";
+import { ProductsSearchParams } from "@/app/types/products.types";
 export const metadata: Metadata = {
   title: productsTranslate.metadata[lang].title,
   description: productsTranslate.metadata[lang].description,

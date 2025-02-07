@@ -8,6 +8,7 @@ export type UserAuthType = {
   role: string;
   createdAt: Date;
   phone?: string;
+  active?: boolean;
   isTwoFactorAuthEnabled: boolean;
   accessToken?: string;
   accessTokenExpires?: number;

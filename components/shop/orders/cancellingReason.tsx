@@ -1,6 +1,6 @@
 "use client";
 
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { Event } from "@/app/types/products.types";
 import { accountOrdersTranslate } from "@/app/_translate/(protectedRoute)/account/ordersTranslate";
 import { lang } from "@/components/util/lang";
 import { ChangeEvent, FormEvent, useState } from "react";

@@ -3,20 +3,20 @@ import { useCartItems } from "@/components/context/cart.context";
 import { useUser } from "@/components/context/user.context";
 import { useWishlist } from "@/components/context/whishList.context";
 import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
-// import ReviewSection from "@/components/products/Review/review";
+import ReviewSection from "@/components/products/Review/review";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai"; // Wishlist icons
 import StarRatings from "react-star-ratings";
-import dynamic from "next/dynamic";
-import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+// import dynamic from "next/dynamic";
+import { ProductType } from "@/app/types/products.types";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
 import { ReviewsType } from "@/app/types/reviews.types";
-const ReviewSection = dynamic(
-  () => import("@/components/products/Review/review")
-);
+// const ReviewSection = dynamic(
+//   () => import("@/components/products/Review/review")
+// );
 // const RelatedProducts = dynamic(
 //   () =>
 //     import("@/components/products/reuseableComponents/relatedProductsComponent")

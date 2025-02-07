@@ -3,15 +3,13 @@
 import { HiOutlineSearch } from "react-icons/hi";
 // import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/pagination/Pagination";
-import {
-  Event,
-  ProductType,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+
 import ProductCard from "@/components/products/product-card/productCard";
 // import { updateQueryParams } from "@/components/util/updateQueryParams";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import { Event, ProductType } from "@/app/types/products.types";
 // import dynamic from "next/dynamic";
 // const ProductCardV2 = dynamic(() =>
 //   import("../products/product-card/productCard.jsx")
@@ -27,7 +25,7 @@ const Shop = ({ products, categories, totalPages }: ShopProps) => {
   const [searchQuery, setSearchQuery] = useQueryState(
     "name",
     parseAsString.withDefault("").withOptions({
-      throttleMs: 10000,
+      throttleMs: 1000,
       shallow: false,
     })
   );

@@ -1,9 +1,7 @@
 "use client";
-import {
-  ordersTranslate,
-  OrderStatus,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
-import { Event } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
+import { ordersTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
+import { OrderStatus } from "@/app/types/orders.types";
+import { Event } from "@/app/types/products.types";
 import Pagination from "@/components/pagination/Pagination";
 import api from "@/components/util/api";
 import { lang } from "@/components/util/lang";
@@ -359,3 +357,258 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
 };
 
 export default AdminOrdersDashboard;
+// "use client";
+// import { FC, useEffect, useState, useCallback, useMemo } from "react";
+// import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
+// import { useDebounce, useLocalStorage } from "usehooks-ts";
+// import Link from "next/link";
+// import moment from "moment";
+// import { FiEdit, FiTrash2, FiEye, FiSearch, FiCalendar } from "react-icons/fi";
+// import {
+//   ordersTranslate,
+//   StatusColors,
+// } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
+// import Pagination from "@/components/pagination/Pagination";
+// import api from "@/components/util/api";
+// import { lang } from "@/components/util/lang";
+// import { Order } from "@/app/types/order.types";
+// import StatusBadge from "@/components/ui/StatusBadge";
+// import Input from "@/components/ui/Input";
+// import Button from "@/components/ui/Button";
+// import Select from "@/components/ui/Select";
+// import ConfirmModal from "@/components/ui/ConfirmModal";
+// import SkeletonTable from "@/components/ui/SkeletonTable";
+// import toast from "react-hot-toast";
+// import { OrderStatus } from "@/app/types/orders.types";
+// import { Event } from "@/app/types/products.types";
+
+// type StatusOption = {
+//   value: OrderStatus;
+//   label: string;
+// };
+
+// const statusOptions: StatusOption[] = [
+//   {
+//     value:OrderStatus.pending,
+//     label: ordersTranslate.orders[lang].filter.select.options.pending,
+//   },
+//   {
+//     value: OrderStatus.completed,
+//     label: ordersTranslate.orders[lang].filter.select.options.completed,
+//   },
+//   {
+//     value: OrderStatus.refunded,
+//     label: ordersTranslate.orders[lang].filter.select.options.refunded,
+//   },
+//   {
+//     value: OrderStatus.processing,
+//     label: ordersTranslate.orders[lang].filter.select.options.processing,
+//   },
+//   {
+//     value: OrderStatus.cancelled,
+//     label: ordersTranslate.orders[lang].filter.select.options.cancelled,
+//   },
+// ] ;
+
+// const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
+//   initialOrders,
+//   totalPages,
+// }) => {
+//   const [orders, setOrders] = useState<Order[]>(initialOrders || []);
+//   const [loading, setLoading] = useState(false);
+//   const [searchInput, setSearchInput] = useQueryState(
+//     "search",
+//     parseAsString.withDefault("").withOptions({ throttleMs: 1000 })
+//   );
+//   // const debouncedSearch = useDebounce(searchInput, 500);
+
+//   // Query state management
+//   const [filterStatus, setFilterStatus] = useQueryState(
+//     "status",
+//     parseAsString.withDefault("")
+//   );
+//   const [filterDate, setFilterDate] = useQueryState(
+//     "date",
+//     parseAsString.withDefault("")
+//   );
+//   const [currentPage, setCurrentPage] = useQueryState(
+//     "page",
+//     parseAsInteger.withDefault(1)
+//   );
+
+//   // Persistent column visibility
+//   const [visibleColumns, setVisibleColumns] = useLocalStorage<string[]>(
+//     "orderColumns",
+//     ["orderId", "user", "date", "total", "status", "actions"]
+//   );
+
+//   const handleStatusUpdate = async (id: string, status: OrderStatus) => {
+//     try {
+//       await api.put(`/admin/dashboard/orders/${id}`, { status });
+//       setOrders((prev) =>
+//         prev.map((order) => (order._id === id ? { ...order, status } : order))
+//       );
+//       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
+//     } catch (error) {
+//       toast.error(ordersTranslate.functions[lang].error);
+//     }
+//   };
+
+//   const handleDelete = async (id: string) => {
+//     try {
+//       await api.delete(`/admin/dashboard/orders/${id}`);
+//       setOrders((prev) => prev.filter((order) => order._id !== id));
+//       toast.success(ordersTranslate.functions[lang].handleDelete.success);
+//     } catch (error) {
+//       toast.error(ordersTranslate.functions[lang].error);
+//     }
+//   };
+
+//   const columns = [
+//       { id: "orderId", label: ordersTranslate.orders[lang].thead.orderId },
+//       { id: "user", label: ordersTranslate.orders[lang].thead.user },
+//       { id: "date", label: ordersTranslate.orders[lang].thead.date },
+//       {
+//         id: "totalPrice",
+//         label: ordersTranslate.orders[lang].thead.totalPrice,
+//       },
+//       { id: "status", label: ordersTranslate.orders[lang].thead.status },
+//       { id: "actions", label: ordersTranslate.orders[lang].thead.actions },
+//     ]
+
+//   return (
+//     <div className="p-6 max-w-7xl mx-auto bg-white rounded-lg shadow-sm">
+//       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+//         <h2 className="text-2xl font-bold text-gray-800">
+//           {ordersTranslate.orders[lang].title}
+//         </h2>
+
+//         <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+//           <Input
+//             icon={<FiSearch className="text-gray-400" />}
+//             placeholder={
+//               ordersTranslate.orders[lang].filter.input.search.placeholder
+//             }
+//             value={searchInput}
+//             onChange={(e:Event) => setSearchInput(e.target.value)}
+//             className="w-full sm:w-64"
+//           />
+
+//           <Select
+//             options={statusOptions}
+//             value={filterStatus}
+//             onChange={(value:string) => setFilterStatus(value)}
+//             placeholder={ordersTranslate.orders[lang].filter.select.title}
+//             className="w-full sm:w-48"
+//           />
+
+//           <Input
+//             type="date"
+//             icon={<FiCalendar className="text-gray-400" />}
+//             value={filterDate}
+//             onChange={(e:Event) => setFilterDate(e.target.value)}
+//             className="w-full sm:w-48"
+//           />
+//         </div>
+//       </div>
+
+//       <div className="overflow-x-auto rounded-lg border border-gray-100">
+//         <table className="min-w-full divide-y divide-gray-200">
+//           <thead className="bg-gray-50">
+//             <tr>
+//               {columns.map((column) => (
+//                 <th
+//                   key={column.id}
+//                   className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider"
+//                 >
+//                   {column.label}
+//                 </th>
+//               ))}
+//             </tr>
+//           </thead>
+
+//           <tbody className="bg-white divide-y divide-gray-200">
+//             {loading ? (
+//               <SkeletonTable columns={columns.length} rows={5} />
+//             ) : orders.length === 0 ? (
+//               <tr>
+//                 <td
+//                   colSpan={columns.length}
+//                   className="px-4 py-6 text-center text-gray-500"
+//                 >
+//                   {ordersTranslate.orders[lang].tbody.noOrders}
+//                 </td>
+//               </tr>
+//             ) : (
+//               orders.map((order) => (
+//                 <tr
+//                   key={order._id}
+//                   className="hover:bg-gray-50 transition-colors"
+//                 >
+//                   <td className="px-4 py-3 text-sm text-gray-700 font-mono">
+//                     #{order._id.slice(-8)}
+//                   </td>
+//                   <td className="px-4 py-3 text-sm text-gray-600">
+//                     {order.user.email}
+//                   </td>
+//                   <td className="px-4 py-3 text-sm text-gray-600">
+//                     {moment(order.createdAt).format("MMM D, YYYY")}
+//                   </td>
+//                   <td className="px-4 py-3 text-sm font-semibold text-gray-700">
+//                     ${order.totalPrice.toFixed(2)}
+//                   </td>
+//                     <td className="px-4 py-3">
+//                     <Select
+//                       value={order.status}
+//                       options={statusOptions}
+//                       onChange={(value: string) =>
+//                       handleStatusUpdate(order._id, value as OrderStatus)
+//                       }
+//                       customStyle={StatusColors[order.status]}
+//                     />
+//                     </td>
+//                   <td className="px-4 py-3 flex items-center gap-2">
+//                     <Link
+//                       href={`/dashboard/orders/${order._id}`}
+//                       target="_blank"
+//                     >
+//                       <Button variant="ghost" size="sm" icon={<FiEye />} />
+//                     </Link>
+//                     <ConfirmModal
+//                       title={
+//                         ordersTranslate.functions[lang].handleDelete.confirm
+//                       }
+//                       onConfirm={() => handleDelete(order._id)}
+//                     >
+//                       <Button
+//                         variant="ghost"
+//                         size="sm"
+//                         icon={<FiTrash2 />}
+//                         danger
+//                       />
+//                     </ConfirmModal>
+//                   </td>
+//                 </tr>
+//               ))
+//             )}
+//           </tbody>
+//         </table>
+//       </div>
+
+//       <div className="mt-6">
+//         <Pagination
+//           currentPage={currentPage}
+//           onPageChange={setCurrentPage}
+//           totalPages={totalPages}
+//         />
+//       </div>
+//     </div>
+//   );
+// };
+
+// interface AdminOrdersDashboardProps {
+//   initialOrders: Order[];
+//   totalPages: number;
+// }
+
+// export default AdminOrdersDashboard;
