@@ -11,26 +11,32 @@ import { cache } from "react";
 
 type Props = {
   params: {
-    id: string;
+    slug: string;
   };
 };
-const getProductData = cache(async (id: string) => {
-  const { data } = await api.get("/shop/" + id, {
+const getProductMetaData = cache(async (slug: string) => {
+  const { data } = await api.get("/shop/" + slug + "/metadata", {
     headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
   });
   return data.data;
 });
-const getReviewsData = cache(async (id: string) => {
-  const { data } = await api.get(`/customer/reviews/${id}`, {
+const getProductData = cache(async (slug: string) => {
+  const { data } = await api.get("/shop/" + slug, {
     headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
   });
-  return data;
+  return data.data;
 });
+// const getReviewsData = cache(async (slug: string) => {
+//   const { data } = await api.get(`/customer/reviews/${slug}`, {
+//     headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+//   });
+//   return data;
+// });
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params;
-  // api.get(`/customer/reviews/${product._id}
+  const { slug } = params;
+  // api.get(`/customer/reviews/${product._slug}
   try {
-    const product = await getProductData(id);
+    const product = await getProductMetaData(slug);
 
     return {
       title: shopPageTranslate[lang].metadata.title + " - " + product.name,
@@ -49,20 +55,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 const page = async ({ params }: Props) => {
-  const { id } = params;
+  const { slug } = params;
 
   try {
-    const [product, reviews] = await Promise.all([
-      // const { data } = await api.get("/shop/" + id, {
-      //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-      // });
-      getProductData(id),
-      getReviewsData(id),
-    ]);
+    const { product, relatedProducts, reviews } = await getProductData(slug);
+    // const [product, reviews] = await Promise.all([
+    //   // const { data } = await api.get("/shop/" + slug, {
+    //   //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+    //   // });
+    //   getProductData(slug),
+    //   // getReviewsData(slug),
+    // ]);
 
     return (
       // <ComponentLoading>
-      <ProductDetail product={product} reviews={reviews} />
+      <ProductDetail
+        product={product}
+        reviews={reviews}
+        relatedProducts={relatedProducts}
+      />
+
       // </ComponentLoading>
     );
   } catch (error: any) {

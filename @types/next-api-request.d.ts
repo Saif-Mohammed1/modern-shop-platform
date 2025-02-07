@@ -6,6 +6,7 @@ declare module "next/server" {
     user?: IUserSchema; // Adding `user` to NextApiRequest
     id?: string; // Adding `id` to NextApiRequest
     token?: string; // Adding `id` to NextApiRequest
+    slug?: string; // Adding `slug` to NextApiRequest
   }
 }
 // next-api-request.d.ts

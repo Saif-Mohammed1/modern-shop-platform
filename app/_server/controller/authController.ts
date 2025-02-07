@@ -10,7 +10,7 @@ import { createUserTokens, detectUnusualLogin } from "./refreshTokenController";
 import type { NextRequest } from "next/server";
 import { authControllerTranslate } from "../_Translate/authControllerTranslate";
 import { lang } from "@/components/util/lang";
-import { UserAuthType } from "@/app/types/users";
+import { UserAuthType } from "@/app/types/users.types";
 
 type UserTokenType = {
   user: UserAuthType;

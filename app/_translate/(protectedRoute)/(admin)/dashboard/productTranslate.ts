@@ -1,4 +1,4 @@
-import { UserAuthType } from "@/app/types/users";
+import { UserAuthType } from "@/app/types/users.types";
 import mongoose from "mongoose";
 
 const addProduct = {
@@ -532,13 +532,14 @@ export type ProductType = {
   name: string;
   category: string;
   price: number;
-  discount?: number;
+  discount: number;
   discountExpire?: Date;
   images: OldImage[] | [];
   user: Partial<UserAuthType>;
   description: string;
   stock: number;
-  _id: mongoose.Schema.Types.ObjectId | string;
+  // _id: mongoose.Schema.Types.ObjectId | string;
+  _id: string;
   ratingsAverage: number;
   ratingsQuantity: number;
   createdAt: string;

@@ -13,7 +13,7 @@ import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard
 import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
 import { useUser } from "./user.context";
-import { UserAuthType } from "@/app/types/users";
+import { UserAuthType } from "@/app/types/users.types";
 export type UserInCart = Partial<UserAuthType> | undefined;
 
 export type CartItemsType = {

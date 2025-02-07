@@ -1,4 +1,4 @@
-import { UserAuthType } from "@/app/types/users";
+import { UserAuthType } from "@/app/types/users.types";
 import nodemailer from "nodemailer";
 // Create a transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({

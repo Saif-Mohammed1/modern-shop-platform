@@ -3,12 +3,8 @@ import Order from "../models/order.model ";
 import type { NextRequest } from "next/server";
 import { reviewControllerTranslate } from "../_Translate/reviewControllerTranslate";
 import { lang } from "@/components/util/lang";
-import { IReviewSchema } from "../models/review.model";
-import { Model } from "mongoose";
-export const createReviews = async (
-  req: NextRequest,
-  model: Model<IReviewSchema>
-) => {
+import Review from "../models/review.model";
+export const createReviews = async (req: NextRequest) => {
   let doc;
   try {
     const { rating, reviewText } = await req.json();
@@ -36,7 +32,7 @@ export const createReviews = async (
         400
       );
     }
-    doc = await model.create({
+    doc = await Review.create({
       user: req.user?._id,
       product: req.id,
       rating,
@@ -49,19 +45,16 @@ export const createReviews = async (
     };
   } catch (error) {
     if (doc) {
-      await model.findOneAndDelete(
+      await Review.findOneAndDelete(
         { product: req?.id, user: req.user?._id } // Condition to find the document
       );
     }
     throw error;
   }
 };
-export const deleteReview = async (
-  req: NextRequest,
-  model: Model<IReviewSchema>
-) => {
+export const deleteReview = async (req: NextRequest) => {
   try {
-    const doc = await model.findOneAndDelete(
+    const doc = await Review.findOneAndDelete(
       { product: req.id, user: req.user?._id } // Condition to find the document
     );
     if (!doc) {
@@ -80,10 +73,7 @@ export const deleteReview = async (
   }
 };
 
-export const checkReview = async (
-  req: NextRequest,
-  model: Model<IReviewSchema>
-) => {
+export const checkReview = async (req: NextRequest) => {
   try {
     const order = await Order.findOne({
       user: req.user?._id,
@@ -108,7 +98,7 @@ export const checkReview = async (
         404
       );
     }
-    const review = await model.findOne({
+    const review = await Review.findOne({
       user: req.user?._id,
       product: req.id,
     });
@@ -130,10 +120,7 @@ export const checkReview = async (
   }
 };
 
-export const getReviews = async (
-  req: NextRequest,
-  model: Model<IReviewSchema>
-) => {
+export const getReviews = async (req: NextRequest) => {
   try {
     const searchParams = new URLSearchParams(req.nextUrl.searchParams);
     const page = searchParams.get("page") ?? "1";
@@ -145,14 +132,13 @@ export const getReviews = async (
     if (!req.id) {
       throw new AppError("Invalid product id", 400);
     }
-
     const [reviews, totalCount] = await Promise.all([
-      model
-        .find({ product: req.id })
+      Review.find({ product: req.id })
         .skip(skip)
         .limit(limit)
-        .sort({ createdAt: -1 }),
-      model.countDocuments({ product: req.id }),
+        .sort({ createdAt: -1 })
+        .lean(),
+      Review.countDocuments({ product: req.id }),
     ]);
 
     const hasNextPage = totalCount > currentPage * limit;

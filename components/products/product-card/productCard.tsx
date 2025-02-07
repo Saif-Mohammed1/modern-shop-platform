@@ -74,7 +74,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
     const ToastId = toast.loading(
       shopPageTranslate[lang].productCard.copyProductLink.pending
     );
-    const productLink = `${window.location.origin}/shop/${product._id}`;
+    const productLink = `${window.location.origin}/shop/${product.slug}`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(productLink);
@@ -110,7 +110,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           {shopPageTranslate[lang].RelatedProducts.off}
         </div>
       )}
-      <Link href={"/shop/" + product._id}>
+      <Link href={"/shop/" + product.slug}>
         <div className="imgParent">
           <Image
             src={imageSrc(product)}

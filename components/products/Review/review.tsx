@@ -7,15 +7,10 @@ import { lang } from "@/components/util/lang";
 import { useState } from "react";
 import api from "@/components/util/api";
 import CustomButton from "@/components/button/button";
-import { UserAuthType } from "@/app/types/users";
+import { UserAuthType } from "@/app/types/users.types";
+import { ReviewsType } from "@/app/types/reviews.types";
 const CreateReview = dynamic(() => import("./createReview"));
-export type ReviewsType = {
-  _id: string;
-  user: Partial<UserAuthType>;
-  rating: number;
-  reviewText: string;
-  createdAt: string;
-};
+
 type ReviewSectionProps = {
   reviews: {
     data: ReviewsType[];

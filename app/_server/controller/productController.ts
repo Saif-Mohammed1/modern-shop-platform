@@ -1,20 +1,17 @@
 import AppError from "@/components/util/appError";
 import { destroyImage, uploadImage } from "@/components/util/cloudinary";
-import { Model } from "mongoose";
 import type { NextRequest } from "next/server";
-import { IProductSchema } from "../models/product.model";
 import { productControllerTranslate } from "../_Translate/productControllerTranslate";
 import { lang } from "@/components/util/lang";
+import Product, { IProductSchema } from "../models/product.model";
+import { getReviews } from "./reviewsController";
 
 // import path from "path";
 // import os from "os";
 // import fs from "fs/promises";
 // import { UTApi } from "uploadthing/server";
 
-export const createProduct = async (
-  req: NextRequest,
-  Model: Model<IProductSchema>
-) => {
+export const createProduct = async (req: NextRequest) => {
   let doc;
   try {
     let formData = await req.json();
@@ -55,7 +52,7 @@ export const createProduct = async (
       });
     }
 
-    doc = await Model.create({
+    doc = await Product.create({
       name,
       category,
       description,
@@ -73,17 +70,14 @@ export const createProduct = async (
     };
   } catch (error) {
     if (doc) {
-      await Model.findByIdAndDelete(doc._id);
+      await Product.findByIdAndDelete(doc._id);
     }
     throw error;
   }
 };
-export const deleteProduct = async (
-  req: NextRequest,
-  Model: Model<IProductSchema>
-) => {
+export const deleteProduct = async (req: NextRequest) => {
   try {
-    const doc = await Model.findById(req.id); //.select("+public_id");
+    const doc = await Product.findById(req.id); //.select("+public_id");
 
     if (!doc) {
       throw new AppError(
@@ -101,7 +95,7 @@ export const deleteProduct = async (
       }
     }
 
-    await Model.findByIdAndDelete(req.id);
+    await Product.findByIdAndDelete(req.id);
 
     return {
       data: null,
@@ -112,10 +106,7 @@ export const deleteProduct = async (
   }
 };
 
-export const deleteProductImages = async (
-  req: NextRequest,
-  Model: Model<IProductSchema>
-) => {
+export const deleteProductImages = async (req: NextRequest) => {
   /**
    * images: [{
    *  link: 'https://res.cloudinary.com/dv0qpha02/image/upload/v1725776922/shop/products/njzfaobweakcfzdi0bl8.jpg',
@@ -125,7 +116,7 @@ export const deleteProductImages = async (
 
   try {
     const { public_id } = await req.json();
-    const doc = await Model.findById(req.id);
+    const doc = await Product.findById(req.id);
 
     if (!doc) {
       throw new AppError(
@@ -161,10 +152,7 @@ export const deleteProductImages = async (
   }
 };
 
-export const updateProduct = async (
-  req: NextRequest,
-  Model: Model<IProductSchema>
-) => {
+export const updateProduct = async (req: NextRequest) => {
   try {
     const data = await req.json();
 
@@ -178,7 +166,7 @@ export const updateProduct = async (
       }
     }
 
-    const doc = await Model.findById(req.id);
+    const doc = await Product.findById(req.id);
 
     if (!doc) {
       throw new AppError(
@@ -296,10 +284,8 @@ const validateBase64Image = (image: string): void => {
   }
 };
 
-export const getTopOffersAndNewProducts = async (
-  Model: Model<IProductSchema>
-) => {
-  const products = await Model.aggregate([
+export const getTopOffersAndNewProducts = async () => {
+  const products = await Product.aggregate([
     {
       $facet: {
         // Top Offer Products - Sorted by highest discount and rating, filtered by stock and minimum rating
@@ -358,13 +344,68 @@ export const getTopOffersAndNewProducts = async (
   };
   return { data, statusCode: 200 };
 };
-export const getUniqueCategories = async (model: Model<IProductSchema>) => {
+export const getUniqueCategories = async () => {
   try {
-    const categories = await model.distinct("category");
+    const categories = await Product.distinct("category");
     return {
       categories,
       statusCode: 200,
     };
+  } catch (error) {
+    throw error;
+  }
+};
+export const getOneProduct = async (req: NextRequest) => {
+  //popOptions ={path: 'user', select: 'name email'}
+  try {
+    const doc = await Product.findOne({
+      slug: req.slug,
+    }).lean();
+
+    if (!doc) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.noProductFoundWithId,
+        404
+      );
+    }
+    return { data: doc, statusCode: 200 };
+  } catch (error) {
+    throw error;
+  }
+};
+export const getOneProductAndRelatedProductsAndReviews = async (
+  req: NextRequest
+) => {
+  try {
+    // 1. First get the product (prerequisite for the next steps)
+    const { data: product } = await getOneProduct(req);
+    req.id = String(product._id);
+    // 2. Run these two parallel since they don't depend on each other
+    const [relatedProducts, reviews] = await Promise.all([
+      getRelatedProducts(product.category),
+      getReviews(req),
+    ]);
+
+    return {
+      data: {
+        product,
+        relatedProducts,
+        reviews,
+      },
+      statusCode: 200,
+    };
+  } catch (error) {
+    throw error; // Consider adding error handling/formatting here
+  }
+};
+const getRelatedProducts = async (category: string) => {
+  try {
+    const products = await Product.find({
+      category,
+    })
+      .limit(10)
+      .lean();
+    return products;
   } catch (error) {
     throw error;
   }

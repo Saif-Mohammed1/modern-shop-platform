@@ -27,7 +27,7 @@ const RelatedProducts = ({
                   {((product.discount / product.price) * 100).toFixed(0)}% OFF
                 </div>
               )}
-              <Link href={`/shop/${product._id}`}>
+              <Link href={`/shop/${product.slug}`}>
                 <Image
                   src={imageSrc(product)}
                   alt={product.name}

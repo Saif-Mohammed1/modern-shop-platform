@@ -2,7 +2,7 @@ import APIFeatures from "@/components/util/APIFeatures";
 import AppError from "@/components/util/appError";
 import { Document, Model } from "mongoose";
 import type { NextRequest } from "next/server";
-import { UserAuthType } from "@/app/types/users";
+import { UserAuthType } from "@/app/types/users.types";
 import { factoryControllerTranslate } from "../_Translate/factoryControllerTranslate";
 import { lang } from "@/components/util/lang";
 // import { uploadImage } from "@/components/util/cloudinary";
@@ -137,7 +137,7 @@ export const getOne = async <T extends Document>(
 ) => {
   //popOptions ={path: 'user', select: 'name email'}
   try {
-    let query = Model.findById(req.id);
+    let query = Model.findById(req.id).lean();
     if (popOptions) query = query.populate(popOptions);
     let doc = await query;
 
@@ -290,15 +290,15 @@ export const getAllWithoutLimit = async <T extends Document>(
   let doc;
   try {
     if (Model.modelName == "User") {
-      doc = await Model.find().select("+active");
+      doc = Model.find().select("+active").lean();
     } else {
       if (popOptions) {
-        doc = await Model.find().populate(popOptions);
+        doc = Model.find().populate(popOptions).lean();
       } else {
-        doc = await Model.find();
+        doc = Model.find().lean();
       }
     }
-
+    await doc;
     if (!doc) {
       throw new AppError(
         factoryControllerTranslate[lang].errors.noDocumentsFound,
@@ -337,7 +337,8 @@ export const getDataByUser = async <
     let load = Model.find({ user: req.user?._id })
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     if (popOptions) load = load.populate(popOptions);
     const [doc, totalCount] = await Promise.all([
       load,

@@ -6,7 +6,6 @@ import {
   getReviews,
 } from "@/app/_server/controller/reviewsController";
 import { connectDB } from "@/app/_server/db/db";
-import Review from "@/app/_server/models/review.model";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
@@ -21,7 +20,7 @@ export const GET = async (
   try {
     await connectDB();
     req.id = id;
-    const { data, statusCode, hasNextPage } = await getReviews(req, Review);
+    const { data, statusCode, hasNextPage } = await getReviews(req);
     return NextResponse.json({ data, hasNextPage }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
@@ -37,8 +36,8 @@ export const POST = async (
     await connectDB();
     await isAuth(req);
     req.id = id;
-    await checkReview(req, Review);
-    const { data, statusCode } = await createReviews(req, Review);
+    await checkReview(req);
+    const { data, statusCode } = await createReviews(req);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
@@ -53,7 +52,7 @@ export const PATCH = async (
     await connectDB();
     await isAuth(req);
     req.id = id;
-    const { data, statusCode } = await checkReview(req, Review);
+    const { data, statusCode } = await checkReview(req);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

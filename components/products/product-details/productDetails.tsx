@@ -4,9 +4,8 @@ import { useUser } from "@/components/context/user.context";
 import { useWishlist } from "@/components/context/whishList.context";
 import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
 // import ReviewSection from "@/components/products/Review/review";
-import api from "@/components/util/api";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai"; // Wishlist icons
 import StarRatings from "react-star-ratings";
@@ -14,7 +13,7 @@ import dynamic from "next/dynamic";
 import { ProductType } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
-import { ReviewsType } from "@/components/products/Review/review";
+import { ReviewsType } from "@/app/types/reviews.types";
 const ReviewSection = dynamic(
   () => import("@/components/products/Review/review")
 );
@@ -26,15 +25,17 @@ const ReviewSection = dynamic(
 const ProductDetail = ({
   product,
   reviews,
+  relatedProducts,
 }: {
   product: ProductType;
+  relatedProducts: ProductType[];
   reviews: {
     data: ReviewsType[];
     hasNextPage: boolean;
   };
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  // const [relatedProducts, setRelatedProducts] = useState([]);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   // const [reviews, setReviews] = useState([]);
   const { addToCartItems } = useCartItems();
@@ -110,22 +111,22 @@ const ProductDetail = ({
       toast.dismiss(toastLoading);
     }
   };
-  useEffect(() => {
-    if (product && product.category) {
-      const fetchRelatedProducts = async () => {
-        try {
-          const {
-            data: { data },
-          } = await api.get(`/shop?category=${product.category}`);
+  // useEffect(() => {
+  //   if (product && product.category) {
+  //     const fetchRelatedProducts = async () => {
+  //       try {
+  //         const {
+  //           data: { data },
+  //         } = await api.get(`/shop?category=${product.category}`);
 
-          setRelatedProducts(data);
-        } catch (error) {
-          setRelatedProducts([]);
-        }
-      };
-      fetchRelatedProducts();
-    }
-  }, [product]);
+  //         setRelatedProducts(data);
+  //       } catch (error) {
+  //         setRelatedProducts([]);
+  //       }
+  //     };
+  //     fetchRelatedProducts();
+  //   }
+  // }, [product]);
 
   // useEffect(() => {
   //   const fetchReviews = async () => {

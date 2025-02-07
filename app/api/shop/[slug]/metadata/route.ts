@@ -1,28 +1,20 @@
 import ErrorHandler from "@/app/_server/controller/errorController";
-import { getOne } from "@/app/_server/controller/factoryController";
+import { getOneProduct } from "@/app/_server/controller/productController";
 import { connectDB } from "@/app/_server/db/db";
-import Product, { IProductSchema } from "@/app/_server/models/product.model";
 import { type NextRequest, NextResponse } from "next/server";
 export const GET = async (
   req: NextRequest,
   {
     params,
   }: {
-    params: { id: string };
+    params: { slug: string };
   }
 ) => {
-  const { id } = params;
+  const { slug } = params;
   try {
     await connectDB();
-    req.id = id;
-    const { data, statusCode } = await getOne<IProductSchema>(
-      req,
-      Product
-      //   {
-      //   path: "user",
-      //   select: "name email",
-      // }
-    );
+    req.slug = slug;
+    const { data, statusCode } = await getOneProduct(req);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);

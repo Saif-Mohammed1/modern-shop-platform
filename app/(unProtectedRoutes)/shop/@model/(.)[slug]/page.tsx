@@ -5,14 +5,14 @@ import { headers } from "next/headers";
 import ModelProductDetail from "@/components/util/ModelProductDetail";
 type Props = {
   params: {
-    id: string;
+    slug: string;
   };
 };
 const page = async ({ params }: Props) => {
-  const { id } = params;
+  const { slug } = params;
 
   try {
-    const { data } = await api.get("/shop/" + id, {
+    const { data } = await api.get("/shop/" + slug + "/metadata", {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
     const product = data.data;

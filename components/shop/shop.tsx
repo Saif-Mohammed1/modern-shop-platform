@@ -1,16 +1,17 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+// import { useEffect, useRef } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+// import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/pagination/Pagination";
 import {
   Event,
   ProductType,
 } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
 import ProductCard from "@/components/products/product-card/productCard";
-import { updateQueryParams } from "@/components/util/updateQueryParams";
+// import { updateQueryParams } from "@/components/util/updateQueryParams";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 // import dynamic from "next/dynamic";
 // const ProductCardV2 = dynamic(() =>
 //   import("../products/product-card/productCard.jsx")
@@ -22,18 +23,50 @@ type ShopProps = {
   totalPages: number;
 };
 const Shop = ({ products, categories, totalPages }: ShopProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [priceFilter, setPriceFilter] = useState("");
-  const [ratingFilter, setRatingFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "name",
+    parseAsString.withDefault("").withOptions({
+      throttleMs: 10000,
+      shallow: false,
+    })
+  );
+
+  // const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useQueryState(
+    "category",
+    parseAsString.withDefault("").withOptions({
+      shallow: false,
+    })
+  );
+  // const [priceFilter, setPriceFilter] = useState("");
+  const [priceFilter, setPriceFilter] = useQueryState(
+    "sort",
+    parseAsString.withDefault("").withOptions({
+      shallow: false,
+    })
+  );
+  // const [ratingFilter, setRatingFilter] = useState("");
+  const [ratingFilter, setRatingFilter] = useQueryState(
+    "rating",
+    parseAsString.withDefault("").withOptions({
+      shallow: false,
+    })
+  );
+  // const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useQueryState(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({
+      shallow: false,
+    })
+  );
   // const [categorySelected, setCategorySelected] = useState("");
   // const [priceSelected, setPriceSelected] = useState("");
   // const [ratingSelected, setRatingSelected] = useState("");
-  const router = useRouter();
-  const pathName = usePathname();
-  const searchParamsReadOnly = useSearchParams();
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  // const router = useRouter();
+  // const pathName = usePathname();
+  // const searchParamsReadOnly = useSearchParams();
+  // const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   // const updateQueryParams = (params) => {
   //   const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
   //   for (const key in params) {
@@ -50,85 +83,85 @@ const Shop = ({ products, categories, totalPages }: ShopProps) => {
   const handleCategoryFilterChange = (event: Event) => {
     const value = event.target.value;
     setCategoryFilter(value);
-    updateQueryParams(
-      { category: value },
-      searchParamsReadOnly,
-      router,
-      pathName
-    );
+    // updateQueryParams(
+    //   { category: value },
+    //   searchParamsReadOnly,
+    //   router,
+    //   pathName
+    // );
   };
 
   const handlePriceFilterChange = (event: Event) => {
     const value = event.target.value;
     setPriceFilter(value);
-    updateQueryParams({ sort: value }, searchParamsReadOnly, router, pathName);
+    // updateQueryParams({ sort: value }, searchParamsReadOnly, router, pathName);
   };
 
   const handleRatingFilterChange = (event: Event) => {
     const value = event.target.value.toLowerCase();
     setRatingFilter(value);
-    updateQueryParams(
-      { rating: value },
-      searchParamsReadOnly,
-      router,
-      pathName
-    );
+    // updateQueryParams(
+    //   { rating: value },
+    //   searchParamsReadOnly,
+    //   router,
+    //   pathName
+    // );
   };
   const handleSearch = (event: Event) => {
     const value = event.target.value;
     setSearchQuery(value);
 
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
+    // if (debounceTimeout.current) {
+    //   clearTimeout(debounceTimeout.current);
+    // }
 
-    debounceTimeout.current = setTimeout(() => {
-      updateQueryParams(
-        { name: value },
-        searchParamsReadOnly,
-        router,
-        pathName
-      );
-    }, 1000); // Adjust the debounce delay as needed
+    // debounceTimeout.current = setTimeout(() => {
+    //   updateQueryParams(
+    //     { name: value },
+    //     searchParamsReadOnly,
+    //     router,
+    //     pathName
+    //   );
+    // }, 1000); // Adjust the debounce delay as needed
   };
 
   const onPaginationChange = (page: number) => {
-    const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
+    // const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
     setCurrentPage(page);
 
-    if (page === 1) {
-      paramsSearch.delete("page");
-      router.push(pathName + "?" + paramsSearch.toString());
-      return;
-    }
-    updateQueryParams({ page }, searchParamsReadOnly, router, pathName);
+    // if (page === 1) {
+    //   paramsSearch.delete("page");
+    //   router.push(pathName + "?" + paramsSearch.toString());
+    //   return;
+    // }
+    // updateQueryParams({ page }, searchParamsReadOnly, router, pathName);
   };
 
-  useEffect(() => {
-    if (searchParamsReadOnly.has("category")) {
-      setCategoryFilter(searchParamsReadOnly.get("category") ?? "");
-    }
-    if (searchParamsReadOnly.has("price")) {
-      setPriceFilter(searchParamsReadOnly.get("price") ?? "");
-    }
-    if (searchParamsReadOnly.has("rating")) {
-      setRatingFilter(searchParamsReadOnly.get("rating") ?? "");
-    }
-    if (searchParamsReadOnly.has("page")) {
-      if (Number(searchParamsReadOnly.get("page")) == 1) {
-        const paramsSearch = new URLSearchParams(
-          searchParamsReadOnly.toString()
-        );
+  // useEffect(() => {
+  //   if (searchParamsReadOnly.has("category")) {
+  //     setCategoryFilter(searchParamsReadOnly.get("category") ?? "");
+  //   }
+  //   if (searchParamsReadOnly.has("price")) {
+  //     setPriceFilter(searchParamsReadOnly.get("price") ?? "");
+  //   }
+  //   if (searchParamsReadOnly.has("rating")) {
+  //     setRatingFilter(searchParamsReadOnly.get("rating") ?? "");
+  //   }
+  //   if (searchParamsReadOnly.has("page")) {
+  //     if (Number(searchParamsReadOnly.get("page")) == 1) {
+  //       const paramsSearch = new URLSearchParams(
+  //         searchParamsReadOnly.toString()
+  //       );
 
-        paramsSearch.delete("page");
-        router.push(pathName + "?" + paramsSearch.toString());
-        setCurrentPage(1);
-        return;
-      }
+  //       paramsSearch.delete("page");
+  //       router.push(pathName + "?" + paramsSearch.toString());
+  //       setCurrentPage(1);
+  //       return;
+  //     }
 
-      setCurrentPage(Number(searchParamsReadOnly.get("page")));
-    }
-  }, [searchParamsReadOnly.toString()]);
+  //     setCurrentPage(Number(searchParamsReadOnly.get("page")));
+  //   }
+  // }, [searchParamsReadOnly.toString()]);
   return (
     <section className="flex flex-col gap-8 p-6 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-800">
@@ -252,7 +285,7 @@ const Shop = ({ products, categories, totalPages }: ShopProps) => {
       <div className=" h-[90dvh] overflow-y-auto">
         <div className="grid col gap-8">
           {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <ProductCard key={product._id.toString()} product={product} />
           ))}
         </div>
       </div>

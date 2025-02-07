@@ -57,7 +57,7 @@ ReviewSchema.index({ product: 1, user: 1 }, { unique: true });
 ReviewSchema.pre<Query<any, IReviewSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
-    select: "name",
+    select: "name slug",
     model: Product,
   }).populate({
     path: "user",

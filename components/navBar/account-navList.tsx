@@ -16,7 +16,7 @@ import { deleteCookies } from "../util/cookies";
 import { useEffect, useRef } from "react";
 import { navBarTranslate } from "@/app/_translate/navBarTranslate";
 import { lang } from "../util/lang";
-import { UserAuthType } from "@/app/types/users";
+import { UserAuthType } from "@/app/types/users.types";
 type AccountNavListProps = {
   user: UserAuthType | null;
   setAccountMenuOpen: (open: boolean) => void;

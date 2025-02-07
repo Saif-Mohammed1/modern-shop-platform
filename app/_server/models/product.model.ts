@@ -8,7 +8,7 @@ export interface IProductSchema extends Document {
   name: string;
   category: string;
   price: number;
-  discount?: number;
+  discount: number;
   discountExpire?: Date;
   images: { link: string; public_id: string }[];
   user: IUserSchema["_id"] | null;
@@ -169,7 +169,7 @@ ProductSchema.pre("save", function (next) {
     // Default to 7 days from the current date
     this.discountExpire = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   }
-  if (this.name) {
+  if (this.isModified("name") || this.isNew) {
     this.slug = this.name.toLowerCase().split(" ").join("-");
   }
   next();

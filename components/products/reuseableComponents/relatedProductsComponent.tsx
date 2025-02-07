@@ -100,7 +100,7 @@ const RelatedProducts = ({
                     {lang === "en" ? " off" : "-"}
                   </div>
                 )}
-                <Link href={`/shop/${product._id}`}>
+                <Link href={`/shop/${product.slug}`}>
                   <div className="imgParent" style={{ height: "160px" }}>
                     <Image
                       src={imageSrc(product)}
