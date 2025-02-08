@@ -11,22 +11,16 @@ import { lang } from "../util/lang";
 import { FiX } from "react-icons/fi";
 
 type CartDropdownProps = {
-  toggleIsCartOpen: () => void;
   setIsCartOpen: (value: boolean) => void;
   cartItems: CartItemsType[];
 };
 
-const CartDropdown = ({
-  toggleIsCartOpen,
-  setIsCartOpen,
-  cartItems,
-}: CartDropdownProps) => {
+const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
   const { removeCartItem, addToCartItems, clearProductFromCartItem } =
     useCartItems();
   const { user } = useUser();
   const router = useRouter();
   const cartRef = useRef<HTMLDivElement>(null);
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleCartAction = async (
     action: () => Promise<void>,
@@ -91,23 +85,18 @@ const CartDropdown = ({
     item: CartItemsType
   ) => {
     const value = e.target.value;
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-    debounceTimeout.current = setTimeout(() => {
-      if (value === "") {
-        return;
-      }
-      const quantity = Math.max(1, Number(value));
-      if (quantity > item.stock) {
-        toast.error(
-          cartDropdownTranslate[lang].functions.quantityUpdate.notEnoughStock
-        );
-        return;
-      }
+    if (value === "") return;
 
-      addToCartItems(item, quantity);
-    }, 500);
+    const quantity = Math.max(1, Number(value));
+
+    if (quantity > item.stock) {
+      toast.error(
+        cartDropdownTranslate[lang].functions.quantityUpdate.notEnoughStock
+      );
+      return;
+    }
+
+    addToCartItems(item, quantity);
   };
   // useEffect(() => {
   //   const handleClickOutside = (event: MouseEvent) => {
@@ -226,7 +215,7 @@ const CartDropdown = ({
                       >
                         -
                       </button>
-                      <input
+                      {/* <input
                         type="number"
                         className="text-sm w-8 text-center bg-transparent"
                         value={item.quantity}
@@ -239,6 +228,26 @@ const CartDropdown = ({
                           }
                         }}
                         onChange={(e) => quantityUpdate(e, item)}
+                      /> */}
+                      <input
+                        type="number"
+                        className="text-sm w-12 text-center bg-transparent"
+                        value={item.quantity}
+                        min={1}
+                        max={item.stock}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^[0-9]*$/.test(value)) {
+                            // Additional validation
+                            quantityUpdate(e, item);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          // Prevent arrow key changes if desired
+                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                       <button
                         className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"

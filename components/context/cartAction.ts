@@ -174,3 +174,16 @@ const fetchCartItemsFromDB = async () => {
     throw error;
   }
 };
+export const updateCartQuantity = async (
+  productId: string,
+  quantity: number
+) => {
+  try {
+    const { data } = await api.patch(`/customer/cart/${productId}`, {
+      quantity,
+    });
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+};

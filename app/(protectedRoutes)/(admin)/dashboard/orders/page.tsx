@@ -76,7 +76,7 @@ const page: FC<PageProps> = async ({ searchParams }) => {
   try {
     const { data, pageCount } = await queryParams(defaultSearchParams);
 
-    return <AdminOrdersDashboard orders={data} totalPages={pageCount} />;
+    return <AdminOrdersDashboard initialOrders={data} totalPages={pageCount} />;
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;
 

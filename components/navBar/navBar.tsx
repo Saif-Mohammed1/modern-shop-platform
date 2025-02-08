@@ -107,11 +107,7 @@ const NavBar = () => {
 
       {/* Cart Dropdown */}
       {isCartOpen && (
-        <CartDropdown
-          toggleIsCartOpen={toggleCart}
-          cartItems={cartItems}
-          setIsCartOpen={setIsCartOpen}
-        />
+        <CartDropdown cartItems={cartItems} setIsCartOpen={setIsCartOpen} />
       )}
     </nav>
   );
