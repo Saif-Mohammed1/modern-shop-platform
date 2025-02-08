@@ -122,3 +122,16 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+/* Smooth transitions for mobile */
+@media (max-width: 767px) {
+  .cart-drawer {
+    transform: translateX(100%);
+  }
+
+  .cart-drawer-open {
+    transform: translateX(0);
+  }
+}
+.cart-drawer {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

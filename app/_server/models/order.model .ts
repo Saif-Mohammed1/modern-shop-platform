@@ -3,32 +3,14 @@ import { Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Product, { IProductSchema } from "./product.model";
 import { Document } from "mongoose";
+import { IShippingInfo, IItems, OrderStatus } from "@/app/types/orders.types";
 
-// import Address from "./address.model";
-type status = "pending" | "completed" | "refunded" | "processing" | "cancelled";
-interface IShippingInfo {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  phone: string;
-  country: string;
-}
-interface IItems {
-  _id: IProductSchema["_id"];
-  name: string;
-  quantity: number;
-  price: number;
-  discount: number;
-  finalPrice: number;
-  discountExpire: Date;
-}
 export interface IOrderSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUserSchema["_id"];
   shippingInfo: IShippingInfo;
   items: IItems[];
-  status: status;
+  status: OrderStatus;
   invoiceId: string;
   invoiceLink: string;
   totalPrice: number;
@@ -106,8 +88,8 @@ const OrderSchema = new Schema<IOrderSchema>(
       type: String,
       // required: true,
 
-      enum: ["pending", "completed", "refunded", "processing", "cancelled"],
-      default: "pending",
+      enum: Object.values(OrderStatus),
+      default: OrderStatus.pending,
     },
     invoiceId: {
       type: String,

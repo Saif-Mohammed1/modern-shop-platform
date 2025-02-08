@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
     "@next/bundle-analyzer": "^14.2.13",
     "@types/jsonwebtoken": "^9.0.7",
     "apexcharts": "^4.4.0",

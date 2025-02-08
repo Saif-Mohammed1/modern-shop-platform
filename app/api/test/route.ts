@@ -11,7 +11,7 @@ export const GET = async (req: NextRequest) => {
     //   product.slug = product.name.toLowerCase().split(" ").join("-");
     //   await product.save();
     // });
-    console.log("Hello from the API 1");
+    // console.log("Hello from the API 1");
     return NextResponse.json({ data: "Hello from the API" }, { status: 200 });
   } catch (error) {
     return ErrorHandler(error, req);
