@@ -1,286 +1,149 @@
 "use client";
-// import { useEffect, useRef } from "react";
-import { HiOutlineSearch } from "react-icons/hi";
-// import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { HiFilter, HiX } from "react-icons/hi";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import Pagination from "@/components/pagination/Pagination";
-
 import ProductCard from "@/components/products/product-card/productCard";
-// import { updateQueryParams } from "@/components/util/updateQueryParams";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
-import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
-import { Event, ProductType } from "@/app/types/products.types";
-// import dynamic from "next/dynamic";
-// const ProductCardV2 = dynamic(() =>
-//   import("../products/product-card/productCard.jsx")
-// );
-// const Pagination = dynamic(() => import("../pagination/Pagination.jsx"));
+import type { Event, ProductType } from "@/app/types/products.types";
+import SearchBar from "../ui/SearchBar";
+import Filters from "../ui/Filters";
+
 type ShopProps = {
   products: ProductType[];
   categories: string[];
   totalPages: number;
 };
+
 const Shop = ({ products, categories, totalPages }: ShopProps) => {
-  // const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  // Query state management
   const [searchQuery, setSearchQuery] = useQueryState(
     "name",
     parseAsString.withDefault("").withOptions({
-      throttleMs: 1000,
+      throttleMs: 500,
       shallow: false,
+      //  scroll: false,
     })
   );
 
-  // const [categoryFilter, setCategoryFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useQueryState(
     "category",
-    parseAsString.withDefault("").withOptions({
-      shallow: false,
-    })
+    parseAsString.withDefault("").withOptions({ shallow: false })
   );
-  // const [priceFilter, setPriceFilter] = useState("");
+
   const [priceFilter, setPriceFilter] = useQueryState(
     "sort",
-    parseAsString.withDefault("").withOptions({
-      shallow: false,
-    })
+    parseAsString.withDefault("").withOptions({ shallow: false })
   );
-  // const [ratingFilter, setRatingFilter] = useState("");
+
   const [ratingFilter, setRatingFilter] = useQueryState(
     "rating",
-    parseAsString.withDefault("").withOptions({
-      shallow: false,
-    })
+    parseAsString.withDefault("").withOptions({ shallow: false })
   );
-  // const [currentPage, setCurrentPage] = useState(1);
+
   const [currentPage, setCurrentPage] = useQueryState(
     "page",
-    parseAsInteger.withDefault(1).withOptions({
-      shallow: false,
-    })
+    parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );
-  // const [categorySelected, setCategorySelected] = useState("");
-  // const [priceSelected, setPriceSelected] = useState("");
-  // const [ratingSelected, setRatingSelected] = useState("");
-  // const router = useRouter();
-  // const pathName = usePathname();
-  // const searchParamsReadOnly = useSearchParams();
-  // const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-  // const updateQueryParams = (params) => {
-  //   const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
-  //   for (const key in params) {
-  //     if (params[key] === "") {
-  //       paramsSearch.delete(key);
-  //     } else {
-  //       paramsSearch.set(key, params[key]);
-  //     }
-  //   }
-
-  //   router.push(pathName + "?" + paramsSearch.toString());
-  // };
-
-  const handleCategoryFilterChange = (event: Event) => {
-    const value = event.target.value;
+  const handleCategoryFilterChange = (e: Event) => {
+    const value = e.target.value;
     setCategoryFilter(value);
-    // updateQueryParams(
-    //   { category: value },
-    //   searchParamsReadOnly,
-    //   router,
-    //   pathName
-    // );
   };
 
-  const handlePriceFilterChange = (event: Event) => {
-    const value = event.target.value;
+  const handlePriceFilterChange = (e: Event) => {
+    const value = e.target.value;
     setPriceFilter(value);
-    // updateQueryParams({ sort: value }, searchParamsReadOnly, router, pathName);
   };
 
-  const handleRatingFilterChange = (event: Event) => {
-    const value = event.target.value.toLowerCase();
+  const handleRatingFilterChange = (e: Event) => {
+    const value = e.target.value.toLowerCase();
     setRatingFilter(value);
-    // updateQueryParams(
-    //   { rating: value },
-    //   searchParamsReadOnly,
-    //   router,
-    //   pathName
-    // );
   };
-  const handleSearch = (event: Event) => {
-    const value = event.target.value;
+
+  const handleSearch = (e: Event) => {
+    const value = e.target.value;
     setSearchQuery(value);
-
-    // if (debounceTimeout.current) {
-    //   clearTimeout(debounceTimeout.current);
-    // }
-
-    // debounceTimeout.current = setTimeout(() => {
-    //   updateQueryParams(
-    //     { name: value },
-    //     searchParamsReadOnly,
-    //     router,
-    //     pathName
-    //   );
-    // }, 1000); // Adjust the debounce delay as needed
   };
 
   const onPaginationChange = (page: number) => {
-    // const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
     setCurrentPage(page);
-
-    // if (page === 1) {
-    //   paramsSearch.delete("page");
-    //   router.push(pathName + "?" + paramsSearch.toString());
-    //   return;
-    // }
-    // updateQueryParams({ page }, searchParamsReadOnly, router, pathName);
   };
-
-  // useEffect(() => {
-  //   if (searchParamsReadOnly.has("category")) {
-  //     setCategoryFilter(searchParamsReadOnly.get("category") ?? "");
-  //   }
-  //   if (searchParamsReadOnly.has("price")) {
-  //     setPriceFilter(searchParamsReadOnly.get("price") ?? "");
-  //   }
-  //   if (searchParamsReadOnly.has("rating")) {
-  //     setRatingFilter(searchParamsReadOnly.get("rating") ?? "");
-  //   }
-  //   if (searchParamsReadOnly.has("page")) {
-  //     if (Number(searchParamsReadOnly.get("page")) == 1) {
-  //       const paramsSearch = new URLSearchParams(
-  //         searchParamsReadOnly.toString()
-  //       );
-
-  //       paramsSearch.delete("page");
-  //       router.push(pathName + "?" + paramsSearch.toString());
-  //       setCurrentPage(1);
-  //       return;
-  //     }
-
-  //     setCurrentPage(Number(searchParamsReadOnly.get("page")));
-  //   }
-  // }, [searchParamsReadOnly.toString()]);
+  useEffect(() => {
+    window.scrollTo({ top: 10, behavior: "smooth" });
+  }, [searchQuery, categoryFilter, priceFilter, ratingFilter, currentPage]);
   return (
     <section className="flex flex-col gap-8 p-6 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-800">
         {shopPageTranslate[lang].shopPage.content.title}
       </h1>
+
+      {/* Mobile Filter Button */}
+      <button
+        onClick={() => setIsMobileFiltersOpen(true)}
+        className="md:hidden flex items-center gap-2 p-3 bg-white rounded-lg shadow-md"
+      >
+        <HiFilter className="text-xl" />
+        {shopPageTranslate[lang].shopPage.content.filters}
+      </button>
+
       {/* Filter and Search Section */}
-      <div className="flex justify-between items-center gap-4 flex-wrap p-4 bg-white rounded-lg shadow-md">
-        {/* Category Filter */}
-        <div className="flex items-center gap-2">
-          <label htmlFor="categoryFilter" className="text-gray-700 font-medium">
-            {
-              shopPageTranslate[lang].shopPage.content.select.categoryFilter
-                .label
-            }
-            :
-          </label>
-          <select
-            id="categoryFilter"
-            value={categoryFilter}
-            onChange={handleCategoryFilterChange}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">
-              {
-                shopPageTranslate[lang].shopPage.content.select.categoryFilter
-                  .all
-              }
-            </option>
-            {/* Add more categories as options here */}
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex gap-4 items-center flex-wrap">
-          {/* Price Filter */}
-          <div className="flex items-center gap-2">
-            <label htmlFor="priceFilter" className="text-gray-700 font-medium">
-              {
-                shopPageTranslate[lang].shopPage.content.select.priceFilter
-                  .label
-              }
-              :
-            </label>
-            <select
-              id="priceFilter"
-              value={priceFilter}
-              onChange={handlePriceFilterChange}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">
-                {
-                  shopPageTranslate[lang].shopPage.content.select.priceFilter
-                    .all
-                }
-              </option>
-              <option value="price">
-                {
-                  shopPageTranslate[lang].shopPage.content.select.priceFilter
-                    .lowestPrice
-                }
-              </option>
-              <option value="-price">
-                {
-                  shopPageTranslate[lang].shopPage.content.select.priceFilter
-                    .highestPrice
-                }
-              </option>
-            </select>
-          </div>
-
-          {/* Rating Filter */}
-          <div className="flex items-center gap-2">
-            <label htmlFor="ratingFilter" className="text-gray-700 font-medium">
-              {
-                shopPageTranslate[lang].shopPage.content.select.ratingFilter
-                  .label
-              }
-              :
-            </label>
-            <select
-              id="ratingFilter"
-              value={ratingFilter}
-              onChange={handleRatingFilterChange}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">
-                {
-                  shopPageTranslate[lang].shopPage.content.select.ratingFilter
-                    .all
-                }
-              </option>
-              <option value="1">★☆☆☆☆</option>
-              <option value="2">★★☆☆☆</option>
-              <option value="3">★★★☆☆</option>
-              <option value="4">★★★★☆</option>
-              <option value="5">★★★★★</option>
-            </select>
-          </div>
-        </div>
+      <div className="hidden md:flex justify-between items-center gap-4 flex-wrap p-4 bg-white rounded-lg shadow-md">
+        <Filters
+          categories={categories}
+          categoryFilter={categoryFilter}
+          priceFilter={priceFilter}
+          ratingFilter={ratingFilter}
+          handleCategoryFilterChange={handleCategoryFilterChange}
+          handlePriceFilterChange={handlePriceFilterChange}
+          handleRatingFilterChange={handleRatingFilterChange}
+        />
 
         {/* Search Section */}
-        <div className="flex items-center relative flex-grow max-w-[500px]">
-          <div className="text-gray-400 absolute top-1/2 transform -translate-y-1/2 right-3 text-xl">
-            <HiOutlineSearch />
-          </div>
-          <input
-            type="text"
-            placeholder="Search...."
-            value={searchQuery}
-            onChange={handleSearch}
-            className="w-full px-4 py-2 pl-10 rounded-md border border-gray-300 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <SearchBar searchQuery={searchQuery} handleSearch={handleSearch} />
       </div>
 
+      {/* Mobile Filters Overlay */}
+      {isMobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">
+                {shopPageTranslate[lang].shopPage.content.filters}
+              </h2>
+              <button
+                onClick={() => setIsMobileFiltersOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <HiX className="text-2xl" />
+              </button>
+            </div>
+
+            <Filters
+              categories={categories}
+              categoryFilter={categoryFilter}
+              priceFilter={priceFilter}
+              ratingFilter={ratingFilter}
+              handleCategoryFilterChange={handleCategoryFilterChange}
+              handlePriceFilterChange={handlePriceFilterChange}
+              handleRatingFilterChange={handleRatingFilterChange}
+              isMobile
+            />
+
+            <SearchBar
+              searchQuery={searchQuery}
+              handleSearch={handleSearch}
+              isMobile
+            />
+          </div>
+        </div>
+      )}
+
       {/* Products Grid */}
-      <div className=" h-[90dvh] overflow-y-auto">
+      <div className="h-screen md:h-[90dvh] overflow-y-auto">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"> */}
         <div className="grid col gap-8">
           {products.map((product) => (
             <ProductCard key={product._id.toString()} product={product} />

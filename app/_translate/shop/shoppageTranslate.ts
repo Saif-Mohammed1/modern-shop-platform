@@ -40,6 +40,7 @@ export const shopPageTranslate = {
       },
       content: {
         title: "Shop Product Page",
+        filters: "Filters",
         select: {
           categoryFilter: {
             label: "Filter by Category:",
@@ -154,6 +155,7 @@ export const shopPageTranslate = {
       },
       content: {
         title: "Сторінка продукту магазину",
+        filters: "Фільтри",
         select: {
           categoryFilter: {
             label: "Фільтрувати за категорією:",

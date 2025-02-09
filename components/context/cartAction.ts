@@ -23,7 +23,6 @@ export const addToCart = async (
       const StoredCart = localStorage.getItem("cart");
 
       const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-      console.log(product.stock);
       const existingProduct = cart.find((item) => item._id === product._id);
 
       if (existingProduct) {

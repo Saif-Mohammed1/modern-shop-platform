@@ -3,7 +3,7 @@ import { ProductType } from "@/app/types/products.types";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useCartItems } from "../context/cart.context";
@@ -15,6 +15,9 @@ import { FaArrowRightLong } from "react-icons/fa6";
 const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -43,6 +46,22 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
   //     toast.error(errorMessage, { id: toastId });
   //   }
   // };
+
+  // Replace the window.location.reload button with:
+  const handleForceRefresh = () => {
+    // Create new search params with cache-buster
+    const params = new URLSearchParams(searchParams);
+    params.set("forceRefresh", Date.now().toString());
+
+    // Update URL without scroll reset
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+    // Remove the param after navigation
+    setTimeout(() => {
+      params.delete("forceRefresh");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }, 100);
+  };
 
   // Modify the handleAddToCart function
   const handleAddToCart = async () => {
@@ -277,7 +296,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           </div>
         )}
         <button
-          onClick={() => router.refresh()}
+          onClick={handleForceRefresh}
           // onClick={() => window.location.reload()}
           className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors"
         >
