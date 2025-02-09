@@ -212,7 +212,6 @@ export class TwoFactorAuthService {
         statusCode: 200,
       };
     } catch (error) {
-      if (twoFA) await this.handleFailedAttempt(twoFA, metadata);
       throw error;
     }
   }
@@ -225,7 +224,7 @@ export class TwoFactorAuthService {
       const { code } = await req.json();
       if (!code) throw new AppError("Verification code is required", 400);
       //  check code if its 6 digit
-      if (!/^\d+$/.test(code))
+      if (!/^\d{6}$/.test(code))
         throw new AppError("Invalid verification code", 400);
       const user = await User.findOne({
         twoFactorTempToken: tempToken,
@@ -277,7 +276,7 @@ export class TwoFactorAuthService {
 
       this.checkLockoutStatus(twoFA);
 
-      const sanitizedCode = code.replace(/-/g, "");
+      const sanitizedCode = code.trim();
       const validCodeIndex = twoFA.backupCodes.findIndex((hash) =>
         CryptoService.verifyBackupCode(sanitizedCode, hash)
       );
@@ -405,75 +404,82 @@ export class TwoFactorAuthService {
     try {
       const { codes, email } = await req.json();
 
-      // Validate input format
+      // Validate input
       if (!email) throw new AppError("Email is required", 400);
-      if (!Array.isArray(codes) || codes.length < 5) {
-        throw new AppError("At least 5 backup codes are required", 400);
-      }
-      if (!codes.every((code) => typeof code === "string")) {
-        throw new AppError("Invalid backup code format", 400);
+      if (!Array.isArray(codes) || codes.length !== 5) {
+        throw new AppError("Exactly 5 backup codes are required", 400);
       }
 
-      // Fetch user and 2FA settings
-      const user = await User.findOne({ email: email.toLowerCase() }).select(
-        "+_id"
-      );
+      // Sanitize and check for request duplicates
+      const sanitizedCodes = codes.map((c) => c.trim());
+      if (new Set(sanitizedCodes).size !== 5) {
+        throw new AppError("Duplicate codes in request", 400);
+      }
+
+      // Fetch user and 2FA data
+      const user = await User.findOne({ email: email.toLowerCase() });
       if (!user) throw new AppError("User not found", 404);
       await this.rateLimitUser(user);
+
       const twoFA = await TwoFactorAuth.findOne({ userId: user._id })
         .select("+backupCodes")
         .lean();
       if (!twoFA?.backupCodes?.length) {
         throw new AppError("2FA backup codes not configured", 404);
       }
-      await TwoFactorAuth.findByIdAndUpdate(twoFA._id, {
-        $push: {
-          auditLogs: this.createAuditEntry(
-            "BACKUP_CODE_VALIDATION",
-            collectSecurityMetadata(req)
-          ),
-        },
-      });
 
-      // Sanitize and validate codes
-      const sanitizedCodes = codes.map((code) => code.trim());
+      // Track matched backup code indices
+      const matchedIndices: number[] = [];
+      for (const code of sanitizedCodes) {
+        let matchedIndex = -1;
+        for (let i = 0; i < twoFA.backupCodes.length; i++) {
+          if (CryptoService.verifyBackupCode(code, twoFA.backupCodes[i])) {
+            if (matchedIndices.includes(i)) {
+              throw new AppError("Duplicate backup codes detected", 400);
+            }
+            matchedIndex = i;
+            break;
+          }
+        }
+        if (matchedIndex === -1) {
+          throw new AppError(`Invalid backup code: ${code}`, 400);
+        }
+        matchedIndices.push(matchedIndex);
+      }
 
-      let matchedHashIndex = -1;
-      const validCodeIndex = sanitizedCodes.findIndex((sanitizedCode) =>
-        twoFA.backupCodes.some((hash, index) => {
-          const isValid = CryptoService.verifyBackupCode(sanitizedCode, hash);
-          if (isValid) matchedHashIndex = index;
-          return isValid;
-        })
-      );
-
-      if (validCodeIndex === -1 || matchedHashIndex === -1) {
+      // Verify all 5 codes matched unique backups
+      if (new Set(matchedIndices).size !== 5) {
         throw new AppError("Invalid backup codes", 400);
       }
 
-      // Update records (using mongoose document for updates)
+      // Remove used backup codes
+      const updatedBackupCodes = twoFA.backupCodes.filter(
+        (_, index) => !matchedIndices.includes(index)
+      );
+
       const updatedTwoFA = await TwoFactorAuth.findByIdAndUpdate(
         twoFA._id,
-        { $pull: { backupCodes: twoFA.backupCodes[matchedHashIndex] } },
+        { $set: { backupCodes: updatedBackupCodes } },
         { new: true }
       );
 
-      if (!updatedTwoFA) {
-        throw new AppError("Failed to update 2FA settings", 500);
+      if (
+        !updatedTwoFA ||
+        updatedTwoFA.backupCodes.length !== twoFA.backupCodes.length - 5
+      ) {
+        throw new AppError("Failed to update backup codes", 500);
       }
 
-      // Generate and save new password
+      // Reset password
       const newPassword = crypto.randomBytes(16).toString("hex");
       user.password = newPassword;
       user.passwordLoginAttempts = 0;
       await user.save();
 
-      // Send password reset email
       await sendMessageForNewPassword(user, newPassword);
 
       return {
-        message:
-          "Password reset successful. Check your email for the new password.",
+        message: "Password reset successful. Check your email.",
         statusCode: 200,
       };
     } catch (error) {
@@ -511,10 +517,19 @@ export class TwoFactorAuthService {
     twoFA: ITwoFactorAuth,
     metadata: SecurityMetadata
   ) {
-    twoFA.recoveryAttempts += 1;
-    twoFA.lastUsed = new Date();
-    twoFA.auditLogs.push(this.createAuditEntry("2FA_FAILED_ATTEMPT", metadata));
-    await TwoFactorAuth.updateOne({ _id: twoFA._id }, twoFA);
+    // twoFA.recoveryAttempts += 1;
+    // twoFA.lastUsed = new Date();
+    // twoFA.auditLogs.push(this.createAuditEntry("2FA_FAILED_ATTEMPT", metadata));
+    // await TwoFactorAuth.updateOne({ _id: twoFA._id }, twoFA);
+    const auditEntry = this.createAuditEntry("2FA_FAILED_ATTEMPT", metadata);
+    await TwoFactorAuth.updateOne(
+      { _id: twoFA._id },
+      {
+        $inc: { recoveryAttempts: 1 },
+        $set: { lastUsed: new Date() },
+        $push: { auditLogs: auditEntry },
+      }
+    );
   }
 
   private static async handleSuccessfulVerification(

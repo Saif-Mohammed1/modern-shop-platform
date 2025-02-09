@@ -256,14 +256,14 @@ export const getAll = async <T extends BaseDocument>(
 
     if (popOptions) features.query = features.query.populate(popOptions);
 
-    let doc = await features.query;
+    let doc = await features.query.lean();
 
     const allData = doc;
     const limit = features.limit ?? 15;
     const pageCount = Math.ceil(doc.length / limit);
 
     if (enablePagination) {
-      doc = await features.paginate().query.clone();
+      doc = await features.paginate().query.clone().lean();
     }
 
     if (!doc) {
@@ -273,7 +273,7 @@ export const getAll = async <T extends BaseDocument>(
       );
     }
     return {
-      allData,
+      // allData,
       data: doc,
       pageCount,
       statusCode: 200,

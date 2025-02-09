@@ -15,6 +15,7 @@ import { cartContextTranslate } from "@/app/_translate/cartContextTranslate";
 import { lang } from "@/components/util/lang";
 import { useUser } from "./user.context";
 import { UserAuthType } from "@/app/types/users.types";
+import { set } from "mongoose";
 export type UserInCart = Partial<UserAuthType> | undefined;
 
 export type CartItemsType = {
@@ -87,6 +88,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   ) => {
     try {
       // Optimistic update first
+      // const quantity=Math.max(1,quantityValue)
+
       setCartItems((prev) => {
         const existing = prev.find((item) => item._id === product._id);
         if (existing) {
@@ -100,12 +103,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
               : item
           );
         }
-        return [...prev, { ...product, quantity: 1 }];
+        return [...prev, { ...product, quantity: quantityValue }];
       });
-
       await addToCart(product, user, quantityValue);
-
-      // Sync with actual data after API call
       const updatedCart = await getCartItems(user);
       setCartItems(updatedCart);
     } catch (error) {
@@ -117,17 +117,33 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   };
   const removeCartItem = async (product: ProductType) => {
     try {
+      setCartItems((pre) => {
+        //  check if product exist in cart and quantity is greater than 1 then decrease quantity by 1
+        const existingProduct = pre.find((item) => item._id === product._id);
+        if (existingProduct && existingProduct.quantity > 1) {
+          return pre.map((item) =>
+            item._id === product._id
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          );
+        }
+        return pre.filter((item) => item._id !== product._id);
+      });
       const data = await removeFromCart(product, user);
-      setCartItems(data);
+      // setCartItems(data);
     } catch (error) {
+      const originalCart = await getCartItems(user);
+      setCartItems(originalCart);
       throw error;
     }
   };
   const clearProductFromCartItem = async (product: ProductType) => {
     try {
-      await clearItemFromCart(product, user);
       setCartItems((pre) => pre.filter((item) => item._id !== product._id));
+      await clearItemFromCart(product, user);
     } catch (error) {
+      const originalCart = await getCartItems(user);
+      setCartItems(originalCart);
       throw error;
     }
   };

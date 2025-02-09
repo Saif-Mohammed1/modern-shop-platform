@@ -23,6 +23,7 @@ const refreshTokenSchema = new Schema<IRefreshTokenSchema>(
 
       ref: "User",
       required: true,
+      index: true,
     },
     deviceInfo: {
       type: String,

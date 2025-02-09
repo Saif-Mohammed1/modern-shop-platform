@@ -98,17 +98,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
     addToCartItems(item, quantity);
   };
-  // useEffect(() => {
-  //   const handleClickOutside = (event: MouseEvent) => {
-  //     if (cartRef.current && !cartRef.current.contains(event.target as Node)) {
-  //       setIsCartOpen(false);
-  //     }
-  //   };
 
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, [setIsCartOpen]);
-  // Updated click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const cartButton = document.querySelector(".shopping-cart");
@@ -127,31 +117,13 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setIsCartOpen]);
-  // useEffect(() => {
-  //   const shoppingCart = document.querySelector(".shopping-cart");
-  //   const handleClickOutside = (event: MouseEvent) => {
-  //     if (
-  //       cartRef.current &&
-  //       !cartRef.current.contains(event.target as Node) &&
-  //       shoppingCart &&
-  //       !shoppingCart.contains(event.target as Node)
-  //     ) {
-  //       setIsCartOpen(false);
-  //     }
-  //   };
 
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, [setIsCartOpen]);
   const calculatePrice = (item: CartItemsType) => {
     const isValidDiscount =
       item.discount && item.discountExpire && item.discountExpire > new Date();
 
     return isValidDiscount ? item.price - item.discount : item.price;
   };
-
   return (
     <>
       <div
@@ -215,39 +187,27 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
                       >
                         -
                       </button>
-                      {/* <input
-                        type="number"
-                        className="text-sm w-8 text-center bg-transparent"
-                        value={item.quantity}
-                        // readOnly
-                        max={item.stock}
-                        onKeyDown={(e) => {
-                          // Prevent arrow key changes if desired
-                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                            e.preventDefault();
-                          }
-                        }}
-                        onChange={(e) => quantityUpdate(e, item)}
-                      /> */}
+
                       <input
                         type="number"
-                        className="text-sm w-12 text-center bg-transparent"
+                        className="text-sm #w-12 text-center bg-transparent"
                         value={item.quantity}
                         min={1}
                         max={item.stock}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (/^[0-9]*$/.test(value)) {
-                            // Additional validation
-                            quantityUpdate(e, item);
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          // Prevent arrow key changes if desired
-                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                            e.preventDefault();
-                          }
-                        }}
+                        readOnly
+                        // onChange={(e) => {
+                        //   const value = e.target.value;
+                        //   if (/^[0-9]*$/.test(value)) {
+                        //     // Additional validation
+                        //     quantityUpdate(e, item);
+                        //   }
+                        // }}
+                        // onKeyDown={(e) => {
+                        //   // Prevent arrow key changes if desired
+                        //   if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        //     e.preventDefault();
+                        //   }
+                        // }}
                       />
                       <button
                         className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"

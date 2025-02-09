@@ -119,7 +119,7 @@ const TwoFactorAuthDashboard = () => {
     toast.success("2FA enabled successfully!");
   };
   return (
-    <div className="max-w-4xl lg:w-full mx-auto p-6 bg-white rounded-xl shadow-lg">
+    <div className="max-w-4xl lg:w-full #mx-auto p-6 bg-white rounded-xl shadow-lg">
       <div className="flex items-center gap-3 mb-6">
         <RiShieldUserLine className="w-6 h-6 text-blue-600" />
         <h1 className="text-2xl font-bold text-gray-800">

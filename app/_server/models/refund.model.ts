@@ -20,6 +20,7 @@ const RefundSchema = new Schema<IRefundSchema>(
 
       ref: "User",
       required: true,
+      index: true,
     },
     status: {
       type: String,
@@ -54,6 +55,7 @@ RefundSchema.pre<Query<any, IRefundSchema>>(/^find/, function (next) {
     path: "user",
     select: "name email",
     model: User,
+    options: { lean: true },
   });
   next();
 });

@@ -40,6 +40,7 @@ const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(
       required: true,
       ref: "User",
       unique: true,
+      index: true,
     },
     encryptedSecret: {
       iv: String,

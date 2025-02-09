@@ -1,3 +1,4 @@
+import { OrderStatus } from "@/app/types/orders.types";
 import { faker } from "@faker-js/faker";
 // create a random user
 interface IUserInput {
@@ -220,6 +221,10 @@ export const createRandomOrders = (
       // ]);
       const randomInvoiceId = faker.helpers.fromRegExp("[0-9]{9}");
       const randomInvoiceLink = faker.internet.url();
+      const randomStatus = faker.helpers.arrayElement(
+        Object.values(OrderStatus)
+      );
+
       const randomTotalPrice = randomItems.reduce((acc: number, item: any) => {
         return acc + item.finalPrice;
       }, 0);
@@ -234,7 +239,7 @@ export const createRandomOrders = (
           country: randomCountry,
         },
         items: randomItems,
-        // status: randomStatus,
+        status: randomStatus,
         invoiceId: randomInvoiceId,
         invoiceLink: randomInvoiceLink,
         totalPrice: randomTotalPrice,
@@ -285,7 +290,7 @@ export const createRandomReport = (
       type: Schema.Types.ObjectId,
 
       ref: "User",
-      required: true,
+      required: true,  index: true,
     },
     status: {
       type: String,

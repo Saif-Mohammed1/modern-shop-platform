@@ -24,6 +24,7 @@ const OrderSchema = new Schema<IOrderSchema>(
 
       ref: "User",
       required: true,
+      index: true,
     },
     shippingInfo: {
       street: {
@@ -89,7 +90,8 @@ const OrderSchema = new Schema<IOrderSchema>(
       // required: true,
 
       enum: Object.values(OrderStatus),
-      default: OrderStatus.pending,
+      default: OrderStatus.Pending,
+      index: true,
     },
     invoiceId: {
       type: String,
@@ -102,6 +104,7 @@ const OrderSchema = new Schema<IOrderSchema>(
     totalPrice: {
       type: Number,
       required: true,
+      index: true,
     },
   },
   {
@@ -115,6 +118,7 @@ OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
     path: "user",
     select: "name email  ",
     model: User,
+    options: { lean: true },
   });
   //.populate({
   //   path: "shippingInfo",

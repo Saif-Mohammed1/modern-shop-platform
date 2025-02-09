@@ -19,6 +19,7 @@ const ContactUsSchema = new Schema<IContactUsSchema>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     subject: {
       type: String,

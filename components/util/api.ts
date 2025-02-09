@@ -125,7 +125,22 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
+      /**
+       * const message = error.response?.data?.message || 
+        "The request took too long to respond. Please refresh the page and try again.";
+      const message = error.response?.data?.message || 
+        "There was an issue processing your request. Please try again later.";
+      const message = error.response?.data?.message || 
+        "Unable to connect to the server. Please check your internet connection and try again.";
+      const message = error.response?.data?.message || 
+        "We're experiencing network issues. Please check your connection and try again.";
+
+       */
+      const message =
+        error.response?.data?.message ||
+        "There was an issue processing your request. Please try again later.";
+      const statusCode = error.response?.status || 500;
+      return Promise.reject(new AppError(message, statusCode));
     }
 
     if (!isRefreshing) {

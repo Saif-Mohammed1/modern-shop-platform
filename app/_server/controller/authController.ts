@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
 import { authControllerTranslate } from "../_Translate/authControllerTranslate";
 import { lang } from "@/components/util/lang";
 import { UserAuthType } from "@/app/types/users.types";
+import TwoFactorAuth from "../models/2fa.model";
 
 type UserTokenType = {
   user: UserAuthType;
@@ -26,7 +27,8 @@ export const modifyFinalResponse = (
 ): UserTokenType => {
   let userData = {} as { user: UserAuthType };
   const accessTokenExpires =
-    Date.now() + Number(process.env.NEXTAUTH_SESSION_MAX_AGE || 15) * 60 * 1000; // 15 minutes
+    Date.now() +
+    Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60 * 1000; // 15 minutes
   userData.user = {
     _id: user._id,
     name: user.name,
@@ -539,7 +541,16 @@ export const restPassword = async (req: NextRequest) => {
     user.passwordResetExpires = undefined;
     user.passwordResetToken = undefined;
     user.passwordResetAttempts = undefined;
-    await user.save();
+    if (user.isTwoFactorAuthEnabled) {
+      user.isTwoFactorAuthEnabled = false;
+      await Promise.all([
+        user.save(),
+        TwoFactorAuth.findOneAndDelete({ userId: user._id }),
+      ]);
+    } else {
+      await user.save();
+    }
+
     // User.findByIdAndUpdate will NOT work as intended!
     /**
      * no need accessToken or modifyFinalResponse in restPassword becuse user will login with password

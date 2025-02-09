@@ -9,10 +9,12 @@ import { logIn } from "@/app/_server/controller/authController";
 import connectDB from "@/app/_server/db/db";
 import { TwoFactorAuthService } from "@/app/_server/controller/2faController";
 import { refreshAccessToken } from "@/app/_server/controller/refreshTokenController";
+import tokenManager from "@/components/util/TokenManager";
+const REFRESH_THRESHOLD = 3 * 60 * 1000; // Refresh 3 minutes before expiration
 const authOptions: AuthOptions = {
   session: {
     strategy: "jwt",
-    maxAge: Number(process.env.NEXTAUTH_SESSION_MAX_AGE || 15) * 60, // 15 minutes (access token lifetime)
+    maxAge: Number(process.env.NEXTAUTH_SESSION_MAX_AGE || 7) * 60 * 60 * 24, // 7 days
   },
   providers: [
     CredentialsProvider({
@@ -90,6 +92,12 @@ const authOptions: AuthOptions = {
             return {
               ...user,
               id: String(user._id),
+              accessToken: user.accessToken,
+              accessTokenExpires:
+                Date.now() +
+                Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
+                  60 *
+                  1000,
             };
           }
         } catch (error) {
@@ -105,8 +113,14 @@ const authOptions: AuthOptions = {
         // token.user = user as UserAuthType;
 
         // convert accessTokenExpires to readable time
-
-        return { ...token, user };
+        const exp = user.accessTokenExpires
+          ? Math.floor(user.accessTokenExpires / 1000)
+          : Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60;
+        return {
+          ...token,
+          user,
+          exp,
+        };
       }
 
       // Session update
@@ -117,14 +131,30 @@ const authOptions: AuthOptions = {
         token.user = session.user;
       }
 
-      // Handle token refresh
-      if (
-        token.user?.accessTokenExpires &&
-        Date.now() > token.user.accessTokenExpires
-      ) {
-        console.log("Token expired, refreshing...");
-        const refreshedToken = await refreshAccessTokenHandler(token);
-        return refreshedToken;
+      // // Handle token refresh
+      // if (
+      //   token.user?.accessTokenExpires &&
+      //   Date.now() > token.user.accessTokenExpires - REFRESH_THRESHOLD
+      // ) {
+      //   console.log("Token expired, refreshing...");
+      //   const refreshedToken = await refreshAccessTokenHandler(token);
+      //   return refreshedToken;
+      // }
+      // Handle token refresh before expiration
+      if (token.user?.accessTokenExpires) {
+        const remainingTime = token.user.accessTokenExpires - Date.now();
+
+        // Refresh if within threshold or already expired
+        if (remainingTime < REFRESH_THRESHOLD) {
+          try {
+            return await refreshAccessTokenHandler(token);
+          } catch (error) {
+            return { ...token, error: "RefreshAccessTokenError" };
+          }
+        }
+      }
+      if (token.user.accessToken) {
+        tokenManager.setAccessToken(token.user.accessToken);
       }
       return token;
     },
@@ -150,7 +180,6 @@ const authOptions: AuthOptions = {
 };
 // this is next-auth jwt function what shoud be the right type for this
 async function refreshAccessTokenHandler(token: any) {
-  console.log("Refreshing access token...");
   try {
     // const { data } = await api.get(`/auth/refresh-token`, {
     //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
@@ -167,7 +196,7 @@ async function refreshAccessTokenHandler(token: any) {
     );
 
     const { accessToken } = await refreshAccessToken(req);
-
+    tokenManager.setAccessToken(accessToken);
     return {
       ...token,
       user: {
@@ -175,16 +204,21 @@ async function refreshAccessTokenHandler(token: any) {
         accessToken,
         accessTokenExpires:
           Date.now() +
-          Number(process.env.NEXTAUTH_SESSION_MAX_AGE || 15) * 60 * 1000, // 15 minutes
+          Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
+            60 *
+            1000, // 15 minutes
       },
+      exp: Math.floor(
+        Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60
+      ), // Set JWT expiration
     };
   } catch (error) {
-    console.error("Error refreshing access token:", error);
     cookies().delete("refreshAccessToken");
-    return {
-      ...token,
-      error: "RefreshAccessTokenError",
-    };
+    // return {
+    //   ...token,
+    //   error: "RefreshAccessTokenError",
+    // };
+    throw error;
   }
 }
 const handler = NextAuth(authOptions);

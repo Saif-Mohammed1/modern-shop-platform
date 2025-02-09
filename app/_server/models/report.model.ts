@@ -21,12 +21,14 @@ const ReportSchema = new Schema<IReportSchema>(
 
       ref: "User",
       required: true,
+      index: true,
     },
     product: {
       type: Schema.Types.ObjectId,
 
       ref: "Product",
       required: true,
+      index: true,
     },
     status: {
       type: String,
@@ -58,11 +60,13 @@ ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
     model: Product,
+    options: { lean: true },
     // select: "name description price",
   }).populate({
     path: "user",
     select: "name email",
     model: User,
+    options: { lean: true },
   });
 
   next();

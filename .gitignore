@@ -47,3 +47,7 @@ localhost.pem
 localhost-key.pem
 
 _test.js
+
+# ignore any folder named "test" or "tests"
+**/test
+**/tests

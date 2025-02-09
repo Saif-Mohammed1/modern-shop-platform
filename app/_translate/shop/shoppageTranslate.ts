@@ -95,6 +95,8 @@ export const shopPageTranslate = {
       category: "Category",
       Offer: "Offer ends",
       getMoreDetails: "Get More Details",
+      inStock: "In Stock",
+      confirm: "Confirm",
     },
 
     errors: {
@@ -206,6 +208,8 @@ export const shopPageTranslate = {
       category: "Категорія",
       Offer: "Пропозиція закінчується",
       getMoreDetails: "Дізнатися більше",
+      inStock: "В наявності",
+      confirm: "Підтвердити",
     },
     errors: {
       noProductFound: "Продукт не знайдено",

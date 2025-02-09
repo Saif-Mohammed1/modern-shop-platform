@@ -23,25 +23,34 @@ export const addToCart = async (
       const StoredCart = localStorage.getItem("cart");
 
       const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-
+      console.log(product.stock);
       const existingProduct = cart.find((item) => item._id === product._id);
 
       if (existingProduct) {
-        if (existingProduct.quantity + 1 > product.stock) {
+        if (quantity > 1 && quantity > product.stock) {
+          throw new AppError(
+            cartContextTranslate[lang].functions.addToCart.outOfStock,
+            400
+          );
+        }
+        if (
+          quantity == 1 &&
+          existingProduct.quantity + quantity > product.stock
+        ) {
           throw new AppError(
             cartContextTranslate[lang].functions.addToCart.outOfStock,
             400
           );
         }
 
-        existingProduct.quantity += 1;
-      } else {
-        cart.push({
-          ...product,
-          quantity,
-          // user: product.user._id as string,
-        });
+        // existingProduct.quantity += quantity;
       }
+      cart.push({
+        ...product,
+        quantity,
+        // user: product.user._id as string,
+      });
+
       localStorage.setItem("cart", JSON.stringify(cart));
 
       return cart;
@@ -91,7 +100,8 @@ export const clearItemFromCart = async (product: ProductType, user: User) => {
   if (user) {
     // User is signed in, clear cart in DB
     await clearCartInDB(product);
-    return;
+    const data = await getCartItems(user);
+    return data;
   } else {
     // User is not signed in, remove cart item from localStorage
     const StoredCart = localStorage.getItem("cart");

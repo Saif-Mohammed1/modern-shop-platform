@@ -13,9 +13,10 @@ export const metadata: Metadata = {
   keywords: ordersTranslate.metadata[lang].keywords,
 };
 type SearchParams = {
-  "order-id"?: string;
+  email?: string;
   status?: string;
-  date?: string;
+  startDate?: string;
+  endDate?: string;
   sort?: string;
   page?: string;
   limit?: string;
@@ -24,14 +25,17 @@ const queryParams = async (searchParams: SearchParams) => {
   const url = new URLSearchParams();
 
   // Append each parameter only if it's not undefined
-  if (searchParams["order-id"] !== undefined) {
-    url.append("order-id", searchParams["order-id"]);
+  if (searchParams.email !== undefined) {
+    url.append("email", searchParams.email);
   }
   if (searchParams.status !== undefined) {
     url.append("status", searchParams.status);
   }
-  if (searchParams.date !== undefined) {
-    url.append("date", searchParams.date);
+  if (searchParams.startDate !== undefined) {
+    url.append("startDate", searchParams.startDate);
+  }
+  if (searchParams.endDate !== undefined) {
+    url.append("endDate", searchParams.endDate);
   }
   if (searchParams.sort !== undefined) {
     url.append("sort", searchParams.sort);
@@ -46,8 +50,11 @@ const queryParams = async (searchParams: SearchParams) => {
 
   const queryString = url.toString();
   try {
+    // const {
+    //   orders, pageCount
+    // }
     const {
-      data: { data, pageCount },
+      data: { orders, pageCount },
     } = await api.get(
       "/admin/dashboard/orders" + (queryString ? `?${queryString}` : ""),
       {
@@ -55,7 +62,7 @@ const queryParams = async (searchParams: SearchParams) => {
       }
     );
 
-    return { data, pageCount };
+    return { orders, pageCount };
   } catch (error: any) {
     throw new AppError(error.message, error.status);
   }
@@ -65,18 +72,20 @@ type PageProps = {
 };
 const page: FC<PageProps> = async ({ searchParams }) => {
   const defaultSearchParams = {
-    "order-id": searchParams["order-id"] || undefined,
+    email: searchParams.email || undefined,
     status: searchParams.status || undefined,
-    date: searchParams.date || undefined,
+    startDate: searchParams.startDate || undefined,
+    endDate: searchParams.endDate || undefined,
     sort: searchParams.sort || undefined,
     page: searchParams.page || undefined,
     limit: searchParams.limit || undefined,
   };
 
   try {
-    const { data, pageCount } = await queryParams(defaultSearchParams);
-
-    return <AdminOrdersDashboard initialOrders={data} totalPages={pageCount} />;
+    const { orders, pageCount } = await queryParams(defaultSearchParams);
+    return (
+      <AdminOrdersDashboard initialOrders={orders} totalPages={pageCount} />
+    );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;
 

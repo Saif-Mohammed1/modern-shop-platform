@@ -16,6 +16,7 @@ const FavoriteSchema = new Schema<IFavoriteSchema>(
 
       ref: "User",
       required: true,
+      index: true,
     },
     product: {
       type: Schema.Types.ObjectId,
@@ -40,11 +41,13 @@ FavoriteSchema.pre<Query<any, IFavoriteSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
     model: Product,
+    options: { lean: true },
     // select: "name price",
   }).populate({
     path: "user",
     select: "name email",
     model: User,
+    options: { lean: true },
   });
   next();
 });

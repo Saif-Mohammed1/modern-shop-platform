@@ -14,13 +14,6 @@ import { ProductType } from "@/app/types/products.types";
 import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
 import { lang } from "@/components/util/lang";
 import { ReviewsType } from "@/app/types/reviews.types";
-// const ReviewSection = dynamic(
-//   () => import("@/components/products/Review/review")
-// );
-// const RelatedProducts = dynamic(
-//   () =>
-//     import("@/components/products/reuseableComponents/relatedProductsComponent")
-// );
 
 const ProductDetail = ({
   product,
@@ -35,6 +28,7 @@ const ProductDetail = ({
   };
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   // const [relatedProducts, setRelatedProducts] = useState([]);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   // const [reviews, setReviews] = useState([]);
@@ -66,7 +60,7 @@ const ProductDetail = ({
       toastLoading = toast.loading(
         shopPageTranslate[lang].functions.handleAddToCart.loading
       );
-      await addToCartItems(product);
+      await addToCartItems(product, quantity);
       toast.success(shopPageTranslate[lang].functions.handleAddToCart.success);
     } catch (error: unknown) {
       const errorMessage =
@@ -111,36 +105,7 @@ const ProductDetail = ({
       toast.dismiss(toastLoading);
     }
   };
-  // useEffect(() => {
-  //   if (product && product.category) {
-  //     const fetchRelatedProducts = async () => {
-  //       try {
-  //         const {
-  //           data: { data },
-  //         } = await api.get(`/shop?category=${product.category}`);
 
-  //         setRelatedProducts(data);
-  //       } catch (error) {
-  //         setRelatedProducts([]);
-  //       }
-  //     };
-  //     fetchRelatedProducts();
-  //   }
-  // }, [product]);
-
-  // useEffect(() => {
-  //   const fetchReviews = async () => {
-  //     try {
-  //       const {
-  //         data: { data },
-  //       } = await api.get(`/customer/reviews/${product._id}`);
-  //       setReviews(data);
-  //     } catch (error) {
-  //       setReviews([]);
-  //     }
-  //   };
-  //   fetchReviews();
-  // }, [product]);
   return product ? (
     <div className="product-detail max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
       {/* Product Header */}
@@ -230,6 +195,34 @@ const ProductDetail = ({
             ? `${shopPageTranslate[lang].content.inStock}(${product.stock})`
             : shopPageTranslate[lang].content.outOfStock}
         </p>
+        <div className="flex items-center gap-2 my-1">
+          <button
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            min="1"
+            max={product.stock}
+            value={quantity}
+            onChange={(e) => {
+              const value = Math.min(
+                product.stock,
+                Math.max(1, parseInt(e.target.value) || 1)
+              );
+              setQuantity(value);
+            }}
+            className="w-16 text-center border rounded"
+          />
+          <button
+            onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            +
+          </button>
+        </div>{" "}
         <button
           onClick={handleAddToCart}
           disabled={product.stock === 0}

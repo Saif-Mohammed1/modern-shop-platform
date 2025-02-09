@@ -159,6 +159,7 @@ ProductSchema.pre<Query<any, IProductSchema>>(/^find/, function (next) {
     // select: "name email",
     select: "name",
     model: User,
+    options: { lean: true },
   });
   next();
 });

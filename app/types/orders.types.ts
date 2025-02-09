@@ -20,12 +20,19 @@ export interface IItems {
   discountExpire: Date;
 }
 export enum OrderStatus {
-  pending = "pending",
-  completed = "completed",
-  refunded = "refunded",
-  processing = "processing",
-  cancelled = "cancelled",
+  Pending = "pending", // Order placed, waiting for confirmation/payment
+  Processing = "processing", // Payment confirmed, preparing order
+  Shipped = "shipped", // Order has been shipped
+  Delivered = "delivered", // Order delivered to customer
+  Completed = "completed", // Order successfully completed
+  Cancelled = "cancelled", // Order cancelled before shipment
+  Refunded = "refunded", // Order refunded to customer
+  Failed = "failed", // Payment failed or issue occurred
+  OnHold = "on_hold", // Order put on hold for verification/issues
+  PartiallyRefunded = "partially_refunded", // Part of the order refunded
+  Disputed = "disputed", // Customer has raised a dispute
 }
+
 export type OrderType = {
   _id: string;
   shippingInfo: IShippingInfo;

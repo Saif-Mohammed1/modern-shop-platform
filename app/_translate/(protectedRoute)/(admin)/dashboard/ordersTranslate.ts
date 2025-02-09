@@ -52,8 +52,8 @@ export const ordersTranslate = {
       filter: {
         input: {
           search: {
-            label: "Search by order id",
-            placeholder: "Search by order id",
+            label: "Search by user email",
+            placeholder: "Search by user email",
           },
           date: {
             label: "Filter by date",
@@ -65,10 +65,16 @@ export const ordersTranslate = {
           options: {
             all: "All",
             pending: "Pending",
-            completed: "Completed",
-            refunded: "Refunded",
             processing: "Processing",
+            shipped: "Shipped",
+            delivered: "Delivered",
+            completed: "Completed",
             cancelled: "Cancelled",
+            refunded: "Refunded",
+            failed: "Failed",
+            on_hold: "On Hold",
+            partially_refunded: "Partially Refunded",
+            disputed: "Disputed",
           },
         },
       },
@@ -92,6 +98,7 @@ export const ordersTranslate = {
           description: "Order details for the admin",
           keywords: "admin, order, admin order",
         },
+        goBack: "Go back",
         title: "Order Details",
         shippingInfo: {
           title: "Shipping Info",
@@ -117,8 +124,8 @@ export const ordersTranslate = {
       filter: {
         input: {
           search: {
-            label: "Пошук за ID замовлення",
-            placeholder: "Пошук за ID замовлення",
+            label: "Пошук за електронною поштою користувача",
+            placeholder: "Пошук за електронною поштою користувача",
           },
           date: {
             label: "Фільтрувати за датою",
@@ -129,11 +136,17 @@ export const ordersTranslate = {
           title: "Фільтрувати за статусом",
           options: {
             all: "Всі",
-            pending: "Очікується",
-            completed: "Завершено",
-            refunded: "Повернено",
+            pending: "В очікуванні",
             processing: "Обробляється",
+            shipped: "Відправлено",
+            delivered: "Доставлено",
+            completed: "Завершено",
             cancelled: "Скасовано",
+            refunded: "Повернено",
+            failed: "Не вдалося",
+            on_hold: "На утриманні",
+            partially_refunded: "Частково повернено",
+            disputed: "Спірне",
           },
         },
       },
@@ -158,6 +171,7 @@ export const ordersTranslate = {
           description: "Деталі замовлення для адміністратора",
           keywords: "адміністратор, замовлення, адміністраторське замовлення",
         },
+        goBack: "Повернутися",
         title: "Деталі замовлення",
         shippingInfo: {
           title: "Інформація про доставку",
@@ -180,10 +194,17 @@ export const ordersTranslate = {
     },
   },
 } as const;
+
 export const StatusColors = {
   pending: "bg-yellow-100 text-yellow-800",
-  completed: "bg-green-100 text-green-800",
-  refunded: "bg-blue-100 text-blue-800",
   processing: "bg-purple-100 text-purple-800",
+  shipped: "bg-blue-100 text-blue-800",
+  delivered: "bg-green-100 text-green-800",
+  completed: "bg-green-200 text-green-900",
   cancelled: "bg-red-100 text-red-800",
+  refunded: "bg-blue-200 text-blue-900",
+  failed: "bg-gray-100 text-gray-800",
+  on_hold: "bg-orange-100 text-orange-800",
+  partially_refunded: "bg-indigo-100 text-indigo-800",
+  disputed: "bg-rose-100 text-rose-800",
 };

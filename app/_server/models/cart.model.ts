@@ -18,6 +18,7 @@ const CartSchema = new Schema<ICartSchema>(
 
       ref: "User",
       required: true,
+      index: true,
     },
     product: {
       type: Schema.Types.ObjectId,
@@ -34,11 +35,14 @@ const CartSchema = new Schema<ICartSchema>(
 CartSchema.pre<Query<any, ICartSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
+    // select: "name price images category slug",
     model: Product,
+    options: { lean: true },
   }).populate({
     path: "user",
-    select: "name email",
+    select: "name -_id",
     model: User,
+    options: { lean: true },
   });
 
   next();
@@ -55,10 +59,15 @@ CartSchema.post(/^find/, function (docs, next) {
         // Append the quantity to the product object
 
         const data = {
-          ...doc.product._doc,
+          ...doc.product, //  This will not work because `doc.product` is a lean object and not a mongoose document
           quantity: doc.quantity,
-          user: { _id: doc.user._id, name: doc.user.name },
+          // user: { _id: doc.user._id, name: doc.user.name },
         };
+        //  const data = {
+        //    ...doc.product._doc, // ❌ This will not work because `_doc` does not exist on `doc.product` becusae it is a lean object and not a mongoose document
+        //    quantity: doc.quantity,
+        //    user: { _id: doc.user._id, name: doc.user.name },
+        //  };
 
         return data;
       });

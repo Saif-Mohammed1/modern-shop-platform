@@ -55,6 +55,7 @@ const AddressSchema = new Schema<IAddressSchema>(
 
       ref: "User",
       required: true,
+      index: true,
     },
   },
   {

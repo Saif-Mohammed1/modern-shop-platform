@@ -5,6 +5,7 @@ import api from "@/components/util/api";
 import { ordersTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
 import { lang } from "@/components/util/lang";
 import { OrderStatus, OrderType } from "@/app/types/orders.types";
+import { useRouter } from "next/navigation";
 
 type Props = {
   order: OrderType;
@@ -12,7 +13,7 @@ type Props = {
 
 const AdminOrderDetails: FC<Props> = ({ order }) => {
   const [status, setStatus] = useState<OrderStatus>(order.status);
-
+  const router = useRouter();
   const handleStatusChange = async () => {
     let toastLoading;
     try {
@@ -33,13 +34,23 @@ const AdminOrderDetails: FC<Props> = ({ order }) => {
       toast.dismiss(toastLoading);
     }
   };
+  const goBack = () => {
+    router.push("/dashboard/orders");
+  };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-semibold mb-4">
-        {ordersTranslate.orders[lang].details.title}
-      </h2>
-
+    <div className="p-6 max-w-4xl #mx-auto bg-white rounded-lg shadow-lg">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-semibold mb-4">
+          {ordersTranslate.orders[lang].details.title}
+        </h2>
+        <button
+          onClick={goBack}
+          className="p-2 bg-blue-500 text-white rounded-md"
+        >
+          {ordersTranslate.orders[lang].details.goBack}
+        </button>
+      </div>
       <div className="bg-white p-6 rounded-lg shadow-lg">
         <h3 className="text-xl mb-4">
           {ordersTranslate.orders[lang].details.shippingInfo.title}
