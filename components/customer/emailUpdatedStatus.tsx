@@ -2,11 +2,11 @@
 import "./emailUpdatedStatus.css";
 import { useEffect, useState } from "react";
 
-import api from "@/components/util/api";
+import api from "@/app/lib/util/api";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { emailUpdatedStatusTranslate } from "@/app/_translate/emailUpdatedStatusTranslate";
-import { lang } from "@/components/util/lang";
+import { emailUpdatedStatusTranslate } from "@/app/_translate/(public)/emailUpdatedStatusTranslate";
+import { lang } from "@/app/lib/util/lang";
 
 const ConfirmEmailChange = () => {
   const [message, setMessage] = useState("");

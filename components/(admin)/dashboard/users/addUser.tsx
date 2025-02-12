@@ -1,11 +1,11 @@
 "use client";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import api from "@/components/util/api";
+import api from "@/app/lib/util/api";
 import toast from "react-hot-toast";
-import { usersTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/usersTranslate";
-import { lang } from "@/components/util/lang";
-import { Event } from "@/app/types/products.types";
+import { usersTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/usersTranslate";
+import { lang } from "@/app/lib/util/lang";
+import { Event } from "@/app/lib/types/products.types";
 
 const AddUser = () => {
   const [user, setUser] = useState({

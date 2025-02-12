@@ -7,11 +7,11 @@ import { FiEdit, FiTrash2, FiEye, FiSearch, FiCalendar } from "react-icons/fi";
 import {
   ordersTranslate,
   StatusColors,
-} from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
+} from "@/app/_translate/(auth)/(admin)/dashboard/ordersTranslate";
 import Pagination from "@/components/pagination/Pagination";
-import api from "@/components/util/api";
-import { lang } from "@/components/util/lang";
-import { OrderType } from "@/app/types/orders.types";
+import api from "@/app/lib/util/api";
+import { lang } from "@/app/lib/util/lang";
+import { OrderType } from "@/app/lib/types/orders.types";
 // import StatusBadge from "@/components/ui/StatusBadge";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -19,8 +19,8 @@ import Select from "@/components/ui/Select";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import SkeletonTable from "@/components/ui/SkeletonTable";
 import toast from "react-hot-toast";
-import { OrderStatus } from "@/app/types/orders.types";
-import { Event } from "@/app/types/products.types";
+import { OrderStatus } from "@/app/lib/types/orders.types";
+import { Event } from "@/app/lib/types/products.types";
 
 type StatusOption = {
   value: OrderStatus;
@@ -115,8 +115,9 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
       setTimeout(() => {
         setLoading(false);
         resolve();
-      }, 100);
+      }, 50);
     });
+    window.scrollTo({ top: 1, behavior: "smooth" });
   }, [initialOrders]);
 
   const handleStatusUpdate = async (id: string, status: OrderStatus) => {

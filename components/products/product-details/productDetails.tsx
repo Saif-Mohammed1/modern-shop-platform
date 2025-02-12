@@ -1,8 +1,8 @@
 "use client";
-import { useCartItems } from "@/components/context/cart.context";
-import { useUser } from "@/components/context/user.context";
-import { useWishlist } from "@/components/context/whishList.context";
-import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
+import { useCartItems } from "@/components/providers/context/cart.context";
+import { useUser } from "@/components/providers/context/user.context";
+import { useWishlist } from "@/components/providers/context/whishList.context";
+import RelatedProducts from "@/components/ui/relatedProducts";
 import ReviewSection from "@/components/products/Review/review";
 import Image from "next/image";
 import { useState } from "react";
@@ -10,10 +10,10 @@ import { toast } from "react-hot-toast";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai"; // Wishlist icons
 import StarRatings from "react-star-ratings";
 // import dynamic from "next/dynamic";
-import { ProductType } from "@/app/types/products.types";
-import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
-import { lang } from "@/components/util/lang";
-import { ReviewsType } from "@/app/types/reviews.types";
+import { ProductType } from "@/app/lib/types/products.types";
+import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
+import { lang } from "@/app/lib/util/lang";
+import { ReviewsType } from "@/app/lib/types/reviews.types";
 
 const ProductDetail = ({
   product,

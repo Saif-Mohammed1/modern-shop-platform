@@ -1,9 +1,9 @@
 "use client";
 
-import { dashboardTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/dashboardTranslate";
-import api from "@/components/util/api";
-import { deleteCookies } from "@/components/util/cookies";
-import { lang } from "@/components/util/lang";
+import { dashboardTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/dashboardTranslate";
+import api from "@/app/lib/util/api";
+import { deleteCookies } from "@/app/lib/util/cookies";
+import { lang } from "@/app/lib/util/lang";
 import { signOut } from "next-auth/react";
 // components/Sidebar.js
 import Link from "next/link";

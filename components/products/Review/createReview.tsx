@@ -4,9 +4,9 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import StarRatings from "react-star-ratings";
-import api from "@/components/util/api";
-import { reviewsTranslate } from "@/app/_translate/reviewsTranslate";
-import { lang } from "@/components/util/lang";
+import api from "@/app/lib/util/api";
+import { reviewsTranslate } from "@/app/_translate/(public)/reviewsTranslate";
+import { lang } from "@/app/lib/util/lang";
 type CreateReviewProps = {
   reviewsLength: number;
   productId: string;

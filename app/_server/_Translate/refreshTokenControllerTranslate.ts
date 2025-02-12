@@ -38,6 +38,12 @@ export const refreshTokenControllerTranslate = {
       deleteSpecificUserRefreshTokens: {
         message: "Refresh token deleted",
       },
+      revokeToken: {
+        message: "Refresh token revoked",
+      },
+      revokeAllUserTokens: {
+        message: "All user tokens revoked",
+      },
     },
   },
   uk: {
@@ -78,6 +84,12 @@ export const refreshTokenControllerTranslate = {
       },
       deleteSpecificUserRefreshTokens: {
         message: "Токен оновлення видалено",
+      },
+      revokeToken: {
+        message: "Токен оновлення анульовано",
+      },
+      revokeAllUserTokens: {
+        message: "Всі токени користувача анульовано",
       },
     },
   },

@@ -5,13 +5,13 @@ import { AiOutlineShoppingCart } from "react-icons/ai";
 
 import { VscAccount } from "react-icons/vsc";
 
-import { useUser } from "../context/user.context";
-import { useCartItems } from "../context/cart.context";
+import { useUser } from "../providers/context/user.context";
+import { useCartItems } from "../providers/context/cart.context";
 // import dynamic from "next/dynamic";
 import AccountNavList from "./account-navList";
 import CartDropdown from "../cart/cartDropdown";
-import { navBarTranslate } from "@/app/_translate/navBarTranslate";
-import { lang } from "../util/lang";
+import { navBarTranslate } from "@/app/_translate/(public)/navBarTranslate";
+import { lang } from "../../app/lib/util/lang";
 // const AccountNavList = dynamic(() => import("./account-navList"));
 // const CartDropdown = dynamic(() => import("../cart/cartDropdown"));
 const NavBar = () => {

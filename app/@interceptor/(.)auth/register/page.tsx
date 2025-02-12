@@ -1,5 +1,5 @@
 import RegisterPage from "@/components/authentication/register";
-import OverlayWrapper from "@/components/util/OverlayWrapper";
+import OverlayWrapper from "@/components/ui/OverlayWrapper";
 
 function page() {
   // return <div>(.) interceptor auth...</div>;

@@ -1,6 +1,6 @@
-import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-import api from "@/components/util/api";
-import { lang } from "@/components/util/lang";
+import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
+import api from "@/app/lib/util/api";
+import { lang } from "@/app/lib/util/lang";
 import { toast } from "react-hot-toast";
 
 type ProductSubmitProps = {

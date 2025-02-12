@@ -1,7 +1,7 @@
-import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
+import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
 import { FC } from "react";
-import { lang } from "../util/lang";
-import { Event } from "@/app/types/products.types";
+import { lang } from "../../app/lib/util/lang";
+import { Event } from "@/app/lib/types/products.types";
 
 type FiltersProps = {
   categories: string[];

@@ -5,8 +5,8 @@ import Footer from "@/components/footer/footer";
 import NavBar from "@/components/navBar/navBar";
 import Providers from "@/components/providers/providers";
 import SessionExpiredOverlay from "@/components/SessionExpiredOverlay/SessionExpiredOverlay";
-import { rootStaticPagesTranslate } from "./_translate/rootStaticPagesTranslate";
-import { lang } from "@/components/util/lang";
+import { rootStaticPagesTranslate } from "./_translate/(public)/rootStaticPagesTranslate";
+import { lang } from "@/app/lib/util/lang";
 
 const inter = Inter({ subsets: ["latin"] });
 

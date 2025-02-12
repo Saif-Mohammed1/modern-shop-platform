@@ -1,9 +1,9 @@
-import { Event } from "@/app/types/products.types";
+import { Event } from "@/app/lib/types/products.types";
 import {
   addressTranslate,
   AddressType,
-} from "@/app/_translate/(protectedRoute)/account/addressTranslate";
-import { lang } from "@/components/util/lang";
+} from "@/app/_translate/(auth)/account/addressTranslate";
+import { lang } from "@/app/lib/util/lang";
 import { getCities } from "countries-cities";
 
 type AddAddressComponentProps = {

@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { HiTrash } from "react-icons/hi"; // Import trash icon from Heroicons (optional)
 import ButtonSteps from "./ButtonSteps";
 import Image from "next/image";
-import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-import { lang } from "@/components/util/lang";
+import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
+import { lang } from "@/app/lib/util/lang";
 type ProductImagesProps = {
   nextStep: () => void;
   prevStep: () => void;

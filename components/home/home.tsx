@@ -1,10 +1,10 @@
 "use client";
-import { homePageTranslate } from "@/app/_translate/homePageTranslate";
+import { homePageTranslate } from "@/app/_translate/(public)/homePageTranslate";
 import Slider from "./slider/slider";
 
-import RelatedProducts from "@/components/products/reuseableComponents/relatedProductsComponent";
-import { lang } from "../util/lang";
-import { ProductType } from "@/app/types/products.types";
+import RelatedProducts from "@/components/ui/relatedProducts";
+import { lang } from "../../app/lib/util/lang";
+import { ProductType } from "@/app/lib/types/products.types";
 type HomeComponentProps = {
   productData: {
     topOfferProducts: ProductType[];

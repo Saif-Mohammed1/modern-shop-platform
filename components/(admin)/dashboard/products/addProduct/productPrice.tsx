@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ButtonSteps from "./ButtonSteps";
-import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-import { lang } from "@/components/util/lang";
+import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
+import { lang } from "@/app/lib/util/lang";
 
 type ProductPricingProps = {
   nextStep: () => void;

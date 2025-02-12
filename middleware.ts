@@ -8,7 +8,11 @@
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse, type NextRequest } from "next/server";
-import { rateLimitIp } from "./components/util/rateLimitIp";
+// import { rateLimitIp } from "./components/util/rateLimitIp";
+import { rateLimiter } from "./app/lib/util/rate-limiter";
+import AppError from "./app/lib/util/appError";
+import { tooManyRequestsTranslate } from "./app/_translate/(public)/tooManyRequestsTranslate";
+import { lang } from "./app/lib/util/lang";
 
 const PROTECTED_ROUTES = ["/account", "/checkout", "/confirm-email-change"];
 
@@ -40,19 +44,40 @@ const authMiddleware = async (req: NextRequest) => {
 
   try {
     // Handle security headers and client identification
+
     const clientIp =
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
       req.ip ||
-      "unknown";
+      "127.0.0.1";
     response.headers.set("x-client-ip", clientIp);
 
     // Handle rate limiting for API routes
     if (pathname.startsWith("/api")) {
-      const { failed } = rateLimitIp(clientIp);
-      if (failed) {
-        return NextResponse.rewrite(new URL(CUSTOM_ERROR_PATH, req.url));
+      // const { failed } = rateLimitIp(clientIp);
+      const limit = await rateLimiter.limit(clientIp);
+
+      if (!limit.allowed) {
+        response.headers.set("X-RateLimit-Limit", limit.limit.toString());
+        response.headers.set(
+          "X-RateLimit-Remaining",
+          limit.remaining.toString()
+        );
+        response.headers.set("X-RateLimit-Reset", limit.reset.toString());
+        response.headers.set("Retry-After", limit.retryAfter.toString());
+        //  return res.status(429).json({
+        //    error: `Too many requests. Retry after ${limit.retryAfter} seconds`,
+        //  });
+        throw new AppError(tooManyRequestsTranslate[lang].title, 429);
+
+        // NextResponse.rewrite(new URL(CUSTOM_ERROR_PATH, req.url));
       }
+
+      // Apply rate limit headers to all responses
+
+      response.headers.set("X-RateLimit-Limit", limit.limit.toString());
+      response.headers.set("X-RateLimit-Remaining", limit.remaining.toString());
+      response.headers.set("X-RateLimit-Reset", limit.reset.toString());
     }
 
     // Handle cookie management

@@ -1,6 +1,6 @@
 "use client";
-import { reviewsTranslate } from "@/app/_translate/reviewsTranslate";
-import { lang } from "@/components/util/lang";
+import { reviewsTranslate } from "@/app/_translate/(public)/reviewsTranslate";
+import { lang } from "@/app/lib/util/lang";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { useState } from "react";
 type CustomButtonProps = {

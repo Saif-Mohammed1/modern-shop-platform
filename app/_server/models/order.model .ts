@@ -3,7 +3,11 @@ import { Model, Query, Schema, model, models } from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Product, { IProductSchema } from "./product.model";
 import { Document } from "mongoose";
-import { IShippingInfo, IItems, OrderStatus } from "@/app/types/orders.types";
+import {
+  IShippingInfo,
+  IItems,
+  OrderStatus,
+} from "@/app/lib/types/orders.types";
 
 export interface IOrderSchema extends Document {
   _id: Schema.Types.ObjectId;

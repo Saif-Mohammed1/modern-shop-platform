@@ -1,5 +1,5 @@
 import ForgotPasswordPage from "@/components/authentication/forgetPassword";
-import OverlayWrapper from "@/components/util/OverlayWrapper";
+import OverlayWrapper from "@/components/ui/OverlayWrapper";
 
 function page() {
   // return <div>(.) interceptor auth...</div>;

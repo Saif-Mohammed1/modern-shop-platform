@@ -2,13 +2,13 @@ import Image from "next/image";
 // import CreateReview from "./createReview";
 import StarRatings from "react-star-ratings";
 import dynamic from "next/dynamic";
-import { reviewsTranslate } from "@/app/_translate/reviewsTranslate";
-import { lang } from "@/components/util/lang";
+import { reviewsTranslate } from "@/app/_translate/(public)/reviewsTranslate";
+import { lang } from "@/app/lib/util/lang";
 import { useState } from "react";
-import api from "@/components/util/api";
+import api from "@/app/lib/util/api";
 import CustomButton from "@/components/button/button";
-import { UserAuthType } from "@/app/types/users.types";
-import { ReviewsType } from "@/app/types/reviews.types";
+import { UserAuthType } from "@/app/lib/types/users.types";
+import { ReviewsType } from "@/app/lib/types/reviews.types";
 const CreateReview = dynamic(() => import("./createReview"));
 
 type ReviewSectionProps = {

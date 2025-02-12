@@ -1,12 +1,12 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { useCartItems, CartItemsType } from "../context/cart.context";
+import { useCartItems, CartItemsType } from "../providers/context/cart.context";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { useUser } from "../context/user.context";
-import imageSrc from "../util/productImageHandler";
-import { cartDropdownTranslate } from "@/app/_translate/cartDropdownTranslate";
-import { lang } from "../util/lang";
+import { useUser } from "../providers/context/user.context";
+import imageSrc from "../../app/lib/util/productImageHandler";
+import { cartDropdownTranslate } from "@/app/_translate/(public)/cartDropdownTranslate";
+import { lang } from "../../app/lib/util/lang";
 
 type CartDropdownProps = {
   toggleIsCartOpen: () => void;

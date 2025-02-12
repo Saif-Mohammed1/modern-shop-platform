@@ -1,5 +1,6 @@
 import withBundleAnalyzer from "@next/bundle-analyzer";
-
+import { config } from "dotenv";
+config({ path: "./config/.env" }); // Add this at top
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -27,7 +28,15 @@ const nextConfig = {
       {
         source: "/(.*)",
         headers: [
-          // "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' *.trusted.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' *.api.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';",
+          },
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
@@ -42,11 +51,20 @@ const nextConfig = {
           },
           {
             key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
             value: "same-origin",
           },
           {
-            key: "Feature-Policy",
-            value: "camera 'none'; microphone 'none'",
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
           },
         ],
       },

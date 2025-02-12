@@ -1,5 +1,13 @@
 // @ts-ignore
-import { Document, Model, Query, Schema, model, models } from "mongoose";
+import {
+  Document,
+  FilterQuery,
+  Model,
+  Query,
+  Schema,
+  model,
+  models,
+} from "mongoose";
 import User, { IUserSchema } from "./user.model";
 import Review from "./review.model";
 
@@ -20,6 +28,9 @@ export interface IProductSchema extends Document {
   updatedAt: Date;
   active: boolean;
   slug: string;
+  reserved: number;
+  lastReserved: Date;
+  sold: number;
 }
 
 const ProductSchema = new Schema<IProductSchema>(
@@ -31,6 +42,7 @@ const ProductSchema = new Schema<IProductSchema>(
 
       trim: true,
       lowercase: true,
+      index: "text",
     },
     category: {
       type: String,
@@ -63,7 +75,10 @@ const ProductSchema = new Schema<IProductSchema>(
       },
       min: 0,
     },
-    discountExpire: Date,
+    discountExpire: {
+      type: Date,
+      index: true,
+    },
 
     // select: false,
     images: [
@@ -86,6 +101,7 @@ const ProductSchema = new Schema<IProductSchema>(
       ref: "User",
 
       required: true,
+      index: true,
     },
     description: {
       type: String,
@@ -100,6 +116,7 @@ const ProductSchema = new Schema<IProductSchema>(
       required: true,
 
       min: 0,
+      index: true,
     },
     ratingsAverage: {
       type: Number,
@@ -118,10 +135,26 @@ const ProductSchema = new Schema<IProductSchema>(
     active: {
       type: Boolean,
       default: true,
+      index: true,
     },
     slug: {
       type: String,
       unique: true,
+      index: true,
+    },
+    // In product.model.ts
+    reserved: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    lastReserved: {
+      type: Date,
+      index: true,
+    },
+    sold: {
+      type: Number,
+      default: 0,
       index: true,
     },
     // createdAt: { type: Date, default: Date.now },
@@ -133,11 +166,26 @@ const ProductSchema = new Schema<IProductSchema>(
   }
 );
 // By Indexing the price field, we can improve the performance of the queries that use the price field in the find method.
+
+// Indexes for common queries
+ProductSchema.index({
+  category: 1,
+  price: 1,
+  ratingsAverage: -1,
+});
+
+ProductSchema.index({
+  createdAt: -1,
+});
 // Virtual populate
 ProductSchema.virtual("reviews", {
   ref: "Review",
   foreignField: "product",
   localField: "_id",
+  options: {
+    sort: { createdAt: -1 },
+    limit: 10,
+  },
 });
 ProductSchema.set("toJSON", {
   transform: function (_, ret) {
@@ -152,17 +200,32 @@ ProductSchema.set("toJSON", {
     return ret;
   },
 });
-// Populate user before executing the find query
-ProductSchema.pre<Query<any, IProductSchema>>(/^find/, function (next) {
-  this.populate({
-    path: "user",
-    // select: "name email",
-    select: "name",
-    model: User,
-    options: { lean: true },
-  });
-  next();
-});
+
+// Update the middleware to use the correct Query generic parameters
+ProductSchema.pre<Query<IProductSchema[], IProductSchema>>(
+  /^find/,
+  function (next) {
+    // Check if admin bypass is enabled
+    const options = this.getOptions();
+    const isAdminRequest = options.admin; // Custom flag
+
+    // Only apply the active filter for non-admin requests
+    if (!isAdminRequest) {
+      const filter: FilterQuery<IProductSchema> = {
+        active: { $ne: false },
+      };
+
+      this.find(filter);
+    }
+
+    this.populate({
+      path: "user",
+      select: "name verified",
+      options: { lean: true },
+    });
+    next();
+  }
+);
 
 ProductSchema.pre("save", function (next) {
   // this points to the current query
@@ -179,24 +242,32 @@ ProductSchema.pre("save", function (next) {
 ProductSchema.post(/^find/, async function (docs: IProductSchema[], next) {
   const currentDate = new Date();
 
-  try {
-    // Check and update all documents in one go for expired discounts
-    await Product.updateMany(
-      { discountExpire: { $lt: currentDate } },
-      { $set: { discount: 0 }, $unset: { discountExpire: "" } }
-    );
-
-    // If `docs` is an array (it should be for `find`), filter it
-    if (Array.isArray(docs)) {
-      const filteredDocs = docs.filter((doc) => doc.user !== null);
-      // Optionally perform additional actions with filteredDocs
-      docs.splice(0, docs.length, ...filteredDocs);
+  // If `docs` is an array (it should be for `find`), filter it
+  if (Array.isArray(docs)) {
+    const filteredDocs = docs.filter((doc) => doc.user !== null);
+    //  set discount to 0 if discountExpire is less than the current date
+    const expiredDiscounts = filteredDocs.map((doc) => {
+      if (doc.discountExpire && doc.discountExpire < currentDate) {
+        doc.discount = 0;
+        doc.discountExpire = undefined;
+        return doc;
+      }
+      return doc;
+    });
+    // Optionally perform additional actions with filteredDocs
+    docs.splice(0, docs.length, ...expiredDiscounts);
+  } else {
+    const doc = docs as IProductSchema;
+    if (doc?.user !== null) {
+      //  set discount to 0 if discountExpire is less than the current date
+      if (doc.discountExpire && doc.discountExpire < currentDate) {
+        doc.discount = 0;
+        doc.discountExpire = undefined;
+      }
     }
-
-    next();
-  } catch (error) {
-    next(error as Error); // Pass any error to the next middleware
   }
+
+  next();
 });
 
 const Product: Model<IProductSchema> =

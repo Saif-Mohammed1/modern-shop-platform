@@ -1,11 +1,11 @@
 "use client";
-import { accountReviewsTranslate } from "@/app/_translate/(protectedRoute)/account/reviewsTranslate";
+import { accountReviewsTranslate } from "@/app/_translate/(auth)/account/reviewsTranslate";
 import { useState } from "react";
-import { lang } from "@/components/util/lang";
-import api from "../util/api";
+import { lang } from "@/app/lib/util/lang";
+import api from "../../app/lib/util/api";
 import CustomButton from "../button/button";
 import Link from "next/link";
-import { ReviewsType } from "@/app/types/reviews.types";
+import { ReviewsType } from "@/app/lib/types/reviews.types";
 
 const ReviewHistory = ({
   reviewsList,

@@ -1,9 +1,9 @@
-import { ProductType } from "@/app/types/products.types";
-import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
-import { useCartItems } from "@/components/context/cart.context";
-import { useWishlist } from "@/components/context/whishList.context";
-import { lang } from "@/components/util/lang";
-import imageSrc from "@/components/util/productImageHandler";
+import { ProductType } from "@/app/lib/types/products.types";
+import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
+import { useCartItems } from "@/components/providers/context/cart.context";
+import { useWishlist } from "@/components/providers/context/whishList.context";
+import { lang } from "@/app/lib/util/lang";
+import imageSrc from "@/app/lib/util/productImageHandler";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";

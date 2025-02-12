@@ -2,14 +2,14 @@
 import { useEffect, useState } from "react";
 import { getCities } from "countries-cities"; // Importing to use Ukraine cities
 import toast from "react-hot-toast";
-import api from "../../util/api";
+import api from "../../../app/lib/util/api";
 import dynamic from "next/dynamic";
 import {
   addressTranslate,
   AddressType,
-} from "@/app/_translate/(protectedRoute)/account/addressTranslate";
-import { lang } from "@/components/util/lang";
-import { Event } from "@/app/types/products.types";
+} from "@/app/_translate/(auth)/account/addressTranslate";
+import { lang } from "@/app/lib/util/lang";
+import { Event } from "@/app/lib/types/products.types";
 import CustomButton from "@/components/button/button";
 // import { useRouter } from "next/navigation";
 const AddAddressComponent = dynamic(

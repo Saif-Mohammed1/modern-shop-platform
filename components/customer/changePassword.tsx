@@ -4,15 +4,13 @@ import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { signOut } from "next-auth/react";
 import DeviceInfoSection from "./deviceInfoSection";
-import api from "../util/api";
-import { deleteCookies } from "../util/cookies";
-import {
-  accountSettingsTranslate,
-  DeviceInfoType,
-} from "@/app/_translate/(protectedRoute)/account/settingsTranslate";
-import { lang } from "../util/lang";
+import api from "../../app/lib/util/api";
+import { deleteCookies } from "../../app/lib/util/cookies";
+import { accountSettingsTranslate } from "@/app/_translate/(auth)/account/settingsTranslate";
+import { lang } from "../../app/lib/util/lang";
+import { RefreshTokenStatus, sessionInfo } from "@/app/lib/types/refresh.types";
 
-const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
+const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
   const [devicesList, setDevicesList] = useState(devices || []);
   const [isEditing, setIsEditing] = useState(false);
   const [password, setPassword] = useState("");
@@ -22,11 +20,20 @@ const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false); // For delete confirmation
-  const deleteDevice = (deviceId: string) => {
+  const revokeUserTokens = (deviceId: string) => {
     setDevicesList((prevDevices) =>
-      prevDevices.filter((device) => device._id !== deviceId)
+      prevDevices.map((device) =>
+        device._id == deviceId
+          ? { ...device, status: RefreshTokenStatus.Revoked }
+          : device
+      )
     );
   };
+  // const deleteDevice = (deviceId: string) => {
+  //   setDevicesList((prevDevices) =>
+  //     prevDevices.filter((device) => device._id !== deviceId)
+  //   );
+  // };
   const handleEditClick = () => {
     setIsEditing(!isEditing);
   };
@@ -137,7 +144,7 @@ const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
     }
   };
   useEffect(() => {
-    setDevicesList(devices);
+    if (devices) setDevicesList(devices);
   }, [devices]);
   return (
     <div className="w-full max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg min-h-screen overflow-hidden">
@@ -270,12 +277,12 @@ const ChangePassword = ({ devices }: { devices: DeviceInfoType[] }) => {
           {accountSettingsTranslate[lang].devices.title}
         </h1>{" "}
         <div className="max-h-[50vh] md:max-h-[70vh] overflow-y-auto">
-          {devicesList.length > 1 ? (
+          {devicesList && devicesList.length > 1 ? (
             devicesList.map((device) => (
               <DeviceInfoSection
                 key={device._id}
-                devices={device}
-                deleteDevice={() => deleteDevice(device._id)}
+                session={device}
+                revokeUserTokens={() => revokeUserTokens(device._id)}
               />
             ))
           ) : (

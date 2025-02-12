@@ -1,0 +1,51 @@
+// @ts-ignore
+import { Schema, model, models, Model, Document } from "mongoose";
+import User, { IUserSchema } from "./user.model";
+
+export interface IRefreshTokenSchema extends Document {
+  _id: Schema.Types.ObjectId;
+
+  token: string;
+  user: IUserSchema["_id"];
+  deviceInfo: string;
+  ipAddress: string;
+  expiresAt: Date;
+  lastActiveAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+// const refreshTokenSchema = new Schema<IRefreshToken>({
+const refreshTokenSchema = new Schema<IRefreshTokenSchema>(
+  {
+    token: { type: String, required: true },
+    user: {
+      type: Schema.Types.ObjectId,
+
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    deviceInfo: {
+      type: String,
+      required: true,
+    }, // e.g., "iPhone 12, iOS 14.4"
+    ipAddress: {
+      type: String,
+      required: true,
+    },
+    expiresAt: {
+      type: Date,
+      required: true,
+    },
+    lastActiveAt: { type: Date, default: Date.now }, // New field to track last activity
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const RefreshToken: Model<IRefreshTokenSchema> =
+  models.RefreshToken ||
+  model<IRefreshTokenSchema>("RefreshToken", refreshTokenSchema);
+
+export default RefreshToken;

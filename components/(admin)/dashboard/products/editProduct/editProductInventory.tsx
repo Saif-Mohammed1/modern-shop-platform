@@ -1,7 +1,7 @@
-import { lang } from "@/components/util/lang";
+import { lang } from "@/app/lib/util/lang";
 import ButtonSteps from "../addProduct/ButtonSteps";
-import { productsTranslate } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/productTranslate";
-import { ProductType, Event } from "@/app/types/products.types";
+import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
+import { ProductType, Event } from "@/app/lib/types/products.types";
 
 type EditProductInventoryProps = {
   productData: Partial<ProductType>;

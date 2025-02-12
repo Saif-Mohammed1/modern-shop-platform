@@ -1,7 +1,7 @@
-import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
-import { Event } from "@/app/types/products.types";
+import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
+import { Event } from "@/app/lib/types/products.types";
 import { FC } from "react";
-import { lang } from "../util/lang";
+import { lang } from "../../app/lib/util/lang";
 import { HiOutlineSearch } from "react-icons/hi";
 
 // Search Bar Component

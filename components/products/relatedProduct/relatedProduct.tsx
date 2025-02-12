@@ -1,9 +1,9 @@
-import imageSrc from "@/components/util/productImageHandler";
+import imageSrc from "@/app/lib/util/productImageHandler";
 import StarRatings from "react-star-ratings";
 
 import Image from "next/image";
 import Link from "next/link";
-import { ProductType } from "@/app/types/products.types";
+import { ProductType } from "@/app/lib/types/products.types";
 const RelatedProducts = ({
   relatedProducts,
 }: {

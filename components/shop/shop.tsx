@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HiFilter, HiX } from "react-icons/hi";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import Pagination from "@/components/pagination/Pagination";
 import ProductCard from "@/components/products/product-card/productCard";
-import { shopPageTranslate } from "@/app/_translate/shop/shoppageTranslate";
-import { lang } from "@/components/util/lang";
-import type { Event, ProductType } from "@/app/types/products.types";
+import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
+import { lang } from "@/app/lib/util/lang";
+import type { Event, ProductType } from "@/app/lib/types/products.types";
 import SearchBar from "../ui/SearchBar";
 import Filters from "../ui/Filters";
 
@@ -48,6 +48,7 @@ const Shop = ({ products, categories, totalPages }: ShopProps) => {
     "page",
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );
+  const productsContainerRef = useRef<HTMLDivElement>(null);
   const handleCategoryFilterChange = (e: Event) => {
     const value = e.target.value;
     setCategoryFilter(value);
@@ -72,7 +73,13 @@ const Shop = ({ products, categories, totalPages }: ShopProps) => {
     setCurrentPage(page);
   };
   useEffect(() => {
-    window.scrollTo({ top: 10, behavior: "smooth" });
+    if (productsContainerRef.current) {
+      productsContainerRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      window.scrollTo({ top: 10, behavior: "smooth" });
+    }
   }, [searchQuery, categoryFilter, priceFilter, ratingFilter, currentPage]);
   return (
     <section className="flex flex-col gap-8 p-6 bg-gray-50 min-h-screen">
@@ -142,7 +149,10 @@ const Shop = ({ products, categories, totalPages }: ShopProps) => {
       )}
 
       {/* Products Grid */}
-      <div className="h-screen md:h-[90dvh] overflow-y-auto">
+      <div
+        ref={productsContainerRef}
+        className="h-screen md:h-[90dvh] overflow-y-auto"
+      >
         {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"> */}
         <div className="grid col gap-8">
           {products.map((product) => (

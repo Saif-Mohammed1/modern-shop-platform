@@ -1,10 +1,10 @@
 import { Document, Model, Schema, model, models } from "mongoose";
 import crypto from "crypto"; // Add import for the crypto module
-import { sendVerificationCode } from "@/components/util/email";
 import bcrypt from "bcryptjs";
-import AppError from "@/components/util/appError";
-import { lang } from "@/components/util/lang";
+import AppError from "@/app/lib/util/appError";
+import { lang } from "@/app/lib/util/lang";
 import { userControllerTranslate } from "../_Translate/userControllerTranslate";
+import { sendVerificationCode } from "@/app/lib/util/email";
 // enum Role {
 //   USER = "user",
 //   seller = "seller",

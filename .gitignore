@@ -1,5 +1,4 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-overview-pkg.md
 # dependencies
 /node_modules
 /.pnp
@@ -36,18 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-requierments.md
-data.ts
-dbConnect.js
-route_to_count.js
-countJsFiles.js
-
-# SSL certificates
-localhost.pem
-localhost-key.pem
-
-_test.js
+# config folder
+/config
 
 # ignore any folder named "test" or "tests"
-**/test
-**/tests
+**/test/
+**/tests/

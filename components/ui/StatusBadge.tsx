@@ -1,4 +1,4 @@
-import { StatusColors } from "@/app/_translate/(protectedRoute)/(admin)/dashboard/ordersTranslate";
+import { StatusColors } from "@/app/_translate/(auth)/(admin)/dashboard/ordersTranslate";
 
 type StatusBadgeProps = {
   status: keyof typeof StatusColors;

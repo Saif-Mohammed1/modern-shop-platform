@@ -3,11 +3,11 @@
 import {
   useWishlist,
   WishlistType,
-} from "@/components/context/whishList.context";
+} from "@/components/providers/context/whishList.context";
 import WishListCard from "./wishListCard";
 import { useEffect, useState } from "react";
-import { accountWishlistTranslate } from "@/app/_translate/(protectedRoute)/account/wishlistTranslate";
-import { lang } from "@/components/util/lang";
+import { accountWishlistTranslate } from "@/app/_translate/(auth)/account/wishlistTranslate";
+import { lang } from "@/app/lib/util/lang";
 
 const WishlistPage = () => {
   const { wishlist } = useWishlist();

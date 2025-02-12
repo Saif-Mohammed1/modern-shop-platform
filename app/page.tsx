@@ -2,11 +2,11 @@ export const dynamic = "force-dynamic";
 import ErrorHandler from "@/components/Error/errorHandler";
 import HomeComponent from "@/components/home/home";
 // import AppError from "@/components/util/appError";
-import api from "@/components/util/api";
+import api from "@/app/lib/util/api";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { rootStaticPagesTranslate } from "./_translate/rootStaticPagesTranslate";
-import { lang } from "@/components/util/lang";
+import { rootStaticPagesTranslate } from "./_translate/(public)/rootStaticPagesTranslate";
+import { lang } from "@/app/lib/util/lang";
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 export const metadata: Metadata = {
   title: rootStaticPagesTranslate[lang].home.metadata.title,
