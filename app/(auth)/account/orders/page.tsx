@@ -1,7 +1,7 @@
 // import OrderHistory from "@/components/shop/orders/orderHistory";
 export const dynamic = "force-dynamic";
 import UserOrderTracking from "@/components/shop/orders/orderTracking";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
@@ -9,8 +9,8 @@ import type { Metadata } from "next";
 import {
   accountOrdersTranslate,
   OrdersType,
-} from "@/app/_translate/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/util/lang";
+} from "@/public/locales/client/(auth)/account/ordersTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 export const metadata: Metadata = {
   title: accountOrdersTranslate[lang].metadata.title,
   description: accountOrdersTranslate[lang].metadata.description,

@@ -6,10 +6,10 @@ import toast from "react-hot-toast";
 import Spinner from "../spinner/spinner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { loginTranslate } from "@/app/_translate/(public)/auth/loginTranslate";
-import { lang } from "../../app/lib/util/lang";
+import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
-import api from "../../app/lib/util/api";
+import api from "../../app/lib/utilities/api";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");

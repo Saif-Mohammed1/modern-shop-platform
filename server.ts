@@ -1,3 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+
 const { createServer } = require("https");
 const { parse } = require("url");
 const next = require("next");
@@ -12,13 +14,18 @@ const httpsOptions = {
   key: fs.readFileSync(path.join(__dirname, "config/localhost-key.pem")),
   cert: fs.readFileSync(path.join(__dirname, "config/localhost.pem")),
 };
-const Port = 3000;
+const port = parseInt(process.env.PORT || "3000", 10);
 app.prepare().then(() => {
-  createServer(httpsOptions, (req, res) => {
+  createServer(httpsOptions, (req: NextRequest, res: NextResponse) => {
     const parsedUrl = parse(req.url, true);
     handle(req, res, parsedUrl);
-  }).listen(Port, (err) => {
+  }).listen(port, (err: any) => {
     if (err) throw err;
-    console.log("> Server started on https://localhost:" + Port);
+    console.log(
+      `> Server listening at https://localhost:${port} as ${
+        dev ? "development" : process.env.NODE_ENV
+      }`
+    );
+    // console.log("> Server started on https://localhost:" + Port);
   });
 });

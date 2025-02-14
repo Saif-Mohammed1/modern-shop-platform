@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { RiShieldUserLine } from "react-icons/ri";
 
-import api from "../../app/lib/util/api";
+import api from "../../app/lib/utilities/api";
 import SetupFlow from "./setupFlow";
 import BackupCodesDisplay from "./backupCodesDisplay";
 import SecurityDashboard from "./securityDashboard";

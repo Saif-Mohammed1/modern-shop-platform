@@ -1,6 +1,6 @@
-import { comingSoonTranslate } from "@/app/_translate/(public)/comingSoonTranslate";
+import { comingSoonTranslate } from "@/public/locales/client/(public)/comingSoonTranslate";
 import "./ComingSoon.css";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 
 const ComingSoon = () => {
   return (

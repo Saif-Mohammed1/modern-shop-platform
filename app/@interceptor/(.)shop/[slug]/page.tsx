@@ -1,5 +1,5 @@
 import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 import OverlayWrapper from "@/components/ui/OverlayWrapper";
 import { headers } from "next/headers";
 import ModelProductDetail from "@/components/ui/ModelProductDetail";

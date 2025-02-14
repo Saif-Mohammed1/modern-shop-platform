@@ -1,6 +1,6 @@
 import TwoFactorAuthManager from "@/components/2fa/TwoFactorAuth";
-import { accountTwoFactorTranslate } from "@/app/_translate/(auth)/account/twoFactorTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountTwoFactorTranslate } from "@/public/locales/client/(auth)/account/twoFactorTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: accountTwoFactorTranslate[lang].metadata.title,

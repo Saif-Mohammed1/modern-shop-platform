@@ -7,10 +7,10 @@ import { FiEdit, FiTrash2, FiEye, FiSearch, FiCalendar } from "react-icons/fi";
 import {
   ordersTranslate,
   StatusColors,
-} from "@/app/_translate/(auth)/(admin)/dashboard/ordersTranslate";
+} from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
 import Pagination from "@/components/pagination/Pagination";
-import api from "@/app/lib/util/api";
-import { lang } from "@/app/lib/util/lang";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import { OrderType } from "@/app/lib/types/orders.types";
 // import StatusBadge from "@/components/ui/StatusBadge";
 import Input from "@/components/ui/Input";

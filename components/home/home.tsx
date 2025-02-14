@@ -1,9 +1,9 @@
 "use client";
-import { homePageTranslate } from "@/app/_translate/(public)/homePageTranslate";
+import { homePageTranslate } from "@/public/locales/client/(public)/homePageTranslate";
 import Slider from "./slider/slider";
 
 import RelatedProducts from "@/components/ui/relatedProducts";
-import { lang } from "../../app/lib/util/lang";
+import { lang } from "../../app/lib/utilities/lang";
 import { ProductType } from "@/app/lib/types/products.types";
 type HomeComponentProps = {
   productData: {

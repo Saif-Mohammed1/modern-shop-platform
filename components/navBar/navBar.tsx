@@ -10,8 +10,8 @@ import { useCartItems } from "../providers/context/cart.context";
 // import dynamic from "next/dynamic";
 import AccountNavList from "./account-navList";
 import CartDropdown from "../cart/cartDropdown";
-import { navBarTranslate } from "@/app/_translate/(public)/navBarTranslate";
-import { lang } from "../../app/lib/util/lang";
+import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 // const AccountNavList = dynamic(() => import("./account-navList"));
 // const CartDropdown = dynamic(() => import("../cart/cartDropdown"));
 const NavBar = () => {

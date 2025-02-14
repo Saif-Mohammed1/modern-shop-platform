@@ -1,8 +1,8 @@
-import AppError from "@/app/lib/util/appError";
+import AppError from "@/app/lib/utilities/appError";
 import Order from "../models/order.model ";
 import type { NextRequest } from "next/server";
-import { reviewControllerTranslate } from "../_Translate/reviewControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { reviewControllerTranslate } from "../../../public/locales/server/reviewControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import Review from "../models/review.model";
 export const createReviews = async (req: NextRequest) => {
   let doc;

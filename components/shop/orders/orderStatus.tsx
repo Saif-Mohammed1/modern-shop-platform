@@ -1,6 +1,6 @@
 // components/OrderStatus.js
-import { accountOrdersTranslate } from "@/app/_translate/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import Link from "next/link";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 type OrderStatusProps = {

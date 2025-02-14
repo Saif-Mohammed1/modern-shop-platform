@@ -1,5 +1,5 @@
-import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 
 type ButtonStepsProps = {
   prevStep: () => void;

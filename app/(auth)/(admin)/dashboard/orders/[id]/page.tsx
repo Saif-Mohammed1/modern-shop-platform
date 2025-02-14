@@ -1,11 +1,11 @@
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 import AdminOrderDetails from "@/components/(admin)/dashboard/orders/OrderDetails";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { ordersTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/ordersTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 
 type Props = {
   params: { id: string };

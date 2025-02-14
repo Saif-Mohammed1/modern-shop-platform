@@ -1,4 +1,4 @@
-import imageSrc from "@/app/lib/util/productImageHandler";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
 import StarRatings from "react-star-ratings";
 
 import Image from "next/image";

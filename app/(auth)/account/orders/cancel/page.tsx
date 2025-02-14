@@ -1,6 +1,6 @@
-import { accountOrdersTranslate } from "@/app/_translate/(auth)/account/ordersTranslate";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 import OrderCancellation from "@/components/shop/orders/cancellingReason";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: accountOrdersTranslate[lang].orderCancellation.metadata.title,

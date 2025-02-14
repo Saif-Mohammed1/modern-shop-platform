@@ -1,16 +1,16 @@
 "use client";
 
 import { useCartItems } from "@/components/providers/context/cart.context";
-import api from "@/app/lib/util/api";
-import imageSrc from "@/app/lib/util/productImageHandler";
+import api from "@/app/lib/utilities/api";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import dynamic from "next/dynamic";
-import { AddressType } from "@/app/_translate/(auth)/account/addressTranslate";
+import { AddressType } from "@/public/locales/client/(auth)/account/addressTranslate";
 import { Event } from "@/app/lib/types/products.types";
-import { checkoutPageTranslate } from "@/app/_translate/(public)/checkoutPageTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 const AddAddressComponent = dynamic(
   () => import("@/components/customer/address/addAddressReuseableComponent")
 );

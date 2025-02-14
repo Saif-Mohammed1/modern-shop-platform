@@ -3,9 +3,9 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Spinner from "../spinner/spinner";
-import api from "../../app/lib/util/api";
-import { resetPasswordTranslate } from "@/app/_translate/(public)/auth/resetPasswordTranslate";
-import { lang } from "../../app/lib/util/lang";
+import api from "../../app/lib/utilities/api";
+import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 
 const ResetPasswordPage = () => {
   const [token, setToken] = useState("");

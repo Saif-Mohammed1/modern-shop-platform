@@ -6,8 +6,8 @@ import {
 } from "@/components/providers/context/whishList.context";
 import WishListCard from "./wishListCard";
 import { useEffect, useState } from "react";
-import { accountWishlistTranslate } from "@/app/_translate/(auth)/account/wishlistTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 
 const WishlistPage = () => {
   const { wishlist } = useWishlist();

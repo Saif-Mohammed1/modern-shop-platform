@@ -11,8 +11,8 @@ import { AiOutlineHeart, AiFillHeart } from "react-icons/ai"; // Wishlist icons
 import StarRatings from "react-star-ratings";
 // import dynamic from "next/dynamic";
 import { ProductType } from "@/app/lib/types/products.types";
-import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { ReviewsType } from "@/app/lib/types/reviews.types";
 
 const ProductDetail = ({

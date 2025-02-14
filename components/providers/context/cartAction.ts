@@ -1,9 +1,9 @@
 import { ProductType } from "@/app/lib/types/products.types";
-import AppError from "@/app/lib/util/appError";
-import api from "@/app/lib/util/api";
+import AppError from "@/app/lib/utilities/appError";
+import api from "@/app/lib/utilities/api";
 import { CartItemsType } from "./cart.context";
-import { cartContextTranslate } from "@/app/_translate/(public)/cartContextTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { UserAuthType } from "@/app/lib/types/users.types";
 type User = UserAuthType | null;
 // Add item to cart

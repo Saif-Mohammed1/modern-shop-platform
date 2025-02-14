@@ -1,6 +1,6 @@
-import { addressTranslate } from "@/app/_translate/(auth)/account/addressTranslate";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
 import AccountMenu from "@/components/customer/customerMaun";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: addressTranslate[lang].layout.metadata.title,

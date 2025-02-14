@@ -4,10 +4,10 @@ import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { signOut } from "next-auth/react";
 import DeviceInfoSection from "./deviceInfoSection";
-import api from "../../app/lib/util/api";
-import { deleteCookies } from "../../app/lib/util/cookies";
-import { accountSettingsTranslate } from "@/app/_translate/(auth)/account/settingsTranslate";
-import { lang } from "../../app/lib/util/lang";
+import api from "../../app/lib/utilities/api";
+import { deleteCookies } from "../../app/lib/utilities/cookies";
+import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 import { RefreshTokenStatus, sessionInfo } from "@/app/lib/types/refresh.types";
 
 const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {

@@ -1,7 +1,7 @@
 "use client";
 import { ProductType } from "@/app/lib/types/products.types";
-import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";

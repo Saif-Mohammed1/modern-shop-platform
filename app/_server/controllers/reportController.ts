@@ -1,9 +1,9 @@
 import { Model } from "mongoose";
 import { NextRequest } from "next/server";
 import { IReportSchema } from "../models/report.model";
-import AppError from "@/app/lib/util/appError";
-import { reportUsControllerTranslate } from "../_Translate/reportControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
+import AppError from "@/app/lib/utilities/appError";
+import { reportUsControllerTranslate } from "../../../public/locales/server/reportControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 
 export const getReports = async (
   req: NextRequest,

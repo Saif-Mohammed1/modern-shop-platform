@@ -1,4 +1,4 @@
-import AppError from "@/app/lib/util/appError";
+import AppError from "@/app/lib/utilities/appError";
 import TwoFactorAuth, {
   AuditLog,
   EncryptedData,
@@ -12,9 +12,9 @@ import qrcode from "qrcode";
 import User, { IUserSchema } from "../models/user.model";
 import { cookies } from "next/headers";
 import { modifyFinalResponse } from "./authController";
-import { authControllerTranslate } from "../_Translate/authControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
-import { sendMessageForNewPassword } from "@/app/lib/util/email";
+import { authControllerTranslate } from "../../../public/locales/server/authControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
+import { sendMessageForNewPassword } from "@/app/lib/utilities/email";
 import { RefreshTokenService } from "./refreshTokenController";
 
 // Configuration Constants

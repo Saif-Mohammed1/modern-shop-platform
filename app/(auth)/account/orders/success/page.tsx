@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 import OrderCompleted from "@/components/shop/orders/orderCompletedPrushers";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { accountOrdersTranslate } from "@/app/_translate/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 export const metadata: Metadata = {
   title: accountOrdersTranslate[lang].orderCompleted.metadata.title,
   description: accountOrdersTranslate[lang].orderCompleted.metadata.description,

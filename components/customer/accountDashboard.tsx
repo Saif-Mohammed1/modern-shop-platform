@@ -2,10 +2,10 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import api from "../../app/lib/util/api";
+import api from "../../app/lib/utilities/api";
 import { Event } from "@/app/lib/types/products.types";
-import { accountDashboardTranslate } from "@/app/_translate/(auth)/account/dashboardTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 type EditableFields = "name" | "email" | "phone";
 type FormDataType = {
   name: string;

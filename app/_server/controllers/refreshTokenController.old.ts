@@ -1,13 +1,13 @@
 import { sign, verify } from "jsonwebtoken";
 import RefreshToken from "../models/refreshToken.model";
-import AppError from "@/app/lib/util/appError";
+import AppError from "@/app/lib/utilities/appError";
 import { cookies } from "next/headers";
 // import { promisify } from "util";
-import { sendEmailOnDetectedUnusualActivity } from "@/app/lib/util/email";
+import { sendEmailOnDetectedUnusualActivity } from "@/app/lib/utilities/email";
 import type { NextRequest } from "next/server";
-import { refreshTokenControllerTranslate } from "../_Translate/refreshTokenControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
-import { userControllerTranslate } from "../_Translate/userControllerTranslate";
+import { refreshTokenControllerTranslate } from "../../../public/locales/server/refreshTokenControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
+import { userControllerTranslate } from "../../../public/locales/server/userControllerTranslate";
 
 const createAccessToken = (userId: string) => {
   return sign({ userId }, process.env.JWT_ACCESS_TOKEN_SECRET as string, {

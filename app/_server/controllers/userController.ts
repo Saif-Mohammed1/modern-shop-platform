@@ -1,13 +1,13 @@
-import AppError from "@/app/lib/util/appError";
+import AppError from "@/app/lib/utilities/appError";
 import User, { IUserSchema } from "../models/user.model";
 import { modifyFinalResponse } from "./authController";
 // import { createUserTokens } from "./refreshTokenController";
-import { ChangeEmail } from "@/app/lib/util/email";
+import { ChangeEmail } from "@/app/lib/utilities/email";
 import { sign, verify } from "jsonwebtoken";
 // import { promisify } from "util";
 import type { NextRequest } from "next/server";
-import { userControllerTranslate } from "../_Translate/userControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { userControllerTranslate } from "../../../public/locales/server/userControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { Model } from "mongoose";
 
 export const sendNewVerificationCode = async (req: NextRequest) => {

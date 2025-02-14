@@ -2,8 +2,8 @@ import { useDropzone } from "react-dropzone";
 import { HiTrash } from "react-icons/hi"; // Import trash icon from Heroicons (optional)
 import Image from "next/image";
 import ButtonSteps from "../addProduct/ButtonSteps";
-import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 
 // Component for editing product images
 type EditProductImagesProps = {

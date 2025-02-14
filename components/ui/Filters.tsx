@@ -1,6 +1,6 @@
-import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { FC } from "react";
-import { lang } from "../../app/lib/util/lang";
+import { lang } from "../../app/lib/utilities/lang";
 import { Event } from "@/app/lib/types/products.types";
 
 type FiltersProps = {

@@ -11,11 +11,11 @@ import {
   VscHeart,
 } from "react-icons/vsc";
 import { MdDashboard } from "react-icons/md";
-import api from "../../app/lib/util/api";
-import { deleteCookies } from "../../app/lib/util/cookies";
+import api from "../../app/lib/utilities/api";
+import { deleteCookies } from "../../app/lib/utilities/cookies";
 import { useEffect, useRef } from "react";
-import { navBarTranslate } from "@/app/_translate/(public)/navBarTranslate";
-import { lang } from "../../app/lib/util/lang";
+import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 import { UserAuthType } from "@/app/lib/types/users.types";
 type AccountNavListProps = {
   user: UserAuthType | null;

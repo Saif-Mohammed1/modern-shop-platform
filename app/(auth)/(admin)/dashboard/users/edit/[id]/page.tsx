@@ -1,8 +1,8 @@
-import { usersTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/usersTranslate";
+import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import EditUser from "@/components/(admin)/dashboard/users/editUser";
 import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/util/api";
-import { lang } from "@/app/lib/util/lang";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 type Props = {

@@ -5,9 +5,9 @@ import { useCartItems, CartItemsType } from "../providers/context/cart.context";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useUser } from "../providers/context/user.context";
-import imageSrc from "../../app/lib/util/productImageHandler";
-import { cartDropdownTranslate } from "@/app/_translate/(public)/cartDropdownTranslate";
-import { lang } from "../../app/lib/util/lang";
+import imageSrc from "../../app/lib/utilities/productImageHandler";
+import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 import { FiX } from "react-icons/fi";
 
 type CartDropdownProps = {

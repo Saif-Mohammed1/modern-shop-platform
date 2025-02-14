@@ -61,7 +61,8 @@ export const userControllerTranslate = {
     errors: {
       notFoundUser: "User not found.",
       noUserFoundWithId: "No user found with that ID",
-
+      userAlreadyExist:
+        "User already exist in our system please try another email",
       verificationCodeBlockedUntilMessage:
         "Your verification attempts are currently blocked. Please wait for a while before attempting again.",
       verificationAttemptsMessage:
@@ -133,6 +134,8 @@ export const userControllerTranslate = {
     errors: {
       notFoundUser: "Користувач не знайдений.",
       noUserFoundWithId: "Користувача з таким ідентифікатором не знайдено",
+      userAlreadyExist:
+        "Користувач вже існує в нашій системі, спробуйте іншу електронну пошту",
       verificationCodeBlockedUntilMessage:
         "Ваші спроби верифікації наразі заблоковані. Будь ласка, зачекайте трохи, перш ніж повторити спробу.",
       verificationAttemptsMessage:
@@ -142,6 +145,120 @@ export const userControllerTranslate = {
         "Недійсний або прострочений код верифікації.",
       requiredFields: "Будь ласка, заповніть всі обов'язкові поля.",
       noDocumentFoundWithId: "Документ з таким ідентифікатором не знайдено",
+    },
+  },
+} as const;
+
+/**
+ *   .object({
+       name: z
+         .string()
+         .min(3, "Name must be at least 3 characters")
+         .max(50, "Name must be under 50 characters"),
+       email: z
+         .string()
+         .email("Invalid email format")
+         .refine((email) => {
+           const domain = email.split("@")[1];
+           return this.allowedEmailDomains.includes(domain);
+         }, "Email domain is not allowed"),
+       phone: z
+         .string()
+         .regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format") // Supports E.164 format
+         .optional(),
+       password: z
+         .string()
+         .min(10, "Password must be at least 10 characters")
+         .max(50, "Password must be under 50 characters")
+         .regex(
+           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+           "Password must contain at least one lowercase, one uppercase, one number, and one special character"
+         ),
+       confirmPassword: z.string(),
+       role: z.enum(["customer", "admin", "moderator"]).default("customer"),
+       preferences: z
+         .object({
+           language: z.enum(["en", "es", "fr", "de"]).default("en"),
+           currency: z.enum(["USD", "EUR", "GBP"]).default("USD"),
+           marketingOptIn: z.boolean().default(false),
+         })
+         .optional(),
+     })
+     .refine((data) => data.password === data.confirmPassword, {
+       message: "Passwords do not match",
+       path: ["confirmPassword"],
+     });
+ */
+export const userZodValidatorTranslate = {
+  en: {
+    name: {
+      required: "Name must be required",
+      minLength: "Name must be at least 3 characters",
+      maxLength: "Name must be under 50 characters",
+    },
+    email: {
+      required: "Email must be required",
+      invalid: "Invalid email format",
+      domainNotAllowed: "Email domain is not allowed",
+    },
+    phone: {
+      invalid: "Invalid phone number format",
+    },
+    password: {
+      required: "Password must be required",
+      minLength: "Password must be at least 10 characters",
+      maxLength: "Password must be under 40 characters",
+      invalid:
+        "Password must contain at least one lowercase, one uppercase, one number, and one special character",
+    },
+    token: {
+      required: "Token must be required",
+    },
+    currentPassword: {
+      required: "Old password must be required",
+    },
+    confirmPassword: {
+      required: "Password confirm must be required",
+      invalid: "Passwords do not match",
+    },
+    role: {
+      invalid: "Invalid role",
+    },
+    // preferences: {
+  },
+  uk: {
+    name: {
+      required: "Ім'я має бути обов'язковим",
+      minLength: "Ім'я має бути принаймні 3 символи",
+      maxLength: "Ім'я має бути менше 50 символів",
+    },
+    email: {
+      required: "Електронна пошта має бути обов'язковою",
+      invalid: "Недійсний формат електронної пошти",
+      domainNotAllowed: "Домен електронної пошти не дозволений",
+    },
+    phone: {
+      invalid: "Недійсний формат номера телефону",
+    },
+    password: {
+      required: "Пароль має бути обов'язковим",
+      minLength: "Пароль має бути принаймні 10 символів",
+      maxLength: "Пароль має бути менше 40 символів",
+      invalid:
+        "Пароль має містити принаймні одну маленьку літеру, одну велику літеру, одну цифру та один спеціальний символ",
+    },
+    token: {
+      required: "Токен має бути обов'язковим",
+    },
+    currentPassword: {
+      required: "Старий пароль має бути обов'язковим",
+    },
+    confirmPassword: {
+      required: "Підтвердження пароля має бути обов'язковим",
+      invalid: "Паролі не співпадають",
+    },
+    role: {
+      invalid: "Недійсна роль",
     },
   },
 } as const;

@@ -1,5 +1,5 @@
-import { aboutUsTranslate } from "@/app/_translate/(public)/aboutUsTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { aboutUsTranslate } from "@/public/locales/client/(public)/aboutUsTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

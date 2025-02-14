@@ -37,7 +37,7 @@ next-env.d.ts
 
 # config folder
 /config
-
+/logs
 # ignore any folder named "test" or "tests"
 **/test/
 **/tests/

@@ -3,9 +3,9 @@ import { FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import Spinner from "../spinner/spinner";
-import api from "@/app/lib/util/api";
-import { forgetPasswordTranslate } from "@/app/_translate/(public)/auth/forgetPasswordTranslate";
-import { lang } from "../../app/lib/util/lang";
+import api from "@/app/lib/utilities/api";
+import { forgetPasswordTranslate } from "@/public/locales/client/(public)/auth/forgetPasswordTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");

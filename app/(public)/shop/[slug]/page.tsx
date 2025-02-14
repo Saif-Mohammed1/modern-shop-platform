@@ -1,10 +1,10 @@
-import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 // import AppError from "@/components/util/appError";
-import api from "@/app/lib/util/api";
-import { lang } from "@/app/lib/util/lang";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { cache } from "react";

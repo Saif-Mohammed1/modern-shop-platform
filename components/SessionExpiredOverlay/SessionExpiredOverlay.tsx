@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
-import { deleteCookies } from "@/app/lib/util/cookies";
-import { sessionExpiredOverlayTranslate } from "@/app/_translate/(public)/sessionExpiredOverlayTranslate";
-import { lang } from "../../app/lib/util/lang";
+import { deleteCookies } from "@/app/lib/utilities/cookies";
+import { sessionExpiredOverlayTranslate } from "@/public/locales/client/(public)/sessionExpiredOverlayTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 
 const SessionExpiredOverlay = () => {
   const router = useRouter();

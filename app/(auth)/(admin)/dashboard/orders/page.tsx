@@ -1,9 +1,9 @@
-import { ordersTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/ordersTranslate";
+import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
 import AdminOrdersDashboard from "@/components/(admin)/dashboard/orders/orderMangement";
 import ErrorHandler from "@/components/Error/errorHandler";
-import AppError from "@/app/lib/util/appError";
-import api from "@/app/lib/util/api";
-import { lang } from "@/app/lib/util/lang";
+import AppError from "@/app/lib/utilities/appError";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { FC } from "react";

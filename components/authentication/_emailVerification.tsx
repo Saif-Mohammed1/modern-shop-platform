@@ -2,8 +2,8 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { lang } from "../../app/lib/util/lang";
-import { verifyEmailPasswordTranslate } from "@/app/_translate/(public)/auth/verifyEmailPasswordTranslate copy";
+import { lang } from "../../app/lib/utilities/lang";
+import { verifyEmailPasswordTranslate } from "@/public/locales/client/(public)/auth/verifyEmailPasswordTranslate copy";
 
 const EmailVerificationPage = () => {
   const [isSending, setIsSending] = useState(false);

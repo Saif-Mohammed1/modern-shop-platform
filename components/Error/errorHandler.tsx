@@ -1,6 +1,6 @@
-import { rootStaticPagesTranslate } from "@/app/_translate/(public)/rootStaticPagesTranslate";
+import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
 import { FC } from "react";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 type ErrorHandlerProps = {
   message?: string;
   reset?: () => void;

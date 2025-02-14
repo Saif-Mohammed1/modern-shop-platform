@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import Lottie from "lottie-react";
 import notFoundAnimation from "/public/animations/notFound.json"; // You need a Lottie animation JSON file
 import Link from "next/link";
-import { rootStaticPagesTranslate } from "@/app/_translate/(public)/rootStaticPagesTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 
 const NotFoundComponent = () => {
   const router = useRouter();

@@ -1,10 +1,10 @@
 import { Document, Model, Schema, model, models } from "mongoose";
 import crypto from "crypto"; // Add import for the crypto module
 import bcrypt from "bcryptjs";
-import AppError from "@/app/lib/util/appError";
-import { lang } from "@/app/lib/util/lang";
-import { userControllerTranslate } from "../_Translate/userControllerTranslate";
-import { sendVerificationCode } from "@/app/lib/util/email";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { userControllerTranslate } from "../../../public/locales/server/userControllerTranslate";
+import { sendVerificationCode } from "@/app/lib/utilities/email";
 // enum Role {
 //   USER = "user",
 //   seller = "seller",
@@ -74,13 +74,13 @@ const UserSchema = new Schema<IUserSchema>(
       required: true,
       select: false,
       minlength: 10,
-      maxlength: 60,
+      maxlength: 40,
     },
     passwordConfirm: {
       type: String,
       // required: true,
       minlength: 10,
-      maxlength: 60,
+      maxlength: 40,
       validate: {
         // This only works on CREATE and SAVE!!!
         validator: function (value) {
@@ -173,7 +173,7 @@ UserSchema.methods.CheckPassword = async function (
   candidatePassword: string
   // userPassword: string
 ): Promise<boolean> {
-  return await bcrypt.compare(candidatePassword, this.password);
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 UserSchema.methods.changedPasswordAfter = function (

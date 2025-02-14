@@ -11,8 +11,8 @@ import {
 } from "./cartAction";
 import toast from "react-hot-toast";
 import { ProductType } from "@/app/lib/types/products.types";
-import { cartContextTranslate } from "@/app/_translate/(public)/cartContextTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { useUser } from "./user.context";
 import { UserAuthType } from "@/app/lib/types/users.types";
 import { set } from "mongoose";

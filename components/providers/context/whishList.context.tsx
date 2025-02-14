@@ -1,11 +1,11 @@
 "use client";
 import { createContext, useState, useContext, useEffect } from "react";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 import { useUser } from "./user.context";
 import toast from "react-hot-toast";
 import { ProductType } from "@/app/lib/types/products.types";
-import { accountWishlistTranslate } from "@/app/_translate/(auth)/account/wishlistTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 export type WishlistType = {
   product: ProductType;
   user: string;

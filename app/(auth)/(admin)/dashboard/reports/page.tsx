@@ -1,6 +1,6 @@
-import { reportsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/reportsTranslate";
+import { reportsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/reportsTranslate";
 import ComingSoon from "@/components/commingSoon/ComingSoon";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 export const metadata = {
   title: reportsTranslate.metadata[lang].title,
   description: reportsTranslate.metadata[lang].description,

@@ -1,6 +1,6 @@
-import { accountTicketsTranslate } from "@/app/_translate/(auth)/account/ticketsTranslate";
+import { accountTicketsTranslate } from "@/public/locales/client/(auth)/account/ticketsTranslate";
 import ComingSoon from "@/components/commingSoon/ComingSoon";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: accountTicketsTranslate[lang].metadata.title,

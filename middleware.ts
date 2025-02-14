@@ -9,10 +9,10 @@ import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 // import { rateLimitIp } from "./components/util/rateLimitIp";
-import { rateLimiter } from "./app/lib/util/rate-limiter";
-import AppError from "./app/lib/util/appError";
-import { tooManyRequestsTranslate } from "./app/_translate/(public)/tooManyRequestsTranslate";
-import { lang } from "./app/lib/util/lang";
+import { rateLimiter } from "./app/lib/utilities/rate-limiter";
+import AppError from "./app/lib/utilities/appError";
+import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
+import { lang } from "./app/lib/utilities/lang";
 
 const PROTECTED_ROUTES = ["/account", "/checkout", "/confirm-email-change"];
 

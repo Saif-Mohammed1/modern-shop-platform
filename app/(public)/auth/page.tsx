@@ -1,6 +1,6 @@
-import { loginTranslate } from "@/app/_translate/(public)/auth/loginTranslate";
+import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTranslate";
 import LoginPage from "@/components/authentication/login";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: loginTranslate[lang].Metadata.title,

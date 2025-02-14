@@ -2,14 +2,14 @@ import { DeviceInfo, RefreshTokenStatus } from "@/app/lib/types/refresh.types";
 import {
   getDeviceFingerprint,
   hashRefreshToken,
-} from "@/app/lib/util/refresh-token.util";
+} from "@/app/lib/utilities/refresh-token.util";
 import RefreshToken, { IRefreshToken } from "../models/refreshToken.model";
 import { sign, verify } from "jsonwebtoken";
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { refreshTokenControllerTranslate } from "../_Translate/refreshTokenControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
-import AppError from "@/app/lib/util/appError";
+import { refreshTokenControllerTranslate } from "../../../public/locales/server/refreshTokenControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
+import AppError from "@/app/lib/utilities/appError";
 
 export class RefreshTokenService {
   private static expiresAt = new Date(

@@ -13,14 +13,14 @@ import {
 } from "react-icons/fa"; // OS/Browser icons
 import moment from "moment";
 import { useEffect, useState } from "react";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
   accountSettingsTranslate,
   DeviceInfoType,
-} from "@/app/_translate/(auth)/account/settingsTranslate";
-import { lang } from "@/app/lib/util/lang";
+} from "@/public/locales/client/(auth)/account/settingsTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 moment.locale(lang ?? "uk");
 
 const DeviceInfoSectionV2 = ({

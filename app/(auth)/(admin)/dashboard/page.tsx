@@ -2,9 +2,9 @@ export const dynamic = "force-dynamic";
 // import AppError from "@/components/util/appError";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { dashboardTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/dashboardTranslate";
-import { lang } from "@/app/lib/util/lang";
-import api from "@/app/lib/util/api";
+import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
+import { lang } from "@/app/lib/utilities/lang";
+import api from "@/app/lib/utilities/api";
 import Dashboard from "@/components/(admin)/dashboard/dashboard";
 import ErrorHandler from "@/components/Error/errorHandler";
 

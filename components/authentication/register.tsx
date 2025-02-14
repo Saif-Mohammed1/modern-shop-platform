@@ -6,9 +6,9 @@ import Spinner from "../spinner/spinner";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import api from "../../app/lib/util/api";
-import { registerTranslate } from "@/app/_translate/(public)/auth/registerTranslate";
-import { lang } from "../../app/lib/util/lang";
+import api from "../../app/lib/utilities/api";
+import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");

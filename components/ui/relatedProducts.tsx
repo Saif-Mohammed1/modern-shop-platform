@@ -8,9 +8,9 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./styles.css";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import imageSrc from "@/app/lib/util/productImageHandler";
-import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/util/lang";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 // import { useEffect, useState } from "react";
 type RelatedProductsProps = {
   title?: string;

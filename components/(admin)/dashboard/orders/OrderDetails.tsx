@@ -1,9 +1,9 @@
 "use client";
 import React, { FC, useState } from "react";
 import toast from "react-hot-toast";
-import api from "@/app/lib/util/api";
-import { ordersTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/ordersTranslate";
-import { lang } from "@/app/lib/util/lang";
+import api from "@/app/lib/utilities/api";
+import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
 import { useRouter } from "next/navigation";
 

@@ -1,8 +1,8 @@
 import {
   accountOrdersTranslate,
   OrdersType,
-} from "@/app/_translate/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/util/lang";
+} from "@/public/locales/client/(auth)/account/ordersTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import Link from "next/link";
 import FetchMoreOrders from "./fetchMoreOrders";
 

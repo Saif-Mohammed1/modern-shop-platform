@@ -1,6 +1,6 @@
-import { contactUsTranslate } from "@/app/_translate/(public)/contactUsTranslate";
+import { contactUsTranslate } from "@/public/locales/client/(public)/contactUsTranslate";
 import ContactUs from "@/components/contact-us/contact-us";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: contactUsTranslate[lang].metadata.title, // Update the title here

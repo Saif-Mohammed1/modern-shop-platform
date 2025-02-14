@@ -1,4 +1,4 @@
-import AppError from "@/app/lib/util/appError";
+import AppError from "@/app/lib/utilities/appError";
 import { Redis } from "@upstash/redis";
 
 const existingEnv = () => {

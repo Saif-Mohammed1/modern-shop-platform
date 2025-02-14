@@ -4,15 +4,15 @@ import { verify } from "jsonwebtoken";
 // import { promisify } from "util";
 import crypto from "crypto"; // Add import for the crypto module
 
-import AppError from "@/app/lib/util/appError";
-import { Email, sendSecurityEmail } from "@/app/lib/util/email";
+import AppError from "@/app/lib/utilities/appError";
+import { Email, sendSecurityEmail } from "@/app/lib/utilities/email";
 import { RefreshTokenService } from "./refreshTokenController";
 import type { NextRequest } from "next/server";
-import { authControllerTranslate } from "../_Translate/authControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { authControllerTranslate } from "../../../public/locales/server/authControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { UserAuthType } from "@/app/lib/types/users.types";
 import TwoFactorAuth from "../models/2fa.model";
-import { getDeviceFingerprint } from "@/app/lib/util/refresh-token.util";
+import { getDeviceFingerprint } from "@/app/lib/utilities/refresh-token.util";
 
 type UserTokenType = {
   user: UserAuthType;

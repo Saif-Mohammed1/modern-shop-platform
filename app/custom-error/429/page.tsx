@@ -23,8 +23,8 @@
 
 // export default TooManyRequests;
 // app/errors/429/TooManyRequests.tsx
-import { tooManyRequestsTranslate } from "@/app/_translate/(public)/tooManyRequestsTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { tooManyRequestsTranslate } from "@/public/locales/client/(public)/tooManyRequestsTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { NextPage } from "next";
 import { cookies, headers } from "next/headers";
 import Link from "next/link";

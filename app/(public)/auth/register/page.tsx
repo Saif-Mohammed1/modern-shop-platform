@@ -1,6 +1,6 @@
-import { registerTranslate } from "@/app/_translate/(public)/auth/registerTranslate";
+import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 import RegisterPage from "@/components/authentication/register";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

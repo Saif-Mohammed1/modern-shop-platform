@@ -1,11 +1,11 @@
 import Shop from "@/components/shop/shop";
-import api from "@/app/lib/util/api";
-import AppError from "@/app/lib/util/appError";
+import api from "@/app/lib/utilities/api";
+import AppError from "@/app/lib/utilities/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { shopPageTranslate } from "@/app/_translate/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 
 export const metadata: Metadata = {

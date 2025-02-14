@@ -1,6 +1,6 @@
-import { dashboardTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/dashboardTranslate";
+import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
 import Sidebar from "@/components/(admin)/dashboard/dashboardSideBar";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 
 import { FC } from "react";

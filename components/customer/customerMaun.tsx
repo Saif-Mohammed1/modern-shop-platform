@@ -1,6 +1,6 @@
 // components/AccountMenu.js
 "use client";
-import { addressTranslate } from "@/app/_translate/(auth)/account/addressTranslate";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,7 +13,7 @@ import {
   FaListAlt,
   FaTicketAlt,
 } from "react-icons/fa";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import { Event } from "@/app/lib/types/products.types";
 import { RiShieldUserLine } from "react-icons/ri";
 

@@ -1,5 +1,5 @@
-import { reviewsTranslate } from "@/app/_translate/(public)/reviewsTranslate";
-import { lang } from "../../app/lib/util/lang";
+import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
+import { lang } from "../../app/lib/utilities/lang";
 type CustomButtonProps = {
   showMore: boolean;
   getMoreResults: () => void;

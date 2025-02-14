@@ -1,6 +1,6 @@
-import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { ProductType, Event } from "@/app/lib/types/products.types";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import { ChangeEvent } from "react";
 
 type EditProductDetailsProps = {

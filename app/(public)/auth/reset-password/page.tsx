@@ -1,6 +1,6 @@
-import { resetPasswordTranslate } from "@/app/_translate/(public)/auth/resetPasswordTranslate";
+import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
 import ResetPasswordPage from "@/components/authentication/resetPassword";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

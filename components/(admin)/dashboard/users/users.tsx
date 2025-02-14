@@ -2,11 +2,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import Pagination from "@/components/pagination/Pagination";
-import { usersTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/usersTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 
 type UserAuthType = {

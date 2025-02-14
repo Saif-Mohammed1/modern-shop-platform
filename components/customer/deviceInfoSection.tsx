@@ -20,11 +20,11 @@ import {
 } from "react-icons/fa";
 import moment from "moment";
 import { useEffect, useState } from "react";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { accountSettingsTranslate } from "@/app/_translate/(auth)/account/settingsTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import {
   RefreshTokenStatus,
   type sessionInfo,

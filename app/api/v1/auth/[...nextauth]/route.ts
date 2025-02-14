@@ -1,14 +1,14 @@
-import AppError from "@/app/lib/util/appError";
+import AppError from "@/app/lib/utilities/appError";
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies, headers } from "next/headers";
-import { authControllerTranslate } from "@/app/_server/_Translate/authControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import { NextRequest } from "next/server";
 import { logIn } from "@/app/_server/controllers/authController";
 import connectDB from "@/app/_server/db/db";
 import { TwoFactorAuthService } from "@/app/_server/controllers/2faController";
-import tokenManager from "@/app/lib/util/TokenManager";
+import tokenManager from "@/app/lib/utilities/TokenManager";
 import { RefreshTokenService } from "@/app/_server/controllers/refreshTokenController";
 const REFRESH_THRESHOLD = 3 * 60 * 1000; // Refresh 3 minutes before expiration
 const authOptions: AuthOptions = {

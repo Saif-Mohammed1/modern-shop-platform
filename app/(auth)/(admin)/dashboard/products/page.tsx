@@ -2,11 +2,11 @@
 
 import ErrorHandler from "@/components/Error/errorHandler";
 import AdminProducts from "@/components/(admin)/dashboard/products/adminProduct";
-import AppError from "@/app/lib/util/appError";
-import api from "@/app/lib/util/api";
+import AppError from "@/app/lib/utilities/appError";
+import api from "@/app/lib/utilities/api";
 import { headers } from "next/headers";
-import { productsTranslate } from "@/app/_translate/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { ProductsSearchParams } from "@/app/lib/types/products.types";
 export const metadata: Metadata = {

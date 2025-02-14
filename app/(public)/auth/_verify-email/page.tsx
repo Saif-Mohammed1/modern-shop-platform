@@ -1,6 +1,6 @@
-import { verifyEmailPasswordTranslate } from "@/app/_translate/(public)/auth/verifyEmailPasswordTranslate copy";
+import { verifyEmailPasswordTranslate } from "@/public/locales/client/(public)/auth/verifyEmailPasswordTranslate copy";
 import EmailVerificationPage from "@/components/authentication/_emailVerification";
-import { lang } from "@/app/lib/util/lang";
+import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

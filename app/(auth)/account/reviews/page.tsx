@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 import ReviewHistory from "@/components/customer/reviewHistory";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
-import { accountReviewsTranslate } from "@/app/_translate/(auth)/account/reviewsTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountReviewsTranslate } from "@/public/locales/client/(auth)/account/reviewsTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 export const metadata = {
   title: accountReviewsTranslate[lang].metadata.title,
   description: accountReviewsTranslate[lang].metadata.description,

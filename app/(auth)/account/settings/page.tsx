@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 import ChangePassword from "@/components/customer/changePassword";
-import api from "@/app/lib/util/api";
+import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { accountSettingsTranslate } from "@/app/_translate/(auth)/account/settingsTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 export const metadata: Metadata = {
   title: accountSettingsTranslate[lang].metadata.title,
   description: accountSettingsTranslate[lang].metadata.description,

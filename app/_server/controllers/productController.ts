@@ -1,8 +1,8 @@
-import AppError from "@/app/lib/util/appError";
-import { destroyImage, uploadImage } from "@/app/lib/util/cloudinary";
+import AppError from "@/app/lib/utilities/appError";
+import { destroyImage, uploadImage } from "@/app/lib/utilities/cloudinary";
 import type { NextRequest } from "next/server";
-import { productControllerTranslate } from "../_Translate/productControllerTranslate";
-import { lang } from "@/app/lib/util/lang";
+import { productControllerTranslate } from "../../../public/locales/server/productControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
 import Product, { IProductSchema } from "../models/product.model";
 import { getReviews } from "./reviewsController";
 
