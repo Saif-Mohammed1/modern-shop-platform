@@ -3,7 +3,7 @@
 import {
   useWishlist,
   WishlistType,
-} from "@/components/providers/context/whishList.context";
+} from "@/components/providers/context/wishlist/wishlist.context";
 import WishListCard from "./wishListCard";
 import { useEffect, useState } from "react";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";

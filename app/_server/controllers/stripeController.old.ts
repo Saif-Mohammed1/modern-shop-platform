@@ -1,10 +1,10 @@
 import AppError from "@/app/lib/utilities/appError";
 import Stripe from "stripe";
-import Product from "../models/product.model";
+import Product from "../models/Product.model";
 import Order from "../models/order.model ";
 import { sendEmailWithInvoice } from "@/app/lib/utilities/email";
 import { headers } from "next/headers";
-import User from "../models/user.model";
+import User from "../models/User.model";
 import type { NextRequest } from "next/server";
 import { stripeControllerTranslate } from "../../../public/locales/server/stripeControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";

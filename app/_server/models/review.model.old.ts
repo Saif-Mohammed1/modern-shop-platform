@@ -1,12 +1,12 @@
 // @ts-ignore
 import { Document, Model, Query, Schema, model, models } from "mongoose";
-import User, { IUserSchema } from "./user.model";
-import Product, { IProductSchema } from "./product.model";
+import User, { IUser } from "./User.model";
+import Product, { IProduct } from "./Product.model";
 
 export interface IReviewSchema extends Document {
   _id: Schema.Types.ObjectId;
-  user: IUserSchema["_id"]; // Only store the ObjectId of the User
-  product: IProductSchema["_id"]; // Only store the ObjectId of the Product
+  user: IUser["_id"]; // Only store the ObjectId of the User
+  product: IProduct["_id"]; // Only store the ObjectId of the Product
   rating: number;
   reviewText: string;
   createdAt: Date;

@@ -3,7 +3,7 @@ import {
   getDeviceFingerprint,
   hashRefreshToken,
 } from "@/app/lib/utilities/refresh-token.util";
-import RefreshToken, { IRefreshToken } from "../models/refreshToken.model";
+import RefreshToken, { IRefreshToken } from "../models/Session.model";
 import { sign, verify } from "jsonwebtoken";
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";

@@ -1,10 +1,10 @@
 import { ProductType } from "@/app/lib/types/products.types";
 import AppError from "@/app/lib/utilities/appError";
 import api from "@/app/lib/utilities/api";
-import { CartItemsType } from "./cart.context";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { UserAuthType } from "@/app/lib/types/users.types";
+import { CartItemsType } from "@/app/lib/types/cart.types";
 type User = UserAuthType | null;
 // Add item to cart
 export const addToCart = async (

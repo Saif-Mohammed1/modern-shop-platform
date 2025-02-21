@@ -1,10 +1,7 @@
-export const dynamic = "force-dynamic";
 import ErrorHandler from "@/components/Error/errorHandler";
 import HomeComponent from "@/components/home/home";
-// import AppError from "@/components/util/appError";
 import api from "@/app/lib/utilities/api";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
@@ -15,14 +12,7 @@ export const metadata: Metadata = {
 };
 export default async function Home() {
   try {
-    const {
-      data: { data },
-    } = await api.get("/shop/home-page", {
-      headers: Object.fromEntries(headers().entries()), // convert headers to plain object
-    });
-    // const topOfferProducts = data.topOfferProducts;
-    // const newProducts = data.newProducts;
-    // const topRating = data.topRating;
+    const { data } = await api.get("/shop/home-page");
 
     return (
       // <ComponentLoading>

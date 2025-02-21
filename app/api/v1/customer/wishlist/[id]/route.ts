@@ -1,13 +1,10 @@
-import { isAuth } from "@/app/_server/controllers/authController";
 import ErrorHandler from "@/app/_server/controllers/errorController";
-import {
-  createFav,
-  deleteFav,
-} from "@/app/_server/controllers/favoriteController";
-import { connectDB } from "@/app/_server/db/db";
-import Favorite from "@/app/_server/models/favorite.model";
+import favoriteController from "@/app/_server/controllers/favorite.controller";
 
-import { type NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/app/_server/db/db";
+import { AuthService } from "@/app/_server/middlewares/auth.middleware";
+
+import { type NextRequest } from "next/server";
 export const POST = async (
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -15,20 +12,9 @@ export const POST = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthService.requireAuth()(req);
     req.id = id;
-    const result = await createFav(req, Favorite);
-    if (!result) {
-      throw new Error("Failed to create favorite");
-    }
-    const { data, statusCode } = result;
-
-    return NextResponse.json(
-      {
-        data,
-      },
-      { status: statusCode }
-    );
+    return await favoriteController.addFavorite(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -41,10 +27,9 @@ export const DELETE = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthService.requireAuth()(req);
     req.id = id;
-    const { data, statusCode } = await deleteFav(req, Favorite);
-    return NextResponse.json({ data }, { status: statusCode });
+    return await favoriteController.removeFavorite(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

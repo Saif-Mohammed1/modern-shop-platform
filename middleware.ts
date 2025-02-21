@@ -55,6 +55,7 @@ const authMiddleware = async (req: NextRequest) => {
     // Handle rate limiting for API routes
     if (pathname.startsWith("/api")) {
       // const { failed } = rateLimitIp(clientIp);
+
       const limit = await rateLimiter.limit(clientIp);
 
       if (!limit.allowed) {
@@ -70,7 +71,7 @@ const authMiddleware = async (req: NextRequest) => {
         //  });
         throw new AppError(tooManyRequestsTranslate[lang].title, 429);
 
-        // NextResponse.rewrite(new URL(CUSTOM_ERROR_PATH, req.url));
+        // NextResponse.redirect(new URL(CUSTOM_ERROR_PATH, req.url));
       }
 
       // Apply rate limit headers to all responses

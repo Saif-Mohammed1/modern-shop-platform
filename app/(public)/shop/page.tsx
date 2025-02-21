@@ -60,14 +60,20 @@ const queryParams = async (searchParams: SearchParams) => {
   try {
     const {
       data: {
-        data,
-        pageCount,
-        categories: { categories },
+        products: { docs, meta, links },
+        categories,
       },
     } = await api.get("/shop/" + (queryString ? `?${queryString}` : ""), {
       headers: Object.fromEntries(headers().entries()), // convert headers to object
     });
-    return { data, pageCount, categories };
+    return {
+      docs,
+      pagination: {
+        meta,
+        links,
+      },
+      categories,
+    };
   } catch (error: any) {
     throw new AppError(error.message, error.status);
   }
@@ -86,7 +92,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
     max: searchParams.max || undefined,
   };
   try {
-    const { data, categories, pageCount } =
+    const { docs, categories, pagination } =
       await queryParams(defaultSearchParams);
     // await new Promise<void>((resolve) => {
     //   setTimeout(() => {
@@ -96,9 +102,21 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
     return (
       // <ComponentLoading>
       <Shop
-        products={data || []}
+        products={docs || []}
         categories={categories || []}
-        totalPages={pageCount || 1}
+        pagination={
+          pagination || {
+            meta: {
+              total: 0,
+              page: 0,
+              limit: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false,
+            },
+            links: { previous: "", next: "" },
+          }
+        }
       />
       // </ComponentLoading>
     );

@@ -13,24 +13,9 @@ import toast from "react-hot-toast";
 import { ProductType } from "@/app/lib/types/products.types";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { useUser } from "./user.context";
-import { UserAuthType } from "@/app/lib/types/users.types";
-import { set } from "mongoose";
-export type UserInCart = Partial<UserAuthType> | undefined;
+import { useUser } from "../user/user.context";
+import { CartContextType, CartItemsType } from "@/app/lib/types/cart.types";
 
-export type CartItemsType = {
-  quantity: number;
-} & ProductType;
-
-type CartContextType = {
-  isCartOpen: boolean;
-  toggleCartStatus: () => void;
-  cartItems: CartItemsType[];
-  addToCartItems: (product: ProductType, quantity?: number) => void;
-  removeCartItem: (product: ProductType) => void;
-  setIsCartOpen: (status: boolean) => void;
-  clearProductFromCartItem: (product: ProductType) => void;
-};
 // Create the cart context
 export const CartContext = createContext<CartContextType>({
   isCartOpen: false,
@@ -150,26 +135,26 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const toggleCartStatus = () => {
     setIsCartOpen(!isCartOpen);
   };
-  const updateQuantity = async (productId: string, quantity: number) => {
-    try {
-      const existingProduct = cartItems.find((item) => item._id === productId);
-      if (existingProduct && existingProduct.stock <= quantity) {
-        if (user) await updateCartQuantity(productId, quantity);
-        // check if existing product quanty is less or equal  product stock
+  // const updateQuantity = async (productId: string, quantity: number) => {
+  //   try {
+  //     const existingProduct = cartItems.find((item) => item._id === productId);
+  //     if (existingProduct && existingProduct.stock <= quantity) {
+  //       if (user) await updateCartQuantity(productId, quantity);
+  //       // check if existing product quanty is less or equal  product stock
 
-        setCartItems((prev) =>
-          prev.map((item) =>
-            item._id === productId ? { ...item, quantity } : item
-          )
-        );
-      } else {
-        throw new Error("Quantity exceeds available stock");
-      }
-    } catch (error) {
-      // toast.error("Failed to update quantity");
-      throw error;
-    }
-  };
+  //       setCartItems((prev) =>
+  //         prev.map((item) =>
+  //           item._id === productId ? { ...item, quantity } : item
+  //         )
+  //       );
+  //     } else {
+  //       throw new Error("Quantity exceeds available stock");
+  //     }
+  //   } catch (error) {
+  //     // toast.error("Failed to update quantity");
+  //     throw error;
+  //   }
+  // };
   useEffect(() => {
     const loadCart = async () => {
       try {
@@ -243,6 +228,4 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     </CartContext.Provider>
   );
 };
-export const useCartItems = () => {
-  return useContext(CartContext);
-};
+export const useCartItems = () => useContext(CartContext);

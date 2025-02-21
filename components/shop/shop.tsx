@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { HiFilter, HiX } from "react-icons/hi";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
-import Pagination from "@/components/pagination/Pagination";
+import Pagination, { PaginationType } from "@/components/pagination/Pagination";
 import ProductCard from "@/components/products/product-card/productCard";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
@@ -13,10 +13,10 @@ import Filters from "../ui/Filters";
 type ShopProps = {
   products: ProductType[];
   categories: string[];
-  totalPages: number;
+  pagination: PaginationType;
 };
 
-const Shop = ({ products, categories, totalPages }: ShopProps) => {
+const Shop = ({ products, categories, pagination }: ShopProps) => {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   // Query state management
@@ -161,11 +161,7 @@ const Shop = ({ products, categories, totalPages }: ShopProps) => {
         </div>
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        onPageChange={onPaginationChange}
-        totalPages={totalPages}
-      />
+      <Pagination meta={pagination.meta} onPageChange={onPaginationChange} />
     </section>
   );
 };

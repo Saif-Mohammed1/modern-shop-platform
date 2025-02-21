@@ -1,14 +1,15 @@
 "use client";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import { useCartItems, CartItemsType } from "../providers/context/cart.context";
+import { useCartItems } from "../providers/context/cart/cart.context";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { useUser } from "../providers/context/user.context";
 import imageSrc from "../../app/lib/utilities/productImageHandler";
 import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
 import { lang } from "../../app/lib/utilities/lang";
 import { FiX } from "react-icons/fi";
+import { useUser } from "../providers/context/user/user.context";
+import { CartItemsType } from "@/app/lib/types/cart.types";
 
 type CartDropdownProps = {
   setIsCartOpen: (value: boolean) => void;

@@ -1,16 +1,17 @@
 import { DeviceInfo } from "@/app/lib/types/refresh.types";
 import SessionModel, { ISession } from "../models/Session.model";
 import { SessionRepository } from "../repositories/session.repository";
-import { IUser } from "../models/User.model";
+import { TokensService } from "./tokens.service";
 
 export class SessionService {
   private repository = new SessionRepository(SessionModel);
-  async getSessions(userId: IUser["_id"]): Promise<ISession[] | null> {
+  private tokensService = new TokensService();
+  async getSessions(userId: string): Promise<ISession[] | null> {
     return this.repository.getSessions(userId);
   }
 
   async createSession(
-    userId: IUser["_id"],
+    userId: string,
     deviceInfo: DeviceInfo,
     hashedToken: string,
     expiresAt: Date
@@ -24,11 +25,27 @@ export class SessionService {
     });
   }
 
-  async revokeSession(sessionId: ISession["_id"]): Promise<void> {
+  async revokeSession(sessionId: string): Promise<void> {
     this.repository.revokeSession(sessionId);
   }
 
-  async revokeAllSessions(userId: IUser["_id"]): Promise<void> {
+  async revokeAllSessions(userId: string): Promise<void> {
     this.repository.revokeAllSessions(userId);
+    this.tokensService.clearRefreshTokenCookies();
+  }
+
+  async validateRefreshToken(
+    userId: string,
+    rawToken: string
+  ): Promise<boolean> {
+    const tokenHash = this.tokensService.hashRefreshToken(rawToken);
+    const token = await this.repository.findActiveToken(userId, tokenHash);
+
+    if (!token) return false;
+
+    // Update last used timestamp
+    await this.repository.updateLastUsedAt(String(token._id));
+
+    return true;
   }
 }

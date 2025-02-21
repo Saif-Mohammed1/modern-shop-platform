@@ -2,8 +2,6 @@ import axios from "axios";
 import tokenManager from "./TokenManager";
 import AppError from "./appError";
 
-import { logErrorToFile } from "./logError";
-
 // Create an Axios instance
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_ENDPOINT,

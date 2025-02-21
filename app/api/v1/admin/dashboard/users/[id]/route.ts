@@ -6,7 +6,7 @@ import {
   updateOne,
 } from "@/app/_server/controllers/factoryController";
 import { connectDB } from "@/app/_server/db/db";
-import User, { IUserSchema } from "@/app/_server/models/user.model";
+import User, { IUser } from "@/app/_server/models/User.model";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
@@ -23,7 +23,7 @@ export const GET = async (
     await isAuth(req);
     await restrictTo(req, "admin");
     req.id = id;
-    const { data, statusCode } = await getOne<IUserSchema>(req, User);
+    const { data, statusCode } = await getOne<IUser>(req, User);
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {
     return ErrorHandler(error, req);
@@ -44,7 +44,7 @@ export const PUT = async (
     await isAuth(req);
     await restrictTo(req, "admin");
     req.id = id;
-    const { data, statusCode } = await updateOne<IUserSchema>(req, User, [
+    const { data, statusCode } = await updateOne<IUser>(req, User, [
       "name",
       "email",
       "role",
@@ -70,7 +70,7 @@ export const DELETE = async (
     await isAuth(req);
     await restrictTo(req, "admin");
     req.id = id;
-    const { data, statusCode } = await deleteOne<IUserSchema>(req, User);
+    const { data, statusCode } = await deleteOne<IUser>(req, User);
 
     return NextResponse.json({ data }, { status: statusCode });
   } catch (error) {

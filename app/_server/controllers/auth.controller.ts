@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserValidation } from "../dtos/user.dto";
-import AppError from "@/app/lib/utilities/appError";
 import { UserService } from "../services/user.service";
 import { getDeviceFingerprint } from "@/app/lib/utilities/DeviceFingerprint.utility";
-import { AuthService } from "../services/auth.service";
-import { UserRole } from "../models/User.model";
 
-export class AuthController {
+class AuthController {
   private userService = new UserService();
 
   async register(req: NextRequest) {
@@ -40,7 +37,7 @@ export class AuthController {
       throw error;
     }
   }
-  async logout(req: NextRequest) {
+  async logout(_req: NextRequest) {
     try {
       // const deviceInfo = await getDeviceFingerprint(req);
       await this.userService.logOut();
@@ -56,7 +53,7 @@ export class AuthController {
   async forgotPassword(req: NextRequest) {
     try {
       const { email } = await req.json();
-      const result = UserValidation.isEmail(email);
+      const result = UserValidation.validateEmailAndSanitize(email);
       const deviceInfo = await getDeviceFingerprint(req);
 
       await this.userService.requestPasswordReset(result, deviceInfo);
@@ -70,13 +67,11 @@ export class AuthController {
   }
   async isEmailAndTokenValid(req: NextRequest) {
     try {
-      // const authMiddleware =
-      await AuthService.requireAuth([UserRole.ADMIN])(req);
-      // await authMiddleware(req);
       const params = new URLSearchParams(req.nextUrl.searchParams);
-      const token = params.get("token");
-      const email = params.get("email");
+      const token = params.get("token") || undefined;
+      const email = params.get("email") || undefined;
       const result = UserValidation.validateEmailAndToken({ token, email });
+      result.email = UserValidation.validateEmailAndSanitize(result.email);
       await this.userService.validateEmailAndToken(result.token, result.email);
       return NextResponse.json({ message: "Token is valid" }, { status: 200 });
     } catch (error) {
@@ -85,11 +80,20 @@ export class AuthController {
   }
   async resetPassword(req: NextRequest) {
     try {
-      const { token, password } = await req.json();
+      const params = new URLSearchParams(req.nextUrl.searchParams);
+
+      const token = params.get("token") || undefined;
+      const email = params.get("email") || undefined;
+      const { password } = await req.json();
       const deviceInfo = await getDeviceFingerprint(req);
-      const result = UserValidation.validatePasswordReset({ token, password });
+      const result = UserValidation.validatePasswordReset({
+        token,
+        password,
+        email,
+      });
       await this.userService.validatePasswordResetToken(
         result.token,
+        result.email,
         result.password,
         deviceInfo
       );
@@ -102,3 +106,4 @@ export class AuthController {
     }
   }
 }
+export default new AuthController();

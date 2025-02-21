@@ -108,6 +108,15 @@ export class UserValidation {
     token: z.string({
       required_error: userZodValidatorTranslate[lang].token.required,
     }),
+    email: z
+      .string({
+        required_error: userZodValidatorTranslate[lang].email.required,
+      })
+      .email(userZodValidatorTranslate[lang].email.invalid)
+      .refine((email) => {
+        const domain = email.split("@")[1];
+        return this.allowedEmailDomains.includes(domain);
+      }, userZodValidatorTranslate[lang].email.domainNotAllowed),
     password: z
       .string({
         required_error: userZodValidatorTranslate[lang].password.required,
@@ -143,19 +152,21 @@ export class UserValidation {
   }
 
   /** Validate Email */
-  static isEmail(email: string) {
-    return z
+  static validateEmailAndSanitize(email: string) {
+    return this.sanitizeEmail(
+      z
 
-      .string({
-        required_error: userZodValidatorTranslate[lang].email.required,
-      })
-      .email(userZodValidatorTranslate[lang].email.invalid)
-      .refine((email) => {
-        const domain = email.split("@")[1];
-        return this.allowedEmailDomains.includes(domain);
-      }, userZodValidatorTranslate[lang].email.domainNotAllowed)
+        .string({
+          required_error: userZodValidatorTranslate[lang].email.required,
+        })
+        .email(userZodValidatorTranslate[lang].email.invalid)
+        .refine((email) => {
+          const domain = email.split("@")[1];
+          return this.allowedEmailDomains.includes(domain);
+        }, userZodValidatorTranslate[lang].email.domainNotAllowed)
 
-      .parse(email);
+        .parse(email)
+    );
   }
   // Santize any + chr from email
   // static sanitizeEmail(email: string) {

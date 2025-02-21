@@ -1,10 +1,10 @@
 // @ts-ignore
 import { Document, Model, Query, Schema, model, models } from "mongoose";
-import User, { IUserSchema } from "./user.model";
+import User, { IUser } from "./User.model";
 
 export interface IRefundSchema extends Document {
   _id: Schema.Types.ObjectId;
-  user: IUserSchema["_id"];
+  user: IUser["_id"];
   status: "pending" | "approved" | "rejected";
   issue: string;
   reason: string;

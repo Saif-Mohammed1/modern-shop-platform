@@ -1,7 +1,9 @@
+export const dynamic = "force-static";
+export const revalidate = 60 * 10;
 import ErrorHandler from "@/app/_server/controllers/errorController";
-import { getOneProductAndRelatedProductsAndReviews } from "@/app/_server/controllers/productController";
+import productController from "@/app/_server/controllers/product.controller";
 import { connectDB } from "@/app/_server/db/db";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 export const GET = async (
   req: NextRequest,
   {
@@ -14,9 +16,7 @@ export const GET = async (
   try {
     await connectDB();
     req.slug = slug;
-    const { data, statusCode } =
-      await getOneProductAndRelatedProductsAndReviews(req);
-    return NextResponse.json({ data }, { status: statusCode });
+    return await productController.getProductBySlug(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

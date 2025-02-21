@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { lang } from "@/app/lib/utilities/lang";
 import { Model } from "mongoose";
 import { cartControllerTranslate } from "../../../public/locales/server/cartControllerTranslate";
-import { IFavoriteSchema } from "../models/favorite.model";
+import { IFavoriteSchema } from "../models/Favorite.model";
 
 export const getFav = async (
   req: NextRequest,

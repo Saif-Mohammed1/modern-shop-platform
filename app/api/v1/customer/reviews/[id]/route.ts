@@ -1,11 +1,11 @@
-import { isAuth } from "@/app/_server/controllers/authController";
 import ErrorHandler from "@/app/_server/controllers/errorController";
+import reviewController from "@/app/_server/controllers/review.controller";
 import {
   checkReview,
   createReviews,
-  getReviews,
 } from "@/app/_server/controllers/reviewsController";
 import { connectDB } from "@/app/_server/db/db";
+import { AuthService } from "@/app/_server/middlewares/auth.middleware";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
@@ -20,8 +20,8 @@ export const GET = async (
   try {
     await connectDB();
     req.id = id;
-    const { data, statusCode, hasNextPage } = await getReviews(req);
-    return NextResponse.json({ data, hasNextPage }, { status: statusCode });
+
+    return await reviewController.getProductReviews(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -34,7 +34,7 @@ export const POST = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthService.requireAuth()(req);
     req.id = id;
     await checkReview(req);
     const { data, statusCode } = await createReviews(req);
@@ -50,7 +50,7 @@ export const PATCH = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthService.requireAuth()(req);
     req.id = id;
     const { data, statusCode } = await checkReview(req);
     return NextResponse.json({ data }, { status: statusCode });

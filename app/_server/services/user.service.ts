@@ -16,7 +16,6 @@ import { AuditAction } from "@/app/lib/types/audit.types";
 import UserModel, { IUser, UserRole, UserStatus } from "../models/User.model";
 import { SessionService } from "./session.service";
 import { TokensService } from "./tokens.service";
-import { VoidFunctionComponent } from "react";
 
 export class UserService {
   constructor(
@@ -33,7 +32,7 @@ export class UserService {
     const session = await this.repository.startSession();
     try {
       session.startTransaction();
-      dto.email = UserValidation.sanitizeEmail(dto.email);
+      dto.email = UserValidation.validateEmailAndSanitize(dto.email);
       const existingUser = await this.repository.findByEmail(dto.email);
       if (existingUser) {
         throw new AppError(
@@ -89,7 +88,7 @@ export class UserService {
         message: string;
       }
   > {
-    email = UserValidation.sanitizeEmail(email);
+    email = UserValidation.validateEmailAndSanitize(email);
     const user = await this.repository.findByEmail(email);
     if (!user || !user.password) {
       throw new AppError("Invalid credentials", 401);
@@ -146,58 +145,13 @@ export class UserService {
       ),
       this.repository.updateLastLogin(user._id),
     ]);
+    this.tokensService.setRefreshTokenCookies(refreshToken);
 
-    cookies().set(this.tokensService.COOKIE_NAME, refreshToken, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
-      secure: process.env.NODE_ENV === "production", // 'false' in development
-      path: "/",
-      expires: this.tokensService.getRefreshTokenExpiry(),
-      // Add these for enhanced security:
-      partitioned: true, // Chrome 109+ feature
-      priority: "high", // Protect against CRIME attacks
-    });
     // Update last login
 
     await this.repository.clearRateLimit(user, "login");
     return { user, accessToken, refreshToken };
   }
-  // async authenticateUserWithMFA(
-  //   userId: string,
-  //   token: string
-  // ): Promise<{ accessToken: string; refreshToken: string }> {
-  //   const user = await this.repository.findById(userId);
-  //   if (!user) {
-  //     throw new AppError("User not found", 404);
-  //   }
-
-  //   const isValid = await this.repository.verifyMFAToken(userId, token);
-  //   if (!isValid) {
-  //     throw new AppError("Invalid MFA token", 401);
-  //   }
-
-  //   const { accessToken, refreshToken, hashedToken } =
-  //     this.tokensService.generateAuthTokens(user._id);
-  //   // Create new session
-  //   await this.sessionService.createSession(
-  //     user._id,
-  //     { ipAddress: "
-
-  //     " },
-  //     hashedToken,
-  //     this.tokensService.getRefreshTokenExpiry()
-  //   );
-  //   cookies().set(this.tokensService.COOKIE_NAME, refreshToken, {
-  //     httpOnly: true,
-  //     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
-  //     secure: process.env.NODE_ENV === "production", // 'false' in development
-
-  //   });
-  //   // Update last login
-  //   await this.repository.updateLastLogin(user._id);
-
-  //   return { accessToken, refreshToken };
-  // }
 
   // Password Management
   async findUserById(userId: string): Promise<IUser | null> {
@@ -206,15 +160,7 @@ export class UserService {
   async logOut(): Promise<{
     message: string;
   }> {
-    cookies().set(this.tokensService.COOKIE_NAME, "", {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      expires: new Date(0),
-      path: "/",
-      priority: "high",
-      partitioned: true,
-    });
+    this.tokensService.clearRefreshTokenCookies();
 
     return { message: "Logged out" };
   }
@@ -222,7 +168,7 @@ export class UserService {
     email: string,
     deviceInfo: DeviceInfo
   ): Promise<void> {
-    email = UserValidation.sanitizeEmail(email);
+    email = UserValidation.validateEmailAndSanitize(email);
 
     const session = await this.repository.startSession();
     try {
@@ -271,13 +217,16 @@ export class UserService {
 
   async validatePasswordResetToken(
     token: string,
+    email: string,
     newPassword: string,
     deviceInfo: DeviceInfo
   ): Promise<void> {
     const session = await this.repository.startSession();
 
-    const user =
-      await this.repository.validateResetPasswordEmailAndToken(token);
+    const user = await this.repository.validateResetPasswordEmailAndToken(
+      token,
+      email
+    );
     if (!user) {
       throw new AppError("Invalid or expired token", 400);
     }

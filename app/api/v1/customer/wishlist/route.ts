@@ -1,22 +1,13 @@
-import { isAuth } from "@/app/_server/controllers/authController";
 import ErrorHandler from "@/app/_server/controllers/errorController";
-import { getFav } from "@/app/_server/controllers/favoriteController";
-// import { getDataByUser } from "@/app/_server/controller/factoryController";
+import favoriteController from "@/app/_server/controllers/favorite.controller";
 import { connectDB } from "@/app/_server/db/db";
-import Favorite, { IFavoriteSchema } from "@/app/_server/models/favorite.model";
-import { type NextRequest, NextResponse } from "next/server";
+import { AuthService } from "@/app/_server/middlewares/auth.middleware";
+import { type NextRequest } from "next/server";
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
-
-    await isAuth(req);
-    const { data, statusCode } = await getFav(req, Favorite);
-    return NextResponse.json(
-      {
-        data,
-      },
-      { status: statusCode }
-    );
+    await AuthService.requireAuth()(req);
+    return await favoriteController.getFavorites(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

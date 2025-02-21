@@ -5,11 +5,11 @@ import { cookies, headers } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { NextRequest } from "next/server";
-import { logIn } from "@/app/_server/controllers/authController";
 import connectDB from "@/app/_server/db/db";
 import { TwoFactorAuthService } from "@/app/_server/controllers/2faController";
 import tokenManager from "@/app/lib/utilities/TokenManager";
-import { RefreshTokenService } from "@/app/_server/controllers/refreshTokenController";
+import sessionController from "@/app/_server/controllers/session.controller";
+import authController from "@/app/_server/controllers/auth.controller";
 const REFRESH_THRESHOLD = 3 * 60 * 1000; // Refresh 3 minutes before expiration
 const authOptions: AuthOptions = {
   session: {
@@ -27,7 +27,6 @@ const authOptions: AuthOptions = {
             password: string;
             code: number;
           };
-
           await connectDB();
 
           if (!code) {
@@ -51,8 +50,9 @@ const authOptions: AuthOptions = {
               }
             );
 
-            const { user, statusCode } = await logIn(req);
-
+            const result = await authController.login(req);
+            const statusCode = result.status;
+            const { user } = await result.json(); // Extract JSON data
             // Use a type guard to check if `user` has `requires2FA`
             if (
               statusCode === 202 ||
@@ -194,8 +194,8 @@ async function refreshAccessTokenHandler(token: any) {
         method: "GET",
       }
     );
-
-    const { accessToken } = await RefreshTokenService.refreshAccessToken(req);
+    const result = await sessionController.refreshAccessToken(req);
+    const { accessToken } = await result.json();
     tokenManager.setAccessToken(accessToken);
     return {
       ...token,

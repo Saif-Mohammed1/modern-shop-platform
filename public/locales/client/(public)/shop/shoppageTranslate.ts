@@ -30,6 +30,13 @@ export const shopPageTranslate = {
       outOfStock: "Out of Stock",
       addToCart: "Add to Cart",
       description: "Description",
+      reviews: "Reviews",
+      remaining: "Remaining",
+      discountExpires: "Discount Expires",
+      specifications: "Specifications",
+      category: "Category",
+      productDetails: "Product Details",
+      relatedProducts: "Related Products",
     },
     shopPage: {
       Metadata: {
@@ -144,6 +151,13 @@ export const shopPageTranslate = {
       outOfStock: "Немає в наявності",
       addToCart: "Додати в кошик",
       description: "Опис",
+      reviews: "Відгуки",
+      remaining: "Залишилось",
+      discountExpires: "Знижка закінчується",
+      specifications: "Характеристики",
+      category: "Категорія",
+      productDetails: "Деталі продукту",
+      relatedProducts: "Схожі продукти",
     },
     shopPage: {
       Metadata: {

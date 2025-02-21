@@ -1,4 +1,4 @@
-import User from "../models/user.model";
+import User from "../models/User.model";
 import { cookies } from "next/headers";
 import { verify } from "jsonwebtoken";
 // import { promisify } from "util";

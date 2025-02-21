@@ -1,11 +1,10 @@
 // @ts-ignore
 import { Document, Model, model, models, Query, Schema } from "mongoose";
-import User, { IUserSchema } from "./user.model";
-import Product, { IProductSchema } from "./product.model";
+import User, { IUser } from "./User.model";
+import Product, { IProductSchema } from "./Product.model";
 
 export interface ICartSchema extends Document {
-  _id: Schema.Types.ObjectId;
-  user: IUserSchema["_id"]; // Only store the ObjectId of the User
+  user: IUser["_id"]; // Only store the ObjectId of the User
   product: IProductSchema["_id"]; // Only store the ObjectId of the Product
   quantity: number;
   createdAt: Date;

@@ -1,3 +1,4 @@
+import { ReviewsType } from "./reviews.types";
 import { UserAuthType } from "./users.types";
 
 export type ProductsSearchParams = {
@@ -23,20 +24,35 @@ type OldImage = {
 //   _id: string;
 // };
 export type ProductType = {
+  _id: string;
+
   name: string;
   category: string;
   price: number;
   discount: number;
   discountExpire?: Date;
   images: OldImage[] | [];
-  user: Partial<UserAuthType>;
+  userId: Partial<UserAuthType>;
   description: string;
   stock: number;
-  // _id: mongoose.Schema.Types.ObjectId | string;
-  _id: string;
   ratingsAverage: number;
   ratingsQuantity: number;
   createdAt: string;
   slug: string;
   active: boolean;
+  reserved?: number;
+  lastReserved?: Date;
+  sold?: number;
+
+  sku: string;
+  attributes?: Record<string, any>;
+  shippingInfo: {
+    weight: number;
+    dimensions: {
+      length: number;
+      width: number;
+      height: number;
+    };
+  };
+  reviews: ReviewsType[];
 };

@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server";
 import * as crypto from "crypto";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
-import User, { IUserSchema } from "../models/user.model";
+import User, { IUser } from "../models/User.model";
 import { cookies } from "next/headers";
 import { modifyFinalResponse } from "./authController";
 import { authControllerTranslate } from "../../../public/locales/server/authControllerTranslate";
@@ -536,7 +536,7 @@ export class TwoFactorAuthService {
   }
 
   private static async handleSuccessfulVerification(
-    user: IUserSchema,
+    user: IUser,
     twoFA: ITwoFactorAuth,
     metadata: SecurityMetadata
   ) {
@@ -549,7 +549,7 @@ export class TwoFactorAuthService {
   }
 
   private static async handleValidBackupCode(
-    user: IUserSchema,
+    user: IUser,
     twoFA: ITwoFactorAuth,
     codeIndex: number,
     metadata: SecurityMetadata
@@ -643,7 +643,7 @@ export class TwoFactorAuthService {
       .update(`${metadata.ipAddress}-${metadata.userAgent}`)
       .digest("hex");
   }
-  private static async rateLimitUser(user: IUserSchema) {
+  private static async rateLimitUser(user: IUser) {
     try {
       if (user.passwordLoginBlockedUntil) {
         if (user.passwordLoginBlockedUntil < new Date()) {

@@ -1,11 +1,11 @@
 "use client";
 import { createContext, useState, useContext, useEffect } from "react";
 import api from "@/app/lib/utilities/api";
-import { useUser } from "./user.context";
 import toast from "react-hot-toast";
 import { ProductType } from "@/app/lib/types/products.types";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { lang } from "@/app/lib/utilities/lang";
+import { useUser } from "../user/user.context";
 export type WishlistType = {
   product: ProductType;
   user: string;
@@ -38,7 +38,7 @@ export const WishlistProvider = ({
       if (user) {
         try {
           const { data } = await api.get("/customer/wishlist");
-          setWishlist(data.data);
+          setWishlist(data.data ?? []);
         } catch (error: unknown) {
           if (error instanceof Error) {
             toast.error(
@@ -49,6 +49,7 @@ export const WishlistProvider = ({
           } else {
             toast.error(accountWishlistTranslate[lang].errors.global);
           }
+          setWishlist([]);
         }
       } else {
         const storedWishlist = localStorage.getItem("wishlist");
@@ -129,6 +130,4 @@ export const WishlistProvider = ({
   );
 };
 
-export const useWishlist = () => {
-  return useContext(WishlistContext);
-};
+export const useWishlist = () => useContext(WishlistContext);

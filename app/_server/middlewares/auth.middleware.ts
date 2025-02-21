@@ -1,14 +1,15 @@
 import { NextRequest } from "next/server";
-import { UserService } from "./user.service";
+import { UserService } from "../services/user.service";
 import { IUser, UserRole, UserStatus } from "../models/User.model";
 import AppError from "@/app/lib/utilities/appError";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { promisify } from "util";
-import jwt from "jsonwebtoken";
+import { TokensService } from "../services/tokens.service";
+import { commonTranslations } from "@/public/locales/server/Common.Translate";
+
 export class AuthService {
   private static userService = new UserService();
-
+  private static tokenService = new TokensService();
   static requireAuth(roles?: UserRole[]) {
     return async (req: NextRequest) => {
       const authHeader = req?.headers?.get("authorization");
@@ -21,16 +22,14 @@ export class AuthService {
         );
       }
 
-      const decoded = (await promisify<string, jwt.Secret>(jwt.verify)(
-        token,
-        process.env.JWT_ACCESS_TOKEN_SECRET!
-      )) as unknown as { userId: string };
+      const decoded = await this.tokenService.decodedAccessToken(token);
       const user = await this.userService.findUserById(decoded.userId);
 
-      if (!user) throw new AppError("User no longer exists", 401);
+      if (!user)
+        throw new AppError(commonTranslations[lang].userNotExists, 401);
 
       if (user.status !== UserStatus.ACTIVE) {
-        throw new AppError("Your account has been suspended", 403);
+        throw new AppError(commonTranslations[lang].userSuspended, 403);
       }
 
       if (roles && roles.length > 0) {
@@ -43,10 +42,7 @@ export class AuthService {
 
   private static async enforceRole(roles: UserRole[], user: IUser) {
     if (!roles.includes(user.role)) {
-      throw new AppError(
-        "You do not have permission to access this resource",
-        403
-      );
+      throw new AppError(commonTranslations[lang].noPermission, 403);
     }
   }
 
@@ -63,7 +59,7 @@ export class AuthService {
     };
 
     if (!permissions[user.role].includes(action)) {
-      throw new AppError("Unauthorized action", 403);
+      throw new AppError(commonTranslations[lang].unauthorizedAction, 403);
     }
   }
 }

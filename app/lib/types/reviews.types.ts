@@ -3,9 +3,9 @@ import { UserAuthType } from "./users.types";
 
 export type ReviewsType = {
   _id: string;
-  user: Partial<UserAuthType>;
-  product: Partial<ProductType>;
+  userId: Partial<UserAuthType>;
+  productId: Partial<ProductType>;
   rating: number;
-  reviewText: string;
+  comment: string;
   createdAt: string;
 };

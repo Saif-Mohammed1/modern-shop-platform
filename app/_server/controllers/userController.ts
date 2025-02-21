@@ -1,5 +1,5 @@
 import AppError from "@/app/lib/utilities/appError";
-import User, { IUserSchema } from "../models/user.model";
+import User, { IUser } from "../models/User.model";
 import { modifyFinalResponse } from "./authController";
 // import { createUserTokens } from "./refreshTokenController";
 import { ChangeEmail } from "@/app/lib/utilities/email";
@@ -193,10 +193,10 @@ export const createUserByAdmin = async (req: NextRequest) => {
 };
 export const editUserByAdmin = async (
   req: NextRequest,
-  Model: Model<IUserSchema>
+  Model: Model<IUser>
 ) => {
   try {
-    let data: Partial<IUserSchema> = {};
+    let data: Partial<IUser> = {};
     const { active, role } = await req.json();
 
     if (typeof active !== "boolean" && !role) {
@@ -237,7 +237,7 @@ export const editUserByAdmin = async (
 };
 export const deleteUserByAdmin = async (
   req: NextRequest,
-  Model: Model<IUserSchema>
+  Model: Model<IUser>
 ) => {
   try {
     const doc = await Model.findByIdAndDelete(req.id);
@@ -257,10 +257,7 @@ export const deleteUserByAdmin = async (
     throw error;
   }
 };
-export const deleteUser = async (
-  req: NextRequest,
-  Model: Model<IUserSchema>
-) => {
+export const deleteUser = async (req: NextRequest, Model: Model<IUser>) => {
   try {
     const doc = await Model.findByIdAndUpdate(
       req.user?._id,

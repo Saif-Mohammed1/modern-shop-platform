@@ -3,11 +3,16 @@ import { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  redirect,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useCartItems } from "../providers/context/cart.context";
-import { useWishlist } from "../providers/context/whishList.context";
+import { useCartItems } from "../providers/context/cart/cart.context";
+import { useWishlist } from "../providers/context/wishlist/wishlist.context";
 import StarRatings from "react-star-ratings";
 import { FaArrowRightLong } from "react-icons/fa6";
 // import { motion, AnimatePresence } from "framer-motion";
@@ -25,20 +30,20 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const [quantity, setQuantity] = useState(1);
 
   // Replace the window.location.reload button with:
-  const handleForceRefresh = () => {
-    // Create new search params with cache-buster
-    const params = new URLSearchParams(searchParams);
-    params.set("forceRefresh", Date.now().toString());
+  // const handleForceRefresh = () => {
+  //   // Create new search params with cache-buster
+  //   const params = new URLSearchParams(searchParams);
+  //   params.set("forceRefresh", Date.now().toString());
 
-    // Update URL without scroll reset
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  //   // Update URL without scroll reset
+  //   router.replace(`${pathname}?${params.toString()}`, { scroll: false });
 
-    // Remove the param after navigation
-    setTimeout(() => {
-      params.delete("forceRefresh");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }, 100);
-  };
+  //   // Remove the param after navigation
+  //   setTimeout(() => {
+  //     params.delete("forceRefresh");
+  //     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  //   }, 100);
+  // };
 
   // Modify the handleAddToCart function
   const handleAddToCart = async () => {
@@ -273,8 +278,10 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           </div>
         )}
         <button
-          onClick={handleForceRefresh}
-          // onClick={() => window.location.reload()}
+          onClick={() => {
+            console.log(`/shop/${product.slug}`);
+            redirect(`/shop/${product.slug}`);
+          }}
           className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors"
         >
           {shopPageTranslate[lang].modelProductDetails.getMoreDetails}

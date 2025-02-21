@@ -1,4 +1,4 @@
-import { IProductSchema } from "../../_server/models/product.model";
+import { IProductSchema } from "../../_server/models/Product.model";
 import { UserAuthType } from "./users.types";
 // import Address from "./address.model";
 // export type status = "pending" | "completed" | "refunded" | "processing" | "cancelled";

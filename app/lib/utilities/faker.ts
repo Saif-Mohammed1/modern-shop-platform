@@ -1,5 +1,6 @@
 import { OrderStatus } from "@/app/lib/types/orders.types";
 import { faker } from "@faker-js/faker";
+import { assignAsObjectId } from "./assignAsObjectId";
 // create a random user
 interface IUserInput {
   name: string;
@@ -14,7 +15,7 @@ export const createRandomUsers = (count: number) => {
   for (let i = 0; i < count; i++) {
     const randomName = faker.person.fullName(); // Rowan Nikolaus
     const randomEmail = faker.internet.email(); //
-    const randomPassword = "password12345";
+    const randomPassword = "Pa@password12345";
     const emailVerify = faker.datatype.boolean();
 
     users.push({
@@ -33,11 +34,28 @@ interface IProductInput {
   discount?: number;
   discountExpire?: Date;
   images: { link: string; public_id: string }[];
-  user: string | null;
+  userId: string | null;
   description: string;
   stock: number;
-  // ratingsAverage: number;
-  // ratingsQuantity: number;
+  ratingsAverage: number;
+  ratingsQuantity: number;
+  active: boolean;
+  slug: string;
+  reserved: number;
+  lastReserved?: Date;
+  sold: number;
+
+  sku: string;
+  attributes: Record<string, any>;
+  shippingInfo: {
+    weight: number;
+    dimensions: {
+      length: number;
+      width: number;
+      height: number;
+    };
+  };
+
   //   createdAt: Date;
 }
 export const createRandomProducts = (count: number, userId: string) => {
@@ -63,7 +81,21 @@ export const createRandomProducts = (count: number, userId: string) => {
     const randomStock = faker.number.int({ min: 0, max: 100 });
     const randomRating = faker.number.float({ min: 1, max: 5 });
     const randomRatingQuantity = faker.number.int({ min: 0, max: 100 });
-
+    const slug = faker.helpers.slugify(randomName);
+    const sku = faker.helpers.fromRegExp("[0-9]{9}");
+    const attributes = {
+      color: faker.color.human(),
+      size: faker.commerce.productMaterial(),
+      weight: faker.number.int({ min: 1, max: 10 }),
+    };
+    const shippingInfo = {
+      weight: faker.number.int({ min: 1, max: 10 }),
+      dimensions: {
+        length: faker.number.int({ min: 1, max: 10 }),
+        width: faker.number.int({ min: 1, max: 10 }),
+        height: faker.number.int({ min: 1, max: 10 }),
+      },
+    };
     products.push({
       name: randomName,
       category: randomCategory,
@@ -73,9 +105,16 @@ export const createRandomProducts = (count: number, userId: string) => {
       images,
       description: randomDescription,
       stock: randomStock,
-      // ratingsAverage: randomRating,
-      // ratingsQuantity: randomRatingQuantity,
-      user: userId,
+      ratingsAverage: randomRating,
+      ratingsQuantity: randomRatingQuantity,
+      active: true,
+      slug,
+      reserved: 0,
+      sold: 0,
+      sku,
+      attributes,
+      shippingInfo,
+      userId,
     });
   }
   return products;
@@ -87,7 +126,7 @@ export const createRandomReviews = (productId: any[], userId: any[]) => {
   //       userId: "60f1b0b3b3b3b3b3b3b3b3b3",
   //       productId: "60f1b0b3b3b3b3b3b3b3b3b3",
   //       rating: 4.5,
-  //       reviewText: "This is a great product",
+  //       comment: "This is a great product",
   //     },
   //   ];
   // }
@@ -97,10 +136,10 @@ export const createRandomReviews = (productId: any[], userId: any[]) => {
       const randomRating = faker.number.float({ min: 1, max: 5 });
       const randomReviewText = faker.lorem.sentence({ min: 5, max: 10 });
       reviews.push({
-        user: userId[j]["_id"],
-        product: productId[i]["_id"],
+        userId: userId[j]["_id"],
+        productId: productId[i]["_id"],
         rating: randomRating,
-        reviewText: randomReviewText,
+        comment: randomReviewText,
       });
     }
   }
@@ -114,7 +153,7 @@ export const createRandomReviews = (productId: any[], userId: any[]) => {
   postalCode: number;
   phone: string;
   country: string;
-  user: IUserSchema["_id"];*/
+  user: IUser["_id"];*/
 
 export const createRandomAddresses = (count: number, userId: any[]) => {
   const addresses = [] as any[];
@@ -166,7 +205,7 @@ interface IItems {
 }
 export interface IOrderSchema extends Document {
   _id: Schema.Types.ObjectId;
-  user: IUserSchema["_id"];
+  user: IUser["_id"];
   shippingInfo: IShippingInfo;
   items: IItems[];
   status: status;
@@ -248,7 +287,7 @@ export const createRandomOrders = (
   }
   return orders;
 };
-/* user: IUserSchema["_id"];
+/* user: IUser["_id"];
   product: IProductSchema["_id"];
   status: "pending" | "reviewing" | "completed";
   name: string;

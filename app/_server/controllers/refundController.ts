@@ -1,5 +1,5 @@
 import AppError from "@/app/lib/utilities/appError";
-import User from "../models/user.model";
+import User from "../models/User.model";
 import Order from "../models/order.model ";
 import type { NextRequest } from "next/server";
 import { Model } from "mongoose";

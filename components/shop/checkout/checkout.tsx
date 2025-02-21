@@ -1,6 +1,6 @@
 "use client";
 
-import { useCartItems } from "@/components/providers/context/cart.context";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
 import api from "@/app/lib/utilities/api";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Image from "next/image";

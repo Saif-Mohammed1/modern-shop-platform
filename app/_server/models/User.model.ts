@@ -1,4 +1,4 @@
-import { Document, Model, Schema, models, model } from "mongoose";
+import { Document, Model, Schema, models, model, Types } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -86,6 +86,7 @@ interface IPreferences {
 }
 
 export interface IUser extends Document {
+  _id: Types.ObjectId;
   name: string;
   email: string;
   phone?: string;

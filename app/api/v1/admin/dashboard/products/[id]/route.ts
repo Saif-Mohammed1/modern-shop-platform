@@ -6,7 +6,7 @@ import {
   updateProduct,
 } from "@/app/_server/controllers/productController";
 import { connectDB } from "@/app/_server/db/db";
-import Product, { IProductSchema } from "@/app/_server/models/product.model";
+import Product, { IProductSchema } from "@/app/_server/models/Product.model";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const GET = async (

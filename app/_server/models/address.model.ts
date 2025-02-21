@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Document, Model, Schema, model, models } from "mongoose";
-import User, { IUserSchema } from "./user.model";
+import User, { IUser } from "./User.model";
 
 export interface IAddressSchema extends Document {
   _id: Schema.Types.ObjectId;
@@ -10,7 +10,7 @@ export interface IAddressSchema extends Document {
   postalCode: number;
   phone: string;
   country: string;
-  user: IUserSchema["_id"];
+  user: IUser["_id"];
   createdAt: Date;
   updatedAt: Date;
 }

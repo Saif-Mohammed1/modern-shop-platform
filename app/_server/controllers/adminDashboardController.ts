@@ -1,11 +1,11 @@
 import { act } from "react";
 import Order, { IOrderSchema } from "../models/order.model ";
-import Product from "../models/product.model";
+import Product from "../models/Product.model";
 import Refund, { IRefundSchema } from "../models/refund.model";
 import Report from "../models/report.model";
-import User from "../models/user.model";
-import Cart from "../models/cart.model";
-import Favorite from "../models/favorite.model";
+import User from "../models/User.model";
+import Cart from "../models/Cart.model";
+import Favorite from "../models/Favorite.model";
 
 export interface DashboardData {
   users: {

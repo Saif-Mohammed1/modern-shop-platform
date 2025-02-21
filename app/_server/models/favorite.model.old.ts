@@ -1,9 +1,9 @@
 // @ts-ignore
 import { Document, Model, Query, Schema, model, models } from "mongoose";
-import User, { IUserSchema } from "./user.model";
-import Product, { IProductSchema } from "./product.model";
+import User, { IUser } from "./User.model";
+import Product, { IProductSchema } from "./Product.model";
 export interface IFavoriteSchema extends Document {
-  user: IUserSchema["_id"];
+  user: IUser["_id"];
   product: IProductSchema["_id"];
   // favorite: boolean;
   createdAt: Date;

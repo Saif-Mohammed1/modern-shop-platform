@@ -3,7 +3,7 @@ import { destroyImage, uploadImage } from "@/app/lib/utilities/cloudinary";
 import type { NextRequest } from "next/server";
 import { productControllerTranslate } from "../../../public/locales/server/productControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import Product, { IProductSchema } from "../models/product.model";
+import Product, { IProduct } from "../models/Product.model";
 import { getReviews } from "./reviewsController";
 
 // import path from "path";
@@ -33,7 +33,7 @@ export const createProduct = async (req: NextRequest) => {
     }
 
     // Array to hold image URLs and public IDs after uploading to Cloudinary
-    let uploadedImages: IProductSchema["images"] = []; // [];
+    let uploadedImages: IProduct["images"] = []; // [];
     // Check if the discount is less than the price
     if (discount >= price) {
       throw new AppError(
@@ -200,10 +200,10 @@ export const updateProduct = async (req: NextRequest) => {
     //   }
     // }
     for (let key in data) {
-      // Assert the key is of type keyof IProductSchema and assign only if it's different
+      // Assert the key is of type keyof IProduct and assign only if it's different
       // check if the key is in the document and the value is different from the new value before assigning it to the document
-      if (key in doc && data[key] !== doc[key as keyof IProductSchema]) {
-        (doc[key as keyof IProductSchema] as unknown) = data[key];
+      if (key in doc && data[key] !== doc[key as keyof IProduct]) {
+        (doc[key as keyof IProduct] as unknown) = data[key];
       }
     }
     await doc.save();

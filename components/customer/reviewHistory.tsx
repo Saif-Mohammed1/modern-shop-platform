@@ -97,7 +97,7 @@ const ReviewHistory = ({
                     <strong>
                       {accountReviewsTranslate[lang].review.review}:
                     </strong>{" "}
-                    {review.reviewText}
+                    {review.comment}
                   </p>
                   <p className="text-gray-500 text-sm">
                     {accountReviewsTranslate[lang].review.reviewedOn}:{" "}

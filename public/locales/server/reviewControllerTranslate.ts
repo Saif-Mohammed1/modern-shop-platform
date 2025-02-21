@@ -13,10 +13,10 @@ export const reviewControllerTranslate = {
           max: "Rating cannot be more than 5.",
           required: "Rating is required.",
         },
-        reviewText: {
+        comment: {
           minlength: "Review must be at least 4 characters long.",
           maxlength: "Review cannot exceed 200 characters.",
-          required: "reviewText is required.",
+          required: "comment is required.",
         },
         createdAt: {
           required: "createdAt must be required",
@@ -25,9 +25,12 @@ export const reviewControllerTranslate = {
     },
     controllers: {
       createReviews: {
-        ratingRequired: "Rating is required",
-        reviewTextRequired: "reviewText is required",
+        reviewTextRequired: "comment is required",
+        minReviewText: "Review must be at least 4 characters long.",
+        maxReviewText: "Review cannot exceed 200 characters.",
         ratingLessThanOne: `Rating cannot be less than 1. Current rate is:`,
+        maxRating: "Rating cannot be more than 5.",
+        ratingRequired: "Rating is required",
       },
       checkReview: {
         needToBuyProductFirst:
@@ -57,10 +60,10 @@ export const reviewControllerTranslate = {
           max: "Рейтинг не може бути більше 5.",
           required: "Рейтинг обов'язковий.",
         },
-        reviewText: {
+        comment: {
           minlength: "Відгук повинен бути не менше 4 символів.",
           maxlength: "Відгук не може перевищувати 200 символів.",
-          required: "reviewText обов'язковий.",
+          required: "comment обов'язковий.",
         },
         createdAt: {
           required: "createdAt обов'язковий",
@@ -69,9 +72,12 @@ export const reviewControllerTranslate = {
     },
     controllers: {
       createReviews: {
-        ratingRequired: "Рейтинг обов'язковий",
-        reviewTextRequired: "reviewText обов'язковий",
+        reviewTextRequired: "comment обов'язковий",
+        minReviewText: "Відгук повинен бути не менше 4 символів.",
+        maxReviewText: "Відгук не може перевищувати 200 символів.",
         ratingLessThanOne: `Рейтинг не може бути менше 1. Поточна оцінка:`,
+        maxRating: "Рейтинг не може бути більше 5.",
+        ratingRequired: "Рейтинг обов'язковий",
       },
       checkReview: {
         needToBuyProductFirst:

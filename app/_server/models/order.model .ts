@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Model, Query, Schema, model, models } from "mongoose";
-import User, { IUserSchema } from "./user.model";
-import Product, { IProductSchema } from "./product.model";
+import User, { IUser } from "./User.model";
+import Product, { IProductSchema } from "./Product.model";
 import { Document } from "mongoose";
 import {
   IShippingInfo,
@@ -11,7 +11,7 @@ import {
 
 export interface IOrderSchema extends Document {
   _id: Schema.Types.ObjectId;
-  user: IUserSchema["_id"];
+  user: IUser["_id"];
   shippingInfo: IShippingInfo;
   items: IItems[];
   status: OrderStatus;

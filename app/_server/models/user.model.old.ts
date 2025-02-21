@@ -20,7 +20,7 @@ export interface IUserInput {
   passwordConfirm: string | undefined;
   emailVerify: boolean;
 }
-export interface IUserSchema extends IUserInput, Document {
+export interface IUser extends IUserInput, Document {
   _id: Schema.Types.ObjectId;
   role: UserRoleType;
   createdAt: Date;
@@ -50,7 +50,7 @@ export interface IUserSchema extends IUserInput, Document {
   sendVerificationCode(): Promise<void>;
   isTwoFactorAuthEnabled: boolean;
 }
-const UserSchema = new Schema<IUserSchema>(
+const UserSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -215,7 +215,6 @@ UserSchema.methods.sendVerificationCode = async function (): Promise<void> {
   // Send the verification email using the `sendVerificationCode` utility
   await sendVerificationCode(this, this.verificationCode); // Pass the correct types
 };
-const User: Model<IUserSchema> =
-  models.User || model<IUserSchema>("User", UserSchema);
+const User: Model<IUser> = models.User || model<IUser>("User", UserSchema);
 
 export default User;

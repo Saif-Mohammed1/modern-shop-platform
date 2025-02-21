@@ -7,6 +7,9 @@ export const reviewsTranslate = {
         date: "Date",
         loading: "Loading...",
         showMore: "Show More",
+        loadMore: "Load More",
+        reviews: "Reviews",
+        star: "Star",
       },
     },
 
@@ -26,6 +29,15 @@ export const reviewsTranslate = {
         },
       },
       content: {
+        close: "Close",
+        title: "Write a Review",
+        ratingLabel: "Rating",
+        ratingError:
+          "Please provide a rating and it must be greater or equal 1.",
+
+        reviewLabel: "Review",
+        charactersRemaining: "characters remaining",
+        reviewError: "Please provide a review.",
         textArea: {
           placeholder: "Write your review here...",
         },
@@ -54,6 +66,9 @@ export const reviewsTranslate = {
         date: "Дата",
         loading: "Завантаження...",
         showMore: "Показати більше",
+        loadMore: "Завантажити ще",
+        reviews: "Відгуки",
+        star: "Зірка",
       },
     },
     createReviewsSection: {
@@ -71,6 +86,15 @@ export const reviewsTranslate = {
         },
       },
       content: {
+        close: "Закрити",
+        title: "Написати відгук",
+        ratingLabel: "Рейтинг",
+        charactersRemaining: "залишилося символів",
+        ratingError:
+          "Будь ласка, вкажіть рейтинг, він повинен бути більше або дорівнювати 1.",
+
+        reviewLabel: "Відгук",
+        reviewError: "Будь ласка, вкажіть відгук.",
         textArea: {
           placeholder: "Напишіть ваш відгук тут...",
         },

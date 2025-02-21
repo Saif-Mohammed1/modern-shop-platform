@@ -1,5 +1,5 @@
 import { sign, verify } from "jsonwebtoken";
-import RefreshToken from "../models/refreshToken.model";
+import RefreshToken from "../models/Session.model";
 import AppError from "@/app/lib/utilities/appError";
 import { cookies } from "next/headers";
 // import { promisify } from "util";

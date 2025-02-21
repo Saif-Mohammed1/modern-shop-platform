@@ -1,6 +1,9 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { useCartItems, CartItemsType } from "../providers/context/cart.context";
+import {
+  useCartItems,
+  CartItemsType,
+} from "../providers/context/cart/cart.context";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useUser } from "../providers/context/user.context";

@@ -71,7 +71,9 @@ const RelatedProducts = ({
   // }, [relatedProducts]);
   return (
     <div className={`mt-8 ${lastChid ? "mb-6" : " mb-3 "}`}>
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
+      <h2 className="text-2xl font-bold mb-6">{title}</h2>
+
+      {/* <h3 className="text-lg font-semibold mb-4">{title}</h3> */}
       {relatedProducts.length === 0 ? (
         <p className="text-gray-500">{message}</p>
       ) : (

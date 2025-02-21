@@ -1,32 +1,36 @@
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
-// import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
-// import AppError from "@/components/util/appError";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { cache } from "react";
 
 type Props = {
   params: {
     slug: string;
   };
 };
-const getProductMetaData = cache(async (slug: string) => {
-  const { data } = await api.get("/shop/" + slug + "/metadata", {
-    headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-  });
-  return data.data;
-});
-const getProductData = cache(async (slug: string) => {
-  const { data } = await api.get("/shop/" + slug, {
-    headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-  });
-  return data.data;
-});
-// const getReviewsData = cache(async (slug: string) => {
+const getProductMetaData = async (slug: string) => {
+  const { data } = await api.get(
+    "/shop/" + slug + "/metadata"
+    //   {
+    //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+    // }
+  );
+  return data;
+};
+const getProductData = async (slug: string) => {
+  // const { data } = await api.get(
+  //   "/shop/" + slug
+  //   //    {
+  //   //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+  //   // }
+  // );
+  const { data } = await api.get("/shop/" + slug);
+
+  return data;
+};
+// const getReviewsData = (async (slug: string) => {
 //   const { data } = await api.get(`/customer/reviews/${slug}`, {
 //     headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
 //   });
@@ -36,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = params;
   // api.get(`/customer/reviews/${product._slug}
   try {
-    const product = await getProductMetaData(slug);
+    const { product } = await getProductMetaData(slug);
 
     return {
       title: shopPageTranslate[lang].metadata.title + " - " + product.name,
@@ -58,7 +62,7 @@ const page = async ({ params }: Props) => {
   const { slug } = params;
 
   try {
-    const { product, relatedProducts, reviews } = await getProductData(slug);
+    const { product, distribution } = await getProductData(slug);
     // const [product, reviews] = await Promise.all([
     //   // const { data } = await api.get("/shop/" + slug, {
     //   //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
@@ -71,8 +75,9 @@ const page = async ({ params }: Props) => {
       // <ComponentLoading>
       <ProductDetail
         product={product}
-        reviews={reviews}
-        relatedProducts={relatedProducts}
+        distribution={distribution}
+        // reviews={product.reviews}
+        // relatedProducts={[]}
       />
 
       // </ComponentLoading>

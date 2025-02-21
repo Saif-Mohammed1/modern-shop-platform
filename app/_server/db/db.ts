@@ -89,6 +89,8 @@ export { connectDB, disconnectDB, getDB };
  * */
 import mongoose, { Connection } from "mongoose";
 
+if (process.env.NODE_ENV === "development") mongoose.set("debug", true);
+
 const MONGODB_URI = process.env.MONGODB_URI as string;
 
 if (!MONGODB_URI) {

@@ -1,14 +1,15 @@
 import { DeviceInfo } from "@/app/lib/types/refresh.types";
-import { Schema, model, models, Document, Model } from "mongoose";
-import { IUser } from "./User.model";
+import { Schema, model, models, Document, Model, Types } from "mongoose";
 
 export interface ISession extends Document {
-  userId: IUser["_id"]; // Reference to the User Model
+  // _id: Schema.Types.ObjectId;
+  userId: Types.ObjectId; // Reference to the User Model
   deviceInfo: DeviceInfo;
   hashedToken: string;
   isActive: boolean; // Track if session is valid or revoked
   revokedAt?: Date;
   expiresAt: Date; // Set session expiration date
+  lastUsedAt: Date;
 }
 
 const SessionSchema = new Schema<ISession>(
@@ -33,6 +34,7 @@ const SessionSchema = new Schema<ISession>(
       required: true,
       //   default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     }, // Default 30 days
+    lastUsedAt: { type: Date, required: true, default: Date.now },
   },
   {
     timestamps: true,
@@ -43,6 +45,8 @@ const SessionSchema = new Schema<ISession>(
 SessionSchema.index({ userId: 1 });
 // SessionSchema.index({ "deviceInfo.fingerprint": 1 }, { unique: true });
 SessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+// ✅ Compound index for faster queries
+SessionSchema.index({ userId: 1, hashedToken: 1, isActive: 1, expiresAt: 1 });
 
 const SessionModel: Model<ISession> =
   models.Session || model<ISession>("Session", SessionSchema);

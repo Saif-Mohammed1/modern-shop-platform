@@ -1,20 +1,13 @@
-import { logIn } from "@/app/_server/controllers/authController";
+import authController from "@/app/_server/controllers/auth.controller";
 import ErrorHandler from "@/app/_server/controllers/errorController";
 import { connectDB } from "@/app/_server/db/db";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
 
-    const { user, statusCode } = await logIn(req);
-
-    return NextResponse.json(
-      {
-        user,
-      },
-      { status: statusCode }
-    );
+    return await authController.login(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

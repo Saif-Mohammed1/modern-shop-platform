@@ -1,7 +1,6 @@
 import ErrorHandler from "@/components/Error/errorHandler";
 import api from "@/app/lib/utilities/api";
 import OverlayWrapper from "@/components/ui/OverlayWrapper";
-import { headers } from "next/headers";
 import ModelProductDetail from "@/components/ui/ModelProductDetail";
 type Props = {
   params: {
@@ -12,10 +11,15 @@ const page = async ({ params }: Props) => {
   const { slug } = params;
 
   try {
-    const { data } = await api.get("/shop/" + slug + "/metadata", {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-    });
-    const product = data.data;
+    const {
+      data: { product },
+    } = await api.get(
+      "/shop/" + slug + "/metadata"
+
+      //   {
+      //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+      // }
+    );
     return (
       <OverlayWrapper>
         <ModelProductDetail product={product} />

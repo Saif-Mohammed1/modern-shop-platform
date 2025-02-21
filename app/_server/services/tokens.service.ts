@@ -1,6 +1,8 @@
 import { sign } from "jsonwebtoken";
 import crypto from "crypto";
-import { IUser } from "../models/User.model";
+import { promisify } from "util";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 export class TokensService {
   private RefreshExpiresAt = new Date(
     Date.now() +
@@ -12,7 +14,7 @@ export class TokensService {
   );
   COOKIE_NAME = "refreshAccessToken";
 
-  generateAuthTokens(userId: IUser["_id"]): {
+  generateAuthTokens(userId: string): {
     accessToken: string;
     refreshToken: string;
     hashedToken: string;
@@ -27,13 +29,20 @@ export class TokensService {
     return { accessToken, refreshToken, hashedToken };
   }
 
-  private createAccessToken(userId: IUser["_id"]): string {
+  createAccessToken(userId: string): string {
     return sign({ userId }, process.env.JWT_ACCESS_TOKEN_SECRET!, {
       expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
     });
   }
 
-  private createRefreshToken(userId: IUser["_id"]): string {
+  async decodedAccessToken(accessToken: string): Promise<{ userId: string }> {
+    return (await promisify<string, jwt.Secret>(jwt.verify)(
+      accessToken,
+      process.env.JWT_ACCESS_TOKEN_SECRET!
+    )) as unknown as { userId: string };
+  }
+
+  private createRefreshToken(userId: string): string {
     const refreshToken = sign(
       { userId },
       process.env.JWT_REFRESH_TOKEN_SECRET!,
@@ -42,6 +51,12 @@ export class TokensService {
       }
     );
     return refreshToken;
+  }
+  async decodedRefreshToken(refreshToken: string): Promise<{ userId: string }> {
+    return (await promisify<string, jwt.Secret>(jwt.verify)(
+      refreshToken,
+      process.env.JWT_REFRESH_TOKEN_SECRET!
+    )) as unknown as { userId: string };
   }
   hashRefreshToken = (token: string): string => {
     return crypto
@@ -86,7 +101,7 @@ export class TokensService {
           1000
     );
   }
-  generateEmailChangeToken(userId: IUser["_id"], email: string): string {
+  generateEmailChangeToken(userId: string, email: string): string {
     const token = crypto.randomBytes(32).toString("hex");
     const hashedToken = this.hashVerificationToken(token);
     return hashedToken;
@@ -94,4 +109,28 @@ export class TokensService {
   //   getAccessTokenExpiry(): Date {
   //     return process.env.JWT_ACCESS_TOKEN_EXPIRES_IN;
   //   }
+
+  clearRefreshTokenCookies() {
+    cookies().set(this.COOKIE_NAME, "", {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      expires: new Date(0),
+      path: "/",
+      priority: "high",
+      partitioned: true,
+    });
+  }
+  setRefreshTokenCookies(token: string) {
+    cookies().set(this.COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
+      secure: process.env.NODE_ENV === "production", // 'false' in development
+      path: "/",
+      expires: this.getRefreshTokenExpiry(),
+      // Add these for enhanced security:
+      partitioned: true, // Chrome 109+ feature
+      priority: "high", // Protect against CRIME attacks
+    });
+  }
 }

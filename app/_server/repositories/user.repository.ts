@@ -22,7 +22,7 @@ export class UserRepository extends BaseRepository<IUser> {
     return user;
   }
 
-  async findById(id: IUser["_id"]): Promise<IUser | null> {
+  async findById(id: string): Promise<IUser | null> {
     return this.model.findById(id).select("+security");
   }
 
@@ -30,15 +30,16 @@ export class UserRepository extends BaseRepository<IUser> {
     return this.model.findOne({ email }).select("+password +security");
   }
 
-  async updateUser(
-    id: IUser["_id"],
+  async update(
+    id: string,
     updates: Partial<IUser>,
     session?: ClientSession
   ): Promise<IUser | null> {
     return this.model.findByIdAndUpdate(id, updates, { new: true, session });
   }
-  async deleteUser(id: IUser["_id"], session?: ClientSession): Promise<void> {
-    await this.model.deleteOne({ _id: id }, { session });
+  async delete(id: string, session?: ClientSession): Promise<boolean> {
+    const result = await this.model.deleteOne({ _id: id }, { session });
+    return result.deletedCount === 1;
   }
   async trackVerification(
     user: IUser,
@@ -116,7 +117,7 @@ export class UserRepository extends BaseRepository<IUser> {
   */
   }
   async setVerificationToken(
-    userId: IUser["_id"],
+    userId: string,
     verificationToken: string,
     session?: ClientSession
   ): Promise<void> {
@@ -155,7 +156,7 @@ export class UserRepository extends BaseRepository<IUser> {
     );
   }
   async generatePasswordResetToken(
-    userId: IUser["_id"],
+    userId: string,
     session?: ClientSession
   ): Promise<string> {
     const resetToken = crypto.randomBytes(32).toString("hex");
@@ -189,7 +190,7 @@ export class UserRepository extends BaseRepository<IUser> {
     return this.model.findOne(query).select("+security");
   }
   async createAuditLog(
-    userId: IUser["_id"],
+    userId: string,
     action: AuditAction,
     details: any,
     session?: ClientSession
@@ -218,7 +219,7 @@ export class UserRepository extends BaseRepository<IUser> {
      */
   }
   async generateMFAToken(
-    userId: IUser["_id"],
+    userId: string,
     session?: ClientSession
   ): Promise<string> {
     const tempToken = crypto.randomBytes(32).toString("hex");
@@ -275,7 +276,7 @@ export class UserRepository extends BaseRepository<IUser> {
     );
   }
   // async isPreviousPassword(
-  //   userId: IUser["_id"],
+  //   userId:string,
   //   password: string
   // ): Promise<boolean> {
   //   const user = await this.model.findById(userId).select("+security");
@@ -292,7 +293,7 @@ export class UserRepository extends BaseRepository<IUser> {
     await user.save({ validateModifiedOnly: true, session });
   }
   async invalidateResetToken(
-    userId: IUser["_id"],
+    userId: string,
     session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
@@ -305,17 +306,122 @@ export class UserRepository extends BaseRepository<IUser> {
     );
   }
   async updateUserStatus(
-    userId: IUser["_id"],
+    userId: string,
     status: IUser["status"],
     session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne({ _id: userId }, { status }, { session });
   }
   async updateUserRole(
-    userId: IUser["_id"],
+    userId: string,
     role: IUser["role"],
     session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne({ _id: userId }, { role }, { session });
   }
+  async clearTwoFactorSecret(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        "security.twoFactorSecret": undefined,
+        "security.twoFactorSecretExpiry": undefined,
+      },
+      { session }
+    );
+  }
+  async createUserByAdmin(
+    dto: UserCreateDTO,
+    session?: ClientSession
+  ): Promise<IUser> {
+    return this.createUser(dto, session);
+  }
+  async updateUserByAdmin(
+    id: string,
+    updates: Partial<IUser>,
+    session?: ClientSession
+  ): Promise<IUser | null> {
+    return this.update(id, updates, session);
+  }
+  async deleteUserByAdmin(
+    id: string,
+    session?: ClientSession
+  ): Promise<boolean> {
+    return this.delete(id, session);
+  }
+  async updateUserStatusByAdmin(
+    userId: string,
+    status: IUser["status"],
+    session?: ClientSession
+  ): Promise<void> {
+    return this.updateUserStatus(userId, status, session);
+  }
+  async updateUserRoleByAdmin(
+    userId: string,
+    role: IUser["role"],
+    session?: ClientSession
+  ): Promise<void> {
+    return this.updateUserRole(userId, role, session);
+  }
+  async updateUserPasswordByAdmin(
+    userId: string,
+    password: string,
+    session?: ClientSession
+  ): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    await this.updatePassword(user, password, session);
+  }
+  async updateUserEmailByAdmin(
+    userId: string,
+    email: string,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne({ _id: userId }, { email }, { session });
+  }
+  async updateUserProfileByAdmin(
+    userId: string,
+    updates: Partial<IUser>,
+    session?: ClientSession
+  ): Promise<IUser | null> {
+    return this.update(userId, updates, session);
+  }
+  async updateUserVerificationStatusByAdmin(
+    userId: string,
+    emailVerified: boolean,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      { "verification.emailVerified": emailVerified },
+      { session }
+    );
+  }
+  async updateUserSecurityByAdmin(
+    userId: string,
+    updates: Partial<IUser["security"]>,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      { security: updates },
+      { session }
+    );
+  }
+  async updateUserVerificationByAdmin(
+    userId: string,
+    updates: Partial<IUser["verification"]>,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      { verification: updates },
+      { session }
+    );
+  }
+ 
 }

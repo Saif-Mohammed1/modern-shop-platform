@@ -8,8 +8,8 @@ import {
   model,
   models,
 } from "mongoose";
-import User, { IUserSchema } from "./user.model";
-import Review from "./review.model";
+import User, { IUser } from "./User.model";
+import Review from "./Review.model";
 
 export interface IProductSchema extends Document {
   _id: Schema.Types.ObjectId;
@@ -19,7 +19,7 @@ export interface IProductSchema extends Document {
   discount: number;
   discountExpire?: Date;
   images: { link: string; public_id: string }[];
-  user: IUserSchema["_id"] | null;
+  user: IUser["_id"] | null;
   description: string;
   stock: number;
   ratingsAverage: number;

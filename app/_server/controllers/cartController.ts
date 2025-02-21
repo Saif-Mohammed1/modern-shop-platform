@@ -1,8 +1,8 @@
 import AppError from "@/app/lib/utilities/appError";
-import Product from "../models/product.model";
+import Product from "../models/Product.model";
 import { Model } from "mongoose";
 import type { NextRequest } from "next/server";
-import { ICartSchema } from "../models/cart.model";
+import { ICartSchema } from "../models/Cart.model";
 import { cartControllerTranslate } from "../../../public/locales/server/cartControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 export const getCartModel = async (

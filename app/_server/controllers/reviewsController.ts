@@ -3,7 +3,7 @@ import Order from "../models/order.model ";
 import type { NextRequest } from "next/server";
 import { reviewControllerTranslate } from "../../../public/locales/server/reviewControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import Review from "../models/review.model";
+import Review from "../models/Review.model";
 export const createReviews = async (req: NextRequest) => {
   let doc;
   try {
@@ -99,8 +99,8 @@ export const checkReview = async (req: NextRequest) => {
       );
     }
     const review = await Review.findOne({
-      user: req.user?._id,
-      product: req.id,
+      userId: req.user?._id,
+      productId: req.id,
     });
 
     if (review) {

@@ -1,7 +1,7 @@
 import { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { useCartItems } from "@/components/providers/context/cart.context";
-import { useWishlist } from "@/components/providers/context/whishList.context";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Image from "next/image";

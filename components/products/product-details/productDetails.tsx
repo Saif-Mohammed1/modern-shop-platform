@@ -1,80 +1,69 @@
 "use client";
-import { useCartItems } from "@/components/providers/context/cart.context";
-import { useUser } from "@/components/providers/context/user.context";
-import { useWishlist } from "@/components/providers/context/whishList.context";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
 import RelatedProducts from "@/components/ui/relatedProducts";
 import ReviewSection from "@/components/products/Review/review";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { AiOutlineHeart, AiFillHeart } from "react-icons/ai"; // Wishlist icons
+import {
+  AiOutlineHeart,
+  AiFillHeart,
+  AiOutlineShoppingCart,
+} from "react-icons/ai";
+import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import StarRatings from "react-star-ratings";
-// import dynamic from "next/dynamic";
 import { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { ReviewsType } from "@/app/lib/types/reviews.types";
+import { useUser } from "@/components/providers/context/user/user.context";
+import api from "@/app/lib/utilities/api";
+import ComponentLoading from "@/components/spinner/componentLoading";
+// import Skeleton from "react-loading-skeleton";
+// import "react-loading-skeleton/dist/skeleton.css";
 
 const ProductDetail = ({
   product,
-  reviews,
-  relatedProducts,
+  distribution,
+  // reviews,
+  // relatedProducts,
 }: {
   product: ProductType;
-  relatedProducts: ProductType[];
-  reviews: {
-    data: ReviewsType[];
-    hasNextPage: boolean;
+  distribution: {
+    [key: string]: number;
   };
+  // relatedProducts: ProductType[];
+  // reviews: {
+  //   data: ReviewsType[];
+  //   hasNextPage: boolean;
+  // };
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  // const [relatedProducts, setRelatedProducts] = useState([]);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  // const [reviews, setReviews] = useState([]);
   const { addToCartItems } = useCartItems();
-  const [isWishlisted, setIsWishlisted] = useState(isInWishlist(product._id)); // Wishlist state
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const { user } = useUser();
-  // Helper to change image
-  const handleImageChange = (direction: string) => {
-    if (direction === "next") {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === product.images.length - 1 ? 0 : prevIndex + 1
-      );
-    } else {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === 0 ? product.images.length - 1 : prevIndex - 1
-      );
-    }
+
+  useEffect(() => {
+    // setIsClient(true);
+    setIsWishlisted(isInWishlist(product._id));
+  }, [product._id, isInWishlist]);
+
+  const discountPercentage =
+    product.discount > 0
+      ? Math.round((product.discount / product.price) * 100)
+      : 0;
+
+  const handleImageChange = (index: number) => {
+    setCurrentImageIndex(index);
   };
 
-  // Handle add to cart
-  const handleAddToCart = async () => {
-    let toastLoading;
-    if (product.stock === 0) {
-      toast.error(shopPageTranslate[lang].functions.handleAddToCart.outOfStock);
-      return;
-    }
-
-    try {
-      toastLoading = toast.loading(
-        shopPageTranslate[lang].functions.handleAddToCart.loading
-      );
-      await addToCartItems(product, quantity);
-      toast.success(shopPageTranslate[lang].functions.handleAddToCart.success);
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : shopPageTranslate[lang].functions.toggleWishlist.failed;
-
-      toast.error(errorMessage);
-    } finally {
-      toast.dismiss(toastLoading);
-    }
-    // Add to cart logic here
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(Math.max(1, Math.min(product.stock, newQuantity)));
   };
-
   // Toggle wishlist
   const toggleWishlist = async () => {
     let toastLoading;
@@ -104,163 +93,324 @@ const ProductDetail = ({
     } finally {
       toast.dismiss(toastLoading);
     }
+  }; // Handle add to cart
+  const handleAddToCart = async () => {
+    let toastLoading;
+    if (product.stock === 0) {
+      toast.error(shopPageTranslate[lang].functions.handleAddToCart.outOfStock);
+      return;
+    }
+
+    try {
+      toastLoading = toast.loading(
+        shopPageTranslate[lang].functions.handleAddToCart.loading
+      );
+      await addToCartItems(product, quantity);
+      toast.success(shopPageTranslate[lang].functions.handleAddToCart.success);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : shopPageTranslate[lang].functions.toggleWishlist.failed;
+
+      toast.error(errorMessage);
+    } finally {
+      toast.dismiss(toastLoading);
+    }
+    // Add to cart logic here
   };
 
-  return product ? (
-    <div className="product-detail max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
-      {/* Product Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-3xl font-semibold">{product.name}</h2>
-        {/* Wishlist Button */}
-        <button
-          className="text-red-500 text-2xl focus:outline-none"
-          onClick={toggleWishlist}
-        >
-          {isWishlisted ? <AiFillHeart /> : <AiOutlineHeart />}
-        </button>
-      </div>
-      {/* Category */}
-      <p className="text-gray-500 mb-4 capitalize">{product.category}</p>
-      {/* Image Preview */}
-      <div className="relative w-full imgParent">
-        <Image
-          src={
-            product?.images[currentImageIndex]?.link || "/products/product.png"
-          }
-          alt={product.name}
-          // className="w-full h-full object-cover rounded-lg"
-          width={700}
-          height={700}
-          priority
-          style={{ objectFit: "cover" }}
-        />
-        {product?.images?.length > 1 && (
-          <div className="absolute top-1/2 left-0 right-0 flex justify-between px-4 transform -translate-y-1/2">
+  // Rest of the existing logic remains similar, but with improved UI components below...
+
+  // if (!product)
+  //   return (
+  //     <div className="max-w-7xl mx-auto px-4 py-8">
+  //       <Skeleton count={5} height={40} />
+  //     </div>
+  //   );
+  useEffect(() => {
+    // setIsClient(true);
+    setIsWishlisted(isInWishlist(product._id));
+  }, [product._id, isInWishlist]);
+  useEffect(() => {
+    const getrelatedProducts = async () => {
+      try {
+        const { data } = await api.get(
+          `/shop/?category=${product.category}&limit=8`
+        );
+
+        setRelatedProducts(data.products.docs);
+      } catch (error) {
+        setRelatedProducts([]);
+        console.error(error);
+      }
+    };
+    getrelatedProducts();
+  }, [product.category]);
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Image Gallery Section */}
+        <div className="space-y-4">
+          <div className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden">
+            <Image
+              src={
+                product.images[currentImageIndex]?.link ||
+                "/products/product.png"
+              }
+              alt={product.name}
+              fill
+              className="object-contain p-4"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              priority
+            />
+
+            {product.images.length > 1 && (
+              <div className="absolute top-1/2 transform -translate-y-1/2 w-full flex justify-between px-4">
+                <button
+                  onClick={() =>
+                    handleImageChange(
+                      (currentImageIndex - 1 + product.images.length) %
+                        product.images.length
+                    )
+                  }
+                  className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
+                >
+                  <BsArrowLeftCircle className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={() =>
+                    handleImageChange(
+                      (currentImageIndex + 1) % product.images.length
+                    )
+                  }
+                  className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
+                >
+                  <BsArrowRightCircle className="w-6 h-6" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
+            {product.images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => handleImageChange(index)}
+                className={`aspect-square rounded-lg overflow-hidden border-2 ${
+                  index === currentImageIndex
+                    ? "border-blue-500"
+                    : "border-transparent"
+                }`}
+              >
+                <Image
+                  src={image.link}
+                  alt={`${product.name} thumbnail ${index + 1}`}
+                  width={200}
+                  height={200}
+                  className="object-cover w-full h-full"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Info Section */}
+        <div className="space-y-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {product.name}
+              </h1>
+              <div className="flex items-center space-x-2">
+                <StarRatings
+                  rating={product.ratingsAverage}
+                  starRatedColor="#f59e0b"
+                  numberOfStars={5}
+                  starDimension="20px"
+                  starSpacing="2px"
+                />
+                <span className="text-gray-600">
+                  ({product.ratingsQuantity}{" "}
+                  {shopPageTranslate[lang].content.reviews})
+                </span>
+              </div>
+            </div>
             <button
-              onClick={() => handleImageChange("prev")}
-              className="bg-gray-800 text-white p-2 rounded-full hover:bg-gray-600 focus:outline-none"
+              onClick={toggleWishlist}
+              className="p-2 hover:bg-gray-100 rounded-full"
+              aria-label={
+                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+              }
             >
-              {shopPageTranslate[lang].button.prev}
-            </button>
-            <button
-              onClick={() => handleImageChange("next")}
-              className="bg-gray-800 text-white p-2 rounded-full hover:bg-gray-600 focus:outline-none"
-            >
-              {shopPageTranslate[lang].button.next}
+              {isWishlisted ? (
+                <AiFillHeart className="w-8 h-8 text-red-500" />
+              ) : (
+                <AiOutlineHeart className="w-8 h-8 text-gray-400" />
+              )}
             </button>
           </div>
-        )}
-      </div>
-      {/* Price and Discount */}
-      <div className="mt-4 text-2xl">
-        <span className="font-bold text-blue-600">
-          $
-          {parseFloat((product.price - product.discount).toString()).toFixed(2)}
-        </span>
-        {product.discount > 0 && (
-          <span className="ml-3 text-gray-500 line-through text-xl">
-            ${product.price}
-          </span>
-        )}
-        {product.discount > 0 && (
-          <p className="text-sm text-gray-500 mt-1">
-            {shopPageTranslate[lang].content.expireOn}{" "}
-            {product.discountExpire &&
-              new Date(product.discountExpire).toLocaleDateString()}
-          </p>
-        )}
-      </div>
-      {/* Ratings */}
-      <div className="flex items-center mt-4">
-        <StarRatings
-          rating={product.ratingsAverage}
-          starRatedColor="#ffb829"
-          numberOfStars={5}
-          starDimension="20px"
-          starSpacing="2px"
-          name="rating"
-        />
-        <p className="ml-2 text-gray-600">
-          {product.ratingsAverage} / 5 ({product.ratingsQuantity} reviews)
-        </p>
-      </div>
-      {/* Stock and Add to Cart Button */}
-      <div className="mt-6">
-        <p
-          className={`text-lg font-semibold ${
-            product.stock > 0 ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          {product.stock > 0
-            ? `${shopPageTranslate[lang].content.inStock}(${product.stock})`
-            : shopPageTranslate[lang].content.outOfStock}
-        </p>
-        <div className="flex items-center gap-2 my-1">
-          <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-          >
-            -
-          </button>
-          <input
-            type="number"
-            min="1"
-            max={product.stock}
-            value={quantity}
-            onChange={(e) => {
-              const value = Math.min(
-                product.stock,
-                Math.max(1, parseInt(e.target.value) || 1)
-              );
-              setQuantity(value);
-            }}
-            className="w-16 text-center border rounded"
-          />
-          <button
-            onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-          >
-            +
-          </button>
-        </div>{" "}
-        <button
-          onClick={handleAddToCart}
-          disabled={product.stock === 0}
-          className={`mt-4 px-6 py-2 text-lg font-semibold ${
-            product.stock === 0
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          } text-white rounded-md transition duration-300 ease-in-out`}
-        >
-          {product.stock > 0
-            ? shopPageTranslate[lang].content.addToCart
-            : shopPageTranslate[lang].content.outOfStock}
-        </button>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <span className="text-4xl font-bold text-gray-900">
+                ${(product.price - product.discount).toFixed(2)}
+              </span>
+              {product.discount > 0 && (
+                <>
+                  <span className="text-xl text-gray-500 line-through">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  <span className="bg-red-100 text-red-600 px-2 py-1 rounded">
+                    -{discountPercentage}%
+                  </span>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span
+                className={`text-sm font-medium ${
+                  product.stock > 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {product.stock > 0
+                  ? `${shopPageTranslate[lang].content.inStock}`
+                  : shopPageTranslate[lang].content.outOfStock}
+              </span>
+              <span className="text-gray-500 text-sm">
+                {product.stock > 0 &&
+                  `(${shopPageTranslate[lang].content.remaining}: ${product.stock})`}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center border rounded-lg">
+                <button
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  className="px-4 py-2 hover:bg-gray-100"
+                  disabled={quantity <= 1}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  value={quantity}
+                  min={1}
+                  max={product.stock}
+                  onChange={(e) =>
+                    handleQuantityChange(parseInt(e.target.value))
+                  }
+                  className="w-16 text-center border-0 focus:ring-0"
+                />
+                <button
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  className="px-4 py-2 hover:bg-gray-100"
+                  disabled={quantity >= product.stock}
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+                className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${
+                  product.stock === 0
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+              >
+                <AiOutlineShoppingCart className="inline-block mr-2 w-5 h-5" />
+                {product.stock > 0
+                  ? shopPageTranslate[lang].content.addToCart
+                  : shopPageTranslate[lang].content.outOfStock}
+              </button>
+            </div>
+
+            {product.discountExpire && (
+              <div className="bg-yellow-50 p-3 rounded-lg">
+                <p className="text-sm text-yellow-700">
+                  {shopPageTranslate[lang].content.discountExpires}{" "}
+                  {new Date(product.discountExpire).toLocaleDateString(lang, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Product Specifications */}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">
+              {shopPageTranslate[lang].content.specifications}
+            </h3>
+            <dl className="grid grid-cols-2 gap-4">
+              {product.attributes &&
+                Object.entries(product.attributes).map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <dt className="text-gray-600 capitalize">{key}</dt>
+                    <dd className="text-gray-900 font-medium">{value}</dd>
+                  </div>
+                ))}
+              <div className="flex justify-between">
+                <dt className="text-gray-600">
+                  {shopPageTranslate[lang].content.category}
+                </dt>
+                <dd className="text-gray-900 font-medium capitalize">
+                  {product.category}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
       </div>
       {/* Product Description */}
-      <div className="mt-6">
-        <h3 className="text-xl font-bold mb-2">
-          {shopPageTranslate[lang].content.description}
-        </h3>
-        <p className="text-gray-700">{product.description}</p>
-      </div>
-      {/* Related Products */}
-      <div>
-        <RelatedProducts
-          relatedProducts={relatedProducts}
-          slidesPerView={true}
+      <section className="mt-12">
+        <h2 className="text-2xl font-bold mb-4">
+          {shopPageTranslate[lang].content.productDetails}
+        </h2>
+        <div className="prose max-w-none text-gray-700">
+          {product.description.split("\n").map((paragraph, index) => (
+            <p key={index} className="mb-4">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+      </section>
+      {/* Reviews Section */}
+      <section className="mt-12">
+        <ReviewSection
+          reviews={{
+            data: product.reviews,
+            hasNextPage: true,
+            distribution: distribution,
+          }}
+          productId={product._id}
+          user={user}
+          averageRating={product.ratingsAverage}
+          totalReviews={product.ratingsQuantity}
         />
-      </div>
-      {/* Reviews */}
-      <div>
-        <ReviewSection reviews={reviews} productId={product._id} user={user} />
-      </div>
-    </div>
-  ) : (
-    <div className="flex  justify-center item-center space-x-2 h-full">
-      <p className="text-lg text-gray-800">
-        {shopPageTranslate[lang].errors.noProductFound}
-      </p>
+      </section>
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <section className="mt-12">
+          {/* <h2 className="text-2xl font-bold mb-6">
+            {shopPageTranslate[lang].content.relatedProducts}
+          </h2> */}
+          <ComponentLoading>
+            <RelatedProducts
+              title={shopPageTranslate[lang].content.relatedProducts}
+              relatedProducts={relatedProducts}
+              // slidesPerView={{ default: 2, md: 3, lg: 4 }}
+            />
+          </ComponentLoading>
+        </section>
+      )}
     </div>
   );
 };
