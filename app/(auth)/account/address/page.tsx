@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import AddressBook from "@/components/customer/address/addressBook";
+import AddressBook from "@/components/customers/address/addressBook";
 import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/address", {
+    const { data } = await api.get("/customers/address", {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
     const address = data.data;

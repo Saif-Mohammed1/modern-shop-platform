@@ -1,4 +1,4 @@
-import { DeviceInfo } from "@/app/lib/types/refresh.types";
+import { DeviceInfo } from "@/app/lib/types/session.types";
 import SessionModel, { ISession } from "../models/Session.model";
 import { SessionRepository } from "../repositories/session.repository";
 import { TokensService } from "./tokens.service";
@@ -47,5 +47,8 @@ export class SessionService {
     await this.repository.updateLastUsedAt(String(token._id));
 
     return true;
+  }
+  async getUserSessions(userId: string): Promise<ISession[]> {
+    return this.repository.getUserSessions(userId);
   }
 }

@@ -1,6 +1,6 @@
 import { Model } from "mongoose";
 import { NextRequest } from "next/server";
-import { IAddressSchema } from "../models/address.model";
+import { IAddressSchema } from "../models/Address.model";
 import AppError from "@/app/lib/utilities/appError";
 
 export const updateAddress = async (

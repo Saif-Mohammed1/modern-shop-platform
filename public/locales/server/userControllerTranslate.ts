@@ -224,6 +224,10 @@ export const userZodValidatorTranslate = {
     role: {
       invalid: "Invalid role",
     },
+    verificationCode: {
+      required: "Verification code must be required",
+      invalid: "Invalid verification code",
+    },
     // preferences: {
   },
   uk: {
@@ -259,6 +263,10 @@ export const userZodValidatorTranslate = {
     },
     role: {
       invalid: "Недійсна роль",
+    },
+    verificationCode: {
+      required: "Код верифікації має бути обов'язковим",
+      invalid: "Недійсний код верифікації",
     },
   },
 } as const;

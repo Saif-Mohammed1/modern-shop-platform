@@ -48,7 +48,7 @@ export class UserValidation {
         required_error:
           userZodValidatorTranslate[lang].confirmPassword.required,
       }),
-      role: z.enum(["customer", "admin", "moderator"]).default("customer"),
+      // role: z.enum(["customer", "admin", "moderator"]).default("customer"),
       preferences: z
         .object({
           language: z.enum(["en", "uk", "es", "fr", "de"]).default("uk"),
@@ -104,36 +104,65 @@ export class UserValidation {
       message: userZodValidatorTranslate[lang].confirmPassword.invalid,
       path: ["confirmPassword"],
     });
-  static passwordResetSchema = z.object({
-    token: z.string({
-      required_error: userZodValidatorTranslate[lang].token.required,
-    }),
-    email: z
+  static passwordResetSchema = z
+    .object({
+      token: z.string({
+        required_error: userZodValidatorTranslate[lang].token.required,
+      }),
+      email: z
+        .string({
+          required_error: userZodValidatorTranslate[lang].email.required,
+        })
+        .email(userZodValidatorTranslate[lang].email.invalid)
+        .refine((email) => {
+          const domain = email.split("@")[1];
+          return this.allowedEmailDomains.includes(domain);
+        }, userZodValidatorTranslate[lang].email.domainNotAllowed),
+      password: z
+        .string({
+          required_error: userZodValidatorTranslate[lang].password.required,
+        })
+        .min(10, userZodValidatorTranslate[lang].password.minLength)
+        .max(40, userZodValidatorTranslate[lang].password.maxLength)
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+          userZodValidatorTranslate[lang].password.invalid
+        ),
+      confirmPassword: z.string({
+        required_error:
+          userZodValidatorTranslate[lang].confirmPassword.required,
+      }),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: userZodValidatorTranslate[lang].confirmPassword.invalid,
+      path: ["confirmPassword"],
+    });
+  static validateName(name: string) {
+    return z
       .string({
-        required_error: userZodValidatorTranslate[lang].email.required,
+        required_error: userZodValidatorTranslate[lang].name.required,
       })
-      .email(userZodValidatorTranslate[lang].email.invalid)
-      .refine((email) => {
-        const domain = email.split("@")[1];
-        return this.allowedEmailDomains.includes(domain);
-      }, userZodValidatorTranslate[lang].email.domainNotAllowed),
-    password: z
+      .min(3, userZodValidatorTranslate[lang].name.minLength)
+      .max(50, userZodValidatorTranslate[lang].name.maxLength)
+      .parse(name);
+  }
+  static isVerificationCodeValid(code: string) {
+    return z
       .string({
-        required_error: userZodValidatorTranslate[lang].password.required,
+        required_error:
+          userZodValidatorTranslate[lang].verificationCode.required,
       })
-      .min(10, userZodValidatorTranslate[lang].password.minLength)
-      .max(40, userZodValidatorTranslate[lang].password.maxLength)
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        userZodValidatorTranslate[lang].password.invalid
-      ),
-    // confirmPassword: z.string({
-    //   required_error: userZodValidatorTranslate[lang].confirmPassword.required,
-    // }),
-  });
+        // /^\d{6}$/,
+        /^[a-zA-Z0-9]{8}$/,
+        userZodValidatorTranslate[lang].verificationCode.invalid
+      )
+      .parse(code);
+  }
   /** Validate User Creation */
   static validateUserCreateDTO(data: any) {
-    return this.userCreateSchema.parse(data);
+    const result = this.userCreateSchema.parse(data);
+    return { ...result, email: this.sanitizeEmail(result.email) };
     // const result = this.userCreateSchema.safeParse(data);
     // if (!result.success) {
     //   return { success: false, errors: result.error.format() };
@@ -143,7 +172,8 @@ export class UserValidation {
 
   /** Validate Login (Returns structured error instead of throwing) */
   static validateLogin(data: any) {
-    return this.loginSchema.parse(data);
+    const result = this.loginSchema.parse(data);
+    return { ...result, email: this.sanitizeEmail(result.email) };
     // const result = this.loginSchema.safeParse(data);
     // if (!result.success) {
     //   return { success: false, errors: result.error.format() };
@@ -151,8 +181,8 @@ export class UserValidation {
     // // return { success: true, data: result.data };
   }
 
-  /** Validate Email */
-  static validateEmailAndSanitize(email: string) {
+  // /** Validate Email */
+  static isEmailValid(email: string) {
     return this.sanitizeEmail(
       z
 
@@ -168,16 +198,16 @@ export class UserValidation {
         .parse(email)
     );
   }
-  // Santize any + chr from email
-  // static sanitizeEmail(email: string) {
-  //   return email
-  //     .trim() // Remove spaces
-  //     .normalize("NFC") // Normalize Unicode characters
-  //     .replace(/\.(?=.*@gmail\.com)/g, "") // Remove dots for Gmail
-  //     .replace(/\+.*(?=@)/g, "") // Remove anything after `+`
-  //     .toLowerCase(); // Convert to lowercase
-  // }
-  static sanitizeEmail(email: string) {
+  // // Santize any + chr from email
+  // // static sanitizeEmail(email: string) {
+  // //   return email
+  // //     .trim() // Remove spaces
+  // //     .normalize("NFC") // Normalize Unicode characters
+  // //     .replace(/\.(?=.*@gmail\.com)/g, "") // Remove dots for Gmail
+  // //     .replace(/\+.*(?=@)/g, "") // Remove anything after `+`
+  // //     .toLowerCase(); // Convert to lowercase
+  // // }
+  private static sanitizeEmail(email: string) {
     let [localPart, domain] = email.trim().toLowerCase().split("@");
 
     // Remove non-alphanumeric characters except dots (only inside the local part)
@@ -205,10 +235,11 @@ export class UserValidation {
   }
 
   static validatePasswordReset(data: any) {
-    return this.passwordResetSchema.parse(data);
+    const result = this.passwordResetSchema.parse(data);
+    return { ...result, email: this.sanitizeEmail(result.email) };
   }
   static validateEmailAndToken(data: any) {
-    return z
+    const result = z
       .object({
         email: z
           .string({
@@ -224,6 +255,8 @@ export class UserValidation {
         }),
       })
       .parse(data);
+
+    return { ...result, email: this.sanitizeEmail(result.email) };
   }
 }
 

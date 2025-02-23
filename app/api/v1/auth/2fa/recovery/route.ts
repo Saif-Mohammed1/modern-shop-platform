@@ -1,22 +1,14 @@
-import { TwoFactorAuthService } from "@/app/_server/controllers/2faController";
-import { isAuth } from "@/app/_server/controllers/authController";
 import ErrorHandler from "@/app/_server/controllers/errorController";
 import { connectDB } from "@/app/_server/db/db";
-import { type NextRequest, NextResponse } from "next/server";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { type NextRequest } from "next/server";
+import twoFactorController from "@/app/_server/controllers/2fa.controller";
 
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
-    await isAuth(req);
-    const { newCodes, statusCode } =
-      await TwoFactorAuthService.reGenerateBackupCodes(req);
-
-    return NextResponse.json(
-      {
-        newCodes,
-      },
-      { status: statusCode }
-    );
+    await AuthMiddleware.requireAuth()(req);
+    return await twoFactorController.regenerateBackupCodes(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

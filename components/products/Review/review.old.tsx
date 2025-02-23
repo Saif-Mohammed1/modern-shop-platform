@@ -35,7 +35,7 @@
 //       const newPage = page + 1;
 //       setPage((prevPage) => prevPage++);
 //       const { data } = await api.get(
-//         `/customer/reviews/${productId}/?page=${newPage}`
+//         `/customers/reviews/${productId}/?page=${newPage}`
 //       );
 //       setMoreResults([...moreResults, ...data.data]);
 //       setPage(newPage);

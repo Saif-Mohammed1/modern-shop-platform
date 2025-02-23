@@ -25,7 +25,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
         reviewsTranslate[lang].createReviewsSection.functions.checkOrder.loading
       );
       // Example API call to check if user has ordered the product
-      await api.patch(`/customer/reviews/${productId}`);
+      await api.patch(`/customers/reviews/${productId}`);
       toast.success(
         reviewsTranslate[lang].createReviewsSection.functions.checkOrder.success
       );
@@ -68,7 +68,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
           .loading
       );
       // Example API call to submit review
-      await api.post(`/customer/reviews/${productId}`, {
+      await api.post(`/customers/reviews/${productId}`, {
         rating,
         comment,
       });

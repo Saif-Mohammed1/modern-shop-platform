@@ -53,6 +53,17 @@ class SessionController {
       throw error;
     }
   }
+  async revokeSession(req: NextRequest) {
+    try {
+      await this.sessionService.revokeSession(req?.id);
+      return NextResponse.json(
+        { message: "Session revoked successfully" },
+        { status: 200 }
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new SessionController();

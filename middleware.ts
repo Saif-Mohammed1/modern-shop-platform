@@ -14,7 +14,12 @@ import AppError from "./app/lib/utilities/appError";
 import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
 import { lang } from "./app/lib/utilities/lang";
 
-const PROTECTED_ROUTES = ["/account", "/checkout", "/confirm-email-change"];
+const PROTECTED_ROUTES = [
+  "/account",
+  "/checkout",
+  "/confirm-email-change",
+  // "/verify-email",
+];
 
 const DEFAULT_LANGUAGE = "uk";
 const ADMIN_ROLE = "admin";
@@ -51,6 +56,9 @@ const authMiddleware = async (req: NextRequest) => {
       req.ip ||
       "127.0.0.1";
     response.headers.set("x-client-ip", clientIp);
+    if (isAuth && !pathname.startsWith("/api") && !isAuth.user.emailVerify) {
+      return NextResponse.redirect(new URL("/verify-email", req.url));
+    }
 
     // Handle rate limiting for API routes
     if (pathname.startsWith("/api")) {
@@ -100,7 +108,16 @@ const authMiddleware = async (req: NextRequest) => {
         maxAge: 60 * 60 * 24 * 365, // 1 year
       });
     }
-
+    // Add this before your existing protected route logic
+    if (pathname === "/verify-email") {
+      if (!isAuth) {
+        return NextResponse.redirect(new URL(AUTH_PATH, req.url));
+      }
+      if (isAuth.user.emailVerify) {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+      return NextResponse.next();
+    }
     // Handle route protection logic
     const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
       pathname.startsWith(route)

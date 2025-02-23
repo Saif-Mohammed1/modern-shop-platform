@@ -1,4 +1,5 @@
 import { Document, Model, model, models, Schema } from "mongoose";
+import { IUser } from "./User.model";
 // Enhanced Type Definitions
 export interface SecurityMetadata {
   ipAddress: string;
@@ -21,8 +22,7 @@ export interface EncryptedData {
 
 // Improved 2FA Schema
 export interface ITwoFactorAuth extends Document {
-  userId: Schema.Types.ObjectId;
-  _id: Schema.Types.ObjectId;
+  userId: IUser["_id"];
   encryptedSecret: EncryptedData;
   backupCodes: string[]; // Hashed codes
   recoveryAttempts: number;
@@ -74,7 +74,7 @@ const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(
   },
   { timestamps: true }
 );
-const TwoFactorAuth: Model<ITwoFactorAuth> =
+const TwoFactorAuthModel: Model<ITwoFactorAuth> =
   models.TwoFactorAuth ||
   model<ITwoFactorAuth>("TwoFactorAuth", TwoFactorAuthSchema);
-export default TwoFactorAuth;
+export default TwoFactorAuthModel;

@@ -1,5 +1,5 @@
 "use client";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 import { UserAuthType } from "@/app/lib/types/users.types";
@@ -16,9 +16,15 @@ export const UserContext = createContext<UserContextType>({
 });
 
 // Create a UserProvider component
-export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserProvider = ({
+  children,
+  session,
+}: {
+  children: React.ReactNode;
+  session: any;
+}) => {
   // Define the state for the user
-  const { data: session, status } = useSession();
+  // const { data: session, status } = useSession();
 
   const [user, setUser] = useState<User>(null);
 
@@ -43,7 +49,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     if (session?.error === "RefreshAccessTokenError") {
       logOutUser();
     }
-  }, [session, status]);
+  }, [session]);
 
   // Provide the user context value to the children components
   return (

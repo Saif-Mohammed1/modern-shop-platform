@@ -31,14 +31,14 @@ const getProductData = async (slug: string) => {
   return data;
 };
 // const getReviewsData = (async (slug: string) => {
-//   const { data } = await api.get(`/customer/reviews/${slug}`, {
+//   const { data } = await api.get(`/customers/reviews/${slug}`, {
 //     headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
 //   });
 //   return data;
 // });
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = params;
-  // api.get(`/customer/reviews/${product._slug}
+  // api.get(`/customers/reviews/${product._slug}
   try {
     const { product } = await getProductMetaData(slug);
 

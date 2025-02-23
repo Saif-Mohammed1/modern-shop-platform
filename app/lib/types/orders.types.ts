@@ -1,4 +1,4 @@
-import { IProductSchema } from "../../_server/models/Product.model";
+import { IProduct } from "../../_server/models/Product.model";
 import { UserAuthType } from "./users.types";
 // import Address from "./address.model";
 // export type status = "pending" | "completed" | "refunded" | "processing" | "cancelled";
@@ -11,7 +11,7 @@ export interface IShippingInfo {
   country: string;
 }
 export interface IItems {
-  _id: IProductSchema["_id"];
+  _id: IProduct["_id"];
   name: string;
   quantity: number;
   price: number;

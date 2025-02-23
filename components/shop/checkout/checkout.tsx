@@ -12,7 +12,7 @@ import { Event } from "@/app/lib/types/products.types";
 import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 const AddAddressComponent = dynamic(
-  () => import("@/components/customer/address/addAddressReuseableComponent")
+  () => import("@/components/customers/address/addAddressReuseableComponent")
 );
 
 const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
@@ -83,7 +83,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.loading
       );
-      const { data } = await api.post("/customer/address", newAddress);
+      const { data } = await api.post("/customers/address", newAddress);
       setAddresses((prevAddresses) => [...prevAddresses, data.data]);
       toast.success(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.success
@@ -141,7 +141,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handelCheckout.loading
       );
-      const { data } = await api.post("/customer/orders", {
+      const { data } = await api.post("/customers/orders", {
         shippingInfo: selectedAddress,
         products: cartItems,
       });

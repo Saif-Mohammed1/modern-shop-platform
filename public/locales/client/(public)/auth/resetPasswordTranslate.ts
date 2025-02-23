@@ -14,8 +14,14 @@ export const resetPasswordTranslate = {
         unexpectedError: "An unexpected error occurred",
       },
     },
+    invalidRestToken: {
+      title: "Password Reset Issue",
+      subtitle: "There was a problem with your password reset request",
+      emailLabel: "Associated Email",
+    },
     form: {
       title: "Reset Your Password",
+
       token: {
         label: "Token",
         placeholder: "Enter Your Token",
@@ -47,6 +53,11 @@ export const resetPasswordTranslate = {
         successMessage: "Пароль успішно скинуто!",
         unexpectedError: "Сталася непередбачувана помилка",
       },
+    },
+    invalidRestToken: {
+      title: "Проблема з скиданням пароля",
+      subtitle: "Виникла проблема з вашим запитом на скидання пароля",
+      emailLabel: "Пов'язаний Email",
     },
     form: {
       title: "Скинути пароль",

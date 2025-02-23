@@ -37,7 +37,7 @@ export const WishlistProvider = ({
     const loadWishlist = async () => {
       if (user) {
         try {
-          const { data } = await api.get("/customer/wishlist");
+          const { data } = await api.get("/customers/wishlist");
           setWishlist(data.data ?? []);
         } catch (error: unknown) {
           if (error instanceof Error) {
@@ -73,7 +73,7 @@ export const WishlistProvider = ({
   const addToWishlist = async (product: ProductType) => {
     if (user) {
       try {
-        await api.post("/customer/wishlist/" + product._id);
+        await api.post("/customers/wishlist/" + product._id);
         setWishlist((prevWishlist) => [
           ...prevWishlist,
           {
@@ -103,7 +103,7 @@ export const WishlistProvider = ({
   const removeFromWishlist = async (product: ProductType) => {
     if (user) {
       try {
-        await api.delete(`/customer/wishlist/${product._id}`);
+        await api.delete(`/customers/wishlist/${product._id}`);
         setWishlist((prevWishlist) =>
           prevWishlist.filter((item) => item.product._id !== product._id)
         );

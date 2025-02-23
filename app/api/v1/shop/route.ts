@@ -1,7 +1,7 @@
 import ErrorHandler from "@/app/_server/controllers/errorController";
 import productController from "@/app/_server/controllers/product.controller";
 import { connectDB } from "@/app/_server/db/db";
-import { AuthService } from "@/app/_server/middlewares/auth.middleware";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
 import { UserRole } from "@/app/_server/models/User.model";
 import { type NextRequest } from "next/server";
 export const GET = async (req: NextRequest) => {
@@ -15,7 +15,7 @@ export const GET = async (req: NextRequest) => {
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
-    await AuthService.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
+    await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
     return await productController.createProduct(req);
   } catch (error) {
     return ErrorHandler(error, req);

@@ -81,14 +81,14 @@ const TwoFactorAuthDashboard = () => {
   };
 
   // Backup Codes Management
-  const verifyBackupCode = async (code: string) => {
-    try {
-      await api.post("/auth/2fa/backup/verify", { code });
-      toast.success("Backup code verified!");
-    } catch (error: any) {
-      toast.error(error?.message || "Invalid backup code");
-    }
-  };
+  // const verifyBackupCode = async (code: string) => {
+  //   try {
+  //     await api.post("/auth/2fa/backup/verify", { code });
+  //     toast.success("Backup code verified!");
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Invalid backup code");
+  //   }
+  // };
 
   const regenerateBackupCodes = async () => {
     try {

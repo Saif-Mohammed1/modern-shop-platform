@@ -16,17 +16,7 @@ import { authControllerTranslate } from "../../../public/locales/server/authCont
 import { lang } from "@/app/lib/utilities/lang";
 import { sendMessageForNewPassword } from "@/app/lib/utilities/email";
 import { RefreshTokenService } from "./refreshTokenController";
-
-// Configuration Constants
-const SECURITY_CONFIG = {
-  BACKUP_CODES: 10,
-  PBKDF2_ITERATIONS: 10000,
-  AES_KEY_LENGTH: 32,
-  TOTP_WINDOW: 1,
-  MAX_ATTEMPTS: 5,
-  LOCKOUT_MINUTES: 15,
-  SESSION_DAYS: 30,
-};
+import { SECURITY_CONFIG } from "@/app/lib/config/security.config";
 
 // Helper function to safely convert Buffer to Uint8Array
 function bufferToUint8(buf: Buffer): Uint8Array {
@@ -195,7 +185,7 @@ export class TwoFactorAuthService {
         encoding: "base32",
         token,
         window: SECURITY_CONFIG.TOTP_WINDOW,
-        time: Date.now() / 1000,
+        time: Date.now() / 1000, // this check is for testing
       });
 
       if (!verified) {

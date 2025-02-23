@@ -51,7 +51,7 @@ const ReviewSection = ({
       setLoading(true);
       const newPage = page + 1;
       const { data } = await api.get(
-        `/customer/reviews/${productId}/?page=${newPage}`
+        `/customers/reviews/${productId}/?page=${newPage}`
       );
       setMoreResults((prev) => [...prev, ...data.data]);
       setPage(newPage);

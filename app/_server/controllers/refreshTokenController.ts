@@ -1,4 +1,4 @@
-import { DeviceInfo, RefreshTokenStatus } from "@/app/lib/types/refresh.types";
+import { DeviceInfo, RefreshTokenStatus } from "@/app/lib/types/session.types";
 import {
   getDeviceFingerprint,
   hashRefreshToken,

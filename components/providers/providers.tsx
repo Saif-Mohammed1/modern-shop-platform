@@ -6,7 +6,13 @@ import { CartProvider } from "./context/cart/cart.context";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { UserProvider } from "./context/user/user.context";
 import { WishlistProvider } from "./context/wishlist/wishlist.context";
-const Providers = ({ children }: { children: React.ReactNode }) => {
+const Providers = ({
+  children,
+  session,
+}: {
+  children: React.ReactNode;
+  session: any;
+}) => {
   return (
     <SessionProvider
       refetchInterval={
@@ -14,9 +20,10 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
       }
       basePath={process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth"}
       refetchOnWindowFocus={true}
+      session={session}
     >
       <NuqsAdapter>
-        <UserProvider>
+        <UserProvider session={session}>
           <CartProvider>
             <WishlistProvider> {children}</WishlistProvider>
           </CartProvider>

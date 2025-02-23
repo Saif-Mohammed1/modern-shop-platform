@@ -14,6 +14,12 @@ class UserController {
 
     return NextResponse.json({ message: "User Deleted" }, { status: 200 });
   }
+  async getAllUsers(req: NextRequest) {
+    const users = await this.userService.getAllUsers({
+      query: req.nextUrl.searchParams,
+    });
+    return NextResponse.json(users, { status: 200 });
+  }
 }
 
 export default new UserController();

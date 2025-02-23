@@ -27,7 +27,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
   const checkOrder = useCallback(async () => {
     setIsLoading(true);
     try {
-      await toast.promise(api.patch(`/customer/reviews/${productId}`), {
+      await toast.promise(api.patch(`/customers/reviews/${productId}`), {
         loading:
           reviewsTranslate[lang].createReviewsSection.functions.checkOrder
             .loading,
@@ -61,7 +61,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
 
     try {
       await toast.promise(
-        api.post(`/customer/reviews/${productId}`, { rating, comment }),
+        api.post(`/customers/reviews/${productId}`, { rating, comment }),
         {
           loading:
             reviewsTranslate[lang].createReviewsSection.functions.handleSubmit

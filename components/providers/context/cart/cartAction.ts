@@ -115,7 +115,7 @@ export const clearItemFromCart = async (product: ProductType, user: User) => {
 };
 export const saveCartToDB = async (productId: string, quantity: number) => {
   try {
-    const { data } = await api.post("/customer/cart/" + productId, {
+    const { data } = await api.post("/customers/cart/" + productId, {
       quantity,
     });
 
@@ -145,14 +145,14 @@ export const getCartItems = async (user: User) => {
 };
 export const removeCartItemFromDB = async (product: ProductType) => {
   try {
-    await api.put(`/customer/cart/${product._id}`);
+    await api.put(`/customers/cart/${product._id}`);
   } catch (error) {
     throw error;
   }
 };
 export const clearCartInDB = async (product: ProductType) => {
   try {
-    await api.delete(`/customer/cart/${product._id}`);
+    await api.delete(`/customers/cart/${product._id}`);
   } catch (error) {
     throw error;
   }
@@ -165,7 +165,7 @@ export const mergeLocalCartWithDB = async () => {
 
     if (localCart.length === 0) return;
     await api.post(
-      "/customer/cart/merge",
+      "/customers/cart/merge",
 
       localCart
     );
@@ -176,7 +176,7 @@ export const mergeLocalCartWithDB = async () => {
 };
 const fetchCartItemsFromDB = async () => {
   try {
-    const { data } = await api.get("/customer/cart");
+    const { data } = await api.get("/customers/cart");
 
     return data.data;
   } catch (error) {
@@ -188,7 +188,7 @@ export const updateCartQuantity = async (
   quantity: number
 ) => {
   try {
-    const { data } = await api.patch(`/customer/cart/${productId}`, {
+    const { data } = await api.patch(`/customers/cart/${productId}`, {
       quantity,
     });
     return data.data;

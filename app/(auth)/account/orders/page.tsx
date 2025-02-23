@@ -28,7 +28,7 @@ const page = async ({ searchParams }: Props) => {
     const queryString = url.toString();
 
     const { data } = await api.get(
-      "/customer/orders" + (queryString ? `?${queryString}` : ""),
+      "/customers/orders" + (queryString ? `?${queryString}` : ""),
       {
         headers: Object.fromEntries(headers().entries()), //convert headers to javascript object
       }

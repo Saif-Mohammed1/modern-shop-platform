@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import ChangePassword from "@/components/customer/changePassword";
+import ChangePassword from "@/components/customers/changePassword";
 import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/device-info", {
+    const { data } = await api.get("/customers/device", {
       headers: Object.fromEntries(headers().entries()), // convert headers to object
     });
     const deviceInfo = data.info || [];

@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Model, Query, Schema, model, models } from "mongoose";
 import User, { IUser } from "./User.model";
-import Product, { IProductSchema } from "./Product.model";
+import Product, { IProduct } from "./Product.model";
 import { Document } from "mongoose";
 import {
   IShippingInfo,
@@ -9,9 +9,9 @@ import {
   OrderStatus,
 } from "@/app/lib/types/orders.types";
 
-export interface IOrderSchema extends Document {
+export interface IOrder extends Document {
   _id: Schema.Types.ObjectId;
-  user: IUser["_id"];
+  userId: IUser["_id"];
   shippingInfo: IShippingInfo;
   items: IItems[];
   status: OrderStatus;
@@ -21,9 +21,9 @@ export interface IOrderSchema extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
-const OrderSchema = new Schema<IOrderSchema>(
+const OrderSchema = new Schema<IOrder>(
   {
-    user: {
+    userId: {
       type: Schema.Types.ObjectId,
 
       ref: "User",
@@ -116,11 +116,14 @@ const OrderSchema = new Schema<IOrderSchema>(
   }
 );
 OrderSchema.index({ createdAt: 1 });
+OrderSchema.index({ userId: 1 });
+OrderSchema.index({ "items._id": 1 });
+
 // OrderSchema.index({ "items._id": 1 });
-OrderSchema.pre<Query<any, IOrderSchema>>(/^find/, function (next) {
+OrderSchema.pre<Query<any, IOrder>>(/^find/, function (next) {
   this.populate({
-    path: "user",
-    select: "name email  ",
+    path: "userId",
+    select: "name email",
     model: User,
     options: { lean: true },
   });
@@ -153,14 +156,14 @@ OrderSchema.post(/^find/, function (docs, next) {
   // Ensure `docs` is an array (it should be for `find`)
   if (Array.isArray(docs)) {
     // Filter out documents where `product` is null
-    const filteredDocs = docs.filter((doc) => doc.user !== null);
+    const filteredDocs = docs.filter((doc) => doc.userId !== null);
     // You cannot just replace `docs` with `filteredDocs`, as `docs` is what the caller receives
     // You would need to mutate `docs` directly if you need to change the actual array being passed back
     docs.splice(0, docs.length, ...filteredDocs);
   }
   next();
 });
-const Order: Model<IOrderSchema> =
-  models.Order || model<IOrderSchema>("Order", OrderSchema);
+const OrderModel: Model<IOrder> =
+  models.Order || model<IOrder>("Order", OrderSchema);
 
-export default Order;
+export default OrderModel;

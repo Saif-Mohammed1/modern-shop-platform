@@ -1,7 +1,7 @@
-import { Schema } from "mongoose";
+import { Types } from "mongoose";
 
 export type UserAuthType = {
-  _id: Schema.Types.ObjectId | string;
+  _id: Types.ObjectId | string;
   name: string;
   email: string;
   emailVerify: boolean;

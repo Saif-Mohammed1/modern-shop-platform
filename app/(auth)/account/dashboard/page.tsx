@@ -1,5 +1,5 @@
 import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
-import AccountDashboard from "@/components/customer/accountDashboard";
+import AccountDashboard from "@/components/customers/accountDashboard";
 import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {

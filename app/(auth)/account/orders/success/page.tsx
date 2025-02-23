@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/orders/latest-order", {
+    const { data } = await api.get("/customers/orders/latest", {
       headers: Object.fromEntries(headers().entries()), // convert headers to object
     });
     const order = data.data;

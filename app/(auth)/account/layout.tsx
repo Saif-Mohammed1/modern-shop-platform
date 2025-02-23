@@ -1,5 +1,5 @@
 import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
-import AccountMenu from "@/components/customer/customerMaun";
+import AccountMenu from "@/components/customers/customerMaun";
 import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 export const metadata: Metadata = {

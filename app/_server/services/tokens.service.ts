@@ -79,6 +79,18 @@ export class TokensService {
       .update(token)
       .digest("hex");
   }
+  hashEmailChangeToken(token: string): string {
+    return crypto
+      .createHmac("sha256", process.env.HASHED_CHANGE_EMAIL_SECRET!)
+      .update(token)
+      .digest("hex");
+  }
+  hashVerificationToken(token: string): string {
+    return crypto
+      .createHmac("sha256", process.env.HASHED_VERIFICATION_SECRET!)
+      .update(token)
+      .digest("hex");
+  }
   getResetPasswordTokenExpiry(): Date {
     return new Date(
       Date.now() +
@@ -87,12 +99,7 @@ export class TokensService {
           1000
     );
   }
-  hashVerificationToken(token: string): string {
-    return crypto
-      .createHmac("sha256", process.env.HASHED_VERIFICATION_SECRET!)
-      .update(token)
-      .digest("hex");
-  }
+
   getVerificationTokenExpiry(): Date {
     return new Date(
       Date.now() +

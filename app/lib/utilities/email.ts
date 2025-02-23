@@ -1,4 +1,4 @@
-import { DeviceInfo } from "@/app/lib/types/refresh.types";
+import { DeviceInfo } from "@/app/lib/types/session.types";
 import { UserAuthType } from "@/app/lib/types/users.types";
 import nodemailer from "nodemailer";
 // Create a transporter using Gmail SMTP

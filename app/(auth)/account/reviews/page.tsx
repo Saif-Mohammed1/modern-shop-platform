@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import ReviewHistory from "@/components/customer/reviewHistory";
+import ReviewHistory from "@/components/customers/reviewHistory";
 import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import ErrorHandler from "@/components/Error/errorHandler";
@@ -13,7 +13,7 @@ export const metadata = {
 };
 const page = async () => {
   try {
-    const { data } = await api.get("/customer/reviews", {
+    const { data } = await api.get("/customers/reviews", {
       headers: Object.fromEntries(headers().entries()), //convert headers to object
     });
     const reviews = data.data;

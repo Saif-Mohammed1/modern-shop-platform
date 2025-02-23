@@ -1,5 +1,5 @@
 // refresh-token.util.ts
-import { DeviceInfo } from "@/app/lib/types/refresh.types";
+import { DeviceInfo } from "@/app/lib/types/session.types";
 import crypto from "crypto";
 import DeviceDetector from "device-detector-js";
 import { NextRequest } from "next/server";

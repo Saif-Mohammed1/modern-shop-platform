@@ -1,11 +1,17 @@
 import { BaseRepository } from "./BaseRepository";
 import { ClientSession, Model } from "mongoose";
 import crypto from "crypto";
-import { DeviceInfo } from "@/app/lib/types/refresh.types";
-import { AuditAction } from "@/app/lib/types/audit.types";
+import { DeviceInfo } from "@/app/lib/types/session.types";
+import { AuditAction, AuditLogDetails } from "@/app/lib/types/audit.types";
 import { TokensService } from "../services/tokens.service";
-import { IUser } from "../models/User.model";
+import { accountAction, IUser } from "../models/User.model";
 import { UserCreateDTO } from "../dtos/user.dto";
+import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+import {
+  QueryBuilderConfig,
+  QueryBuilderResult,
+  QueryOptionConfig,
+} from "@/app/lib/types/queryBuilder.types";
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {
@@ -149,10 +155,10 @@ export class UserRepository extends BaseRepository<IUser> {
       },
       {
         "verification.emailVerified": true,
-        "verification.verificationToken": undefined,
-        "verification.verificationExpires": undefined,
+        "verification.verificationToken": "",
+        "verification.verificationExpires": "",
       },
-      { session }
+      { new: true, session }
     );
   }
   async generatePasswordResetToken(
@@ -192,7 +198,7 @@ export class UserRepository extends BaseRepository<IUser> {
   async createAuditLog(
     userId: string,
     action: AuditAction,
-    details: any,
+    details: AuditLogDetails,
     session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
@@ -218,27 +224,12 @@ export class UserRepository extends BaseRepository<IUser> {
      *
      */
   }
-  async generateMFAToken(
-    userId: string,
-    session?: ClientSession
-  ): Promise<string> {
-    const tempToken = crypto.randomBytes(32).toString("hex");
-    this.model.updateOne(
-      { _id: userId },
-      {
-        "security.twoFactorSecret": tempToken,
-        "security.twoFactorSecretExpiry": new Date(Date.now() + 5 * 60 * 1000),
-      },
-      { session }
-    );
-    return tempToken;
-  }
   async startSession(): Promise<ClientSession> {
     return this.model.db.startSession();
   }
   async incrementRateLimit(
     user: IUser,
-    action: "login" | "passwordReset" | "verification",
+    action: accountAction,
     session?: ClientSession
   ): Promise<void> {
     const rateLimit = user.security.rateLimits[action];
@@ -260,7 +251,7 @@ export class UserRepository extends BaseRepository<IUser> {
 
   async clearRateLimit(
     user: IUser,
-    action: "login" | "passwordReset" | "verification",
+    action: accountAction,
     session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
@@ -269,7 +260,7 @@ export class UserRepository extends BaseRepository<IUser> {
         [`security.rateLimits.${action}`]: {
           attempts: 0,
           lastAttempt: new Date(),
-          lockUntil: undefined,
+          lockUntil: "",
         },
       },
       { session }
@@ -296,13 +287,21 @@ export class UserRepository extends BaseRepository<IUser> {
     userId: string,
     session?: ClientSession
   ): Promise<void> {
-    await this.model.updateOne(
-      { _id: userId },
+    await this.model.findByIdAndUpdate(
+      userId,
       {
-        "verification.verificationToken": undefined,
-        "verification.verificationExpires": undefined,
+        $unset: {
+          "verification.verificationToken": 1,
+          "verification.verificationExpires": 1,
+
+          "security.twoFactorSecret": 1,
+        },
+        $set: {
+          "security.twoFactorEnabled": false,
+        },
       },
-      { session }
+
+      { session, new: true } // Ensure the document is updated
     );
   }
   async updateUserStatus(
@@ -319,15 +318,47 @@ export class UserRepository extends BaseRepository<IUser> {
   ): Promise<void> {
     await this.model.updateOne({ _id: userId }, { role }, { session });
   }
+  async validateTempToken(tempToken: string): Promise<IUser | null> {
+    const user = await this.model
+      .findOne({
+        "security.twoFactorSecret": tempToken,
+        "security.twoFactorSecretExpiry": { $gt: new Date() },
+      })
+      .select("+security");
+
+    return user;
+  }
+  async generateMFAToken(
+    userId: string,
+    session?: ClientSession
+  ): Promise<string> {
+    const tempToken = crypto.randomBytes(32).toString("hex");
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "security.twoFactorSecret": tempToken,
+          "security.twoFactorSecretExpiry": new Date(
+            Date.now() + 5 * 60 * 1000
+          ), // 5m expiry
+        },
+      },
+      { session }
+    );
+    return tempToken;
+  }
   async clearTwoFactorSecret(
     userId: string,
     session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
       { _id: userId },
+
       {
-        "security.twoFactorSecret": undefined,
-        "security.twoFactorSecretExpiry": undefined,
+        $unset: {
+          "security.twoFactorSecret": "",
+          "security.twoFactorSecretExpiry": "",
+        },
       },
       { session }
     );
@@ -423,5 +454,116 @@ export class UserRepository extends BaseRepository<IUser> {
       { session }
     );
   }
- 
+  async disable2FA(userId: string, session?: ClientSession): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        $unset: {
+          "security.twoFactorSecret": "",
+        },
+        $set: {
+          "security.twoFactorEnabled": false,
+        },
+      },
+
+      { session }
+    );
+  }
+  async enable2FA(userId: string, session?: ClientSession): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        "security.twoFactorEnabled": true,
+      },
+      { session }
+    );
+  }
+  async generateEmailChangeToken(
+    userId: string,
+    email: string,
+    session?: ClientSession
+  ): Promise<string> {
+    const token = crypto.randomBytes(32).toString("hex");
+    const hashedToken = this.tokensService.hashEmailChangeToken(token);
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        "verification.emailChangeToken": hashedToken,
+        "verification.emailChange": email,
+        "verification.emailChangeExpires": new Date(
+          Date.now() + 10 * 60 * 1000
+        ),
+      },
+      { session }
+    );
+    return token;
+  }
+  async validateEmailChangeToken(
+    token: string
+    // email: string
+  ): Promise<IUser | null> {
+    const hashedToken = this.tokensService.hashEmailChangeToken(token);
+    return this.model.findOne({
+      "verification.emailChangeToken": hashedToken,
+      // "verification.emailChange": email,
+      "verification.emailChangeExpires": { $gt: new Date() },
+    });
+  }
+  async processEmailChange(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        email: "$verification.emailChange",
+        $unset: {
+          "verification.emailChange": "",
+          "verification.emailChangeToken": "",
+          "verification.emailChangeExpires": "",
+        },
+      },
+      { session }
+    );
+  }
+  async updateName(
+    userId: string,
+    name: string,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      {
+        _id: userId,
+      },
+      { name },
+      { session }
+    );
+  }
+  async findAllUsers(
+    options: QueryOptionConfig
+  ): Promise<QueryBuilderResult<IUser> | []> {
+    const queryConfig: QueryBuilderConfig<IUser> = {
+      allowedFilters: ["name", "email", "role", "status", "createdAt"].filter(
+        Boolean
+      ) as Array<keyof IUser>,
+
+      allowedSorts: ["createdAt", "updatedAt"],
+    };
+
+    //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IFavorite>,
+    //   maxLimit: 100,
+
+    const queryBuilder = new QueryBuilder<IUser>(
+      this.model,
+      options.query,
+      queryConfig
+    );
+    // this work around is to prevent non-admin users from seeing inactive products
+    // and this work too
+    //  fixedFilters: !isAdmin ? { active: true } : undefined,
+
+    // if (!isAdmin) queryBuilder.filter.active = true;
+
+    return queryBuilder.execute();
+  }
 }

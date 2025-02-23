@@ -6,23 +6,41 @@ import { authControllerTranslate } from "@/public/locales/server/authControllerT
 import { lang } from "@/app/lib/utilities/lang";
 import { TokensService } from "../services/tokens.service";
 import { commonTranslations } from "@/public/locales/server/Common.Translate";
+import { z } from "zod";
+const tokenSchema = z
+  .string({
+    message: authControllerTranslate[lang].functions.isAuth.noExistingToken,
+  })
+  .min(1)
+  .refine((val) => val !== "null", {
+    message: authControllerTranslate[lang].functions.isAuth.noExistingToken,
+  });
 
-export class AuthService {
+const validateToken = (token: string | null | undefined) => {
+  // if (!token || token === "null")
+  //   return { success: false, error: "No token provided", data: null };
+  return tokenSchema.parse(token);
+};
+
+export class AuthMiddleware {
   private static userService = new UserService();
   private static tokenService = new TokensService();
   static requireAuth(roles?: UserRole[]) {
     return async (req: NextRequest) => {
-      const authHeader = req?.headers?.get("authorization");
+      // const authHeader = req?.headers?.get("authorization")
       const token =
-        authHeader?.startsWith("Bearer") && authHeader.split(" ")[1];
-      if (!token) {
-        throw new AppError(
-          authControllerTranslate[lang].functions.isAuth.noExistingToken,
-          401
-        );
-      }
+        req?.headers?.get("authorization")?.split(" ")[1] ?? undefined;
+      // const token =
+      //   authHeader?.startsWith("Bearer") && authHeader.split(" ")[1];
+      const result = validateToken(token);
 
-      const decoded = await this.tokenService.decodedAccessToken(token);
+      // if (!result) {
+      //   throw new AppError(
+      //     authControllerTranslate[lang].functions.isAuth.noExistingToken,
+      //     401
+      //   );
+      // }
+      const decoded = await this.tokenService.decodedAccessToken(result);
       const user = await this.userService.findUserById(decoded.userId);
 
       if (!user)

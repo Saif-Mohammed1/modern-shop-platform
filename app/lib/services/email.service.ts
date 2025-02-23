@@ -196,8 +196,8 @@
 // };
 // src/lib/services/email.service.ts
 import nodemailer from "nodemailer";
-import { UserAuthType } from "../types/users.types";
-import { DeviceInfo } from "../types/refresh.types";
+import { DeviceInfo } from "../types/session.types";
+import UserModel from "@/app/_server/models/User.model";
 
 interface EmailConfig {
   service: string;
@@ -210,9 +210,26 @@ interface EmailConfig {
 interface EmailTemplate {
   subject: string;
   html: string;
+  priority?: "high" | "normal" | "low";
+}
+export enum SecurityAlertType {
+  SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY",
+  ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
+  PASSWORD_CHANGED = "PASSWORD_CHANGED",
+  NEW_DEVICE = "NEW_DEVICE",
+  LOGIN_ATTEMPT = "LOGIN_ATTEMPT",
+  LOW_BACKUP_CODES = "LOW_BACKUP_CODES",
+}
+interface SecurityAlertEmailParams {
+  type: SecurityAlertType;
+  attempts?: number;
+  locations?: string[];
+  device?: string;
+  timestamp?: Date;
+  ipAddress?: string;
 }
 
-export class EmailService {
+class EmailService {
   private transporter: nodemailer.Transporter;
   private readonly appName: string;
   private readonly appUrl: string;
@@ -318,7 +335,7 @@ export class EmailService {
   }
 
   async sendPasswordReset(email: string, token: string): Promise<void> {
-    const confirmUrl = `${this.appUrl}/reset-password?token=${token}&email=${email}`;
+    const confirmUrl = `${this.appUrl}/auth/reset-password?token=${token}&email=${email}`;
     const content = `
       <h2 style="color: #2d3748; margin-top: 0;">Password Reset Request</h2>
       <p>Use the following verification code to reset your password:</p>
@@ -404,6 +421,85 @@ export class EmailService {
       html: this.baseTemplate(content),
     });
   }
+
+  async sendSecurityAlertEmail(
+    userEmail: string,
+    alertParams: SecurityAlertEmailParams
+  ) {
+    const { type, attempts, locations, device, ipAddress } = alertParams;
+
+    // Get user-friendly alert details
+    const alertDetails = this.getAlertDetails(
+      type,
+      attempts,
+      locations,
+      device,
+      ipAddress
+    );
+
+    // Build email template
+    const content = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333;">
+      <h2 style="color: #dc3545;">Security Alert: ${alertDetails.title}</h2>
+      
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
+        <p>${alertDetails.message}</p>
+        
+        ${
+          locations?.length
+            ? `
+          <h4 style="color: #6c757d;">Recent Activity Locations:</h4>
+          <ul>
+            ${locations.map((l) => `<li>${l}</li>`).join("")}
+          </ul>
+        `
+            : ""
+        }
+
+        ${device ? `<p><strong>Device:</strong> ${device}</p>` : ""}
+        ${ipAddress ? `<p><strong>IP Address:</strong> ${ipAddress}</p>` : ""}
+
+        <p style="margin-top: 20px;">
+          <a href="${process.env.APP_URL}/security" 
+             style="background: #dc3545; color: white; padding: 10px 20px; 
+                    text-decoration: none; border-radius: 5px;">
+            Review Account Security
+          </a>
+        </p>
+      </div>
+
+      <footer style="margin-top: 30px; font-size: 0.9em; color: #6c757d;">
+        <p>This is an automated security alert. If you didn't initiate this action, 
+           <a href="${process.env.APP_URL}/support">contact support immediately</a>.</p>
+      </footer>
+    </div>
+  `;
+
+    try {
+      await this.sendEmail(userEmail, {
+        subject: `🔒 Security Alert: ${alertDetails.title}`,
+
+        html: this.baseTemplate(content),
+        priority: "high",
+      });
+      // Log the alert in the user's audit trail
+      await UserModel.findOneAndUpdate(
+        { email: userEmail },
+        {
+          $push: {
+            "security.auditLog": {
+              timestamp: new Date(),
+              action: "SECURITY_ALERT_SENT",
+              details: alertDetails.auditMessage,
+            },
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Failed to send security email:", error);
+      // Implement fallback notification here
+    }
+  }
   async sendSecurityAlert(
     email: string,
     device: DeviceInfo,
@@ -463,6 +559,57 @@ export class EmailService {
       subject: `Verify Your Email - ${this.appName}`,
       html: this.baseTemplate(content),
     });
+  }
+  private getAlertDetails(
+    type: SecurityAlertType,
+    attempts?: number,
+    locations?: string[],
+    device?: string,
+    ip?: string
+  ) {
+    const baseDetails = {
+      title: "",
+      message: "",
+      auditMessage: "",
+    };
+
+    switch (type) {
+      case "SUSPICIOUS_ACTIVITY":
+        return {
+          ...baseDetails,
+          title: "Suspicious Activity Detected",
+          message: `We detected ${attempts} failed login attempts to your account 
+                 from ${locations?.length || "multiple"} locations.`,
+          auditMessage: `Security alert sent: ${attempts} failed login attempts`,
+        };
+
+      case "ACCOUNT_LOCKED":
+        return {
+          ...baseDetails,
+          title: "Account Temporarily Locked",
+          message:
+            "Your account has been locked due to multiple failed login attempts.",
+          auditMessage: "Account locked alert sent",
+        };
+
+      case "NEW_DEVICE":
+        return {
+          ...baseDetails,
+          title: "New Device Detected",
+          message: `A login was detected from a new device (${device}) at ${ip}.`,
+          auditMessage: `New device alert: ${device} (${ip})`,
+        };
+
+      // Add other alert types as needed
+
+      default:
+        return {
+          ...baseDetails,
+          title: "Security Notice",
+          message: "Important security notice regarding your account.",
+          auditMessage: "Generic security alert sent",
+        };
+    }
   }
 }
 

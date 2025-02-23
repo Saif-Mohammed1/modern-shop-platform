@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 export default async function Home() {
   try {
-    const { data } = await api.get("/shop/home-page");
+    const { data } = await api.get("/shop/home");
 
     return (
       // <ComponentLoading>

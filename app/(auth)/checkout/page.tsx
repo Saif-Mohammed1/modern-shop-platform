@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 const Page = async () => {
   try {
-    const { data } = await api.get("/customer/address", {
+    const { data } = await api.get("/customers/address", {
       headers: Object.fromEntries(headers().entries()), //convert headers to object
     });
     const address = data?.data;

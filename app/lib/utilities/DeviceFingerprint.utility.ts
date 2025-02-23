@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { DeviceInfo } from "../types/refresh.types";
+import { DeviceInfo } from "../types/session.types";
 import DeviceDetector from "device-detector-js"; // 725.2K (gzipped: 168.3K)
 import crypto from "crypto";
 import { TokensService } from "@/app/_server/services/tokens.service";
@@ -37,7 +37,9 @@ export const getDeviceFingerprint = async (
   };
 };
 
-const generateDeviceFingerprint = (data: Record<string, string>): string => {
+export const generateDeviceFingerprint = (
+  data: Record<string, string>
+): string => {
   return crypto.createHash("sha256").update(JSON.stringify(data)).digest("hex");
 };
 

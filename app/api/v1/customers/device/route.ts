@@ -1,0 +1,15 @@
+import authController from "@/app/_server/controllers/auth.controller";
+import ErrorHandler from "@/app/_server/controllers/errorController";
+import { connectDB } from "@/app/_server/db/db";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { type NextRequest } from "next/server";
+// /api/customers/device-info
+export const GET = async (req: NextRequest) => {
+  try {
+    await connectDB();
+    await AuthMiddleware.requireAuth()(req);
+    return authController.getActiveSessions(req);
+  } catch (error) {
+    return ErrorHandler(error, req);
+  }
+};

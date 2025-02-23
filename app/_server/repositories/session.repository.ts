@@ -1,4 +1,4 @@
-import { DeviceInfo } from "@/app/lib/types/refresh.types";
+import { DeviceInfo } from "@/app/lib/types/session.types";
 import { ISession } from "../models/Session.model";
 import { BaseRepository } from "./BaseRepository";
 import { Model } from "mongoose";
@@ -71,5 +71,8 @@ export class SessionRepository extends BaseRepository<ISession> {
     return this.model.findByIdAndUpdate(id, {
       $set: { lastUsedAt: new Date() },
     });
+  }
+  async getUserSessions(userId: string): Promise<ISession[]> {
+    return this.model.find({ userId }).lean();
   }
 }

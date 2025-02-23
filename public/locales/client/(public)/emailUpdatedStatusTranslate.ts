@@ -2,6 +2,8 @@
 export const emailUpdatedStatusTranslate = {
   en: {
     functions: {
+      onPending: "Pending",
+      redirectNotice: "Redirecting...",
       useEffect: {
         loading: "Processing your request...",
         invalidOrMissingToken: "Invalid or missing token.",
@@ -17,6 +19,8 @@ export const emailUpdatedStatusTranslate = {
   },
   uk: {
     functions: {
+      onPending: "В очікуванні",
+      redirectNotice: "Перенаправлення...",
       useEffect: {
         loading: "Обробка вашого запиту...",
         invalidOrMissingToken: "Недійсний або відсутній токен.",
