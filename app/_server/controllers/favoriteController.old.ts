@@ -3,11 +3,11 @@ import type { NextRequest } from "next/server";
 import { lang } from "@/app/lib/utilities/lang";
 import { Model } from "mongoose";
 import { cartControllerTranslate } from "../../../public/locales/server/cartControllerTranslate";
-import { IFavoriteSchema } from "../models/Favorite.model";
+import { IWishlistSchema } from "../models/Wishlist.model";
 
 export const getFav = async (
   req: NextRequest,
-  model: Model<IFavoriteSchema>
+  model: Model<IWishlistSchema>
 ) => {
   try {
     const doc = await model.find({ user: req?.user?._id });
@@ -23,7 +23,7 @@ export const getFav = async (
 };
 export const createFav = async (
   req: NextRequest,
-  model: Model<IFavoriteSchema>
+  model: Model<IWishlistSchema>
 ) => {
   let doc;
   try {
@@ -47,7 +47,7 @@ export const createFav = async (
 };
 export const deleteFav = async (
   req: NextRequest,
-  model: Model<IFavoriteSchema>
+  model: Model<IWishlistSchema>
 ) => {
   try {
     const doc = await model.findOneAndDelete(

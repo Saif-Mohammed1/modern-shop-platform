@@ -20,4 +20,4 @@ export const commonTranslations = {
 
     productDoesNotExist: "Товар не існує",
   },
-};
+} as const;

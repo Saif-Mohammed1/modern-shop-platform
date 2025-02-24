@@ -5,7 +5,8 @@ import {
 } from "@/app/lib/utilities/refresh-token.util";
 import RefreshToken, { IRefreshToken } from "../models/Session.model";
 import { sign, verify } from "jsonwebtoken";
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import { cookies } from "next/headers";
 import { refreshTokenControllerTranslate } from "../../../public/locales/server/refreshTokenControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";

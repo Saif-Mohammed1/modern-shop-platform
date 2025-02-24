@@ -1,5 +1,5 @@
 import authController from "@/app/_server/controllers/auth.controller";
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { connectDB } from "@/app/_server/db/db";
 import { type NextRequest } from "next/server";
 export const GET = async (req: NextRequest) => {

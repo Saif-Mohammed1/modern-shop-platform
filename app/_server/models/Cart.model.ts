@@ -10,6 +10,7 @@ export interface ICart extends Document {
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
+  expiresAt: Date;
 }
 
 const CartSchema = new Schema<ICart>(
@@ -28,8 +29,12 @@ const CartSchema = new Schema<ICart>(
     },
     quantity: {
       type: Number,
-      required: true,
-      min: [1, "Quantity cannot be less than 1"],
+      default: 1,
+      min: 1,
+    },
+    expiresAt: {
+      type: Date,
+      default: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     },
   },
   {
@@ -41,17 +46,17 @@ const CartSchema = new Schema<ICart>(
 
 // Compound index to prevent duplicate items in cart
 CartSchema.index({ userId: 1, productId: 1 }, { unique: true });
-
+CartSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 // Validation to ensure product exists when adding to cart
-CartSchema.pre<ICart>("save", async function (next) {
-  const product = await Product.findById(this.productId);
-  if (!product || product.stock < this.quantity) {
-    throw new Error(
-      !product ? "Product not found" : "Insufficient product stock"
-    );
-  }
-  next();
-});
+// CartSchema.pre<ICart>("save", async function (next) {
+//   const product = await Product.findById(this.productId);
+//   if (!product || product.stock < this.quantity) {
+//     throw new Error(
+//       !product ? "Product not found" : "Insufficient product stock"
+//     );
+//   }
+//   next();
+// });
 
 const CartModel: Model<ICart> = models.Cart || model<ICart>("Cart", CartSchema);
 

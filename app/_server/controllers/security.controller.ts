@@ -1,0 +1,33 @@
+// src/controllers/security.controller.ts
+
+import { type NextRequest, NextResponse } from "next/server";
+import { SecurityService } from "../services/security.service";
+
+export class SecurityController {
+  constructor(private readonly service: SecurityService) {}
+
+  async getSecurityDashboard(req: NextRequest) {
+    try {
+      const data = await this.service.getSecurityAnalytics();
+      return NextResponse.json(
+        {
+          data,
+        },
+        {
+          status: 200,
+        }
+      );
+    } catch (error) {
+      console.error("Security dashboard error:", error);
+      return NextResponse.json(
+        {
+          error: "Failed to load security data",
+          details: error instanceof Error ? error.message : "Unknown error",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+  }
+}

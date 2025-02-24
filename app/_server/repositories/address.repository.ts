@@ -79,6 +79,6 @@ export class AddressRepository extends BaseRepository<IAddress> {
     return queryBuilder.execute();
   }
   async startSession(): Promise<ClientSession> {
-    return this.model.db.startSession();
+    return await this.model.db.startSession();
   }
 }

@@ -1,22 +1,16 @@
-import { isAuth } from "@/app/_server/controllers/authController";
-import { mergeLocalCartWithDBModel } from "@/app/_server/controllers/cartController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import cartController from "@/app/_server/controllers/cart.controller";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { connectDB } from "@/app/_server/db/db";
-import Cart from "@/app/_server/models/Cart.model";
-import { type NextRequest, NextResponse } from "next/server";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+
+import { type NextRequest } from "next/server";
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
 
-    await isAuth(req);
-    await mergeLocalCartWithDBModel(req, Cart);
+    await AuthMiddleware.requireAuth()(req);
 
-    return NextResponse.json(
-      {
-        data: null,
-      },
-      { status: 200 }
-    );
+    return await cartController.saveLocalCartToDB(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

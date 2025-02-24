@@ -7,7 +7,7 @@ import { stripeControllerTranslate } from "../../../public/locales/server/stripe
 import { lang } from "@/app/lib/utilities/lang";
 import { z } from "zod";
 import crypto from "crypto";
-import Order from "../models/order.model ";
+import Order from "../models/Order.model ";
 import User from "../models/User.model";
 import Product from "../models/Product.model";
 import { OrderStatus } from "@/app/lib/types/orders.types";

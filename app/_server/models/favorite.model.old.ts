@@ -2,14 +2,14 @@
 import { Document, Model, Query, Schema, model, models } from "mongoose";
 import User, { IUser } from "./User.model";
 import Product, { IProductSchema } from "./Product.model";
-export interface IFavoriteSchema extends Document {
+export interface IWishlistSchema extends Document {
   user: IUser["_id"];
   product: IProductSchema["_id"];
   // favorite: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
-const FavoriteSchema = new Schema<IFavoriteSchema>(
+const FavoriteSchema = new Schema<IWishlistSchema>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -37,7 +37,7 @@ const FavoriteSchema = new Schema<IFavoriteSchema>(
 // Index the `product` field
 // FavoriteSchema.index({ product: 1 });
 
-FavoriteSchema.pre<Query<any, IFavoriteSchema>>(/^find/, function (next) {
+FavoriteSchema.pre<Query<any, IWishlistSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",
     model: Product,
@@ -62,7 +62,7 @@ FavoriteSchema.post(/^find/, function (docs, next) {
   }
   next();
 });
-const Favorite: Model<IFavoriteSchema> =
-  models.Favorite || model<IFavoriteSchema>("Favorite", FavoriteSchema);
+const Favorite: Model<IWishlistSchema> =
+  models.Favorite || model<IWishlistSchema>("Favorite", FavoriteSchema);
 
 export default Favorite;

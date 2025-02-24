@@ -7,20 +7,18 @@ import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account
 import { lang } from "@/app/lib/utilities/lang";
 import { useUser } from "../user/user.context";
 export type WishlistType = {
-  product: ProductType;
-  user: string;
+  productId: ProductType;
+  userId: string;
   _id?: string;
 };
 type wishlistContextType = {
   wishlist: WishlistType[];
-  addToWishlist: (product: ProductType) => void;
-  removeFromWishlist: (product: ProductType) => void;
+  toggleWishlist: (product: ProductType) => Promise<void>;
   isInWishlist: (id: string) => boolean;
 };
 const WishlistContext = createContext<wishlistContextType>({
   wishlist: [],
-  addToWishlist: () => {},
-  removeFromWishlist: () => {},
+  toggleWishlist: async () => {},
   isInWishlist: () => false,
 });
 
@@ -31,14 +29,26 @@ export const WishlistProvider = ({
 }) => {
   const [wishlist, setWishlist] = useState<WishlistType[]>([]);
   const { user } = useUser();
-
+  const getMyWishList = async () => {
+    try {
+      const response = await api.get("/customers/wishlist");
+      setWishlist(response.data.docs);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error.message ||
+            accountWishlistTranslate[lang].wishListContext.loadWishlist.error
+        );
+      }
+    }
+  };
   // Load wishlist from localStorage or database
   useEffect(() => {
     const loadWishlist = async () => {
       if (user) {
         try {
-          const { data } = await api.get("/customers/wishlist");
-          setWishlist(data.data ?? []);
+          const data = await getMyWishList();
+          setWishlist(data ?? []);
         } catch (error: unknown) {
           if (error instanceof Error) {
             toast.error(
@@ -50,13 +60,6 @@ export const WishlistProvider = ({
             toast.error(accountWishlistTranslate[lang].errors.global);
           }
           setWishlist([]);
-        }
-      } else {
-        const storedWishlist = localStorage.getItem("wishlist");
-        if (!storedWishlist) {
-          return setWishlist([]);
-        } else {
-          setWishlist(JSON.parse(storedWishlist) ?? []);
         }
       }
     };
@@ -70,60 +73,53 @@ export const WishlistProvider = ({
     }
   }, [wishlist, user]);
 
-  const addToWishlist = async (product: ProductType) => {
+  const toggleWishlist = async (product: ProductType) => {
     if (user) {
       try {
-        await api.post("/customers/wishlist/" + product._id);
+        const exists = wishlist.some(
+          (item) => item.productId._id === product._id
+        );
+        if (exists) {
+          setWishlist((prevWishlist) =>
+            prevWishlist.filter((item) => item.productId._id !== product._id)
+          );
+          toast.success(
+            accountWishlistTranslate[lang].WishListCard.functions
+              .handleWishlistClick.removed
+          );
+        }
         setWishlist((prevWishlist) => [
           ...prevWishlist,
           {
-            product,
-            user:
-              // typeof product.user === "string"
-              //   ? product.user
-              product.user._id as string,
+            productId: product,
+            userId: user._id.toString(),
           },
         ]);
-      } catch (error) {
-        throw error;
-      }
-    } else {
-      setWishlist((prevWishlist) => [
-        ...prevWishlist,
-        {
-          product,
-          user:
-            // typeof product.user === "string" ? product.user :
-            product.user._id as string,
-        },
-      ]);
-    }
-  };
-
-  const removeFromWishlist = async (product: ProductType) => {
-    if (user) {
-      try {
-        await api.delete(`/customers/wishlist/${product._id}`);
-        setWishlist((prevWishlist) =>
-          prevWishlist.filter((item) => item.product._id !== product._id)
+        toast.success(
+          accountWishlistTranslate[lang].WishListCard.functions
+            .handleWishlistClick.success
         );
-      } catch (error) {
+        await api.post("/customers/wishlist/" + product._id);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error(accountWishlistTranslate[lang].errors.global);
+        }
+        const data = await getMyWishList();
+        setWishlist(data ?? []);
         throw error;
       }
-    } else {
-      setWishlist((prevWishlist) =>
-        prevWishlist.filter((item) => item.product._id !== product._id)
-      );
     }
   };
 
   const isInWishlist = (id: string) => {
-    return wishlist.some((item) => item.product._id === id);
+    return wishlist.some((item) => item.productId._id === id);
   };
 
   return (
     <WishlistContext.Provider
-      value={{ wishlist, addToWishlist, removeFromWishlist, isInWishlist }}
+      value={{ wishlist, toggleWishlist, isInWishlist }}
     >
       {children}
     </WishlistContext.Provider>

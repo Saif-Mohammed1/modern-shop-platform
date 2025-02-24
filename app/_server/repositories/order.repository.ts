@@ -5,7 +5,7 @@ import {
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../dtos/order.dto";
-import { IOrder } from "../models/order.model ";
+import { IOrder } from "../models/Order.model ";
 import { BaseRepository } from "./BaseRepository";
 import {
   QueryBuilderConfig,
@@ -27,7 +27,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
   }
 
   async findById(id: string): Promise<IOrder | null> {
-    return this.model
+    return await this.model
       .findById(id)
       .populate("userId", "name email")
       .lean()
@@ -38,7 +38,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
     orderId: string,
     status: UpdateOrderStatusDto
   ): Promise<IOrder | null> {
-    return this.model
+    return await this.model
       .findByIdAndUpdate(
         orderId,
         { status },
@@ -52,7 +52,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
     dto: UpdateOrderDto,
     session?: ClientSession
   ): Promise<IOrder | null> {
-    return this.model
+    return await this.model
       .findByIdAndUpdate(
         id,
         { $set: dto },
@@ -143,6 +143,6 @@ export class OrderRepository extends BaseRepository<IOrder> {
       .lean();
   }
   async startSession(): Promise<ClientSession> {
-    return this.model.db.startSession();
+    return await this.model.db.startSession();
   }
 }

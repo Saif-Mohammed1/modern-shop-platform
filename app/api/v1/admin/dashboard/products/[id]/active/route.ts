@@ -1,5 +1,5 @@
 import { isAuth, restrictTo } from "@/app/_server/controllers/authController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { getOne } from "@/app/_server/controllers/factoryController";
 import { updateProductActivity } from "@/app/_server/controllers/productController";
 import { connectDB } from "@/app/_server/db/db";

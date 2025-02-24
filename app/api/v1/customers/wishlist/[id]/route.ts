@@ -1,5 +1,5 @@
-import ErrorHandler from "@/app/_server/controllers/errorController";
-import favoriteController from "@/app/_server/controllers/favorite.controller";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import wishlistController from "@/app/_server/controllers/wishlist.controller";
 
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
@@ -14,22 +14,7 @@ export const POST = async (
     await connectDB();
     await AuthMiddleware.requireAuth()(req);
     req.id = id;
-    return await favoriteController.addFavorite(req);
-  } catch (error) {
-    return ErrorHandler(error, req);
-  }
-};
-
-export const DELETE = async (
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) => {
-  const { id } = params;
-  try {
-    await connectDB();
-    await AuthMiddleware.requireAuth()(req);
-    req.id = id;
-    return await favoriteController.removeFavorite(req);
+    return await wishlistController.toggleWishlist(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

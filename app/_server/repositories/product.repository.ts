@@ -74,7 +74,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
       fixedFilters: !isAdmin ? { active: true } : undefined,
     };
 
-    //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IFavorite>,
+    //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
     //   maxLimit: 100,
 
     const queryBuilder = new QueryBuilder<IProduct>(
@@ -95,7 +95,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
     return queryBuilder.execute();
   }
   async getProductBySlug(slug: string): Promise<IProduct | null> {
-    return this.model
+    return await this.model
       .findOne({ slug, active: true })
       .populate({
         path: "reviews",
@@ -106,7 +106,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
       .lean({ virtuals: true }); // This ensures virtuals are included
   }
   async getProductMetaDataBySlug(slug: string): Promise<IProduct | null> {
-    return this.model
+    return await this.model
       .findOne({ slug, active: true })
 
       .lean(); // This ensures virtuals are included
@@ -119,19 +119,19 @@ export class ProductRepository extends BaseRepository<IProduct> {
     category: string,
     slug: string
   ): Promise<IProduct | null> {
-    return this.model
+    return await this.model
       .findOne({ category, slug, active: true })
       .populate("reviews")
       .lean();
   }
   async startSession() {
-    return this.model.db.startSession();
+    return await this.model.db.startSession();
   }
   async getCategoryList(): Promise<string[]> {
-    return this.model.distinct("category");
+    return await this.model.distinct("category");
   }
   async getTopOffersAndNewProducts() {
-    return this.model.aggregate([
+    return await this.model.aggregate([
       {
         $facet: {
           // Top Offer Products - Sorted by highest discount and rating, filtered by stock and minimum rating

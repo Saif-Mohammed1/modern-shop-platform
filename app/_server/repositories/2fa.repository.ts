@@ -41,7 +41,7 @@ export class TwoFactorRepository extends BaseRepository<ITwoFactorAuth> {
     filter: FilterQuery<ITwoFactorAuth>,
     options?: { select?: string }
   ) {
-    return this.model
+    return await this.model
       .findOne(filter)
       .select(options?.select || "")
       .lean();
@@ -51,11 +51,16 @@ export class TwoFactorRepository extends BaseRepository<ITwoFactorAuth> {
     filter: FilterQuery<ITwoFactorAuth>,
     update: UpdateQuery<ITwoFactorAuth>
   ) {
-    return this.model.findOneAndUpdate(filter, update, { new: true }).lean();
+    return await this.model
+      .findOneAndUpdate(filter, update, { new: true })
+      .lean();
   }
 
   async addAuditLog(userId: string, log: AuditLog) {
-    return this.model.updateOne({ userId }, { $push: { auditLogs: log } });
+    return await this.model.updateOne(
+      { userId },
+      { $push: { auditLogs: log } }
+    );
   }
 
   async updateBackupCodes(
@@ -63,7 +68,7 @@ export class TwoFactorRepository extends BaseRepository<ITwoFactorAuth> {
     backupCodes: string[],
     session?: ClientSession
   ) {
-    return this.model.updateOne(
+    return await this.model.updateOne(
       { userId },
       { $set: { backupCodes } },
       { session }
@@ -71,19 +76,19 @@ export class TwoFactorRepository extends BaseRepository<ITwoFactorAuth> {
   }
 
   async incrementRecoveryAttempts(userId: string) {
-    return this.model.updateOne(
+    return await this.model.updateOne(
       { userId },
       { $inc: { recoveryAttempts: 1 }, $set: { lastUsed: new Date() } }
     );
   }
 
   async resetRecoveryAttempts(userId: string) {
-    return this.model.updateOne(
+    return await this.model.updateOne(
       { userId },
       { $set: { recoveryAttempts: 0, lastUsed: null } }
     );
   }
   async startSession(): Promise<ClientSession> {
-    return this.model.db.startSession();
+    return await this.model.db.startSession();
   }
 }

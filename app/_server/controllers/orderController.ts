@@ -2,7 +2,7 @@ import AppError from "@/app/lib/utilities/appError";
 import User from "../models/User.model";
 import type { NextRequest } from "next/server";
 import { Model } from "mongoose";
-import Order, { IOrderSchema } from "../models/order.model ";
+import Order, { IOrderSchema } from "../models/Order.model ";
 import { orderControllerTranslate } from "../../../public/locales/server/orderControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 

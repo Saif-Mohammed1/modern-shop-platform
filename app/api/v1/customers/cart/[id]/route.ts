@@ -1,13 +1,9 @@
-import { isAuth } from "@/app/_server/controllers/authController";
-import {
-  addToCartModel,
-  clearCartModel,
-  removeFromCartModel,
-} from "@/app/_server/controllers/cartController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import cartController from "@/app/_server/controllers/cart.controller";
+
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { connectDB } from "@/app/_server/db/db";
-import Cart from "@/app/_server/models/Cart.model";
-import { type NextRequest, NextResponse } from "next/server";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { type NextRequest } from "next/server";
 
 export const POST = async (
   req: NextRequest,
@@ -20,17 +16,10 @@ export const POST = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthMiddleware.requireAuth()(req);
     req.id = id;
 
-    const { data, statusCode } = await addToCartModel(req, Cart);
-
-    return NextResponse.json(
-      {
-        data,
-      },
-      { status: statusCode }
-    );
+    return await cartController.addToCart(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -46,16 +35,9 @@ export const PUT = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthMiddleware.requireAuth()(req);
     req.id = id;
-    const { data, statusCode } = await removeFromCartModel(req, Cart);
-
-    return NextResponse.json(
-      {
-        data,
-      },
-      { status: statusCode }
-    );
+    return await cartController.decreaseQuantity(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -72,10 +54,9 @@ export const DELETE = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthMiddleware.requireAuth()(req);
     req.id = id;
-    const { data, statusCode } = await clearCartModel(req, Cart);
-    return NextResponse.json({ data }, { status: statusCode });
+    return await cartController.removeProductFromCart(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

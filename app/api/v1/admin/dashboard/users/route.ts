@@ -1,18 +1,16 @@
-import { isAuth, restrictTo } from "@/app/_server/controllers/authController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
-import { getAll } from "@/app/_server/controllers/factoryController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import userController from "@/app/_server/controllers/user.controller";
 import { createUserByAdmin } from "@/app/_server/controllers/userController";
 import { connectDB } from "@/app/_server/db/db";
-import User, { IUser } from "@/app/_server/models/User.model";
-import { type NextRequest, NextResponse } from "next/server";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { UserRole } from "@/app/_server/models/User.model";
+import { type NextRequest } from "next/server";
 
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
-    const { data, pageCount, statusCode } = await getAll<IUser>(req, User);
-    return NextResponse.json({ data, pageCount }, { status: statusCode });
+    await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
+    return await userController.getAllUsers(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -21,8 +19,7 @@ export const GET = async (req: NextRequest) => {
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
+    await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
     req.id = String(req.user?._id);
     const { message, statusCode } = await createUserByAdmin(req);
     return NextResponse.json({ message }, { status: statusCode });

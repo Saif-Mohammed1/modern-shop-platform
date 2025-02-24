@@ -1,4 +1,5 @@
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import { UserService } from "../services/user.service";
 import { IUser, UserRole, UserStatus } from "../models/User.model";
 import AppError from "@/app/lib/utilities/appError";
@@ -42,7 +43,6 @@ export class AuthMiddleware {
       // }
       const decoded = await this.tokenService.decodedAccessToken(result);
       const user = await this.userService.findUserById(decoded.userId);
-
       if (!user)
         throw new AppError(commonTranslations[lang].userNotExists, 401);
 

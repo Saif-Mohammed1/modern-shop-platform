@@ -1,4 +1,4 @@
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import productController from "@/app/_server/controllers/product.controller";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";

@@ -13,32 +13,18 @@ import { FaShareAlt } from "react-icons/fa";
 import StarRatings from "react-star-ratings";
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { addToCartItems } = useCartItems();
-  const { isInWishlist, removeFromWishlist, addToWishlist } = useWishlist();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [isInWishlistState, setIsInWishlistState] = useState(
     isInWishlist(product._id)
   );
-  const toggleWishlist = async () => {
+  const toggleWishlistHandler = async () => {
     let toastLoading;
     try {
-      if (isInWishlistState) {
-        toastLoading = toast.loading(
-          shopPageTranslate[lang].productCard.toggleWishlist.loadingRemoving
-        );
-        await removeFromWishlist(product);
-        toast.success(
-          shopPageTranslate[lang].productCard.toggleWishlist.removed
-        );
-        setIsInWishlistState(false);
-      } else {
-        toastLoading = toast.loading(
-          shopPageTranslate[lang].productCard.toggleWishlist.loadingAdding
-        );
-        await addToWishlist(product);
-        setIsInWishlistState(true);
-        toast.success(
-          shopPageTranslate[lang].productCard.toggleWishlist.success
-        );
-      }
+      toastLoading = toast.loading(
+        shopPageTranslate[lang].productCard.toggleWishlist.loadingRemoving
+      );
+      await toggleWishlist(product);
+      setIsInWishlistState(!isInWishlistState);
     } catch (error: unknown) {
       toast.error(
         error instanceof Error
@@ -169,7 +155,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           <button
             className="text-red-500 text-2xl focus:outline-none"
             aria-label="Add to Wishlist"
-            onClick={toggleWishlist}
+            onClick={toggleWishlistHandler}
           >
             {isInWishlistState ? <AiFillHeart /> : <AiOutlineHeart />}
           </button>

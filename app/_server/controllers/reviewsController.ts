@@ -1,5 +1,5 @@
 import AppError from "@/app/lib/utilities/appError";
-import Order from "../models/order.model ";
+import Order from "../models/Order.model ";
 import type { NextRequest } from "next/server";
 import { reviewControllerTranslate } from "../../../public/locales/server/reviewControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";

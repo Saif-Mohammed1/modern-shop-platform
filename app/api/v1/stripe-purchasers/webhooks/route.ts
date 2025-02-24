@@ -1,4 +1,4 @@
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { handleStripeWebhook } from "@/app/_server/controllers/stripeController";
 import { connectDB } from "@/app/_server/db/db";
 import { type NextRequest, NextResponse } from "next/server";

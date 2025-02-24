@@ -1,5 +1,6 @@
 import { Model } from "mongoose";
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import { IReportSchema } from "../models/report.model";
 import AppError from "@/app/lib/utilities/appError";
 import { reportUsControllerTranslate } from "../../../public/locales/server/reportControllerTranslate";

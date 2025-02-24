@@ -1,4 +1,4 @@
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
 import twoFactorController from "@/app/_server/controllers/2fa.controller";

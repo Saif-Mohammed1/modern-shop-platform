@@ -4,7 +4,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies, headers } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import connectDB from "@/app/_server/db/db";
 import { TwoFactorAuthService } from "@/app/_server/controllers/2faController";
 import tokenManager from "@/app/lib/utilities/TokenManager";

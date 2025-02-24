@@ -1,4 +1,4 @@
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import reviewController from "@/app/_server/controllers/review.controller";
 import {
   checkReview,

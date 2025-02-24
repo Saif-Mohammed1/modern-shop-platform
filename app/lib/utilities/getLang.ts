@@ -1,6 +1,6 @@
 "use server";
 
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 
 enum Lang {
   uk = "uk",

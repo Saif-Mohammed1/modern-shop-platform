@@ -1,13 +1,10 @@
-import { isAuth, restrictTo } from "@/app/_server/controllers/authController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
-import {
-  deleteOne,
-  getOne,
-  updateOne,
-} from "@/app/_server/controllers/factoryController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import orderController from "@/app/_server/controllers/order.controller";
+
 import { connectDB } from "@/app/_server/db/db";
-import Order, { IOrderSchema } from "@/app/_server/models/order.model ";
-import { type NextRequest, NextResponse } from "next/server";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { UserRole } from "@/app/_server/models/User.model";
+import { type NextRequest } from "next/server";
 
 export const GET = async (
   req: NextRequest,
@@ -20,11 +17,10 @@ export const GET = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
+    await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
     req.id = id;
-    const { data, statusCode } = await getOne<IOrderSchema>(req, Order);
-    return NextResponse.json({ data }, { status: statusCode });
+
+    return await orderController.getOrderById(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -41,14 +37,10 @@ export const PUT = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
+    await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
     req.id = id;
-    const { data, statusCode } = await updateOne<IOrderSchema>(req, Order, [
-      "status",
-    ]);
 
-    return NextResponse.json({ data }, { status: statusCode });
+    return await orderController.updateOrderStatus(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -64,12 +56,10 @@ export const DELETE = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
+    await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
     req.id = id;
-    const { data, statusCode } = await deleteOne<IOrderSchema>(req, Order);
 
-    return NextResponse.json({ data }, { status: statusCode });
+    return await orderController.deleteOrder(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

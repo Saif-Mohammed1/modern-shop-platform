@@ -1,11 +1,10 @@
-import { act } from "react";
-import Order, { IOrderSchema } from "../models/order.model ";
+import Order, { IOrderSchema } from "../models/Order.model ";
 import Product from "../models/Product.model";
 import Refund, { IRefundSchema } from "../models/refund.model";
 import Report from "../models/report.model";
 import User from "../models/User.model";
 import Cart from "../models/Cart.model";
-import Favorite from "../models/Favorite.model";
+import Wishlist from "../models/Wishlist.model";
 
 export interface DashboardData {
   users: {
@@ -13,6 +12,11 @@ export interface DashboardData {
     growthPercentage: number;
     lastWeek: number;
     active: number;
+    // NEW: Add user demographics
+    // demographics: {
+    //   regions: Record<string, number>;
+    //   ageGroups: Record<string, number>;
+    // };
   };
   orders: {
     total: number;
@@ -24,6 +28,8 @@ export interface DashboardData {
       trend: number;
       daily: number;
       // daily: { date: string; amount: number }[];
+      // NEW: Add weekly trend data
+      weeklyTrend: Array<{ date: string; amount: number }>;
     };
   };
   products: {
@@ -365,7 +371,7 @@ export const mainDashboard = async (): Promise<{
       recentActivitiesOrders,
       recentActivitiesRefunds,
       topCartProducts,
-      topFavoriteProducts,
+      topWishlistProducts,
       topOrderedProducts,
       dailyOrdersCount,
     ] = await Promise.all([
@@ -515,8 +521,8 @@ export const mainDashboard = async (): Promise<{
         { $limit: 10 },
       ]),
 
-      // Top products in favorites
-      Favorite.aggregate([
+      // Top products in Wishlists
+      Wishlist.aggregate([
         { $group: { _id: "$product", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
@@ -605,7 +611,7 @@ export const mainDashboard = async (): Promise<{
     // Data transformation
     const combinedInterestProducts = [
       ...topCartProducts,
-      ...topFavoriteProducts,
+      ...topWishlistProducts,
     ].reduce((acc, curr) => {
       const productId = curr._id.toString();
       acc.set(productId, (acc.get(productId) || 0) + curr.count);

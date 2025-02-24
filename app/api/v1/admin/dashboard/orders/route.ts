@@ -1,16 +1,15 @@
-import { isAuth, restrictTo } from "@/app/_server/controllers/authController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
-import { getOrders } from "@/app/_server/controllers/orderController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import orderController from "@/app/_server/controllers/order.controller";
 import { connectDB } from "@/app/_server/db/db";
-import { type NextRequest, NextResponse } from "next/server";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { UserRole } from "@/app/_server/models/User.model";
+import { type NextRequest } from "next/server";
 
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
-    const { orders, pageCount, statusCode } = await getOrders(req);
-    return NextResponse.json({ orders, pageCount }, { status: statusCode });
+    await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
+    return await orderController.getOrders(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

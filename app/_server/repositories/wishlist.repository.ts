@@ -1,6 +1,5 @@
-// favorite.repository.ts
+// wishlist.repository.ts
 
-import { IFavorite } from "../models/Favorite.model";
 import {
   QueryBuilderResult,
   QueryOptionConfig,
@@ -8,24 +7,25 @@ import {
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 import { ClientSession, Model } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
+import { IWishlist } from "../models/Wishlist.model";
 
-export class FavoriteRepository extends BaseRepository<IFavorite> {
-  constructor(model: Model<IFavorite>) {
+export class WishlistRepository extends BaseRepository<IWishlist> {
+  constructor(model: Model<IWishlist>) {
     super(model);
   }
   async create(
-    dto: Partial<IFavorite>,
+    dto: Partial<IWishlist>,
     session?: ClientSession
-  ): Promise<IFavorite> {
-    const [favorite] = await this.model.create([dto], {
+  ): Promise<IWishlist> {
+    const [Wishlist] = await this.model.create([dto], {
       session,
     });
-    return favorite;
+    return Wishlist;
   }
 
-  async deleteFavorite(
-    productId: string,
+  async deleteWishlist(
     userId: string,
+    productId: string,
     session?: ClientSession
   ): Promise<boolean> {
     const result = await this.model.deleteOne(
@@ -35,15 +35,15 @@ export class FavoriteRepository extends BaseRepository<IFavorite> {
     return result.deletedCount === 1;
   }
 
-  async getUserFavorites(
+  async getUserWishlists(
     userId: string,
     options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IFavorite>> {
+  ): Promise<QueryBuilderResult<IWishlist>> {
     const queryConfig = {
       allowedFilters: ["userId", "productId", "createdAt"] as Array<
-        keyof IFavorite
+        keyof IWishlist
       >,
-      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IFavorite>,
+      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
 
@@ -55,7 +55,7 @@ export class FavoriteRepository extends BaseRepository<IFavorite> {
       ...options.query,
     });
 
-    const queryBuilder = new QueryBuilder<IFavorite>(
+    const queryBuilder = new QueryBuilder<IWishlist>(
       this.model,
       searchParams,
       queryConfig
@@ -71,12 +71,12 @@ export class FavoriteRepository extends BaseRepository<IFavorite> {
     return queryBuilder.execute();
   }
 
-  async isFavorite(userId: string, productId: string): Promise<boolean> {
+  async isWishlist(userId: string, productId: string): Promise<boolean> {
     const exists = await this.model.exists({ userId, productId });
     return !!exists;
   }
 
-  async clearUserFavorites(userId: string): Promise<void> {
+  async clearUserWishlists(userId: string): Promise<void> {
     await this.model.deleteMany({ userId });
   }
 }

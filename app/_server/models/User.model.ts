@@ -262,8 +262,8 @@ const UserSchema = new Schema<IUser>(
             type: String,
             enum: Object.values(AuditAction),
             required: true,
-          }, // ✅ تحديد نوع الـ enum
-          details: { type: Object, required: true }, // ✅ استبدال String بـ Object
+          },
+          details: { type: Object, required: true },
 
           _id: false,
         },
@@ -348,38 +348,7 @@ UserSchema.index({
 });
 
 // Middleware
-// UserSchema.pre<IUser>("save", async function (next) {
-//   // Only run when password is modified
-//   if (this.isModified("password")) {
-//     try {
-//       // Move current password to history before updating
-//       if (!this.isNew) {
-//         this.security.previousPasswords.push(this.password);
 
-//         // Keep only last 5 passwords
-//         if (this.security.previousPasswords.length > 5) {
-//           this.security.previousPasswords.shift();
-//         }
-//       }
-
-//       // Hash new password
-//       this.password = await bcrypt.hash(this.password, 12);
-
-//       // Set password change timestamp
-//       this.security.passwordChangedAt = this.isNew
-//         ? undefined
-//         : new Date(Date.now() - 1000);
-//     } catch (error) {
-//       return next(error as Error);
-//     }
-//   }
-
-//   if (this.isModified("email")) {
-//     this.verification.emailVerified = false;
-//   }
-
-//   next();
-// });
 UserSchema.pre<IUser>("save", async function (next) {
   if (this.isModified("password")) {
     try {

@@ -1,4 +1,4 @@
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import sessionController from "@/app/_server/controllers/session.controller";
 
 import { connectDB } from "@/app/_server/db/db";

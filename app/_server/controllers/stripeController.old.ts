@@ -1,7 +1,7 @@
 import AppError from "@/app/lib/utilities/appError";
 import Stripe from "stripe";
 import Product from "../models/Product.model";
-import Order from "../models/order.model ";
+import Order from "../models/Order.model ";
 import { sendEmailWithInvoice } from "@/app/lib/utilities/email";
 import { headers } from "next/headers";
 import User from "../models/User.model";

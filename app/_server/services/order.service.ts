@@ -4,7 +4,7 @@ import {
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../dtos/order.dto";
-import OrderModel from "../models/order.model ";
+import OrderModel from "../models/Order.model ";
 import { OrderRepository } from "../repositories/order.repository";
 
 export class OrderService {

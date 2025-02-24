@@ -3,12 +3,7 @@ import { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Image from "next/image";
-import {
-  redirect,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useCartItems } from "../providers/context/cart/cart.context";
@@ -20,31 +15,12 @@ import { FaArrowRightLong } from "react-icons/fa6";
 const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
   const [isWishlisted, setIsWishlisted] = useState(false);
   // const [isZoomed, setIsZoomed] = useState(false);
   const [quantity, setQuantity] = useState(1);
-
-  // Replace the window.location.reload button with:
-  // const handleForceRefresh = () => {
-  //   // Create new search params with cache-buster
-  //   const params = new URLSearchParams(searchParams);
-  //   params.set("forceRefresh", Date.now().toString());
-
-  //   // Update URL without scroll reset
-  //   router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-
-  //   // Remove the param after navigation
-  //   setTimeout(() => {
-  //     params.delete("forceRefresh");
-  //     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  //   }, 100);
-  // };
-
   // Modify the handleAddToCart function
   const handleAddToCart = async () => {
     if (product.stock === 0) {
@@ -70,7 +46,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
     }
   };
 
-  const toggleWishlist = async () => {
+  const toggleWishlistHandler = async () => {
     const toastId = toast.loading(
       isWishlisted
         ? shopPageTranslate[lang].functions.toggleWishlist.loadingRemoving
@@ -78,19 +54,8 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
     );
 
     try {
-      if (isWishlisted) {
-        await removeFromWishlist(product);
-        toast.success(
-          shopPageTranslate[lang].functions.toggleWishlist.removed,
-          { id: toastId }
-        );
-      } else {
-        await addToWishlist(product);
-        toast.success(
-          shopPageTranslate[lang].functions.toggleWishlist.success,
-          { id: toastId }
-        );
-      }
+      await toggleWishlist(product);
+
       setIsWishlisted(!isWishlisted);
     } catch (error) {
       const errorMessage =
@@ -259,7 +224,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             </p>
           </button>
           <button
-            onClick={toggleWishlist}
+            onClick={toggleWishlistHandler}
             className="p-3 rounded-lg border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-600"
             aria-label={
               isWishlisted ? "Remove from wishlist" : "Add to wishlist"

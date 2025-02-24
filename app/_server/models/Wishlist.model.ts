@@ -6,7 +6,7 @@ import AppError from "@/app/lib/utilities/appError";
 import { commonTranslations } from "@/public/locales/server/Common.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 
-export interface IFavorite extends Document {
+export interface IWishlist extends Document {
   _id: Types.ObjectId;
   userId: IUser["_id"];
   productId: IProduct["_id"];
@@ -14,7 +14,7 @@ export interface IFavorite extends Document {
   updatedAt: Date;
 }
 
-const FavoriteSchema = new Schema<IFavorite>(
+const WishlistSchema = new Schema<IWishlist>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -37,17 +37,17 @@ const FavoriteSchema = new Schema<IFavorite>(
 );
 
 // Compound index to prevent duplicate favorites
-FavoriteSchema.index({ userId: 1, productId: 1 }, { unique: true });
+WishlistSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
 // Virtual population (if needed)
-FavoriteSchema.virtual("user", {
+WishlistSchema.virtual("user", {
   ref: "User",
   localField: "userId",
   foreignField: "_id",
   justOne: true,
 });
 
-FavoriteSchema.virtual("product", {
+WishlistSchema.virtual("product", {
   ref: "Product",
   localField: "productId",
   foreignField: "_id",
@@ -55,7 +55,7 @@ FavoriteSchema.virtual("product", {
 });
 
 // Pre-save validation for references
-FavoriteSchema.pre<IFavorite>("save", async function (next) {
+WishlistSchema.pre<IWishlist>("save", async function (next) {
   try {
     const [userExists, productExists] = await Promise.all([
       User.exists({ _id: this.userId }),
@@ -72,6 +72,6 @@ FavoriteSchema.pre<IFavorite>("save", async function (next) {
   }
 });
 
-const FavoriteModel: Model<IFavorite> =
-  models.Favorite || model<IFavorite>("Favorite", FavoriteSchema);
-export default FavoriteModel;
+const WishlistModel: Model<IWishlist> =
+  models.Wishlist || model<IWishlist>("Wishlist", WishlistSchema);
+export default WishlistModel;

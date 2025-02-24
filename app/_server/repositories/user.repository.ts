@@ -41,7 +41,10 @@ export class UserRepository extends BaseRepository<IUser> {
     updates: Partial<IUser>,
     session?: ClientSession
   ): Promise<IUser | null> {
-    return this.model.findByIdAndUpdate(id, updates, { new: true, session });
+    return await this.model.findByIdAndUpdate(id, updates, {
+      new: true,
+      session,
+    });
   }
   async delete(id: string, session?: ClientSession): Promise<boolean> {
     const result = await this.model.deleteOne({ _id: id }, { session });
@@ -148,7 +151,7 @@ export class UserRepository extends BaseRepository<IUser> {
     token: string,
     session?: ClientSession
   ): Promise<IUser | null> {
-    return this.model.findOneAndUpdate(
+    return await this.model.findOneAndUpdate(
       {
         "verification.verificationToken": token,
         "verification.verificationExpires": { $gt: new Date() },
@@ -225,7 +228,7 @@ export class UserRepository extends BaseRepository<IUser> {
      */
   }
   async startSession(): Promise<ClientSession> {
-    return this.model.db.startSession();
+    return await this.model.db.startSession();
   }
   async incrementRateLimit(
     user: IUser,
@@ -550,7 +553,7 @@ export class UserRepository extends BaseRepository<IUser> {
       allowedSorts: ["createdAt", "updatedAt"],
     };
 
-    //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IFavorite>,
+    //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
     //   maxLimit: 100,
 
     const queryBuilder = new QueryBuilder<IUser>(

@@ -1,6 +1,6 @@
 import AppError from "@/app/lib/utilities/appError";
 import User from "../models/User.model";
-import Order from "../models/order.model ";
+import Order from "../models/Order.model ";
 import type { NextRequest } from "next/server";
 import { Model } from "mongoose";
 import { IRefundSchema } from "../models/refund.model";

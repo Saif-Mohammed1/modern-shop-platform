@@ -33,7 +33,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
       allowedFilters: ["userId", "productId", "createdAt"] as Array<
         keyof IReview
       >,
-      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IFavorite>,
+      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
 
@@ -68,7 +68,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
     input: Partial<IReview>,
     session?: ClientSession
   ): Promise<IReview | null> {
-    return this.model
+    return await this.model
       .findByIdAndUpdate(id, input, { new: true, session })
       .lean();
   }
@@ -187,7 +187,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
       allowedFilters: ["userId", "productId", "createdAt"] as Array<
         keyof IReview
       >,
-      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IFavorite>,
+      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
 
@@ -212,6 +212,6 @@ export class ReviewRepository extends BaseRepository<IReview> {
     return queryBuilder.execute();
   }
   async startSession(): Promise<ClientSession> {
-    return this.model.db.startSession();
+    return await this.model.db.startSession();
   }
 }

@@ -199,6 +199,7 @@ const GlobalSchemaError = {
       },
       quantity: {
         required: "Quantity must be required",
+        min: "Quantity must be at least 1",
       },
     },
     address: {
@@ -524,6 +525,7 @@ const GlobalSchemaError = {
       },
       quantity: {
         required: "Кількість повинна бути обов'язковою",
+        min: "Кількість повинна бути принаймні 1",
       },
     },
     address: {

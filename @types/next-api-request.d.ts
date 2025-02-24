@@ -1,6 +1,6 @@
 // import { IUser } from "@/app/_server/models/user.model";
 
-import { IUser } from "@/app/api/v1/test/models/User.model";
+import { IUser } from "@/app/_server/models/User.model";
 
 declare module "next/server" {
   interface NextRequest {

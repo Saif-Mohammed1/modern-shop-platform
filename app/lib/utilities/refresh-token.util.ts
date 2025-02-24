@@ -2,7 +2,7 @@
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import crypto from "crypto";
 import DeviceDetector from "device-detector-js";
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 
 export const generateSecureRefreshToken = (userId: string): string => {
   const randomBytes = crypto.randomBytes(40);

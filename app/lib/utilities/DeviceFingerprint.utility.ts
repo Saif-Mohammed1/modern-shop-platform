@@ -1,4 +1,5 @@
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import { DeviceInfo } from "../types/session.types";
 import DeviceDetector from "device-detector-js"; // 725.2K (gzipped: 168.3K)
 import crypto from "crypto";

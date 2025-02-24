@@ -1,4 +1,5 @@
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import { UserService } from "../services/user.service";
 import sessionController from "./session.controller";
 import { NextResponse } from "next/server";

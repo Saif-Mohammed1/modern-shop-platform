@@ -19,7 +19,7 @@ export class SessionRepository extends BaseRepository<ISession> {
     return this.model.find({ userId }).lean();
   }
   async createSession(dto: CreateSessionDTO): Promise<ISession> {
-    return this.model.create(dto);
+    return await this.model.create(dto);
   }
 
   async findById(id: string): Promise<ISession | null> {
@@ -28,14 +28,14 @@ export class SessionRepository extends BaseRepository<ISession> {
   async findByFingerprint(
     fingerprint: ISession["deviceInfo"]["fingerprint"]
   ): Promise<ISession | null> {
-    return this.model
+    return await this.model
       .findOne({
         "deviceInfo.fingerprint": fingerprint,
       })
       .lean();
   }
   async revokeSession(id: string): Promise<ISession | null> {
-    return this.model.findByIdAndUpdate(id, {
+    return await this.model.findByIdAndUpdate(id, {
       $set: { isActive: false, revokedAt: new Date() },
     });
   }
@@ -58,7 +58,7 @@ export class SessionRepository extends BaseRepository<ISession> {
       .lean());
   }
   async findActiveToken(userId: string, hashedToken: string) {
-    return this.model
+    return await this.model
       .findOne({
         userId,
         hashedToken,
@@ -68,7 +68,7 @@ export class SessionRepository extends BaseRepository<ISession> {
       .lean();
   }
   async updateLastUsedAt(id: string) {
-    return this.model.findByIdAndUpdate(id, {
+    return await this.model.findByIdAndUpdate(id, {
       $set: { lastUsedAt: new Date() },
     });
   }

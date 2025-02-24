@@ -1,8 +1,10 @@
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import { ProductService } from "../services/product.service";
 import { ProductValidation } from "../dtos/product.dto";
 import { NextResponse } from "next/server";
 import { ReviewService } from "../services/review.service";
+import { UserRole } from "../models/User.model";
 
 class ProductController {
   private productService = new ProductService();
@@ -10,7 +12,10 @@ class ProductController {
   async createProduct(req: NextRequest) {
     try {
       const body = await req.json();
-      const result = ProductValidation.validateCreateProduct(body);
+      const result = ProductValidation.validateCreateProduct({
+        userId: req.user?._id,
+        ...body,
+      });
       const product = await this.productService.createProduct(result);
       return NextResponse.json({ product }, { status: 201 });
     } catch (err) {
@@ -40,9 +45,12 @@ class ProductController {
   async getProducts(req: NextRequest) {
     try {
       const [products, categories] = await Promise.all([
-        this.productService.getProducts({
-          query: req.nextUrl.searchParams,
-        }),
+        this.productService.getProducts(
+          {
+            query: req.nextUrl.searchParams,
+          },
+          req.user?.role.includes(UserRole.ADMIN)
+        ),
         this.productService.getProductsCategory(),
       ]);
       return NextResponse.json({ products, categories }, { status: 200 });

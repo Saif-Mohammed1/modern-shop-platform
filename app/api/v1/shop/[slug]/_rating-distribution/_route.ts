@@ -3,7 +3,7 @@
 
 export const dynamic = "force-static";
 export const revalidate = 60 * 10;
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import reviewController from "@/app/_server/controllers/review.controller";
 import { connectDB } from "@/app/_server/db/db";
 import { type NextRequest } from "next/server";

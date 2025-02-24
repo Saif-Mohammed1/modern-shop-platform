@@ -1,4 +1,4 @@
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import orderController from "@/app/_server/controllers/order.controller";
 import { createStripeProduct } from "@/app/_server/controllers/stripeController";
 import { connectDB } from "@/app/_server/db/db";

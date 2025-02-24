@@ -1,6 +1,6 @@
 import { TwoFactorAuthService } from "@/app/_server/controllers/2faController";
 import { isAuth } from "@/app/_server/controllers/authController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { connectDB } from "@/app/_server/db/db";
 import { type NextRequest, NextResponse } from "next/server";
 

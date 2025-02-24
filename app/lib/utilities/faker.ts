@@ -381,3 +381,71 @@ export const createRandomRefund = (count: number, userId: any[]) => {
   }
   return refunds;
 };
+
+export const createRandomCartItems = (
+  count: number,
+  userId: any[],
+  productId: any[]
+) => {
+  const cartItems = [] as any[];
+  for (let i = 0; i < userId.length; i++) {
+    for (let j = 0; j < count; j++) {
+      const randomUser = userId[i]["_id"];
+      // const randomProduct = faker.helpers.arrayElement(productId);
+      const randomProduct = productId[j];
+      const randomQuantity = faker.number.int({ min: 1, max: 5 });
+      cartItems.push({
+        userId: randomUser,
+        productId: randomProduct["_id"],
+        quantity: randomQuantity,
+      });
+    }
+  }
+  return cartItems;
+};
+export const createRandomWishlistItems = (
+  count: number,
+  userId: any[],
+  productId: any[]
+) => {
+  const wishlistItems = [] as any[];
+  for (let i = 0; i < userId.length; i++) {
+    for (let j = 0; j < count; j++) {
+      const randomUser = userId[i]["_id"];
+      const randomProduct = faker.helpers.arrayElement(productId);
+      wishlistItems.push({
+        userId: randomUser,
+        productId: randomProduct["_id"],
+      });
+    }
+  }
+  return wishlistItems;
+};
+export const createRandomMessages = (count: number, userId: any[]) => {
+  const messages = [] as any[];
+  for (let i = 0; i < userId.length; i++) {
+    for (let j = 0; j < count; j++) {
+      const randomUser = userId[i]["_id"];
+      const randomMessage = faker.lorem.paragraph();
+      messages.push({
+        user: randomUser,
+        message: randomMessage,
+      });
+    }
+  }
+  return messages;
+};
+export const createRandomNotifications = (count: number, userId: any[]) => {
+  const notifications = [] as any[];
+  for (let i = 0; i < userId.length; i++) {
+    for (let j = 0; j < count; j++) {
+      const randomUser = userId[i]["_id"];
+      const randomMessage = faker.lorem.sentence();
+      notifications.push({
+        user: randomUser,
+        message: randomMessage,
+      });
+    }
+  }
+  return notifications;
+};

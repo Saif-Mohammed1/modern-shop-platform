@@ -42,7 +42,7 @@ const ProductDetail = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { user } = useUser();
@@ -65,25 +65,11 @@ const ProductDetail = ({
     setQuantity(Math.max(1, Math.min(product.stock, newQuantity)));
   };
   // Toggle wishlist
-  const toggleWishlist = async () => {
+  const toggleWishlistHandaler = async () => {
     let toastLoading;
     try {
-      if (isWishlisted) {
-        toastLoading = toast.loading(
-          shopPageTranslate[lang].functions.toggleWishlist.loadingRemoving
-        );
-        await removeFromWishlist(product);
-        toast.success(shopPageTranslate[lang].functions.toggleWishlist.removed);
-        setIsWishlisted(!isWishlisted);
-      } else {
-        toastLoading = toast.loading(
-          shopPageTranslate[lang].functions.toggleWishlist.loadingAdding
-        );
-        await addToWishlist(product);
-
-        toast.success(shopPageTranslate[lang].functions.toggleWishlist.success);
-        setIsWishlisted(!isWishlisted);
-      }
+      await toggleWishlist(product);
+      setIsWishlisted(!isWishlisted);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -237,7 +223,7 @@ const ProductDetail = ({
               </div>
             </div>
             <button
-              onClick={toggleWishlist}
+              onClick={toggleWishlistHandaler}
               className="p-2 hover:bg-gray-100 rounded-full"
               aria-label={
                 isWishlisted ? "Remove from wishlist" : "Add to wishlist"

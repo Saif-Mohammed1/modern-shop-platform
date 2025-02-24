@@ -1,4 +1,4 @@
-import { Model, Document, FilterQuery, Schema } from "mongoose";
+import { Model, Document, FilterQuery } from "mongoose";
 
 // type id = Schema.Types.ObjectId;
 export interface Repository<T> {
@@ -23,14 +23,14 @@ export abstract class BaseRepository<T extends Document>
   }
 
   async create(data: T): Promise<T> {
-    return this.model.create(data);
+    return await this.model.create(data);
   }
   // async create(data: Omit<T, "id">): Promise<T> {
-  //   return this.model.create(data);
+  //   return await this.model.create(data);
   // }
 
   async update(id: string, data: Partial<T>): Promise<T | null> {
-    return this.model.findByIdAndUpdate(id, data, { new: true });
+    return await this.model.findByIdAndUpdate(id, data, { new: true });
   }
 
   async delete(id: string): Promise<boolean> {

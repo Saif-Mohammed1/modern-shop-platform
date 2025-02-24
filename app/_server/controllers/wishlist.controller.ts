@@ -1,0 +1,61 @@
+// Wishlist.controller.ts
+
+import { NextRequest, NextResponse } from "next/server";
+import { WishlistService } from "../services/wishlist.service";
+import { WishlistValidation } from "../dtos/wishlist.dto";
+
+class WishlistController {
+  private readonly WishlistService = new WishlistService();
+
+  async toggleWishlist(req: NextRequest) {
+    try {
+      const check = WishlistValidation.validateCreateWishlist({
+        productId: req.id,
+        userId: req.user._id,
+      });
+      const result = await this.WishlistService.toggleWishlist(
+        check.userId.toString(),
+        check.productId.toString()
+      );
+
+      return NextResponse.json(result, { status: 200 });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getMyWishlists(req: NextRequest) {
+    try {
+      const userId = String(req.user?._id);
+
+      const result = await this.WishlistService.getUserWishlists(userId, {
+        query: req.nextUrl.searchParams,
+
+        populate: true,
+      });
+
+      return NextResponse.json(result, { status: 200 });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async checkWishlist(req: NextRequest) {
+    try {
+      const check = WishlistValidation.validateCreateWishlist({
+        productId: req.id,
+        userId: req.user._id,
+      });
+      const isWishlist = await this.WishlistService.checkWishlist(
+        check.userId.toString(),
+        check.productId.toString()
+      );
+
+      return NextResponse.json({ isWishlist }, { status: 200 });
+    } catch (error) {
+      throw error;
+    }
+  }
+}
+
+export default new WishlistController();

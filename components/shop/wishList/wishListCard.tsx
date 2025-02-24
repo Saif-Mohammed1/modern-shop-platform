@@ -15,7 +15,7 @@ import {
 } from "react-icons/ai"; // Import cart icon
 
 const WishListCard = ({ product }: { product: ProductType }) => {
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
   const handelAddToCart = async () => {
     let toastLoading;
@@ -39,19 +39,7 @@ const WishListCard = ({ product }: { product: ProductType }) => {
   };
   const handleWishlistClick = async () => {
     try {
-      if (isInWishlist(product._id)) {
-        await removeFromWishlist(product);
-        toast.success(
-          accountWishlistTranslate[lang].WishListCard.functions
-            .handleWishlistClick.removed
-        );
-      } else {
-        await addToWishlist(product);
-        toast.success(
-          accountWishlistTranslate[lang].WishListCard.functions
-            .handleWishlistClick.success
-        );
-      }
+      await toggleWishlist(product);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(

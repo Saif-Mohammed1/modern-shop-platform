@@ -1,23 +1,15 @@
-import { isAuth } from "@/app/_server/controllers/authController";
-import { getCartModel } from "@/app/_server/controllers/cartController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
-// import { getDataByUser } from "@/app/_server/controller/factoryController";
-import { connectDB } from "@/app/_server/db/db";
-import Cart, { ICartSchema } from "@/app/_server/models/Cart.model";
-import { type NextRequest, NextResponse } from "next/server";
+import cartController from "@/app/_server/controllers/cart.controller";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import connectDB from "@/app/_server/db/db";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { type NextRequest } from "next/server";
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
 
-    await isAuth(req);
-    const { data, statusCode } = await getCartModel(req, Cart);
+    await AuthMiddleware.requireAuth()(req);
 
-    return NextResponse.json(
-      {
-        data,
-      },
-      { status: statusCode }
-    );
+    return await cartController.getMyCart(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

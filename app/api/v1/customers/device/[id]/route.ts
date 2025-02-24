@@ -1,7 +1,7 @@
-import { isAuth } from "@/app/_server/controllers/authController";
-import ErrorHandler from "@/app/_server/controllers/errorController";
-import { RefreshTokenService } from "@/app/_server/controllers/refreshTokenController";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import sessionController from "@/app/_server/controllers/session.controller";
 import { connectDB } from "@/app/_server/db/db";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
 
 import { type NextRequest, NextResponse } from "next/server";
 export const DELETE = async (
@@ -11,10 +11,9 @@ export const DELETE = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
+    await AuthMiddleware.requireAuth()(req);
     req.id = id;
-    const { message, statusCode } = await RefreshTokenService.revokeToken(req);
-    return NextResponse.json({ message }, { status: statusCode });
+    return await sessionController.revokeSession(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

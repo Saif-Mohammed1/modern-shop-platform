@@ -1,6 +1,7 @@
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+
 import { v4 as uuidv4 } from "uuid";
 
 // Define custom log format with error typing
