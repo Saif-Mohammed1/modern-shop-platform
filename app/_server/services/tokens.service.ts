@@ -91,6 +91,8 @@ export class TokensService {
       .update(token)
       .digest("hex");
   }
+  hashFingerprint = (fp: string) =>
+    crypto.createHash("sha256").update(fp).digest("hex");
   getResetPasswordTokenExpiry(): Date {
     return new Date(
       Date.now() +

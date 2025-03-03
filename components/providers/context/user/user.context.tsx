@@ -1,5 +1,5 @@
 "use client";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 import { UserAuthType } from "@/app/lib/types/users.types";
@@ -16,15 +16,9 @@ export const UserContext = createContext<UserContextType>({
 });
 
 // Create a UserProvider component
-export const UserProvider = ({
-  children,
-  session,
-}: {
-  children: React.ReactNode;
-  session: any;
-}) => {
+export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   // Define the state for the user
-  // const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
 
   const [user, setUser] = useState<User>(null);
 
@@ -49,23 +43,22 @@ export const UserProvider = ({
     if (session?.error === "RefreshAccessTokenError") {
       logOutUser();
     }
-  }, [session]);
-
+  }, [session, status]);
   // Provide the user context value to the children components
-  return (
-    <UserContext.Provider value={{ user, updateUser }}>
-      {children}
-    </UserContext.Provider>
-  );
-  // return status === "loading" ? (
-  //   <div className="flex justify-center items-center h-screen">
-  //     <div className="border-t-4 border-blue-500 rounded-full animate-spin h-12 w-12"></div>
-  //   </div>
-  // ) : (
+  // return (
   //   <UserContext.Provider value={{ user, updateUser }}>
   //     {children}
   //   </UserContext.Provider>
   // );
+  return status === "loading" ? (
+    <div className="flex justify-center items-center h-screen">
+      <div className="border-t-4 border-blue-500 rounded-full animate-spin h-12 w-12"></div>
+    </div>
+  ) : (
+    <UserContext.Provider value={{ user, updateUser }}>
+      {children}
+    </UserContext.Provider>
+  );
 };
 
 export const useUser = () => useContext(UserContext);

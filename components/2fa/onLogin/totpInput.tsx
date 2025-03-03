@@ -3,14 +3,14 @@ interface TotpInputProps {
   onVerify: (code: string) => void;
   isLoading: boolean;
   error: string;
-  onResend: () => void;
+  // onResend: () => void;
   onSwitchToBackup: () => void;
 }
 const TotpInput: FC<TotpInputProps> = ({
   onVerify,
   isLoading,
   error,
-  onResend,
+  // onResend,
   onSwitchToBackup,
 }) => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -107,12 +107,12 @@ const TotpInput: FC<TotpInputProps> = ({
       </button>
 
       <div className="mt-4 text-center space-y-2">
-        <button
+        {/* <button
           onClick={onResend}
           className="text-sm text-blue-600 hover:text-blue-700"
         >
           Resend Code
-        </button>
+        </button> */}
         <div className="text-sm text-gray-600">
           Lost access?{" "}
           <button

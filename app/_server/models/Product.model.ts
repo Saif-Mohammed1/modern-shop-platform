@@ -29,6 +29,7 @@ export interface IProduct extends Document {
       height: number;
     };
   };
+  lastModifiedBy?: Types.ObjectId | IUser;
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -146,6 +147,7 @@ const ProductSchema = new Schema<IProduct>(
         height: { type: Number, min: 0 },
       },
     },
+    lastModifiedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
 
   {
@@ -187,9 +189,9 @@ ProductSchema.pre("save", function (next) {
   if (this.isModified("name") || this.isNew) {
     this.slug = this.name.toLowerCase().trim().split(" ").join("-");
   }
+
   next();
 });
 const ProductModel: Model<IProduct> =
   models.Product || model<IProduct>("Product", ProductSchema);
-
 export default ProductModel;

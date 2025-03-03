@@ -32,10 +32,10 @@ const queryParams = async (searchParams: SearchParams) => {
     url.append("status", searchParams.status);
   }
   if (searchParams.startDate !== undefined) {
-    url.append("startDate", searchParams.startDate);
+    url.append("createAt[gte]", searchParams.startDate);
   }
   if (searchParams.endDate !== undefined) {
-    url.append("endDate", searchParams.endDate);
+    url.append("createAt[lte]", searchParams.endDate);
   }
   if (searchParams.sort !== undefined) {
     url.append("sort", searchParams.sort);
@@ -54,7 +54,7 @@ const queryParams = async (searchParams: SearchParams) => {
     //   orders, pageCount
     // }
     const {
-      data: { orders, pageCount },
+      data: { docs, meta, links },
     } = await api.get(
       "/admin/dashboard/orders" + (queryString ? `?${queryString}` : ""),
       {
@@ -62,7 +62,7 @@ const queryParams = async (searchParams: SearchParams) => {
       }
     );
 
-    return { orders, pageCount };
+    return { orders: docs, pagination: { meta, links } };
   } catch (error: any) {
     throw new AppError(error.message, error.status);
   }
@@ -71,20 +71,35 @@ type PageProps = {
   searchParams: SearchParams;
 };
 const page: FC<PageProps> = async ({ searchParams }) => {
-  const defaultSearchParams = {
-    email: searchParams.email || undefined,
-    status: searchParams.status || undefined,
-    startDate: searchParams.startDate || undefined,
-    endDate: searchParams.endDate || undefined,
-    sort: searchParams.sort || undefined,
-    page: searchParams.page || undefined,
-    limit: searchParams.limit || undefined,
-  };
+  // const defaultSearchParams = {
+  //   email: searchParams.email || undefined,
+  //   status: searchParams.status || undefined,
+  //   startDate: searchParams.startDate || undefined,
+  //   endDate: searchParams.endDate || undefined,
+  //   sort: searchParams.sort || undefined,
+  //   page: searchParams.page || undefined,
+  //   limit: searchParams.limit || undefined,
+  // };
 
   try {
-    const { orders, pageCount } = await queryParams(defaultSearchParams);
+    const { orders, pagination } = await queryParams(searchParams);
     return (
-      <AdminOrdersDashboard initialOrders={orders} totalPages={pageCount} />
+      <AdminOrdersDashboard
+        initialOrders={orders}
+        pagination={
+          pagination || {
+            meta: {
+              total: 0,
+              page: 0,
+              limit: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false,
+            },
+            links: { previous: "", next: "" },
+          }
+        }
+      />
     );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;

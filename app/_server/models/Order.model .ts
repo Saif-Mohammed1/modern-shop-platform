@@ -140,6 +140,8 @@ OrderSchema.pre<Query<any, IOrder>>(/^find/, function (next) {
 
 // comvert price to two decimal places
 OrderSchema.set("toJSON", {
+  versionKey: false,
+
   transform: function (_, ret) {
     ret.totalPrice = parseFloat(ret.totalPrice.toFixed(2));
     ret.items.forEach((item: any) => {

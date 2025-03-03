@@ -4,10 +4,8 @@ import { Toaster } from "react-hot-toast";
 import Footer from "@/components/footer/footer";
 import NavBar from "@/components/navBar/navBar";
 import Providers from "@/components/providers/providers";
-import SessionExpiredOverlay from "@/components/SessionExpiredOverlay/SessionExpiredOverlay";
 import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { getServerSession } from "next-auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,11 +21,10 @@ export default async function RootLayout({
   children: React.ReactNode;
   interceptor: React.ReactNode;
 }) {
-  const session = await getServerSession();
   return (
     <html lang={lang}>
       <body className={`${inter.className} `}>
-        <Providers session={session}>
+        <Providers>
           <main className="space-y-3 p-2 sm:p-4">
             <NavBar />
             <div className="rounded-3xl bg-red-600 text-white py-3 px-5 text-center overflow-hidden ">
@@ -37,7 +34,6 @@ export default async function RootLayout({
             </div>
             {interceptor}
             {children}
-            <SessionExpiredOverlay />
             <Footer />
           </main>
         </Providers>

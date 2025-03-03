@@ -8,6 +8,63 @@ const addUsers = {
     title: "Add New User",
 
     form: {
+      error: {
+        nameRequired: "Name is required",
+        nameTooSmall: "Name  must be at least 8 characters",
+        nameTooLong: "Name cannot exceed 50 characters",
+        invalidEmail: "Invalid email address",
+        invalidPhone: "Invalid phone number",
+        passwordLength: "Password must be 10-40 characters",
+        passwordUppercase: "Requires uppercase letter",
+        passwordLowercase: "Requires lowercase letter",
+        passwordNumber: "Requires number",
+        passwordSpecial: "Requires special character",
+        authMethodRequired: "Select at least one auth method",
+      },
+      roles: {
+        customer: "Customer",
+        admin: "Administrator",
+        moderator: "Moderator",
+      },
+      statuses: {
+        active: "Active",
+        inactive: "Inactive",
+        suspended: "Suspended",
+        deleted: "Deleted",
+      },
+      authMethods: {
+        label: "Authentication Methods",
+        email: "Email",
+        google: "Google",
+        facebook: "Facebook",
+        apple: "Apple",
+      },
+      preferences: {
+        title: "User Preferences",
+        languageLabel: "Select Language",
+        currencyLabel: "Select Currency",
+        marketingLabel: "Receive marketing communications",
+        languages: {
+          en: "English",
+          es: "Spanish",
+          fr: "French",
+          de: "German",
+          uk: "Ukrainian",
+        },
+        currencies: {
+          USD: "US Dollar",
+          EUR: "Euro",
+          GBP: "British Pound",
+          UAH: "Ukrainian Hryvnia",
+        },
+      },
+      status: {
+        label: "Status",
+      },
+      phone: {
+        label: "Phone",
+        placeholder: "Enter phone number",
+      },
       name: {
         label: "Name",
         placeholder: "Enter name",
@@ -23,15 +80,16 @@ const addUsers = {
       role: {
         label: "Role",
         options: {
-          user: "User",
-          seller: "Seller",
-          admin: "Admin",
+          customer: "Customer",
+          admin: "Administrator",
+          moderator: "Moderator",
         },
       },
       active: {
         label: "Active",
       },
     },
+
     function: {
       handleSubmit: {
         loading: "Adding user...",
@@ -51,6 +109,64 @@ const addUsers = {
     title: "Додати нового користувача",
 
     form: {
+      error: {
+        nameRequired: "Ім'я обов'язкове",
+        nameTooSmall: "Ім'я повинно містити принаймні 8 символів",
+        nameTooLong: "Ім'я не може перевищувати 50 символів",
+        invalidEmail: "Недійсна адреса електронної пошти",
+        invalidPhone: "Недійсний номер телефону",
+        passwordLength: "Пароль повинен містити від 10 до 40 символів",
+        passwordUppercase: "Потрібна велика літера",
+        passwordLowercase: "Потрібна мала літера",
+        passwordNumber: "Потрібна цифра",
+        passwordSpecial: "Потрібен спеціальний символ",
+        authMethodRequired: "Виберіть принаймні один метод автентифікації",
+      },
+      roles: {
+        customer: "Клієнт",
+        admin: "Адміністратор",
+        moderator: "Модератор",
+      },
+      statuses: {
+        active: "Активний",
+        inactive: "Неактивний",
+        suspended: "Призупинено",
+        deleted: "Видалено",
+      },
+      authMethods: {
+        label: "Методи автентифікації",
+        email: "Електронна пошта",
+        google: "Google",
+        facebook: "Facebook",
+        apple: "Apple",
+      },
+
+      preferences: {
+        title: "Налаштування користувача",
+        languageLabel: "Виберіть мову",
+        currencyLabel: "Виберіть валюту",
+        marketingLabel: "Отримувати маркетингові комунікації",
+        languages: {
+          en: "Англійська",
+          es: "Іспанська",
+          fr: "Французька",
+          de: "Німецька",
+          uk: "Українська",
+        },
+        currencies: {
+          USD: "Долар США",
+          EUR: "Євро",
+          GBP: "Британський фунт",
+          UAH: "Українська гривня",
+        },
+      },
+      status: {
+        label: "Статус",
+      },
+      phone: {
+        label: "Телефон",
+        placeholder: "Введіть номер телефону",
+      },
       name: {
         label: "Ім'я",
         placeholder: "Введіть ім'я",
@@ -66,8 +182,8 @@ const addUsers = {
       role: {
         label: "Роль",
         options: {
-          user: "Користувач",
-          seller: "Продавець",
+          customer: "Користувач",
+          moderator: "Модератор",
           admin: "Адміністратор",
         },
       },
@@ -75,6 +191,7 @@ const addUsers = {
         label: "Активний",
       },
     },
+
     function: {
       handleSubmit: {
         loading: "Додавання користувача...",
@@ -92,7 +209,7 @@ const editUsers = {
       keywords: "admin, edit user, admin edit user",
     },
     title: "Edit User",
-
+    account: "Account Management",
     form: {
       name: {
         label: "Name",
@@ -109,20 +226,86 @@ const editUsers = {
       role: {
         label: "Role",
         options: {
-          user: "User",
-          seller: "Seller",
-          admin: "Admin",
+          customer: "Customer",
+          admin: "Administrator",
+          moderator: "Moderator",
         },
       },
+      statuses: {
+        active: "Active",
+        inactive: "Inactive",
+        suspended: "Suspended",
+        deleted: "Deleted",
+      },
+      authMethods: {
+        label: "Authentication Methods",
+        email: "Email",
+        google: "Google",
+        facebook: "Facebook",
+        apple: "Apple",
+      },
+
       active: {
         label: "Active",
       },
+      success: "User updated successfully",
+      canceled: "update user canceled",
+      failed: "Failed to update user",
     },
+    sections: {
+      security: "Security",
+    },
+    handleSecurityAction: {
+      forcePasswordReset: {
+        label: "Force Password Reset",
+        success: "Password reset forced successfully",
+        error: "Failed to force password reset",
+      },
+      revokeSessions: {
+        label: "Revoke Sessions",
+        success: "Sessions revoked successfully",
+        error: "Failed to revoke sessions",
+      },
+      lockAccount: {
+        label: "Lock Account",
+        success: "Account locked successfully",
+        error: "Failed to lock account",
+      },
+      unlockAccount: {
+        label: "Unlock Account",
+        success: "Account unlocked successfully",
+        error: "Failed to unlock account",
+      },
+      advancedSettings: {
+        label: "Advanced Settings",
+      },
+    },
+    actions: {
+      deleteAccount: "Delete Account",
+      deleteConfirm: "Are you sure you want to delete this account?",
+      deleteLoading: "Deleting account...",
+    },
+
     function: {
       handleSubmit: {
         loading: "Updating user...",
         success: "User updated successfully",
         canceled: "update user canceled",
+      },
+    },
+    handleDeleteUser: {
+      confirm: "Are you sure you want to delete this user?",
+      loading: "deleting user...",
+      success: "user deleted successfully",
+      canceled: "delete canceled",
+      failed: "Failed to delete user",
+    },
+    auditLog: {
+      sections: {
+        title: "Audit Log",
+        timestamp: "Timestamp",
+        action: "Action",
+        details: "Details",
       },
     },
   },
@@ -135,6 +318,7 @@ const editUsers = {
         "адміністратор, редагувати користувача, адміністратор редагувати користувача",
     },
     title: "Редагувати користувача",
+    account: "Управління обліковим записом",
     form: {
       name: {
         label: "Ім'я",
@@ -151,20 +335,86 @@ const editUsers = {
       role: {
         label: "Роль",
         options: {
-          user: "Користувач",
-          seller: "Продавець",
+          customer: "Клієнт",
           admin: "Адміністратор",
+          moderator: "Модератор",
         },
+      },
+      statuses: {
+        active: "Активний",
+        inactive: "Неактивний",
+        suspended: "Призупинено",
+        deleted: "Видалено",
+      },
+      authMethods: {
+        label: "Методи автентифікації",
+        email: "Електронна пошта",
+        google: "Google",
+        facebook: "Facebook",
+        apple: "Apple",
       },
       active: {
         label: "Активний",
       },
+      success: "Користувач успішно оновлений",
+      canceled: "оновлення користувача скасовано",
+      failed: "Не вдалося оновити користувача",
+    },
+
+    sections: {
+      security: "Безпека",
+    },
+    handleSecurityAction: {
+      forcePasswordReset: {
+        label: "Примусове скидання пароля",
+        success: "Скидання пароля примусово пройшло успішно",
+        error: "Не вдалося примусово скинути пароль",
+      },
+      revokeSessions: {
+        label: "Відкликати сесії",
+        success: "Сесії успішно відкликані",
+        error: "Не вдалося відкликати сесії",
+      },
+      lockAccount: {
+        label: "Заблокувати обліковий запис",
+        success: "Обліковий запис успішно заблоковано",
+        error: "Не вдалося заблокувати обліковий запис",
+      },
+      unlockAccount: {
+        label: "Розблокувати обліковий запис",
+        success: "Обліковий запис успішно розблоковано",
+        error: "Не вдалося розблокувати обліковий запис",
+      },
+      advancedSettings: {
+        label: "Розширені налаштування",
+      },
+    },
+    handleDeleteUser: {
+      confirm: "Ви впевнені, що хочете видалити цього користувача?",
+      loading: "видалення користувача...",
+      success: "користувач успішно видалений",
+      canceled: "видалення скасовано",
+      failed: "Не вдалося видалити користувача",
+    },
+
+    actions: {
+      deleteAccount: "Видалити обліковий запис",
+      deleteConfirm: "Ви впевнені, що хочете видалити цей обліковий запис?",
+      deleteLoading: "Видалення облікового запису...",
     },
     function: {
       handleSubmit: {
         loading: "Оновлення користувача...",
         success: "Користувач успішно оновлений",
         canceled: "оновлення користувача скасовано",
+      },
+    },
+    auditLog: {
+      sections: {
+        title: "Журнал аудиту",
+        timestamp: "Мітка часу",
+        action: "Дія",
+        details: "Деталі",
       },
     },
   },
@@ -201,8 +451,9 @@ export const usersTranslate = {
           role: {
             title: "Filter by Role",
             options: {
-              user: "User",
-              admin: "Admin",
+              customer: "Customer",
+              admin: "Administrator",
+              moderator: "Moderator",
             },
           },
           activity: {
@@ -231,6 +482,7 @@ export const usersTranslate = {
         delete: "Delete",
         edit: "Edit",
         addUser: "Add User",
+        saving: "Saving",
         updateUser: "Update User",
       },
       error: {
@@ -255,8 +507,9 @@ export const usersTranslate = {
           role: {
             title: "Фільтрувати за роллю",
             options: {
-              user: "Користувач",
+              customer: "Клієнт",
               admin: "Адміністратор",
+              moderator: "Модератор",
             },
           },
           activity: {
@@ -286,6 +539,7 @@ export const usersTranslate = {
         delete: "Видалити",
         edit: "Редагувати",
         addUser: "Додати користувача",
+        saving: "Збереження",
         updateUser: "Оновити користувача",
       },
       error: {

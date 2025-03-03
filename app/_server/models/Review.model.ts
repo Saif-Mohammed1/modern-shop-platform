@@ -41,7 +41,8 @@ const reviewSchema = new Schema<IReview, IReviewModel>(
 
 // Indexes
 reviewSchema.index({ productId: 1, userId: 1 }, { unique: true });
-
+reviewSchema.index({ rating: 1 });
+reviewSchema.set("toJSON", { versionKey: false });
 // Virtual populate
 reviewSchema.virtual("users", {
   ref: "User",

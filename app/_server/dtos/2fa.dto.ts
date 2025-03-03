@@ -16,17 +16,24 @@ export class TwoFactorValidation {
       .string({
         message: TwoFactorTranslate[lang].dto.temToken.required,
       })
-      .min(1),
-    code: z.union([
-      z
-        .string({
-          message: TwoFactorTranslate[lang].dto.code.required,
-        })
-        .length(6), // TOTP code
-      z.string().regex(/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/, {
-        message: TwoFactorTranslate[lang].dto.code.regex,
-      }), // Backup code
-    ]),
+      .min(1, TwoFactorTranslate[lang].dto.temToken.required),
+    code: z
+      .string({
+        message: TwoFactorTranslate[lang].dto.code.required,
+      })
+      .length(6, TwoFactorTranslate[lang].dto.code.regex),
+    // TOTP code
+
+    // code: z.union([
+    //   z
+    //     .string({
+    //       message: TwoFactorTranslate[lang].dto.code.required,
+    //     })
+    //     .length(6), // TOTP code
+    //   z.string().regex(/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/, {
+    //     message: TwoFactorTranslate[lang].dto.code.regex,
+    //   }), // Backup code
+    // ]),
   });
   static validateTwoFactorLogin(data: any) {
     return this.TwoFactorLoginSchema.parse(data);

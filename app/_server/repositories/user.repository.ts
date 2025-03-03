@@ -4,14 +4,15 @@ import crypto from "crypto";
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import { AuditAction, AuditLogDetails } from "@/app/lib/types/audit.types";
 import { TokensService } from "../services/tokens.service";
-import { accountAction, IUser } from "../models/User.model";
-import { UserCreateDTO } from "../dtos/user.dto";
+import { IUser } from "../models/User.model";
+import { CreateUserByAdminDTO, UserCreateDTO } from "../dtos/user.dto";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 import {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
+import { accountAction } from "@/app/lib/types/users.types";
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {
@@ -326,6 +327,7 @@ export class UserRepository extends BaseRepository<IUser> {
       .findOne({
         "security.twoFactorSecret": tempToken,
         "security.twoFactorSecretExpiry": { $gt: new Date() },
+        // status: "active",
       })
       .select("+security");
 
@@ -367,10 +369,11 @@ export class UserRepository extends BaseRepository<IUser> {
     );
   }
   async createUserByAdmin(
-    dto: UserCreateDTO,
+    dto: CreateUserByAdminDTO,
     session?: ClientSession
   ): Promise<IUser> {
-    return this.createUser(dto, session);
+    const [user] = await this.model.create([dto], { session });
+    return user;
   }
   async updateUserByAdmin(
     id: string,
@@ -549,8 +552,8 @@ export class UserRepository extends BaseRepository<IUser> {
       allowedFilters: ["name", "email", "role", "status", "createdAt"].filter(
         Boolean
       ) as Array<keyof IUser>,
-
-      allowedSorts: ["createdAt", "updatedAt"],
+      searchFields: ["name", "email"],
+      // allowedSorts: ["createdAt", "updatedAt"],
     };
 
     //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,

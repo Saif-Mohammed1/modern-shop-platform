@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node server.ts",
+    "dev": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -24,6 +24,7 @@
     "device-detector-js": "^3.0.3",
     "dotenv": "^16.4.7",
     "framer-motion": "^12.4.5",
+    "heapdump": "^0.3.15",
     "jsonwebtoken": "^9.0.2",
     "lottie-react": "^2.4.0",
     "luxon": "^3.5.0",
@@ -57,6 +58,7 @@
   "devDependencies": {
     "@faker-js/faker": "^9.4.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/heapdump": "^0.3.4",
     "@types/luxon": "^3.4.2",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^22.5.5",

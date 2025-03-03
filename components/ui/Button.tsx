@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 type ButtonProps = {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "destructive" | "outline"; // 🔥 Added destructive variant
   size?: "sm" | "md" | "lg";
   icon?: ReactNode;
   danger?: boolean;
@@ -26,6 +26,9 @@ const Button = ({
     primary: `text-white ${danger ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"}`,
     secondary: `border ${danger ? "border-red-600 text-red-600 hover:bg-red-50" : "border-indigo-600 text-indigo-600 hover:bg-indigo-50"}`,
     ghost: `hover:bg-gray-100 ${danger ? "text-red-600" : "text-gray-700"}`,
+    destructive: `text-white bg-red-600 hover:bg-red-700 border-red-600`, // 🔥 Added destructive variant
+
+    outline: `border border-gray-300 text-gray-700 hover:bg-gray-50`,
   };
 
   return (

@@ -1,51 +1,37 @@
 import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import { lang } from "@/app/lib/utilities/lang";
-import { errorControllerTranslate } from "@/public/locales/server/errorControllerTranslate";
+import { ProductTranslate } from "@/public/locales/server/Product.Translate";
+import { IpVersion } from "zod";
 import { z } from "zod";
 export class ProductValidation {
   private static imageObjectSchema = z.object({
     link: z
       .string({
-        required_error:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.link.required,
+        required_error: ProductTranslate[lang].dto.link.required,
       })
-      .url(
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB
-          .product.link.invalid
-      ),
+      .url(ProductTranslate[lang].dto.link.invalid),
     public_id: z.string({
-      required_error:
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB
-          .product.public_id.required,
+      required_error: ProductTranslate[lang].dto.public_id.required,
     }),
   });
 
   // Allow `images` to be either an array of strings (base64) or an array of objects
   private static imagesSchema = z.union([
     z.array(z.string()).min(1, {
-      message:
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB
-          .product.images.required,
+      message: ProductTranslate[lang].dto.images.required,
     }),
     z.array(this.imageObjectSchema).min(1),
   ]);
   // Define dimensions schema
   private static dimensionsSchema = z.object({
     length: z.number().min(0, {
-      message:
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB
-          .product.length.min,
+      message: ProductTranslate[lang].dto.length.min,
     }),
     width: z.number().min(0, {
-      message:
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB
-          .product.width.min,
+      message: ProductTranslate[lang].dto.width.min,
     }),
     height: z.number().min(0, {
-      message:
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB
-          .product.height.min,
+      message: ProductTranslate[lang].dto.height.min,
     }),
   });
 
@@ -53,36 +39,24 @@ export class ProductValidation {
   static productSchema = z.object({
     name: z
       .string({
-        required_error:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.name.required,
+        required_error: ProductTranslate[lang].dto.name.required,
       })
       .min(6, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.name.minlength,
+        message: ProductTranslate[lang].dto.name.minlength,
       })
       .max(120, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.name.maxlength,
+        message: ProductTranslate[lang].dto.name.maxlength,
       }),
 
     category: z.string({
-      required_error:
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB
-          .product.category.required,
+      required_error: ProductTranslate[lang].dto.category.required,
     }),
     price: z
       .number({
-        required_error:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.price.required,
+        required_error: ProductTranslate[lang].dto.price.required,
       })
       .min(0.01, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.price.min,
+        message: ProductTranslate[lang].dto.price.min,
       })
       .transform((v) => Math.round(v * 100) / 100), // Fix floating point issues
 
@@ -92,9 +66,7 @@ export class ProductValidation {
         0,
 
         {
-          message:
-            errorControllerTranslate[lang].controllers.handleValidationErrorDB
-              .product.discount.min,
+          message: ProductTranslate[lang].dto.discount.min,
         }
       )
       .optional(),
@@ -106,51 +78,37 @@ export class ProductValidation {
     // userId: z.string().min(1, {
     //   message:
     //     errorControllerTranslate[lang].controllers.handleValidationErrorDB
-    //       .product.userId.required,
+    //       .userId.required,
     // }), // Assuming it's a string
     description: z
       .string({
-        required_error:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.description.required,
+        required_error: ProductTranslate[lang].dto.description.required,
       })
       .min(50, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.description.minlength,
+        message: ProductTranslate[lang].dto.description.minlength,
       }),
     stock: z
       .number({
-        required_error:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.stock.required,
+        required_error: ProductTranslate[lang].dto.stock.required,
       })
       .min(0, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.stock.min,
+        message: ProductTranslate[lang].dto.stock.min,
       })
       .transform((v) => Math.floor(v)), // Ensure integer stock values
     ratingsAverage: z
       .number()
       .min(1, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.ratingsAverage.min,
+        message: ProductTranslate[lang].dto.ratingsAverage.min,
       })
       .max(5, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.ratingsAverage.max,
+        message: ProductTranslate[lang].dto.ratingsAverage.max,
       })
       .default(4.5)
       .transform((v) => Math.round(v * 10) / 10), // Round to 1 decimal
     ratingsQuantity: z
       .number()
       .min(0, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.ratingsQuantity.min,
+        message: ProductTranslate[lang].dto.ratingsQuantity.min,
       })
       .default(0),
     active: z.boolean().default(true),
@@ -158,30 +116,38 @@ export class ProductValidation {
     reserved: z
       .number()
       .min(0, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.reserved.min,
+        message: ProductTranslate[lang].dto.reserved.min,
       })
       .default(0),
     sold: z
       .number()
       .min(0, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.sold.min,
+        message: ProductTranslate[lang].dto.sold.min,
       })
       .default(0),
     attributes: z.record(z.string(), z.any()).optional(), // Flexible key-value attributes
     shippingInfo: z.object({
       weight: z.number().min(0, {
-        message:
-          errorControllerTranslate[lang].controllers.handleValidationErrorDB
-            .product.weight.min,
+        message: ProductTranslate[lang].dto.weight.min,
       }),
       dimensions: this.dimensionsSchema,
     }),
   });
-
+  static ProductLogsSchema = z.object({
+    ipAddress: z
+      .string({
+        required_error: ProductTranslate[lang].dto.ipAddress.required,
+      })
+      .ip({
+        version: "v4" as IpVersion,
+        message: ProductTranslate[lang].dto.ipAddress.invalid,
+      }),
+    userAgent: z
+      .string({
+        required_error: ProductTranslate[lang].dto.userAgent.required,
+      })
+      .min(1, ProductTranslate[lang].dto.userAgent.required),
+  });
   // **Update Schema** - Partial to allow optional updates
   static updateProductSchema = this.productSchema.partial();
 
@@ -192,9 +158,15 @@ export class ProductValidation {
   static validateUpdateProduct = (data: any) => {
     return this.updateProductSchema.parse(data);
   };
+  static validateProductLogs = (data: any) => {
+    return this.ProductLogsSchema.parse(data);
+  };
 }
 
 export type CreateProductDto = z.infer<typeof ProductValidation.productSchema>;
 export type UpdateProductDto = z.infer<
   typeof ProductValidation.updateProductSchema
+>;
+export type ProductLogsDto = z.infer<
+  typeof ProductValidation.ProductLogsSchema
 >;

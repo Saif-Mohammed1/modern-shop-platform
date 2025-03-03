@@ -1,13 +1,15 @@
 import { type NextRequest } from "next/server";
 
 import { UserService } from "../services/user.service";
-import { IUser, UserRole, UserStatus } from "../models/User.model";
+import { IUser } from "../models/User.model";
 import AppError from "@/app/lib/utilities/appError";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { TokensService } from "../services/tokens.service";
 import { commonTranslations } from "@/public/locales/server/Common.Translate";
 import { z } from "zod";
+import { UserRole, UserStatus } from "@/app/lib/types/users.types";
+import { errorControllerTranslate } from "@/public/locales/server/errorControllerTranslate";
 const tokenSchema = z
   .string({
     message: authControllerTranslate[lang].functions.isAuth.noExistingToken,
@@ -20,7 +22,7 @@ const tokenSchema = z
 const validateToken = (token: string | null | undefined) => {
   // if (!token || token === "null")
   //   return { success: false, error: "No token provided", data: null };
-  return tokenSchema.parse(token);
+  return tokenSchema.safeParse(token);
 };
 
 export class AuthMiddleware {
@@ -28,33 +30,44 @@ export class AuthMiddleware {
   private static tokenService = new TokensService();
   static requireAuth(roles?: UserRole[]) {
     return async (req: NextRequest) => {
-      // const authHeader = req?.headers?.get("authorization")
-      const token =
-        req?.headers?.get("authorization")?.split(" ")[1] ?? undefined;
-      // const token =
-      //   authHeader?.startsWith("Bearer") && authHeader.split(" ")[1];
-      const result = validateToken(token);
+      try {
+        // const authHeader = req?.headers?.get("authorization")
+        const token =
+          req?.headers?.get("authorization")?.split(" ")[1] ?? undefined;
+        // const token =
+        //   authHeader?.startsWith("Bearer") && authHeader.split(" ")[1];
+        const result = validateToken(token);
 
-      // if (!result) {
-      //   throw new AppError(
-      //     authControllerTranslate[lang].functions.isAuth.noExistingToken,
-      //     401
-      //   );
-      // }
-      const decoded = await this.tokenService.decodedAccessToken(result);
-      const user = await this.userService.findUserById(decoded.userId);
-      if (!user)
-        throw new AppError(commonTranslations[lang].userNotExists, 401);
+        if (!result.success || !result.data) {
+          throw new AppError(
+            authControllerTranslate[lang].functions.isAuth.noExistingToken,
+            401
+          );
+        }
+        const decoded = await this.tokenService.decodedAccessToken(result.data);
+        const user = await this.userService.findUserById(decoded.userId);
+        if (!user)
+          throw new AppError(commonTranslations[lang].userNotExists, 404);
 
-      if (user.status !== UserStatus.ACTIVE) {
-        throw new AppError(commonTranslations[lang].userSuspended, 403);
+        if (user.status !== UserStatus.ACTIVE) {
+          throw new AppError(commonTranslations[lang].userSuspended, 403);
+        }
+
+        if (roles && roles.length > 0) {
+          await this.enforceRole(roles, user);
+        }
+
+        req.user = user;
+      } catch (error) {
+        if (error instanceof Error && error.name === "handleJWTExpiredError")
+          throw new AppError(
+            errorControllerTranslate[lang].controllers[
+              "handleJWTExpiredError"
+            ].message,
+            401
+          );
+        throw error;
       }
-
-      if (roles && roles.length > 0) {
-        await this.enforceRole(roles, user);
-      }
-
-      req.user = user;
     };
   }
 

@@ -121,7 +121,6 @@ export class QueryBuilder<T extends Document> {
       const aliasKey = this.config.paramAliases[key] || key;
       const dbField = this.config.filterMap[aliasKey] || aliasKey;
       const parsedValue = this.parseValue(value);
-
       if (aliasKey === "search") {
         this.handleTextSearch(parsedValue);
         continue;

@@ -70,6 +70,9 @@ RefundSchema.post(/^find/, function (docs, next) {
   }
   next();
 });
+RefundSchema.set("toJSON", {
+  versionKey: false,
+});
 const Refund: Model<IRefundSchema> =
   models.Refund || model<IRefundSchema>("Refund", RefundSchema);
 

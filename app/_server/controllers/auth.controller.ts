@@ -15,7 +15,7 @@ class AuthController {
       const deviceInfo = await getDeviceFingerprint(req);
       const user = await this.userService.registerUser(userData, deviceInfo);
 
-      return NextResponse.json({ user }, { status: 201 });
+      return NextResponse.json(user, { status: 201 });
     } catch (error) {
       throw error;
     }

@@ -4,19 +4,33 @@ import { ProductService } from "../services/product.service";
 import { ProductValidation } from "../dtos/product.dto";
 import { NextResponse } from "next/server";
 import { ReviewService } from "../services/review.service";
-import { UserRole } from "../models/User.model";
+import { ProductTranslate } from "@/public/locales/server/Product.Translate";
+import { lang } from "@/app/lib/utilities/lang";
+import AppError from "@/app/lib/utilities/appError";
+import { UserRole } from "@/app/lib/types/users.types";
 
 class ProductController {
   private productService = new ProductService();
   private reviewService = new ReviewService();
   async createProduct(req: NextRequest) {
     try {
+      const ipAddress =
+        req.headers.get("x-forwarded-for") ||
+        req.headers.get("x-real-ip") ||
+        req.ip;
+
+      const userAgent = req.headers.get("user-agent");
+      const logs = ProductValidation.validateProductLogs({
+        ipAddress,
+        userAgent,
+      });
       const body = await req.json();
       const result = ProductValidation.validateCreateProduct({
         userId: req.user?._id,
         ...body,
       });
-      const product = await this.productService.createProduct(result);
+
+      const product = await this.productService.createProduct(result, logs);
       return NextResponse.json({ product }, { status: 201 });
     } catch (err) {
       throw err;
@@ -25,9 +39,27 @@ class ProductController {
 
   async updateProduct(req: NextRequest) {
     try {
+      if (!req?.slug || !req.user?._id) {
+        throw new AppError(ProductTranslate[lang].slug, 400);
+      }
+      const ipAddress =
+        req.headers.get("x-forwarded-for") ||
+        req.headers.get("x-real-ip") ||
+        req.ip;
+
+      const userAgent = req.headers.get("user-agent");
+      const logs = ProductValidation.validateProductLogs({
+        ipAddress,
+        userAgent,
+      });
       const body = await req.json();
       const result = ProductValidation.validateUpdateProduct(body);
-      const product = await this.productService.updateProduct(req?.id, result);
+      const product = await this.productService.updateProduct(
+        req?.slug,
+        result,
+        req.user?._id,
+        logs
+      );
       return NextResponse.json({ product }, { status: 200 });
     } catch (err) {
       throw err;
@@ -36,7 +68,24 @@ class ProductController {
 
   async deleteProduct(req: NextRequest) {
     try {
-      const product = await this.productService.deleteProduct(req?.id);
+      if (!req?.slug || !req.user?._id) {
+        throw new AppError(ProductTranslate[lang].slug, 400);
+      }
+      const ipAddress =
+        req.headers.get("x-forwarded-for") ||
+        req.headers.get("x-real-ip") ||
+        req.ip;
+
+      const userAgent = req.headers.get("user-agent");
+      const logs = ProductValidation.validateProductLogs({
+        ipAddress,
+        userAgent,
+      });
+      const product = await this.productService.deleteProduct(
+        req?.slug,
+        req.user?._id,
+        logs
+      );
       return NextResponse.json({ product }, { status: 200 });
     } catch (err) {
       throw err;
@@ -58,11 +107,24 @@ class ProductController {
       throw err;
     }
   }
-
+  async toggleProductActivity(req: NextRequest) {
+    try {
+      if (!req?.slug || !req.user?._id) {
+        throw new AppError(ProductTranslate[lang].slug, 400);
+      }
+      await this.productService.toggleProductActivity(req.slug, req.user._id);
+      return NextResponse.json(
+        { message: ProductTranslate[lang].productActivityUpdatedSuccessfully },
+        { status: 200 }
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
   async getProductBySlug(req: NextRequest) {
     try {
       if (!req.slug) {
-        return;
+        throw new AppError(ProductTranslate[lang].slug, 400);
       }
       const product = await this.productService.getProductBySlug(req?.slug);
       const distribution = product?._id
@@ -78,13 +140,46 @@ class ProductController {
   async getProductMetaDataBySlug(req: NextRequest) {
     try {
       if (!req.slug) {
-        return;
+        throw new AppError(ProductTranslate[lang].slug, 400);
       }
       const product = await this.productService.getProductMetaDataBySlug(
         req?.slug
       );
 
       return NextResponse.json({ product }, { status: 200 });
+    } catch (err) {
+      throw err;
+    }
+  }
+  async deleteProductImages(req: NextRequest) {
+    try {
+      const { public_id } = await req.json();
+      if (!public_id) {
+        throw new AppError(ProductTranslate[lang].public_id, 400);
+      }
+      if (!req?.slug || !req.user?._id) {
+        throw new AppError(ProductTranslate[lang].slug, 400);
+      }
+      const ipAddress =
+        req.headers.get("x-forwarded-for") ||
+        req.headers.get("x-real-ip") ||
+        req.ip;
+
+      const userAgent = req.headers.get("user-agent");
+      const logs = ProductValidation.validateProductLogs({
+        ipAddress,
+        userAgent,
+      });
+      await this.productService.deleteProductImages(
+        req?.slug,
+        public_id,
+        req.user?._id,
+        logs
+      );
+      return NextResponse.json(
+        { message: ProductTranslate[lang].deleteImageSuccess },
+        { status: 200 }
+      );
     } catch (err) {
       throw err;
     }

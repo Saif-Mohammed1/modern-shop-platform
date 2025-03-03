@@ -47,6 +47,8 @@ const CartSchema = new Schema<ICart>(
 // Compound index to prevent duplicate items in cart
 CartSchema.index({ userId: 1, productId: 1 }, { unique: true });
 CartSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+CartSchema.set("toJSON", { versionKey: false });
+
 // Validation to ensure product exists when adding to cart
 // CartSchema.pre<ICart>("save", async function (next) {
 //   const product = await Product.findById(this.productId);

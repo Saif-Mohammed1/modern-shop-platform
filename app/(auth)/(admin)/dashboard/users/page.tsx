@@ -20,6 +20,9 @@ const queryParams = async (searchParams: SearchParams) => {
   if (searchParams.email !== undefined) {
     url.append("email", searchParams.email);
   }
+  if (searchParams.search !== undefined) {
+    url.append("search", searchParams.search);
+  }
   if (searchParams.active !== undefined) {
     url.append("active", searchParams.active);
   }
@@ -39,7 +42,7 @@ const queryParams = async (searchParams: SearchParams) => {
   const queryString = url.toString();
   try {
     const {
-      data: { data, pageCount },
+      data: { docs, meta, links },
     } = await api.get(
       "/admin/dashboard/users" + (queryString ? `?${queryString}` : ""),
       {
@@ -47,7 +50,7 @@ const queryParams = async (searchParams: SearchParams) => {
       }
     );
 
-    return { data, pageCount };
+    return { users: docs, pagination: { meta, links } };
   } catch (error: any) {
     throw new AppError(error.message, error.status);
   }
@@ -56,19 +59,37 @@ type PageProps = {
   searchParams: SearchParams;
 };
 const page = async ({ searchParams }: PageProps) => {
-  const defaultSearchParams = {
-    email: searchParams.email || undefined,
-    active: searchParams.active || undefined,
-    sort: searchParams.sort || undefined,
-    role: searchParams.role || undefined,
-    page: searchParams.page || undefined,
-    limit: searchParams.limit || undefined,
-  };
+  // const defaultSearchParams = {
+  //   email: searchParams.email || undefined,
+  //   search: searchParams.s || undefined,
+  //   active: searchParams.active || undefined,
+  //   sort: searchParams.sort || undefined,
+  //   role: searchParams.role || undefined,
+  //   page: searchParams.page || undefined,
+  //   limit: searchParams.limit || undefined,
+  // };
 
   try {
-    const { data, pageCount } = await queryParams(defaultSearchParams);
+    const { users, pagination } = await queryParams(searchParams);
 
-    return <AdminUsers users={data} totalPages={pageCount} />;
+    return (
+      <AdminUsers
+        users={users}
+        pagination={
+          pagination || {
+            meta: {
+              total: 0,
+              page: 0,
+              limit: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false,
+            },
+            links: { previous: "", next: "" },
+          }
+        }
+      />
+    );
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
 

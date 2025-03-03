@@ -5,144 +5,355 @@ import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { Event } from "@/app/lib/types/products.types";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import { z } from "zod";
+import validator from "validator";
+import {
+  FiUser,
+  FiMail,
+  FiLock,
+  FiPhone,
+  FiGlobe,
+  FiDollarSign,
+  FiCheckSquare,
+} from "react-icons/fi";
+import { AuthMethod, UserRole, UserStatus } from "@/app/lib/types/users.types";
+import SubmitButton from "@/components/ui/SubmitButton";
+
+const userSchema = z.object({
+  name: z
+    .string({
+      required_error:
+        usersTranslate.users[lang].addUsers.form.error.nameRequired,
+    })
+    .min(8, usersTranslate.users[lang].addUsers.form.error.nameTooSmall)
+    .max(50, usersTranslate.users[lang].addUsers.form.error.nameTooLong),
+  email: z
+    .string()
+    .email(usersTranslate.users[lang].addUsers.form.error.invalidEmail)
+    .transform((val) => val.toLowerCase()),
+  phone: z
+    .string()
+    .refine(
+      (val) => !val || validator.isMobilePhone(val),
+      usersTranslate.users[lang].addUsers.form.error.invalidPhone
+    )
+    .optional(),
+  password: z
+    .string()
+    .refine(
+      (val) => val.length >= 10 && val.length <= 40,
+      usersTranslate.users[lang].addUsers.form.error.passwordLength
+    )
+    .refine(
+      (val) => /[A-Z]/.test(val),
+      usersTranslate.users[lang].addUsers.form.error.passwordUppercase
+    )
+    .refine(
+      (val) => /[a-z]/.test(val),
+      usersTranslate.users[lang].addUsers.form.error.passwordLowercase
+    )
+    .refine(
+      (val) => /\d/.test(val),
+      usersTranslate.users[lang].addUsers.form.error.passwordNumber
+    )
+    .refine(
+      (val) => /[@$!%*?&]/.test(val),
+      usersTranslate.users[lang].addUsers.form.error.passwordSpecial
+    ),
+  role: z.nativeEnum(UserRole),
+  status: z.nativeEnum(UserStatus),
+  authMethods: z
+    .array(z.nativeEnum(AuthMethod))
+    .min(1, usersTranslate.users[lang].addUsers.form.error.authMethodRequired),
+  preferences: z.object({
+    language: z.enum(["en", "uk"]), // "es", "fr", "de",
+    currency: z.enum(["USD", "EUR", "GBP", "UAH"]),
+    marketingOptIn: z.boolean(),
+  }),
+});
+
+type UserFormValues = z.infer<typeof userSchema>;
 
 const AddUser = () => {
-  const [user, setUser] = useState({
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [formData, setFormData] = useState<UserFormValues>({
     name: "",
     email: "",
-    role: "user",
-    active: true,
+    phone: "",
     password: "",
+    role: UserRole.CUSTOMER,
+    status: UserStatus.ACTIVE,
+    authMethods: [AuthMethod.EMAIL],
+    preferences: {
+      language: "uk",
+      currency: "UAH",
+      marketingOptIn: false,
+    },
   });
 
-  const router = useRouter();
-
-  const handleInputChange = (e: Event) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    setUser({
-      ...user,
-      [name]: type === "checkbox" ? checked : value,
+  const handleInputChange = (name: string, value: any) => {
+    setFormData((prev) => {
+      if (name.startsWith("preferences.")) {
+        const prefField = name.split(".")[1] as keyof typeof prev.preferences;
+        return {
+          ...prev,
+          preferences: {
+            ...prev.preferences,
+            [prefField]: value,
+          },
+        };
+      }
+      return { ...prev, [name]: value };
     });
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    let toastLoading;
-    if (!user.name || !user.email || !user.password || !user.role) {
-      toast.error(usersTranslate.users[lang].error.emptyFields);
-      return;
-    }
+    let toastLoading: string | undefined;
+
     try {
+      const validationResult = userSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.reduce<
+          Record<string, string[]>
+        >((acc, err) => {
+          const fieldName = err.path[0];
+          if (fieldName) {
+            if (!acc[fieldName]) {
+              acc[fieldName] = [];
+            }
+            acc[fieldName].push(err.message);
+          }
+          return acc;
+        }, {});
+
+        setErrors(errors);
+      } else {
+        // Handle valid form submission
+        setErrors({});
+      }
+
       toastLoading = toast.loading(
         usersTranslate.users[lang].addUsers.function.handleSubmit.loading
       );
-      await api.post("/admin/dashboard/users", user);
+      const response = await api.post("/admin/dashboard/users", formData);
+
+      if (response.data.error) throw new Error(response.data.error);
+
       toast.success(
         usersTranslate.users[lang].addUsers.function.handleSubmit.success
       );
-      router.push("/dashboard/users?email=" + user.email);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error?.message || usersTranslate.users[lang].error.global);
-      } else {
-        toast.error(usersTranslate.users[lang].error.global);
-      }
+      router.push(`/dashboard/users?email=${formData.email}`);
+    } catch (error: any) {
+      toast.error(error?.message || usersTranslate.users[lang].error.global);
     } finally {
       toast.dismiss(toastLoading);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="container mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4">
+      <h1 className="text-2xl font-bold mb-6">
         {usersTranslate.users[lang].addUsers.title}
       </h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-sm font-bold mb-2">
-            {usersTranslate.users[lang].addUsers.form.name.label}
-          </label>
-          <input
-            type="text"
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Name Field */}
+          <Input
+            icon={<FiUser />}
             name="name"
-            value={user.name}
+            value={formData.name}
             placeholder={
               usersTranslate.users[lang].addUsers.form.name.placeholder
             }
-            onChange={handleInputChange}
-            className="w-full p-2 border"
+            onChange={(e) => handleInputChange("name", e.target.value)}
             required
+            error={errors.name}
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-bold mb-2">
-            {usersTranslate.users[lang].addUsers.form.email.label}
-          </label>
-          <input
+
+          {/* Email Field */}
+          <Input
+            icon={<FiMail />}
             type="email"
             name="email"
-            value={user.email}
+            value={formData.email}
             placeholder={
               usersTranslate.users[lang].addUsers.form.email.placeholder
             }
-            onChange={handleInputChange}
-            className="w-full p-2 border"
+            onChange={(e) => handleInputChange("email", e.target.value)}
             required
+            error={errors.email}
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-bold mb-2">
-            {usersTranslate.users[lang].addUsers.form.password.label}
-          </label>
-          <input
+
+          {/* Password Field */}
+          <Input
+            icon={<FiLock />}
             type="password"
             name="password"
+            value={formData.password}
             placeholder={
               usersTranslate.users[lang].addUsers.form.password.placeholder
             }
-            value={user.password}
-            onChange={handleInputChange}
-            className="w-full p-2 border"
+            onChange={(e) => handleInputChange("password", e.target.value)}
             required
+            error={errors.password}
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-bold mb-2">
-            {usersTranslate.users[lang].addUsers.form.role.label}
-          </label>
-          <select
-            name="role"
-            value={user.role}
-            onChange={handleInputChange}
-            className="w-full p-2 border"
-          >
-            <option value="user">
-              {usersTranslate.users[lang].addUsers.form.role.options.user}
-            </option>
-            {/* <option value="seller">
-              {usersTranslate.users[lang].addUsers.form.role.options.seller}
-            </option> */}
-            <option value="admin">
-              {usersTranslate.users[lang].addUsers.form.role.options.admin}
-            </option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-bold mb-2">
-            {usersTranslate.users[lang].addUsers.form.active.label}
-          </label>
-          <input
-            type="checkbox"
-            name="active"
-            checked={user.active}
-            onChange={handleInputChange}
+
+          {/* Phone Field */}
+          <Input
+            icon={<FiPhone />}
+            type="tel"
+            name="phone"
+            value={formData.phone ?? ""}
+            placeholder={
+              usersTranslate.users[lang].addUsers.form.phone.placeholder
+            }
+            onChange={(e) => handleInputChange("phone", e.target.value)}
+            error={errors.name}
           />
+
+          {/* Role Selector */}
+          <Select
+            options={Object.values(UserRole).map((role) => ({
+              value: role,
+              label: usersTranslate.users[lang].addUsers.form.roles[role],
+            }))}
+            value={formData.role}
+            onChange={(value) => handleInputChange("role", value)}
+            placeholder={usersTranslate.users[lang].addUsers.form.role.label}
+            icon={<FiUser />}
+          />
+
+          {/* Status Selector */}
+          <Select
+            options={Object.values(UserStatus).map((status) => ({
+              value: status,
+              label: usersTranslate.users[lang].addUsers.form.statuses[status],
+            }))}
+            value={formData.status}
+            onChange={(value) => handleInputChange("status", value)}
+            placeholder={usersTranslate.users[lang].addUsers.form.status.label}
+            icon={<FiCheckSquare />}
+          />
+
+          {/* Auth Methods */}
+          <div className="space-y-2 col-span-2">
+            <label className="block text-sm font-medium mb-2">
+              {usersTranslate.users[lang].addUsers.form.authMethods.label}
+            </label>
+            <div className="flex flex-wrap gap-4">
+              {Object.values(AuthMethod).map((method) => (
+                <label key={method} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.authMethods.includes(method)}
+                    onChange={(e) => {
+                      const methods = e.target.checked
+                        ? [...formData.authMethods, method]
+                        : formData.authMethods.filter((m) => m !== method);
+                      handleInputChange("authMethods", methods);
+                    }}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  {usersTranslate.users[lang].addUsers.form.authMethods[method]}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Preferences Section */}
+          <div className="space-y-4 col-span-2 border-t pt-4">
+            <h3 className="text-lg font-medium">
+              {usersTranslate.users[lang].addUsers.form.preferences.title}
+            </h3>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Select
+                options={(
+                  ["en", "uk"] as Array<keyof typeof usersTranslate.users>
+                ).map((lg) => ({
+                  value: lg,
+                  label:
+                    usersTranslate.users[lg].addUsers.form.preferences
+                      .languages[lg],
+                }))}
+                value={formData.preferences.language}
+                onChange={(value) =>
+                  handleInputChange("preferences.language", value)
+                }
+                placeholder={
+                  usersTranslate.users[lang].addUsers.form.preferences
+                    .languageLabel
+                }
+                icon={<FiGlobe />}
+              />
+
+              <Select
+                options={(["USD", "EUR", "GBP", "UAH"] as const).map(
+                  (currency) => ({
+                    value: currency,
+                    label:
+                      usersTranslate.users[lang].addUsers.form.preferences
+                        .currencies[currency],
+                  })
+                )}
+                value={formData.preferences.currency}
+                onChange={(value) =>
+                  handleInputChange("preferences.currency", value)
+                }
+                placeholder={
+                  usersTranslate.users[lang].addUsers.form.preferences
+                    .currencyLabel
+                }
+                icon={<FiDollarSign />}
+              />
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.preferences.marketingOptIn}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "preferences.marketingOptIn",
+                      e.target.checked
+                    )
+                  }
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                />
+                {
+                  usersTranslate.users[lang].addUsers.form.preferences
+                    .marketingLabel
+                }
+              </label>
+            </div>
+          </div>
         </div>
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded">
-          {usersTranslate.users[lang].button.addUser}
-        </button>
+        <SubmitButton
+          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+          // disabled={isSubmitting}
+          title={
+            // isSubmitting
+            //   ? usersTranslate.users[lang].button.saving
+            //   : usersTranslate.users[lang].button.addUser
+            usersTranslate.users[lang].button.addUser
+          }
+        />
+
+        {/* <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {isSubmitting
+            ? usersTranslate.users[lang].addUsers.saving
+            : usersTranslate.users[lang].button.addUser}
+        </button> */}
       </form>
     </div>
   );

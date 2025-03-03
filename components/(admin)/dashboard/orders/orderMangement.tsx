@@ -8,7 +8,7 @@ import {
   ordersTranslate,
   StatusColors,
 } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
-import Pagination from "@/components/pagination/Pagination";
+import Pagination, { PaginationType } from "@/components/pagination/Pagination";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import { OrderType } from "@/app/lib/types/orders.types";
@@ -74,10 +74,13 @@ const statusOptions: StatusOption[] = [
     label: ordersTranslate.orders[lang].filter.select.options.disputed,
   },
 ];
-
+interface AdminOrdersDashboardProps {
+  initialOrders: OrderType[];
+  pagination: PaginationType;
+}
 const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
   initialOrders,
-  totalPages,
+  pagination,
 }) => {
   const [orders, setOrders] = useState<OrderType[]>(initialOrders || []);
   const [loading, setLoading] = useState(false);
@@ -107,7 +110,9 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
     "page",
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );
-
+  const handelPageChange = (page: number) => {
+    setCurrentPage(page);
+  };
   useEffect(() => {
     setOrders(initialOrders);
     new Promise<void>((resolve) => {
@@ -285,20 +290,11 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
       </div>
 
       <div className="mt-6">
-        <Pagination
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          totalPages={totalPages}
-        />
+        <Pagination meta={pagination.meta} onPageChange={handelPageChange} />
       </div>
     </div>
   );
 };
-
-interface AdminOrdersDashboardProps {
-  initialOrders: OrderType[];
-  totalPages: number;
-}
 
 export default AdminOrdersDashboard;
 // ("use client");

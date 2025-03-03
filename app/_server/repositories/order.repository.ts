@@ -47,7 +47,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
       .populate("userId", "name email")
       .exec();
   }
-  update(
+  async update(
     id: string,
     dto: UpdateOrderDto,
     session?: ClientSession

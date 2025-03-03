@@ -47,7 +47,7 @@ SessionSchema.index({ userId: 1 });
 SessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 // ✅ Compound index for faster queries
 SessionSchema.index({ userId: 1, hashedToken: 1, isActive: 1, expiresAt: 1 });
-
+SessionSchema.set("toJSON", { versionKey: false });
 const SessionModel: Model<ISession> =
   models.Session || model<ISession>("Session", SessionSchema);
 

@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 type SearchParams = {
   category?: string;
   name?: string;
+  search?: string;
   sort?: string;
   fields?: string;
   page?: string;
@@ -33,6 +34,9 @@ const queryParams = async (searchParams: SearchParams) => {
   }
   if (searchParams.name !== undefined) {
     url.append("name", searchParams.name);
+  }
+  if (searchParams.search !== undefined) {
+    url.append("search", searchParams.search);
   }
   if (searchParams.sort !== undefined) {
     url.append("sort", searchParams.sort);
@@ -83,6 +87,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
   const defaultSearchParams = {
     category: searchParams.category || undefined,
     name: searchParams.name || undefined,
+    search: searchParams.search || undefined,
     sort: searchParams.sort || undefined,
     fields: searchParams.fields || undefined,
     page: searchParams.page || undefined,
@@ -99,6 +104,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
     //     resolve();
     //   }, 12000); // Simulate a 12-second delay
     // });
+    // console.log("docs", docs);
     return (
       // <ComponentLoading>
       <Shop

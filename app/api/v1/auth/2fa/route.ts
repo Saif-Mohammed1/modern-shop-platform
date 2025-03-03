@@ -17,14 +17,14 @@ import { type NextRequest } from "next/server";
 
 6. GET /api/auth/2fa/audit - Fetches audit logs.
  */
-export const PUT = async (req: NextRequest) => {
-  try {
-    await connectDB();
-    return await twoFactorController.generateSessionToken(req);
-  } catch (error) {
-    return ErrorHandler(error, req);
-  }
-};
+// export const PUT = async (req: NextRequest) => {
+//   try {
+//     await connectDB();
+//     return await twoFactorController.generateSessionToken(req);
+//   } catch (error) {
+//     return ErrorHandler(error, req);
+//   }
+// };
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();

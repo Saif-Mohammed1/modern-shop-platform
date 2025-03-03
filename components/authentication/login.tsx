@@ -68,7 +68,7 @@ const LoginPage = () => {
     // setIsLoading(true);
     try {
       const result = await signIn("credentials", {
-        // email,
+        email,
         // password,
         code,
         redirect: false,
@@ -110,29 +110,29 @@ const LoginPage = () => {
       }
     }
   };
-  const handleResend = async () => {
-    // setIsLoading(true);
-    try {
-      await api.put("/auth/2fa", {
-        email,
-      });
+  // const handleResend = async () => {
+  //   // setIsLoading(true);
+  //   try {
+  //     await api.put("/auth/2fa", {
+  //       email,
+  //     });
 
-      toast.success(loginTranslate[lang].functions.handelResend2fa.success);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message || loginTranslate[lang].errors.global);
-      } else {
-        toast.error(loginTranslate[lang].errors.global);
-      }
-    }
-  };
+  //     toast.success(loginTranslate[lang].functions.handelResend2fa.success);
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error) {
+  //       toast.error(error.message || loginTranslate[lang].errors.global);
+  //     } else {
+  //       toast.error(loginTranslate[lang].errors.global);
+  //     }
+  //   }
+  // };
   return (
     <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
       {requiredTwoFactor ? (
         <TwoFactorForm
           onVerify={handleTotpVerify}
           onBackupVerify={handleBackupVerify}
-          onResend={handleResend}
+          // onResend={handleResend}
           back={() => setRequiredTwoFactor(false)}
         />
       ) : (

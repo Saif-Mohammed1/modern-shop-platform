@@ -41,7 +41,7 @@ const AddressSchema = new Schema<IAddress>(
 
 // Compound index for common query patterns
 AddressSchema.index({ userId: 1, country: 1 });
-
+AddressSchema.set("toJSON", { versionKey: false });
 const AddressModel: Model<IAddress> =
   models.Address || model<IAddress>("Address", AddressSchema);
 export default AddressModel;

@@ -74,6 +74,13 @@ const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(
   },
   { timestamps: true }
 );
+TwoFactorAuthSchema.set("toJSON", {
+  versionKey: false,
+  transform: (_, ret) => {
+    delete ret.encryptedSecret;
+    return ret;
+  },
+});
 const TwoFactorAuthModel: Model<ITwoFactorAuth> =
   models.TwoFactorAuth ||
   model<ITwoFactorAuth>("TwoFactorAuth", TwoFactorAuthSchema);

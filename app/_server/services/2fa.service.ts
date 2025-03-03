@@ -202,7 +202,9 @@ export class TwoFactorService {
 
     const matchedIndices: number[] = [];
     const usedCodes: string[] = [];
-
+    // Atomic transaction
+    const session = await this.repository.startSession();
+    session.startTransaction();
     try {
       // Process all codes before failing to prevent timing attacks
       for (const [index, code] of codes.entries()) {
@@ -233,39 +235,36 @@ export class TwoFactorService {
         );
       }
 
-      // Atomic transaction
-      const session = await this.repository.startSession();
-      await session.withTransaction(async () => {
-        const updatedCodes = twoFA.backupCodes.filter(
-          (_, index) => !matchedIndices.includes(index)
+      const updatedCodes = twoFA.backupCodes.filter(
+        (_, index) => !matchedIndices.includes(index)
+      );
+
+      if (updatedCodes.length !== twoFA.backupCodes.length - 5) {
+        await session.abortTransaction();
+        throw new AppError(
+          TwoFactorTranslate[lang].error.validationFailed,
+          400
         );
+      }
 
-        if (updatedCodes.length !== twoFA.backupCodes.length - 5) {
-          await session.abortTransaction();
-          throw new AppError(
-            TwoFactorTranslate[lang].error.validationFailed,
-            400
-          );
-        }
+      await this.repository.updateBackupCodes(
+        user._id.toString(),
+        updatedCodes,
+        session
+      );
 
-        await this.repository.updateBackupCodes(
-          user._id.toString(),
-          updatedCodes,
-          session
-        );
+      // Audit log
 
-        // Audit log
-
-        await this.userService.createAuditLog(
-          user._id.toString(),
-          AuditAction.BACKUP_CODE_RECOVERY,
-          {
-            success: true,
-            codesUsed: usedCodes,
-            remainingCodes: updatedCodes.length,
-          }
-        );
-      });
+      await this.userService.createAuditLog(
+        user._id.toString(),
+        AuditAction.BACKUP_CODE_RECOVERY,
+        {
+          success: true,
+          codesUsed: usedCodes,
+          remainingCodes: updatedCodes.length,
+        },
+        session
+      );
 
       // Security recommendations
       if (twoFA.backupCodes.length - 5 < 3) {
@@ -282,7 +281,7 @@ export class TwoFactorService {
 
       await this.sessionService.revokeAllSessions(user._id.toString());
       await this.userService.requestPasswordReset(user.email, deviceInfo);
-
+      await session.commitTransaction();
       return {
         success: true,
         remainingCodes: twoFA.backupCodes.length - 5,
@@ -298,7 +297,10 @@ export class TwoFactorService {
         }
       );
 
+      await session.abortTransaction();
       throw error;
+    } finally {
+      session.endSession();
     }
   }
   //   async validateBackupCodes(email: string, codes: string[]) {

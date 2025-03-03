@@ -18,9 +18,7 @@ const SearchBar: FC<SearchBarProps> = ({
   <div className={`${isMobile ? "mt-4" : ""} relative flex-grow max-w-[500px]`}>
     <input
       type="text"
-      placeholder={
-        shopPageTranslate[lang].shopPage.content.select.categoryFilter.label
-      }
+      placeholder={shopPageTranslate[lang].shopPage.content.search}
       value={searchQuery}
       onChange={handleSearch}
       className="w-full px-4 py-2 pl-10 rounded-md border border-gray-300 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"

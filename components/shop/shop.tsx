@@ -21,13 +21,21 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
 
   // Query state management
   const [searchQuery, setSearchQuery] = useQueryState(
-    "name",
+    "search",
     parseAsString.withDefault("").withOptions({
       throttleMs: 500,
       shallow: false,
       //  scroll: false,
     })
   );
+  // const [searchQuery, setSearchQuery] = useQueryState(
+  //   "name",
+  //   parseAsString.withDefault("").withOptions({
+  //     throttleMs: 500,
+  //     shallow: false,
+  //     //  scroll: false,
+  //   })
+  // );
 
   const [categoryFilter, setCategoryFilter] = useQueryState(
     "category",

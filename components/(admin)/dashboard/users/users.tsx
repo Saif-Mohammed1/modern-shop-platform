@@ -4,32 +4,21 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
-import Pagination from "@/components/pagination/Pagination";
+import Pagination, { PaginationType } from "@/components/pagination/Pagination";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-
-type UserAuthType = {
-  _id: string;
-  name: string;
-  email: string;
-  emailVerify: boolean;
-  role: string;
-  createdAt: Date;
-  phone?: string;
-  active: boolean;
-  isTwoFactorAuthEnabled: boolean;
-};
+import { UserAuthType } from "@/app/lib/types/users.types";
 
 type Props = {
   users: UserAuthType[];
-  totalPages: number;
+  pagination: PaginationType;
 };
 
-const AdminUsers = ({ users, totalPages }: Props) => {
+const AdminUsers = ({ users, pagination }: Props) => {
   const [usersList, setUsersList] = useState(users || []);
   const [search, setSearch] = useQueryState(
-    "email",
+    "search",
     parseAsString
       .withDefault("")
       .withOptions({ shallow: false, throttleMs: 1000 })
@@ -46,7 +35,9 @@ const AdminUsers = ({ users, totalPages }: Props) => {
     "page",
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );
-
+  const onPaginationChange = (page: number) => {
+    setCurrentPage(page);
+  };
   const handleDelete = async (id: string) => {
     if (confirm(usersTranslate.users[lang].functions.handleDelete.confirm)) {
       let toastId;
@@ -155,13 +146,9 @@ const AdminUsers = ({ users, totalPages }: Props) => {
                 <td className="py-3 px-4 text-sm text-gray-700">{user.role}</td>
                 <td className="py-3 px-4">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${user.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${user.status == "active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                   >
-                    {user.active
-                      ? usersTranslate.users[lang].filter.select.activity
-                          .options.active
-                      : usersTranslate.users[lang].filter.select.activity
-                          .options.inactive}
+                    {user.status}
                   </span>
                 </td>
                 <td className="py-3 px-4 space-x-3">
@@ -185,11 +172,8 @@ const AdminUsers = ({ users, totalPages }: Props) => {
       </div>
 
       <div className="mt-6">
-        <Pagination
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          totalPages={totalPages}
-        />
+        {" "}
+        <Pagination meta={pagination.meta} onPageChange={onPaginationChange} />
       </div>
     </div>
   );

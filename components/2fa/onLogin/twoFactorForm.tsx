@@ -7,7 +7,7 @@ import TotpInput from "./totpInput";
 interface TwoFactorFormProps {
   onVerify: (code: string) => Promise<void>;
   onBackupVerify: (codes: string[]) => Promise<void>;
-  onResend: () => Promise<void>;
+  // onResend: () => Promise<void>;
   back: () => void;
 }
 
@@ -15,7 +15,7 @@ export const TwoFactorForm = ({
   onVerify,
   onBackupVerify,
   back,
-  onResend,
+  // onResend,
 }: TwoFactorFormProps) => {
   const [view, setView] = useState<"totp" | "backup">("totp");
   const [error, setError] = useState("");
@@ -41,7 +41,7 @@ export const TwoFactorForm = ({
           }}
           isLoading={isLoading}
           error={error}
-          onResend={onResend}
+          // onResend={onResend}
           onSwitchToBackup={() => setView("backup")}
         />
       ) : (

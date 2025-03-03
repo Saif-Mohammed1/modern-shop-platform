@@ -5,16 +5,21 @@ import { generateVerificationToken } from "@/app/lib/utilities/user.utilty";
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import { UserRepository } from "../repositories/user.repository";
 import { emailService } from "@/app/lib/services/email.service";
-import { UserChangePasswordDTO, UserCreateDTO } from "../dtos/user.dto";
+import {
+  CreateUserByAdminDTO,
+  UserChangePasswordDTO,
+  UserCreateDTO,
+} from "../dtos/user.dto";
 import { cookies } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { AuditAction, AuditLogDetails } from "@/app/lib/types/audit.types";
-import UserModel, {
+import UserModel, { IUser } from "../models/User.model";
+import {
   accountAction,
-  IUser,
+  UserAuthType,
   UserRole,
   UserStatus,
-} from "../models/User.model";
+} from "@/app/lib/types/users.types";
 import { SessionService } from "./session.service";
 import { TokensService } from "./tokens.service";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
@@ -23,6 +28,7 @@ import {
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
+import { ClientSession } from "mongoose";
 
 export class UserService {
   constructor(
@@ -30,10 +36,16 @@ export class UserService {
     private sessionService: SessionService = new SessionService(),
     private tokensService: TokensService = new TokensService()
   ) {}
-  async finalizeLogin(user: IUser, deviceInfo: DeviceInfo) {
+  async finalizeLogin(
+    user: IUser,
+    deviceInfo: DeviceInfo
+  ): Promise<{
+    user: UserAuthType;
+    accessToken: string;
+    refreshToken: string;
+  }> {
     const { accessToken, refreshToken, hashedToken } =
       this.tokensService.generateAuthTokens(user._id.toString());
-
     await Promise.all([
       this.sessionService.createSession(
         user._id.toString(),
@@ -47,13 +59,35 @@ export class UserService {
     this.tokensService.setRefreshTokenCookies(refreshToken);
     await this.repository.clearRateLimit(user, "login");
 
-    return { user, accessToken, refreshToken };
+    return {
+      user: user.filterForRole() as UserAuthType,
+      accessToken,
+      refreshToken,
+    };
+  }
+  async createUserByAdmin(dto: CreateUserByAdminDTO): Promise<IUser> {
+    const session = await this.repository.startSession();
+    session.startTransaction();
+    try {
+      const existingUser = await this.repository.findByEmail(dto.email);
+      if (existingUser) {
+        throw new AppError(
+          userControllerTranslate[lang].errors.userAlreadyExist,
+          400
+        );
+      }
+      const user = await this.repository.createUserByAdmin(dto, session);
+      await session.commitTransaction();
+      return user;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
   // UserModel Registration
-  async registerUser(
-    dto: UserCreateDTO,
-    deviceInfo: DeviceInfo
-  ): Promise<IUser> {
+  async registerUser(dto: UserCreateDTO, deviceInfo: DeviceInfo) {
     const session = await this.repository.startSession();
     try {
       session.startTransaction();
@@ -89,7 +123,7 @@ export class UserService {
         ),
       ]);
       await session.commitTransaction();
-      return user;
+      return this.finalizeLogin(user, deviceInfo);
     } catch (err) {
       await session.abortTransaction();
       throw err;
@@ -105,7 +139,8 @@ export class UserService {
 
     deviceInfo: DeviceInfo
   ): Promise<
-    | { user: IUser; accessToken: string; refreshToken: string }
+    // | { user: IUser; accessToken: string; refreshToken: string }
+    | ReturnType<typeof this.finalizeLogin>
     | {
         requires2FA: boolean;
         tempToken: string;
@@ -339,9 +374,10 @@ export class UserService {
   async createAuditLog(
     userId: string,
     action: AuditAction,
-    details: AuditLogDetails
+    details: AuditLogDetails,
+    session?: ClientSession
   ): Promise<void> {
-    return this.repository.createAuditLog(userId, action, details);
+    return this.repository.createAuditLog(userId, action, details, session);
   }
   async changePassword(
     userId: string,
@@ -465,11 +501,12 @@ export class UserService {
     }
     return user;
   }
-  async generateSessionToken(email: string): Promise<{
-    message: string;
-    tempToken: string;
-    tempTokenExpires: Date;
-  }> {
+  async generateSessionToken(email: string): Promise<string> {
+    // <{
+    //   // message: string;
+    //   tempToken: string;
+    //   // tempTokenExpires: Date;
+    // }>
     const user = await this.repository.findByEmail(email);
 
     if (!user) {
@@ -481,11 +518,12 @@ export class UserService {
       user?.security?.twoFactorSecretExpiry &&
       user.security.twoFactorSecretExpiry > new Date(Date.now())
     ) {
-      return {
-        message: "Temporary token generated",
-        tempToken: user.security.twoFactorSecret,
-        tempTokenExpires: user.security.twoFactorSecretExpiry,
-      };
+      return user.security.twoFactorSecret;
+      // return {
+      //   // message: "Temporary token generated",
+      //   tempToken: user.security.twoFactorSecret,
+      //   tempTokenExpires: user.security.twoFactorSecretExpiry,
+      // };
     }
     user.checkRateLimit("2fa");
 
@@ -501,11 +539,12 @@ export class UserService {
       path: "/",
     });
     await this.repository.incrementRateLimit(user, "2fa");
-    return {
-      message: "Temporary token generated",
-      tempToken,
-      tempTokenExpires: expires,
-    };
+    // return {
+    //   message: "Temporary token generated",
+    //   tempToken,
+    //   tempTokenExpires: expires,
+    // };
+    return tempToken;
   }
   // Account Management
   // async updateProfile(userId: string, dto: UserUpdateDTO): Promise<IUser> {
@@ -578,7 +617,7 @@ export class UserService {
   }
 
   async deactivateAccount(userId: string): Promise<void> {
-    this.repository.updateUserStatus(userId, UserStatus.INACTIVE);
+    await this.repository.updateUserStatus(userId, UserStatus.SUSPENDED);
   }
 
   async deleteAccount(userId: string): Promise<void> {

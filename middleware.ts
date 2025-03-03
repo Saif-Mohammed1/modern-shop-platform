@@ -9,10 +9,11 @@ import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 // import { rateLimitIp } from "./components/util/rateLimitIp";
-import { rateLimiter } from "./app/lib/utilities/rate-limiter";
-import AppError from "./app/lib/utilities/appError";
-import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
-import { lang } from "./app/lib/utilities/lang";
+// import { rateLimiter } from "./app/lib/utilities/rate-limiter";
+// import AppError from "./app/lib/utilities/appError";
+// import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
+// import { lang } from "./app/lib/utilities/lang";
+import { UserRole } from "./app/lib/types/users.types";
 
 const PROTECTED_ROUTES = [
   "/account",
@@ -22,7 +23,6 @@ const PROTECTED_ROUTES = [
 ];
 
 const DEFAULT_LANGUAGE = "uk";
-const ADMIN_ROLE = "admin";
 const CUSTOM_ERROR_PATH = "/custom-error/429";
 const AUTH_PATH = "/auth";
 const DASHBOARD_PATH = "/dashboard";
@@ -44,7 +44,7 @@ export const config = {
 const authMiddleware = async (req: NextRequest) => {
   const pathname = req.nextUrl.pathname;
   const isAuth = await getToken({ req });
-  const isAdmin = isAuth?.user?.role === ADMIN_ROLE;
+  const isAdmin = isAuth?.user?.role === UserRole.ADMIN;
   const response = NextResponse.next();
 
   try {
@@ -56,38 +56,43 @@ const authMiddleware = async (req: NextRequest) => {
       req.ip ||
       "127.0.0.1";
     response.headers.set("x-client-ip", clientIp);
-    if (isAuth && !pathname.startsWith("/api") && !isAuth.user.emailVerify) {
+
+    if (
+      isAuth &&
+      !pathname.startsWith("/api") &&
+      !pathname.startsWith("/verify-email") &&
+      !isAuth.user.verification?.emailVerified
+    ) {
       return NextResponse.redirect(new URL("/verify-email", req.url));
     }
-
     // Handle rate limiting for API routes
-    if (pathname.startsWith("/api")) {
-      // const { failed } = rateLimitIp(clientIp);
+    // if (pathname.startsWith("/api")) {
+    //   // const { failed } = rateLimitIp(clientIp);
 
-      const limit = await rateLimiter.limit(clientIp);
+    //   const limit = await rateLimiter.limit(clientIp);
 
-      if (!limit.allowed) {
-        response.headers.set("X-RateLimit-Limit", limit.limit.toString());
-        response.headers.set(
-          "X-RateLimit-Remaining",
-          limit.remaining.toString()
-        );
-        response.headers.set("X-RateLimit-Reset", limit.reset.toString());
-        response.headers.set("Retry-After", limit.retryAfter.toString());
-        //  return res.status(429).json({
-        //    error: `Too many requests. Retry after ${limit.retryAfter} seconds`,
-        //  });
-        throw new AppError(tooManyRequestsTranslate[lang].title, 429);
+    //   if (!limit.allowed) {
+    //     response.headers.set("X-RateLimit-Limit", limit.limit.toString());
+    //     response.headers.set(
+    //       "X-RateLimit-Remaining",
+    //       limit.remaining.toString()
+    //     );
+    //     response.headers.set("X-RateLimit-Reset", limit.reset.toString());
+    //     response.headers.set("Retry-After", limit.retryAfter.toString());
+    //     //  return res.status(429).json({
+    //     //    error: `Too many requests. Retry after ${limit.retryAfter} seconds`,
+    //     //  });
+    //     throw new AppError(tooManyRequestsTranslate[lang].title, 429);
 
-        // NextResponse.redirect(new URL(CUSTOM_ERROR_PATH, req.url));
-      }
+    //     // NextResponse.redirect(new URL(CUSTOM_ERROR_PATH, req.url));
+    //   }
 
-      // Apply rate limit headers to all responses
+    //   // Apply rate limit headers to all responses
 
-      response.headers.set("X-RateLimit-Limit", limit.limit.toString());
-      response.headers.set("X-RateLimit-Remaining", limit.remaining.toString());
-      response.headers.set("X-RateLimit-Reset", limit.reset.toString());
-    }
+    //   response.headers.set("X-RateLimit-Limit", limit.limit.toString());
+    //   response.headers.set("X-RateLimit-Remaining", limit.remaining.toString());
+    //   response.headers.set("X-RateLimit-Reset", limit.reset.toString());
+    // }
 
     // Handle cookie management
     const refreshToken = req.cookies.get("refreshAccessToken")?.value;
@@ -113,7 +118,7 @@ const authMiddleware = async (req: NextRequest) => {
       if (!isAuth) {
         return NextResponse.redirect(new URL(AUTH_PATH, req.url));
       }
-      if (isAuth.user.emailVerify) {
+      if (isAuth.user?.verification?.emailVerified) {
         return NextResponse.redirect(new URL("/", req.url));
       }
       return NextResponse.next();

@@ -4,10 +4,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies, headers } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { type NextRequest } from "next/server";
+import { NextRequest } from "next/server";
+import twoFactorController from "@/app/_server/controllers/2fa.controller";
 
 import connectDB from "@/app/_server/db/db";
-import { TwoFactorAuthService } from "@/app/_server/controllers/2faController";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 import sessionController from "@/app/_server/controllers/session.controller";
 import authController from "@/app/_server/controllers/auth.controller";
@@ -55,6 +55,7 @@ const authOptions: AuthOptions = {
             const statusCode = result.status;
             const { user } = await result.json(); // Extract JSON data
             // Use a type guard to check if `user` has `requires2FA`
+
             if (
               statusCode === 202 ||
               ("requires2FA" in user && user.requires2FA)
@@ -76,16 +77,20 @@ const authOptions: AuthOptions = {
             return null;
           } else {
             const req = new NextRequest(
-              new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth"),
+              new URL(
+                process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/2fa/verify"
+              ),
               {
                 headers: headers(),
-                method: "POST",
+                method: "PUT",
                 body: JSON.stringify({
                   code: code,
+                  email,
                 }),
               }
             );
-            const { user } = await TwoFactorAuthService.verify2FAOnLogin(req);
+            const result = await twoFactorController.verify2FALogin(req);
+            const { user } = await result.json(); // Extract JSON data
 
             if (!user) {
               return null;
@@ -137,7 +142,7 @@ const authOptions: AuthOptions = {
       //   token.user?.accessTokenExpires &&
       //   Date.now() > token.user.accessTokenExpires - REFRESH_THRESHOLD
       // ) {
-      //   console.log("Token expired, refreshing...");
+      //
       //   const refreshedToken = await refreshAccessTokenHandler(token);
       //   return refreshedToken;
       // }

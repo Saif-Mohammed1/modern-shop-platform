@@ -108,7 +108,7 @@ const EditProduct = ({ product }: EditProductProps) => {
       toastLoading = toast.loading(
         productsTranslate.products[lang].editProduct.form.productSubmit.loading
       );
-      await api.put(`/admin/dashboard/products/${product._id}`, updatedData);
+      await api.put(`/admin/dashboard/products/${product.slug}`, updatedData);
       toast.success(
         productsTranslate.products[lang].editProduct.form.productSubmit.success
       );
@@ -134,8 +134,8 @@ const EditProduct = ({ product }: EditProductProps) => {
         productsTranslate.products[lang].editProduct.removeImage.loading
       );
 
-      await api.post(
-        "/admin/dashboard/products/" + product._id + "/removeImage",
+      await api.put(
+        "/admin/dashboard/products/" + product.slug + "/remove-image",
         { public_id }
       );
       setOldImages(oldImages.filter((img) => img.public_id !== public_id));

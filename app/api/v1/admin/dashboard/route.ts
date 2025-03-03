@@ -3,7 +3,7 @@ import { isAuth, restrictTo } from "@/app/_server/controllers/authController";
 import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { UserRole } from "@/app/_server/models/User.model";
+import { UserRole } from "@/app/lib/types/users.types";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {

@@ -10,8 +10,8 @@ export interface IWishlist extends Document {
   _id: Types.ObjectId;
   userId: IUser["_id"];
   productId: IProduct["_id"];
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // // updatedAt: Date;
 }
 
 const WishlistSchema = new Schema<IWishlist>(
@@ -38,7 +38,7 @@ const WishlistSchema = new Schema<IWishlist>(
 
 // Compound index to prevent duplicate favorites
 WishlistSchema.index({ userId: 1, productId: 1 }, { unique: true });
-
+WishlistSchema.set("toJSON", { versionKey: false });
 // Virtual population (if needed)
 WishlistSchema.virtual("user", {
   ref: "User",
@@ -55,22 +55,22 @@ WishlistSchema.virtual("product", {
 });
 
 // Pre-save validation for references
-WishlistSchema.pre<IWishlist>("save", async function (next) {
-  try {
-    const [userExists, productExists] = await Promise.all([
-      User.exists({ _id: this.userId }),
-      Product.exists({ _id: this.productId }),
-    ]);
+// WishlistSchema.pre<IWishlist>("save", async function (next) {
+//   try {
+//     const [userExists, productExists] = await Promise.all([
+//       User.exists({ _id: this.userId }),
+//       Product.exists({ _id: this.productId }),
+//     ]);
 
-    if (!userExists)
-      throw new AppError(commonTranslations[lang].userDoesNotExist, 404);
-    if (!productExists)
-      throw new AppError(commonTranslations[lang].productDoesNotExist, 404);
-    next();
-  } catch (error) {
-    next(error as Error);
-  }
-});
+//     if (!userExists)
+//       throw new AppError(commonTranslations[lang].userDoesNotExist, 404);
+//     if (!productExists)
+//       throw new AppError(commonTranslations[lang].productDoesNotExist, 404);
+//     next();
+//   } catch (error) {
+//     next(error as Error);
+//   }
+// });
 
 const WishlistModel: Model<IWishlist> =
   models.Wishlist || model<IWishlist>("Wishlist", WishlistSchema);

@@ -3,7 +3,7 @@ import orderController from "@/app/_server/controllers/order.controller";
 
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { UserRole } from "@/app/_server/models/User.model";
+import { UserRole } from "@/app/lib/types/users.types";
 import { type NextRequest } from "next/server";
 
 export const GET = async (

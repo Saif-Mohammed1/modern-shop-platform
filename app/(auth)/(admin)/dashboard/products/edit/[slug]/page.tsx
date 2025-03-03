@@ -11,16 +11,16 @@ import { headers } from "next/headers";
 //   keywords: "admin, edit product, admin edit product",
 // };
 type Props = {
-  params: { id: string };
+  params: { slug: string };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params;
+  const { slug } = params;
 
   try {
     const {
       data: { data: product },
-    } = await api.get(`/admin/dashboard/products/${id}`, {
+    } = await api.get(`/admin/dashboard/products/${slug}`, {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
 
@@ -39,12 +39,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 const page = async ({ params }: Props) => {
-  const { id } = params;
+  const { slug } = params;
 
   try {
     const {
       data: { data },
-    } = await api.get(`/admin/dashboard/products/${id}`, {
+    } = await api.get(`/admin/dashboard/products/${slug}`, {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
     return <EditProduct product={data} />;

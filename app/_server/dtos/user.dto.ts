@@ -61,6 +61,15 @@ export class UserValidation {
       message: userZodValidatorTranslate[lang].confirmPassword.invalid,
       path: ["confirmPassword"],
     });
+  static createUserByAdminSchema = z
+    .object({
+      ...this.userCreateSchema._def.schema.shape, // Extract base shape
+      role: z.enum(["customer", "admin", "moderator"]).default("customer"),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: userZodValidatorTranslate[lang].confirmPassword.invalid,
+      path: ["confirmPassword"],
+    });
 
   // Schema for login validation (debuggable)
   static loginSchema = z.object({
@@ -169,7 +178,10 @@ export class UserValidation {
     // }
     // return { success: true, data: result.data };
   }
-
+  static validateCreateUserByAdminDTO(data: any) {
+    const result = this.createUserByAdminSchema.parse(data);
+    return { ...result, email: this.sanitizeEmail(result.email) };
+  }
   /** Validate Login (Returns structured error instead of throwing) */
   static validateLogin(data: any) {
     const result = this.loginSchema.parse(data);
@@ -265,4 +277,11 @@ export type UserCreateDTO = z.infer<typeof UserValidation.userCreateSchema>;
 export type UserLoginDTO = z.infer<typeof UserValidation.loginSchema>;
 export type UserChangePasswordDTO = z.infer<
   typeof UserValidation.changePasswordSchema
+>;
+
+export type UserPasswordResetDTO = z.infer<
+  typeof UserValidation.passwordResetSchema
+>;
+export type CreateUserByAdminDTO = z.infer<
+  typeof UserValidation.createUserByAdminSchema
 >;

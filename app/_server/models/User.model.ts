@@ -5,32 +5,18 @@ import crypto from "crypto";
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import { AuditAction } from "@/app/lib/types/audit.types";
 import AppError from "@/app/lib/utilities/appError";
-import { emailService } from "@/app/lib/services/email.service";
-export enum UserRole {
-  CUSTOMER = "customer",
-  ADMIN = "admin",
-  MODERATOR = "moderator",
-}
-
-export enum UserStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  SUSPENDED = "suspended",
-  DELETED = "deleted",
-}
-
-export enum AuthMethod {
-  EMAIL = "email",
-  GOOGLE = "google",
-  FACEBOOK = "facebook",
-  APPLE = "apple",
-}
-export type accountAction =
-  | "login"
-  | "passwordReset"
-  | "verification"
-  | "2fa"
-  | "backup_recovery";
+import {
+  emailService,
+  SecurityAlertType,
+} from "@/app/lib/services/email.service";
+import {
+  accountAction,
+  AuthMethod,
+  UserRole,
+  UserStatus,
+} from "@/app/lib/types/users.types";
+import { TokensService } from "@/app/_server/services/tokens.service";
+import { obfuscateEmail } from "@/app/lib/utilities/helpers";
 interface ILoginHistory extends DeviceInfo {
   timestamp: Date;
   //   ipAddress: string;
@@ -138,6 +124,8 @@ export interface IUser extends Document {
   checkRateLimit(action: accountAction): void;
   incrementRateLimit(action: accountAction): Promise<void>;
   detectAnomalies(deviceInfo: DeviceInfo): void;
+  anonymizeSecurityData(securityData: any): any;
+  filterForRole(requesterRole?: UserRole): object;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -312,10 +300,25 @@ const UserSchema = new Schema<IUser>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_, ret) => {
+      transform: function (_, ret) {
+        // Remove universally sensitive fields for all roles
+        delete ret.verification?.emailChangeExpires;
+        delete ret.verification?.verificationExpires;
+        delete ret.verification?.emailChangeToken;
+        delete ret.verification?.verificationToken;
         delete ret.password;
         delete ret.__v;
-        delete ret.security;
+        delete ret.security?.twoFactorSecret;
+        delete ret.security?.previousPasswords;
+        delete ret.verification?.emailChangeToken;
+        delete ret.verification?.verificationToken;
+        ret.twoFactorEnabled = ret.security?.twoFactorEnabled || false;
+
+        ["createdAt", "updatedAt"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
         return ret;
       },
     },
@@ -385,18 +388,6 @@ UserSchema.pre<IUser>("save", async function (next) {
 
   next();
 });
-// UserSchema.pre<IUser>("save", function (next) {
-//   if (this.isModified("security.rateLimits")) {
-//     // Automatic lockout escalation
-//     if (this.security.rateLimits.login.attempts >= 3) {
-//       this.security.behavioralFlags.requestVelocity =
-//         this.security.loginHistory.filter(
-//           (l) => Date.now() - l.timestamp.getTime() < 3600000
-//         ).length;
-//     }
-//   }
-//   next();
-// });
 
 // enhancement for
 UserSchema.pre<IUser>("save", function (next) {
@@ -426,7 +417,8 @@ UserSchema.pre<IUser>("save", function (next) {
     // 3. Suspicious activity notifications
     if (this.security.behavioralFlags.requestVelocity > 5) {
       emailService.sendSecurityAlertEmail(this.email, {
-        type: "SUSPICIOUS_ACTIVITY",
+        type: SecurityAlertType.SUSPICIOUS_ACTIVITY,
+        // type: "SUSPICIOUS_ACTIVITY",
         attempts: loginLimits.attempts,
         locations: this.security.loginHistory
           .map((entry) => entry.location)
@@ -436,6 +428,114 @@ UserSchema.pre<IUser>("save", function (next) {
   }
   next();
 });
+
+UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
+  const tokensService = new TokensService();
+
+  return {
+    ...securityData,
+    loginHistory:
+      securityData.loginHistory?.map((entry: any) => ({
+        ...entry,
+        timestamp: entry?.timestamp.toISOString().split("T")[0],
+        ip: tokensService.hashIpAddress(entry.ip),
+        fingerprint: tokensService.hashFingerprint(entry.fingerprint),
+      })) || [],
+
+    auditLog:
+      securityData.auditLog?.map((entry: any) => ({
+        ...entry,
+        timestamp: entry?.timestamp.toISOString().split("T")[0],
+
+        details: {
+          ...entry.details,
+          device: entry.details.device
+            ? {
+                ...entry.details.device,
+                ip: entry.details.device.ip
+                  ? tokensService.hashIpAddress(entry.details.device.ip)
+                  : null,
+                fingerprint: entry.details.device.fingerprint
+                  ? tokensService.hashFingerprint(
+                      entry.details.device.fingerprint
+                    )
+                  : null,
+              }
+            : null,
+        },
+      })) || [],
+
+    rateLimits: securityData.rateLimits
+      ? Object.fromEntries(
+          Object.entries(securityData.rateLimits).map(
+            ([key, val]: [string, any]) => [
+              key,
+              {
+                locked: !!val.lockUntil && new Date(val.lockUntil) > new Date(),
+                lastAttempt: val.lastAttempt
+                  ? val.lastAttempt.toISOString().split("T")[0]
+                  : null,
+                attempts: val.attempts,
+              },
+            ]
+          )
+        )
+      : {},
+  };
+};
+
+UserSchema.methods.filterForRole = function (
+  currentUserRole: UserRole = UserRole.CUSTOMER
+): object {
+  const userObject = this.toJSON();
+  // Remove universally sensitive fields for all roles
+  delete userObject.verification?.emailChangeExpires;
+  delete userObject.verification?.verificationExpires;
+  delete userObject.verification?.emailChangeToken;
+  delete userObject.verification?.verificationToken;
+  delete userObject.password;
+  delete userObject.__v;
+  delete userObject.security?.twoFactorSecret;
+  delete userObject.security?.previousPasswords;
+  delete userObject.verification?.emailChangeToken;
+  delete userObject.verification?.verificationToken;
+  userObject.twoFactorEnabled = userObject.security?.twoFactorEnabled || false;
+
+  // Apply role-specific transformations
+  if ([UserRole.ADMIN, UserRole.MODERATOR].includes(currentUserRole)) {
+    // Add to filterForRole() for admins
+
+    userObject.lastLogin = userObject.lastLogin?.toISOString().split("T")[0]; // Truncate timestamp
+    // Anonymize security data for admin view
+    if (userObject.security) {
+      userObject.security.passwordChangedAt =
+        userObject.security.passwordChangedAt?.toISOString().split("T")[0];
+      userObject.security.lastLogin = userObject.security.lastLogin
+        ?.toISOString()
+        .split("T")[0];
+
+      userObject.security = this.anonymizeSecurityData(userObject.security);
+    }
+  } else {
+    delete userObject.security;
+    userObject.email = obfuscateEmail(userObject.email);
+    delete userObject.updatedAt;
+    delete userObject.verification?.emailChange;
+  }
+
+  // userObject.email =
+  // currentUserRole === UserRole.ADMIN
+  //   ? userObject.email
+  //   : obfuscateEmail(userObject.email);
+  // Common transformations for all non-admin roles
+
+  if (Object.keys(userObject.socialProfiles).length === 0) {
+    delete userObject.socialProfiles;
+  }
+
+  return userObject;
+};
+
 // Enhanced Methods
 UserSchema.methods.checkRateLimit = function (
   action: "login" | "passwordReset" | "verification" | "2fa" | "backup_recovery"
@@ -471,15 +571,10 @@ UserSchema.methods.incrementRateLimit = async function (
   rateLimit.attempts = (rateLimit.attempts || 0) + 1;
   rateLimit.lastAttempt = new Date();
 
-  // 🔥 Notify Mongoose that the nested path has changed
-  //   this.markModified("security.rateLimits");
-
   // Lock account if exceeds threshold
   if (rateLimit.attempts >= 5) {
     rateLimit.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30m lock
   }
-  //   // Explicitly save the document
-  //   await this.save(); // ✅ Ensure this is awaited
 };
 
 // UserSchema.methods.detectAnomalies = function (deviceInfo: DeviceInfo) {
@@ -547,12 +642,6 @@ UserSchema.methods.isAccountLocked = function (
     this.security.rateLimits[action]?.lockUntil > new Date()
   );
 };
-
-// Virtuals
-UserSchema.virtual("fullName").get(function () {
-  return this.name.trim();
-});
-// Add other methods as in your original schema...
 
 const UserModel: Model<IUser> = models.User || model<IUser>("User", UserSchema);
 

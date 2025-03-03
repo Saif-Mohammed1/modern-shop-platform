@@ -13,3 +13,7 @@ export function generateSKU(category?: string): string {
   // Combine all parts into SKU
   return `${categoryCode}-${dateCode}-${randomCode}`;
 }
+export function obfuscateEmail(email: string) {
+  const [name, domain] = email.split("@");
+  return `${name[0]}${"*".repeat(name.length - 2)}${name.slice(-1)}@${domain}`;
+}

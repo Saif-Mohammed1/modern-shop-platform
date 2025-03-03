@@ -55,11 +55,12 @@ class TwoFactorController {
   }
   async verify2FALogin(req: NextRequest) {
     try {
-      const cookieTempToken =
+      let cookieTempToken =
         cookies().get("tempToken")?.value ||
         req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
-
       const body = await req.json();
+      if (!cookieTempToken)
+        cookieTempToken = await this.generateSessionToken(body.email);
       const { tempToken, code } = TwoFactorValidation.validateTwoFactorLogin({
         tempToken: cookieTempToken,
         ...body,
@@ -204,7 +205,7 @@ class TwoFactorController {
   }
 
   private getAuthenticatedUserId(req: NextRequest) {
-    const userId = req.user?._id;
+    const userId = req.user?._id.toString();
     if (!userId) throw new AppError("Unauthorized", 401);
     return userId;
   }
@@ -228,11 +229,10 @@ class TwoFactorController {
     };
   }
 
-  async generateSessionToken(req: NextRequest) {
-    const body = await req.json();
-    const email = UserValidation.isEmailValid(body.email);
-    const result = await this.userService.generateSessionToken(email);
-    return this.successResponse(result);
+  async generateSessionToken(email: string) {
+    const result = UserValidation.isEmailValid(email);
+    return await this.userService.generateSessionToken(result);
+    // return this.successResponse(result);
   }
 }
 export default new TwoFactorController();

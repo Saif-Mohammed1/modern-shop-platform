@@ -3,7 +3,7 @@ import userController from "@/app/_server/controllers/user.controller";
 import { createUserByAdmin } from "@/app/_server/controllers/userController";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { UserRole } from "@/app/_server/models/User.model";
+import { UserRole } from "@/app/lib/types/users.types";
 import { type NextRequest } from "next/server";
 
 export const GET = async (req: NextRequest) => {
@@ -21,8 +21,7 @@ export const POST = async (req: NextRequest) => {
     await connectDB();
     await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
     req.id = String(req.user?._id);
-    const { message, statusCode } = await createUserByAdmin(req);
-    return NextResponse.json({ message }, { status: statusCode });
+    return await userController.createUserByAdmin(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

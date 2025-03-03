@@ -1,14 +1,11 @@
-import { isAuth, restrictTo } from "@/app/_server/controllers/authController";
 import ErrorHandler from "@/app/_server/controllers/error.controller";
-import {
-  deleteOne,
-  getOne,
-  updateOne,
-} from "@/app/_server/controllers/factoryController";
-import { connectDB } from "@/app/_server/db/db";
-import User, { IUser } from "@/app/_server/models/User.model";
-import { type NextRequest, NextResponse } from "next/server";
+import userController from "@/app/_server/controllers/user.controller";
 
+import { connectDB } from "@/app/_server/db/db";
+import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import { UserRole } from "@/app/lib/types/users.types";
+import { type NextRequest, NextResponse } from "next/server";
+//  /admin/dashboard/users/[id]
 export const GET = async (
   req: NextRequest,
   {
@@ -20,11 +17,9 @@ export const GET = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
+    await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
     req.id = id;
-    const { data, statusCode } = await getOne<IUser>(req, User);
-    return NextResponse.json({ data }, { status: statusCode });
+    return await userController.getUser(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -41,8 +36,8 @@ export const PUT = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
+    await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
+
     req.id = id;
     const { data, statusCode } = await updateOne<IUser>(req, User, [
       "name",
@@ -67,12 +62,10 @@ export const DELETE = async (
   const { id } = params;
   try {
     await connectDB();
-    await isAuth(req);
-    await restrictTo(req, "admin");
-    req.id = id;
-    const { data, statusCode } = await deleteOne<IUser>(req, User);
+    await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
 
-    return NextResponse.json({ data }, { status: statusCode });
+    req.id = id;
+    return await userController.deactivateAccount(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

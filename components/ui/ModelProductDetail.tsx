@@ -244,7 +244,6 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
         )}
         <button
           onClick={() => {
-            console.log(`/shop/${product.slug}`);
             redirect(`/shop/${product.slug}`);
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors"

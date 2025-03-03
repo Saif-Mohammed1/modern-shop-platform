@@ -54,9 +54,9 @@ const queryParams = async (searchParams: ProductsSearchParams) => {
   try {
     const {
       data: {
-        data,
-        pageCount,
-        categories: { categories },
+        products: { docs, meta, links },
+
+        categories,
       },
     } = await api.get(
       "/admin/dashboard/products/" + (queryString ? `?${queryString}` : ""),
@@ -64,27 +64,32 @@ const queryParams = async (searchParams: ProductsSearchParams) => {
         headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
       }
     );
-    return { data, pageCount, categories };
+
+    return {
+      products: docs,
+      categories,
+      pagination: { meta, links },
+    };
   } catch (error: any) {
     throw new AppError(error.message, error.status);
   }
 };
 
 const page = async ({ searchParams }: Props) => {
-  const defaultSearchParams = {
-    category: searchParams.category || undefined,
-    name: searchParams.name || undefined,
-    sort: searchParams.sort || undefined,
-    fields: searchParams.fields || undefined,
-    page: searchParams.page || undefined,
-    limit: searchParams.limit || undefined,
-    rating: searchParams.rating || undefined,
-    min: searchParams.min || undefined,
-    max: searchParams.max || undefined,
-  };
+  // const defaultSearchParams = {
+  //   category: searchParams.category || undefined,
+  //   name: searchParams.name || undefined,
+  //   sort: searchParams.sort || undefined,
+  //   fields: searchParams.fields || undefined,
+  //   page: searchParams.page || undefined,
+  //   limit: searchParams.limit || undefined,
+  //   rating: searchParams.rating || undefined,
+  //   min: searchParams.min || undefined,
+  //   max: searchParams.max || undefined,
+  // };
   try {
-    const { data, categories, pageCount } =
-      await queryParams(defaultSearchParams);
+    const { products, categories, pagination } =
+      await queryParams(searchParams);
     return (
       <div className="p-8 bg-gray-100 min-h-screen">
         <h1 className="text-3xl font-bold mb-6">
@@ -94,9 +99,21 @@ const page = async ({ searchParams }: Props) => {
       //products={products}
       /> */}
         <AdminProducts
-          products={data}
+          products={products}
           categories={categories}
-          totalPages={pageCount}
+          pagination={
+            pagination || {
+              meta: {
+                total: 0,
+                page: 0,
+                limit: 0,
+                totalPages: 0,
+                hasNext: false,
+                hasPrev: false,
+              },
+              links: { previous: "", next: "" },
+            }
+          }
         />
       </div>
     );

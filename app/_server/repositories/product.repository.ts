@@ -32,20 +32,20 @@ export class ProductRepository extends BaseRepository<IProduct> {
     return product;
   }
   async update(
-    id: string,
-    dto: UpdateProductDto,
+    slug: string,
+    dto: UpdateProductDto & { actorId?: IProduct["userId"] },
     session?: ClientSession
   ): Promise<IProduct | null> {
     if (!dto.sku) {
       dto.sku = generateSKU(dto.category);
     }
-
-    const product = await this.model.findByIdAndUpdate(
-      id,
-      { $set: dto },
+    const lastModifiedBy = dto.actorId;
+    delete dto.actorId;
+    return await this.model.findOneAndUpdate(
+      { slug },
+      { $set: dto, lastModifiedBy },
       { new: true, session }
     );
-    return product;
   }
   async delete(id: string, session?: ClientSession): Promise<boolean> {
     const result = await this.model.findByIdAndDelete(id, { session });
@@ -63,11 +63,14 @@ export class ProductRepository extends BaseRepository<IProduct> {
         "slug",
         "createdAt", // Fixed typo from 'createAt'
         "ratingsAverage",
+        "description",
         isAdmin && "active",
       ].filter(Boolean) as Array<keyof IProduct>,
       filterMap: {
         rating: "ratingsAverage",
       },
+      searchFields: ["name", "description"],
+      // enableTextSearch: true,
       allowedSorts: ["createdAt", "updatedAt", "price"] as Array<
         keyof IProduct
       >,
@@ -94,7 +97,10 @@ export class ProductRepository extends BaseRepository<IProduct> {
 
     return queryBuilder.execute();
   }
-  async getProductBySlug(slug: string): Promise<IProduct | null> {
+  async getProductBySlug(
+    slug: string,
+    session?: ClientSession
+  ): Promise<IProduct | null> {
     return await this.model
       .findOne({ slug, active: true })
       .populate({
@@ -103,27 +109,43 @@ export class ProductRepository extends BaseRepository<IProduct> {
         options: { sort: { createdAt: -1 }, limit: 5 }, // Ensure sorting & limiting
         model: ReviewModel,
       })
-      .lean({ virtuals: true }); // This ensures virtuals are included
+      .session(session ?? null);
+    // .lean({ virtuals: true }); // This ensures virtuals are included
+  }
+
+  async updateProductImages(
+    id: string,
+    images: IProduct["images"],
+    actorId: IProduct["userId"],
+    session?: ClientSession
+  ): Promise<IProduct | null> {
+    return await this.model.findByIdAndUpdate(
+      id,
+      { $set: { images }, lastModifiedBy: actorId },
+      { new: true, session }
+    );
   }
   async getProductMetaDataBySlug(slug: string): Promise<IProduct | null> {
-    return await this.model
-      .findOne({ slug, active: true })
+    return await this.model.findOne({ slug, active: true });
 
-      .lean(); // This ensures virtuals are included
+    // .lean(); // This ensures virtuals are included
+  }
+  async toggleProductActivity(
+    slug: string,
+    actorId: IProduct["userId"],
+    session?: ClientSession
+  ) {
+    return await this.model.findOneAndUpdate(
+      { slug },
+      { $bit: { active: { xor: 1 } }, $set: { lastModifiedBy: actorId } }, // Toggles true <-> false
+      { new: true, session }
+    );
   }
 
   async getProductsByCategory(category: string): Promise<IProduct[]> {
-    return this.model.find({ category, active: true }).limit(10).lean();
+    return this.model.find({ category, active: true }).limit(10); //.lean();
   }
-  async getProductsByCategoryAndSlug(
-    category: string,
-    slug: string
-  ): Promise<IProduct | null> {
-    return await this.model
-      .findOne({ category, slug, active: true })
-      .populate("reviews")
-      .lean();
-  }
+
   async startSession() {
     return await this.model.db.startSession();
   }

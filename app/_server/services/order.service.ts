@@ -26,7 +26,7 @@ export class OrderService {
   }
 
   async getOrders(options: QueryOptionConfig) {
-    return this.repository.getOrders(options);
+    return await this.repository.getOrders(options);
   }
 
   async getOrderById(id: string) {

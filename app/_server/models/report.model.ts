@@ -1,12 +1,12 @@
 // @ts-ignore
 import { Document, Model, Query, Schema, model, models } from "mongoose";
 import User, { IUser } from "./User.model";
-import Product, { IProductSchema } from "./Product.model";
+import Product, { IProduct } from "./Product.model";
 
 export interface IReportSchema extends Document {
   _id: Schema.Types.ObjectId;
   user: IUser["_id"];
-  product: IProductSchema["_id"];
+  product: IProduct["_id"];
   status: "pending" | "resolved" | "rejected";
   name: string;
   issue: string;
@@ -56,6 +56,7 @@ const ReportSchema = new Schema<IReportSchema>(
     timestamps: true,
   }
 );
+ReportSchema.set("toJSON", { versionKey: false });
 ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
   this.populate({
     path: "product",

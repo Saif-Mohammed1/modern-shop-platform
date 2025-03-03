@@ -5,6 +5,7 @@ type SelectProps = {
   placeholder?: string;
   className?: string;
   customStyle?: string;
+  icon?: React.ReactNode;
 };
 
 const Select = ({
@@ -14,6 +15,7 @@ const Select = ({
   placeholder,
   className = "",
   customStyle = "",
+  icon,
 }: SelectProps) => (
   <select
     value={value}
@@ -22,7 +24,16 @@ const Select = ({
   >
     {placeholder && <option value="">{placeholder}</option>}
     {options.map((option) => (
-      <option key={option.value} value={option.value}>
+      <option
+        key={option.value}
+        value={option.value}
+        className="text-base relative"
+      >
+        {icon && (
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {icon}
+          </div>
+        )}
         {option.label}
       </option>
     ))}

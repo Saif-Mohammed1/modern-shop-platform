@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 
 import Image from "next/image";
 // import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Pagination from "@/components/pagination/Pagination";
+import Pagination, { PaginationType } from "@/components/pagination/Pagination";
 import moment from "moment";
 import toast from "react-hot-toast";
 import api from "@/app/lib/utilities/api";
@@ -21,15 +21,15 @@ type Category = string;
 type ProductListProps = {
   products: ProductType[];
   categories: Category[];
-  totalPages: number;
+  pagination: PaginationType;
 };
 const ProductList: FC<ProductListProps> = ({
   products,
   categories,
-  totalPages,
+  pagination,
 }) => {
   const [searchQuery, setSearchQuery] = useQueryState(
-    "name",
+    "search",
     parseAsString
       .withDefault("")
       .withOptions({ shallow: false, throttleMs: 1000 })
@@ -75,18 +75,20 @@ const ProductList: FC<ProductListProps> = ({
     // }
     // updateQueryParams({ page }, searchParamsReadOnly, router, pathName);
   };
-  const toggleProductStatus = async (id: string) => {
+  const toggleProductStatus = async (slug: string) => {
     let toastLoading;
     try {
       toastLoading = toast.loading(
         productsTranslate.products[lang].function.toggleProductStatus.loading
       );
-      await api.put(`/admin/dashboard/products/${id}/active`, {
-        active: !productsList.find((product) => product._id === id)?.active,
+      await api.put(`/admin/dashboard/products/${slug}/active`, {
+        active: !productsList.find((product) => product.slug === slug)?.active,
       });
       setProductsList((prevProducts) =>
         prevProducts.map((product) =>
-          product._id === id ? { ...product, active: !product.active } : product
+          product.slug === slug
+            ? { ...product, active: !product.active }
+            : product
         )
       );
       toast.success(
@@ -105,15 +107,15 @@ const ProductList: FC<ProductListProps> = ({
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (slug: string) => {
     let toastLoading;
     try {
       toastLoading = toast.loading(
         productsTranslate.products[lang].function.handleDelete.loading
       );
-      await api.delete(`/admin/dashboard/products/${id}`);
+      await api.delete(`/admin/dashboard/products/${slug}`);
       setProductsList((prevProducts) =>
-        prevProducts.filter((product) => product._id !== id)
+        prevProducts.filter((product) => product.slug !== slug)
       );
       toast.success(
         productsTranslate.products[lang].function.handleDelete.success
@@ -215,7 +217,7 @@ const ProductList: FC<ProductListProps> = ({
 
             return (
               <div
-                key={product._id}
+                key={product.slug}
                 className="bg-white p-4 rounded-lg shadow-md overflow-hidden"
               >
                 <div className="imgParent">
@@ -270,21 +272,21 @@ const ProductList: FC<ProductListProps> = ({
                   </p>
                   <button
                     className="flex justify-end flex-1"
-                    onClick={() => toggleProductStatus(product._id)}
+                    onClick={() => toggleProductStatus(product.slug)}
                   >
                     <TfiReload size={20} />{" "}
                   </button>
                 </div>
                 <div className="flex justify-between">
                   <Link
-                    href={`/dashboard/products/edit/${product._id}`}
-                    /* onClick={() => handleEdit(product._id)} */
+                    href={`/dashboard/products/edit/${product.slug}`}
+                    /* onClick={() => handleEdit(product.slug)} */
                     className="text-blue-500 hover:underline   cursor-pointer text-center"
                   >
                     <FaEdit /> {productsTranslate.products[lang].details.edit}
                   </Link>
                   <button
-                    onClick={() => handleDelete(product._id)}
+                    onClick={() => handleDelete(product.slug)}
                     className="text-red-500 hover:underline   cursor-pointer text-center"
                   >
                     <FaTrash />{" "}
@@ -296,11 +298,7 @@ const ProductList: FC<ProductListProps> = ({
           })}
         </div>
       </div>
-      <Pagination
-        currentPage={currentPage}
-        onPageChange={onPaginationChange}
-        totalPages={totalPages}
-      />
+      <Pagination meta={pagination.meta} onPageChange={onPaginationChange} />
     </div>
   );
 };
