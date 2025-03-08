@@ -23,8 +23,8 @@ export interface IUserInput {
 export interface IUser extends IUserInput, Document {
   _id: Schema.Types.ObjectId;
   role: UserRoleType;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
   passwordChangedAt?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;

@@ -11,8 +11,8 @@ export interface IReportSchema extends Document {
   name: string;
   issue: string;
   message: string;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 const ReportSchema = new Schema<IReportSchema>(
   {

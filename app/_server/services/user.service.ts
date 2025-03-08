@@ -7,6 +7,7 @@ import { UserRepository } from "../repositories/user.repository";
 import { emailService } from "@/app/lib/services/email.service";
 import {
   CreateUserByAdminDTO,
+  UpdateUserByAdminDTO,
   UserChangePasswordDTO,
   UserCreateDTO,
 } from "../dtos/user.dto";
@@ -86,11 +87,32 @@ export class UserService {
       session.endSession();
     }
   }
+  async updateUserByAdmin(
+    id: string,
+    dto: UpdateUserByAdminDTO
+  ): Promise<IUser> {
+    const session = await this.repository.startSession();
+    session.startTransaction();
+
+    try {
+      const user = await this.repository.updateUserByAdmin(id, dto, session);
+      if (!user) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+      }
+      await session.commitTransaction();
+      return user;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
   // UserModel Registration
   async registerUser(dto: UserCreateDTO, deviceInfo: DeviceInfo) {
     const session = await this.repository.startSession();
+    session.startTransaction();
     try {
-      session.startTransaction();
       const existingUser = await this.repository.findByEmail(dto.email);
       if (existingUser) {
         throw new AppError(
@@ -249,8 +271,8 @@ export class UserService {
     deviceInfo: DeviceInfo
   ): Promise<void> {
     const session = await this.repository.startSession();
+    session.startTransaction();
     try {
-      session.startTransaction();
       const user = await this.repository.findByEmail(email);
       if (!user) return; // Don't reveal user existence
       user.checkRateLimit("passwordReset");
@@ -271,6 +293,35 @@ export class UserService {
         ),
 
         this.repository.incrementRateLimit(user, "passwordReset", session),
+      ]);
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  async forcePasswordResetByAdmin(id: string): Promise<void> {
+    const session = await this.repository.startSession();
+    session.startTransaction();
+    try {
+      const user = await this.repository.findById(id, "+password");
+      if (!user) return; // Don't reveal user existence
+
+      const password = this.tokensService.generateForceRestPassword();
+      user.password = password;
+      await user.save({ session });
+      await Promise.all([
+        // await EmailService.passwordReset.sendPasswordReset(user.email, resetToken);
+        emailService.forcePasswordReset(user.email, password),
+        this.repository.createAuditLog(
+          user._id.toString(),
+          AuditAction.FORCE_PASSWORD_RESET,
+          { success: true },
+          session
+        ),
       ]);
       await session.commitTransaction();
     } catch (error) {
@@ -377,7 +428,12 @@ export class UserService {
     details: AuditLogDetails,
     session?: ClientSession
   ): Promise<void> {
-    return this.repository.createAuditLog(userId, action, details, session);
+    return await this.repository.createAuditLog(
+      userId,
+      action,
+      details,
+      session
+    );
   }
   async changePassword(
     userId: string,
@@ -620,12 +676,12 @@ export class UserService {
     await this.repository.updateUserStatus(userId, UserStatus.SUSPENDED);
   }
 
-  async deleteAccount(userId: string): Promise<void> {
-    await Promise.all([
-      this.repository.delete(userId),
-      this.sessionService.revokeAllSessions(userId),
-    ]);
-  }
+  // async deleteAccount(userId: string): Promise<void> {
+  //   await Promise.all([
+  //     this.repository.delete(userId),
+  //     this.sessionService.revokeAllSessions(userId),
+  //   ]);
+  // }
   async updateName(userId: string, name: string): Promise<void> {
     await this.repository.updateName(userId, name);
   }
@@ -642,7 +698,25 @@ export class UserService {
 
   async suspendUser(userId: string): Promise<void> {
     await this.sessionService.revokeAllSessions(userId);
-    this.repository.updateUserStatus(userId, UserStatus.SUSPENDED);
+    await this.repository.updateUserStatus(userId, UserStatus.SUSPENDED);
+  }
+  async deleteUserByAdmin(userId: string): Promise<void> {
+    const session = await this.repository.startSession();
+    session.startTransaction();
+    try {
+      await this.sessionService.revokeAllSessionsByAdmin(userId, session);
+      await this.repository.updateUserStatus(
+        userId,
+        UserStatus.DELETED,
+        session
+      );
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   // Security Functions
@@ -653,7 +727,71 @@ export class UserService {
   async revokeSession(userId: string): Promise<void> {
     await this.sessionService.revokeSession(userId);
   }
-
+  async revokeAllSessionsByAdmin(userId: string): Promise<void> {
+    const session = await this.repository.startSession();
+    session.startTransaction();
+    try {
+      await Promise.all([
+        this.sessionService.revokeAllSessionsByAdmin(userId, session),
+        this.repository.createAuditLog(
+          userId,
+          AuditAction.REVOKE_ALL_SESSIONS,
+          {
+            success: true,
+          },
+          session
+        ),
+      ]);
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  async lockUserAccount(userId: string): Promise<void> {
+    const session = await this.repository.startSession();
+    session.startTransaction();
+    try {
+      await this.repository.lockUserAccount(userId);
+      await this.repository.createAuditLog(
+        userId,
+        AuditAction.ACCOUNT_LOCKED,
+        {
+          success: true,
+        },
+        session
+      ),
+        await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  async unlockUserAccount(userId: string): Promise<void> {
+    const session = await this.repository.startSession();
+    session.startTransaction();
+    try {
+      await this.repository.unlockUserAccount(userId);
+      await this.repository.createAuditLog(
+        userId,
+        AuditAction.ACCOUNT_UNLOCKED,
+        {
+          success: true,
+        },
+        session
+      ),
+        await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
   // async enableMFA(userId: string): Promise<{ secret: string; qrCode: string }> {
   //   return this.repository.enableMultiFactorAuth(userId);
   // }

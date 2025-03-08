@@ -5,7 +5,11 @@ import { DeviceInfo } from "@/app/lib/types/session.types";
 import { AuditAction, AuditLogDetails } from "@/app/lib/types/audit.types";
 import { TokensService } from "../services/tokens.service";
 import { IUser } from "../models/User.model";
-import { CreateUserByAdminDTO, UserCreateDTO } from "../dtos/user.dto";
+import {
+  CreateUserByAdminDTO,
+  UpdateUserByAdminDTO,
+  UserCreateDTO,
+} from "../dtos/user.dto";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 import {
   QueryBuilderConfig,
@@ -29,8 +33,11 @@ export class UserRepository extends BaseRepository<IUser> {
     return user;
   }
 
-  async findById(id: string): Promise<IUser | null> {
-    return this.model.findById(id).select("+security");
+  async findById(id: string, options?: string): Promise<IUser | null> {
+    if (!options) {
+      return this.model.findById(id).select("+security");
+    }
+    return this.model.findById(id).select(options);
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
@@ -46,6 +53,50 @@ export class UserRepository extends BaseRepository<IUser> {
       new: true,
       session,
     });
+  }
+  async lockUserAccount(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        "security.rateLimits.login.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.passwordReset.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.verification.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.2fa.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.backup_recovery.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+      },
+      { session }
+    );
+  }
+  async unlockUserAccount(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      {
+        $unset: {
+          "security.rateLimits.login.lockUntil": "",
+          "security.rateLimits.passwordReset.lockUntil": "",
+          "security.rateLimits.verification.lockUntil": "",
+          "security.rateLimits.2fa.lockUntil": "",
+          "security.rateLimits.backup_recovery.lockUntil": "",
+        },
+      },
+      { session }
+    );
   }
   async delete(id: string, session?: ClientSession): Promise<boolean> {
     const result = await this.model.deleteOne({ _id: id }, { session });
@@ -184,6 +235,7 @@ export class UserRepository extends BaseRepository<IUser> {
 
     return resetToken;
   }
+
   async validateResetPasswordEmailAndToken(
     token: string,
     email?: string
@@ -377,11 +429,28 @@ export class UserRepository extends BaseRepository<IUser> {
   }
   async updateUserByAdmin(
     id: string,
-    updates: Partial<IUser>,
+    updates: UpdateUserByAdminDTO,
     session?: ClientSession
   ): Promise<IUser | null> {
-    return this.update(id, updates, session);
+    return await this.model.findByIdAndUpdate(
+      id,
+      {
+        ...updates,
+        $push: {
+          "security.auditLog": {
+            action: updates.auditAction,
+            details: updates,
+            timestamp: new Date(),
+          },
+        },
+      },
+      {
+        new: true,
+        session,
+      }
+    );
   }
+
   async deleteUserByAdmin(
     id: string,
     session?: ClientSession
@@ -489,8 +558,8 @@ export class UserRepository extends BaseRepository<IUser> {
     email: string,
     session?: ClientSession
   ): Promise<string> {
-    const token = crypto.randomBytes(32).toString("hex");
-    const hashedToken = this.tokensService.hashEmailChangeToken(token);
+    const { hashedToken, token } =
+      this.tokensService.generateEmailChangeTokenAndHashed();
     await this.model.updateOne(
       { _id: userId },
       {
@@ -558,7 +627,6 @@ export class UserRepository extends BaseRepository<IUser> {
 
     //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
     //   maxLimit: 100,
-
     const queryBuilder = new QueryBuilder<IUser>(
       this.model,
       options.query,
@@ -570,6 +638,6 @@ export class UserRepository extends BaseRepository<IUser> {
 
     // if (!isAdmin) queryBuilder.filter.active = true;
 
-    return queryBuilder.execute();
+    return await queryBuilder.execute();
   }
 }

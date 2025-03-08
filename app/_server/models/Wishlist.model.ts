@@ -31,7 +31,18 @@ const WishlistSchema = new Schema<IWishlist>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, getters: true },
+    toJSON: {
+      virtuals: true,
+      getters: true,
+      transform: function (_, ret) {
+        ["createdAt", "updatedAt"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   }
 );

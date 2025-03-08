@@ -46,6 +46,8 @@ class ReviewController {
   }
 
   async getProductReviews(req: NextRequest) {
+    if (!req.id)
+      throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
     const reviews = await this.reviewService.getProductReviews(req?.id, {
       query: req.nextUrl.searchParams,
       populate: true,

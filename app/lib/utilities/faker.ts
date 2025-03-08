@@ -212,8 +212,8 @@ export interface IOrderSchema extends Document {
   invoiceId: string;
   invoiceLink: string;
   totalPrice: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }*/
 export const createRandomOrders = (
   count: number,
@@ -268,7 +268,7 @@ export const createRandomOrders = (
         return acc + item.finalPrice;
       }, 0);
       orders.push({
-        user: randomUser,
+        userId: randomUser,
         shippingInfo: {
           street: randomStreet,
           city: randomCity,

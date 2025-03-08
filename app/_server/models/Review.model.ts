@@ -34,7 +34,17 @@ const reviewSchema = new Schema<IReview, IReviewModel>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: function (_, ret) {
+        ["createdAt", "updatedAt"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   }
 );

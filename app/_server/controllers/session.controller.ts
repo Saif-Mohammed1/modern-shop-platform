@@ -5,6 +5,7 @@ import AppError from "@/app/lib/utilities/appError";
 import { refreshTokenControllerTranslate } from "@/public/locales/server/refreshTokenControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { TokensService } from "../services/tokens.service";
+import { ReviewTranslate } from "@/public/locales/server/Review.Translate";
 
 class SessionController {
   private sessionService: SessionService = new SessionService();
@@ -55,6 +56,8 @@ class SessionController {
   }
   async revokeSession(req: NextRequest) {
     try {
+      if (!req.id)
+        throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
       await this.sessionService.revokeSession(req?.id);
       return NextResponse.json(
         { message: "Session revoked successfully" },

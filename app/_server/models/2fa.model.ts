@@ -29,8 +29,8 @@ export interface ITwoFactorAuth extends Document {
   lastUsed?: Date;
   auditLogs: AuditLog[];
 
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 
 const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(
@@ -72,7 +72,20 @@ const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(
       },
     ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (_, ret) {
+        ["createdAt", "updatedAt", "lastUsed"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
+        return ret;
+      },
+    },
+  }
 );
 TwoFactorAuthSchema.set("toJSON", {
   versionKey: false,

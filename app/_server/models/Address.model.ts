@@ -9,8 +9,8 @@ export interface IAddress extends Document {
   phone: string;
   country: string;
   userId: IUser["_id"];
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 
 const AddressSchema = new Schema<IAddress>(
@@ -36,7 +36,21 @@ const AddressSchema = new Schema<IAddress>(
       index: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (_, ret) {
+        ["createdAt", "updatedAt"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
+        delete ret.__v;
+        return ret;
+      },
+    },
+  }
 );
 
 // Compound index for common query patterns

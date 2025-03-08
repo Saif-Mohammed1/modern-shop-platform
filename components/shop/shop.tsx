@@ -9,6 +9,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import type { Event, ProductType } from "@/app/lib/types/products.types";
 import SearchBar from "../ui/SearchBar";
 import Filters from "../ui/Filters";
+import MobileFilter from "../ui/MobileFilter";
 
 type ShopProps = {
   products: ProductType[];
@@ -117,43 +118,50 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
         />
 
         {/* Search Section */}
-        <SearchBar searchQuery={searchQuery} handleSearch={handleSearch} />
+        <SearchBar
+          searchQuery={searchQuery}
+          handleSearch={handleSearch}
+          placeholder={shopPageTranslate[lang].shopPage.content.search}
+        />
       </div>
 
       {/* Mobile Filters Overlay */}
       {isMobileFiltersOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
-          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">
-                {shopPageTranslate[lang].shopPage.content.filters}
-              </h2>
-              <button
-                onClick={() => setIsMobileFiltersOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <HiX className="text-2xl" />
-              </button>
-            </div>
+        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+          {/* // <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+        //   <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto">
+        //     <div className="flex justify-between items-center mb-6">
+        //       <h2 className="text-2xl font-bold">
+        //         {shopPageTranslate[lang].shopPage.content.filters}
+        //       </h2>
+        //       <button
+        //         onClick={() => setIsMobileFiltersOpen(false)}
+        //         className="p-2 hover:bg-gray-100 rounded-full"
+        //       >
+        //         <HiX className="text-2xl" />
+        //       </button>
+        //     </div> */}
 
-            <Filters
-              categories={categories}
-              categoryFilter={categoryFilter}
-              priceFilter={priceFilter}
-              ratingFilter={ratingFilter}
-              handleCategoryFilterChange={handleCategoryFilterChange}
-              handlePriceFilterChange={handlePriceFilterChange}
-              handleRatingFilterChange={handleRatingFilterChange}
-              isMobile
-            />
+          <Filters
+            categories={categories}
+            categoryFilter={categoryFilter}
+            priceFilter={priceFilter}
+            ratingFilter={ratingFilter}
+            handleCategoryFilterChange={handleCategoryFilterChange}
+            handlePriceFilterChange={handlePriceFilterChange}
+            handleRatingFilterChange={handleRatingFilterChange}
+            isMobile
+          />
 
-            <SearchBar
-              searchQuery={searchQuery}
-              handleSearch={handleSearch}
-              isMobile
-            />
-          </div>
-        </div>
+          <SearchBar
+            searchQuery={searchQuery}
+            handleSearch={handleSearch}
+            isMobile
+            placeholder={shopPageTranslate[lang].shopPage.content.search}
+          />
+          {/* </div>
+        </div> */}
+        </MobileFilter>
       )}
 
       {/* Products Grid */}

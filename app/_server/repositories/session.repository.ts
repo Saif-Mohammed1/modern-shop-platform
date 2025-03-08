@@ -1,7 +1,7 @@
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import { ISession } from "../models/Session.model";
 import { BaseRepository } from "./BaseRepository";
-import { Model } from "mongoose";
+import { ClientSession, Model } from "mongoose";
 
 interface CreateSessionDTO {
   userId: string;
@@ -39,10 +39,15 @@ export class SessionRepository extends BaseRepository<ISession> {
       $set: { isActive: false, revokedAt: new Date() },
     });
   }
-  async revokeAllSessions(userId: string): Promise<void> {
+  async revokeAllSessions(
+    userId: string,
+
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateMany(
       { userId },
-      { $set: { isActive: false, revokedAt: new Date() } }
+      { $set: { isActive: false, revokedAt: new Date() } },
+      { session }
     );
   }
   async isFirstLoginFromDevice(
@@ -74,5 +79,8 @@ export class SessionRepository extends BaseRepository<ISession> {
   }
   async getUserSessions(userId: string): Promise<ISession[]> {
     return this.model.find({ userId }).lean();
+  }
+  async startSession(): Promise<ClientSession> {
+    return await this.model.db.startSession();
   }
 }

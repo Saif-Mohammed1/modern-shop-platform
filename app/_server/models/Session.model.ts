@@ -38,6 +38,23 @@ const SessionSchema = new Schema<ISession>(
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (_, ret) {
+        [
+          "createdAt",
+          "updatedAt",
+          "expiresAt",
+          "lastUsedAt",
+          "revokedAt",
+        ].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
+        return ret;
+      },
+    },
   }
 );
 

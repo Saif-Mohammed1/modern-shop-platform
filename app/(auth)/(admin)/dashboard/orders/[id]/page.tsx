@@ -15,9 +15,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = params;
   try {
-    const {
-      data: { data },
-    } = await api.get(`/admin/dashboard/orders/${id}`, {
+    const { data } = await api.get(`/admin/dashboard/orders/${id}`, {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
     return {
@@ -37,11 +35,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 const page = async ({ params }: Props) => {
   const { id } = params;
   try {
-    const {
-      data: { data },
-    } = await api.get(`/admin/dashboard/orders/${id}`, {
+    const { data } = await api.get(`/admin/dashboard/orders/${id}`, {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
+
     return <AdminOrderDetails order={data} />;
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;

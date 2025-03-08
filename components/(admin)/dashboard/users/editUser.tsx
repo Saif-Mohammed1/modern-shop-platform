@@ -31,7 +31,16 @@ interface UserEditPageProps {
       auditLog: {
         timestamp: Date;
         action: AuditAction;
-        details: object;
+        details: {
+          device: {
+            browser: string;
+            os: string;
+            device: string;
+            ip: string;
+            location: string;
+            fingerprint: string;
+          };
+        };
       }[];
     };
   };
@@ -39,23 +48,49 @@ interface UserEditPageProps {
 export default function UserEditPage({ user }: UserEditPageProps) {
   const [userData, setUser] = useState(user);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [updatingFields, setUpdatingFields] = useState<Set<keyof UserAuthType>>(
+    new Set()
+  );
   const router = useRouter();
-
+  // const debouncedUpdate = debounce(async (updateFn, field, value) => {
+  //   try {
+  //     await updateFn(field, value);
+  //   } catch (error) {
+  //     console.error("Update failed:", error);
+  //   }
+  // }, 5000); // 5 second delay
   // Core update handler
-  const handleUpdate = async (field: keyof UserAuthType, value: any) => {
+  const handleUpdate = (e: keyof UserAuthType, value: any) => {
+    setUser((prev) => ({ ...prev, [e]: value }));
+
+    setUpdatingFields((prev) => prev.add(e));
+  };
+  const confirmUpdate = async () => {
+    setLoading(true);
     try {
       const response = await api.patch(
         `/admin/dashboard/users/${userData._id}`,
         {
-          [field]: value,
+          // [field]: value,
+
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          status: userData.status,
           auditAction: AuditAction.USER_UPDATE,
         }
       );
       setUser(response.data);
+      // rest updating fields
+      setUpdatingFields(new Set());
       toast.success(usersTranslate.users[lang].editUsers.form.success);
-    } catch (error) {
-      toast.error(usersTranslate.users[lang].editUsers.form.failed);
+    } catch (error: any) {
+      toast.error(
+        error.message || usersTranslate.users[lang].editUsers.form.failed
+      );
+    } finally {
+      setLoading(false);
     }
   };
   type SecurityAction =
@@ -66,17 +101,30 @@ export default function UserEditPage({ user }: UserEditPageProps) {
   // Security actions
   const handleSecurityAction = async (action: SecurityAction) => {
     try {
-      await api.post(`/admin/dashboard/users/${userData._id}/security`, {
-        action,
-        auditAction: AuditAction.SECURITY_ACTION,
-      });
+      switch (action) {
+        case "forcePasswordReset":
+          await api.get(`/admin/dashboard/users/${userData._id}/security`);
+          break;
+        case "revokeSessions":
+          await api.post(`/admin/dashboard/users/${userData._id}/security`);
+          break;
+        case "lockAccount":
+          await api.put(`/admin/dashboard/users/${userData._id}/security`);
+          break;
+        case "unlockAccount":
+          await api.patch(`/admin/dashboard/users/${userData._id}/security`);
+          break;
+      }
+
       toast.success(
         usersTranslate.users[lang].editUsers.handleSecurityAction[action]
           .success
       );
-    } catch (error) {
+    } catch (error: any) {
       toast.error(
-        usersTranslate.users[lang].editUsers.handleSecurityAction[action].error
+        error.message ||
+          usersTranslate.users[lang].editUsers.handleSecurityAction[action]
+            .error
       );
     }
   };
@@ -84,20 +132,18 @@ export default function UserEditPage({ user }: UserEditPageProps) {
   // Dangerous actions
   const handleDeleteUser = async () => {
     try {
-      await api.delete(`/admin/dashboard/users/${userData._id}`, {
-        data: { auditAction: AuditAction.USER_DELETE },
-      });
+      await api.delete(`/admin/dashboard/users/${userData._id}`);
       toast.success(
         usersTranslate.users[lang].editUsers.handleDeleteUser.success
       );
-      router.push("/admin/users");
+      router.push("/dashboard/users");
     } catch (error) {
       toast.error(usersTranslate.users[lang].editUsers.handleDeleteUser.failed);
     }
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto  space-y-6">
       {/* Header Section */}
       <div className="flex justify-between items-start">
         <div>
@@ -109,16 +155,26 @@ export default function UserEditPage({ user }: UserEditPageProps) {
           </h1>
           <p className="text-gray-600">{userData.email}</p>
         </div>
-        <Button variant="destructive" onClick={() => setShowDeleteModal(true)}>
+        <ConfirmModal
+          title={usersTranslate.users[lang].editUsers.actions.deleteConfirm}
+          onConfirm={handleDeleteUser}
+          // confirmVariant="destructive"
+        >
+          <Button variant="destructive" size="sm" icon={<FiTrash2 />} danger>
+            {" "}
+            {usersTranslate.users[lang].editUsers.actions.deleteAccount}
+          </Button>
+        </ConfirmModal>
+        {/* <Button variant="destructive" onClick={() => setShowDeleteModal(true)}>
           <FiTrash2 className="mr-2" />
           {usersTranslate.users[lang].editUsers.actions.deleteAccount}
-        </Button>
+        </Button> */}
       </div>
 
       {/* Main Content Tabs */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="flex flex-col space-y-6 md:flex-row md:space-x-6 md:space-y-0 justify-center items-center gap-6 flex-wrap">
         {/* Account Management Section */}
-        <div className="space-y-4">
+        <div className="flex-1 space-y-4">
           <h2 className="text-xl font-semibold">
             {usersTranslate.users[lang].editUsers.account}
           </h2>
@@ -126,7 +182,10 @@ export default function UserEditPage({ user }: UserEditPageProps) {
           <Input
             label={usersTranslate.users[lang].editUsers.form.name.label}
             value={userData.name}
-            onChange={(e) => handleUpdate("name", e.target.value)}
+            onChange={
+              (e) => handleUpdate("name", e.target.value)
+              // debouncedUpdate(handleUpdate, "name", e.target.value)
+            }
           />
 
           <Input
@@ -143,7 +202,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
                 usersTranslate.users[lang].editUsers.form.role.options[role],
             }))}
             value={userData.role}
-            onChange={(value) => handleUpdate("role", value)}
+            onChange={(e) => handleUpdate("role", e.target.value)}
           />
 
           <Select
@@ -152,12 +211,22 @@ export default function UserEditPage({ user }: UserEditPageProps) {
               label: usersTranslate.users[lang].editUsers.form.statuses[status],
             }))}
             value={userData.status}
-            onChange={(value) => handleUpdate("status", value)}
+            onChange={(e) => handleUpdate("status", e.target.value)}
           />
+          {updatingFields.size > 0 && (
+            <Button
+              variant="primary"
+              onClick={confirmUpdate}
+              className="w-full"
+              loading={loading}
+            >
+              {usersTranslate.users[lang].editUsers.form.save}
+            </Button>
+          )}
         </div>
 
         {/* Security Section */}
-        <div className="space-y-4">
+        <div className="flex-1 space-y-4">
           <h2 className="text-xl font-semibold">
             {usersTranslate.users[lang].editUsers.sections.security}
           </h2>
@@ -202,7 +271,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
         </div>
 
         {/* Audit Log Section */}
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <h2 className="text-xl font-semibold">
             {usersTranslate.users[lang].editUsers.auditLog.sections.title}
           </h2>

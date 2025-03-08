@@ -3,12 +3,17 @@ import { CartService } from "../services/cart.service";
 import { CartValidation } from "../dtos/cart.dto";
 import { CartTranslate } from "@/public/locales/server/Cart.Translate";
 import { lang } from "@/app/lib/utilities/lang";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+import AppError from "@/app/lib/utilities/appError";
 
 class CartController {
   constructor(private readonly cartService = new CartService()) {}
   async getMyCart(req: NextRequest) {
     try {
-      const cart = await this.cartService.getMyCart(req.user._id);
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
+      const cart = await this.cartService.getMyCart(req.user._id.toString());
 
       return this.response(cart);
     } catch (err) {
@@ -17,13 +22,16 @@ class CartController {
   }
   async addToCart(req: NextRequest) {
     try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
       const body = await req.json();
       const result = CartValidation.isCartValid({
         productId: req.id,
         ...body,
       });
       const cart = await this.cartService.addToCart(
-        req.user._id,
+        req.user._id.toString(),
         result.productId.toString(),
         result.quantity
       );
@@ -34,9 +42,12 @@ class CartController {
   }
   async decreaseQuantity(req: NextRequest) {
     try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
       const id = CartValidation.isValidProductId(req.id);
       const cart = await this.cartService.decreaseQuantity(
-        req.user._id,
+        req.user._id.toString(),
         id.toString()
       );
       return this.response(cart);
@@ -46,9 +57,12 @@ class CartController {
   }
   async removeProductFromCart(req: NextRequest) {
     try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
       const id = CartValidation.isValidProductId(req.id);
       const cart = await this.cartService.removeProductFromCart(
-        req.user._id,
+        req.user._id.toString(),
         id.toString()
       );
       return this.response(cart);
@@ -58,7 +72,10 @@ class CartController {
   }
   async clearCart(req: NextRequest) {
     try {
-      const cart = await this.cartService.clearCart(req.user._id);
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
+      await this.cartService.clearCart(req.user._id.toString());
       return NextResponse.json(
         {
           success: true,
@@ -81,9 +98,12 @@ class CartController {
   //   }
   async saveLocalCartToDB(req: NextRequest) {
     try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
       const body = await req.json();
       const result = CartValidation.validateLocalCart(body);
-      await this.cartService.saveLocalCartToDB(req.user._id, result);
+      await this.cartService.saveLocalCartToDB(req.user._id.toString(), result);
       return NextResponse.json(
         {
           success: true,

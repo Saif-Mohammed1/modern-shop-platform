@@ -11,8 +11,8 @@ export interface IAddressSchema extends Document {
   phone: string;
   country: string;
   user: IUser["_id"];
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 
 const AddressSchema = new Schema<IAddressSchema>(

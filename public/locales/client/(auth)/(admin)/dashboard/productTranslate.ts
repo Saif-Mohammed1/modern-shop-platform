@@ -1,6 +1,3 @@
-import { UserAuthType } from "@/app/lib/types/users.types";
-import mongoose from "mongoose";
-
 const addProduct = {
   en: {
     metadata: {
@@ -8,6 +5,7 @@ const addProduct = {
       description: "Add product for the admin",
       keywords: "admin, add product, admin add product",
     },
+    progress: "Add Product Progress",
     form: {
       productDetails: {
         title: "Product Details",
@@ -15,11 +13,13 @@ const addProduct = {
           name: "Product Name",
           category: "Category",
           description: "Description",
+          sku: "SKU",
         },
         placeholders: {
           name: "Enter product name",
           category: "Enter category",
-          description: "Enter product description",
+          description: "Detailed product description",
+          sku: "Unique product code",
         },
       },
       productPricing: {
@@ -35,12 +35,32 @@ const addProduct = {
           discountExpire: "Enter discount expiry",
         },
       },
+      productShipping: {
+        title: "Shipping Information",
+        labels: {
+          dimensions: "Dimensions",
+          weight: "Weight (kg)",
+          length: "Length (cm)",
+          width: "Width (cm)",
+          height: "Height (cm)",
+          kg: "kg",
+        },
+        placeholders: {
+          weight: "Enter weight in kg",
+          length: "Enter length in cm",
+          width: "Enter width in cm",
+          height: "Enter height in cm",
+        },
+      },
       inventoryDetails: {
         title: "Inventory",
         labels: {
           stock: "Stock",
+          reserved: "Reserved",
+          sold: "Initial Sold",
         },
         placeholders: {
+          required: "Field is required",
           stock: "Enter stock quantity",
         },
       },
@@ -48,8 +68,27 @@ const addProduct = {
         title: "Upload Images",
 
         description: "Drag & drop files here, or click to select files",
+        max: "Max 10 images, 5MB each",
+        existingImage: "Existing Images",
+      },
+      productReview: {
+        name: "Name",
+        category: "Category",
+        sku: "SKU",
+        description: "Description",
+        price: "Price",
+        discount: "Discount",
+        finalPrice: "Final Price",
+        discountExpire: "Discount Expiry",
+        weight: "Weight",
+        dimensions: "Dimensions",
+        stock: "Stock",
+        reserved: "Reserved",
+        sold: "Sold",
+        DiscountExpiry: "Discount Expiry",
       },
       productSubmit: {
+        ProductImages: "Product Images",
         title: "Confirm and Submit",
         productName: "Product Name",
         category: "Category",
@@ -57,9 +96,16 @@ const addProduct = {
         stock: "Stock",
         loading: "Adding product...",
         success: "Product added successfully",
+        reviewText: "Please review the details before submitting",
       },
       error: "An unexpected error occurred",
+      errors: {
+        discount: "Discount must be less than price",
+        discountExpire: "Expiry date must be in the future",
+        price: "Valid price required",
+      },
       button: {
+        saveDraft: "Save Draft",
         previous: "Previous",
         next: "Next",
         submit: "Submit",
@@ -72,6 +118,7 @@ const addProduct = {
       description: "Додати продукт для адміністратора",
       keywords: "адміністратор, додати продукт, адміністратор додати продукт",
     },
+    progress: "Прогрес додавання продукту",
     form: {
       productDetails: {
         title: "Деталі продукту",
@@ -79,11 +126,13 @@ const addProduct = {
           name: "Назва продукту",
           category: "Категорія",
           description: "Опис",
+          sku: "SKU",
         },
         placeholders: {
           name: "Введіть назву продукту",
           category: "Введіть категорію",
-          description: "Введіть опис продукту",
+          description: "Детальний опис продукту",
+          sku: "Унікальний код продукту",
         },
       },
       productPricing: {
@@ -99,21 +148,62 @@ const addProduct = {
           discountExpire: "Введіть термін дії знижки",
         },
       },
+      productShipping: {
+        title: "Інформація про доставку",
+        labels: {
+          dimensions: "Розміри",
+          weight: "Вага (кг)",
+          length: "Довжина (см)",
+          width: "Ширина (см)",
+          height: "Висота (см)",
+          kg: "кг",
+        },
+        placeholders: {
+          weight: "Введіть вагу в кг",
+          length: "Введіть довжину в см",
+          width: "Введіть ширину в см",
+          height: "Введіть висоту в см",
+        },
+      },
       inventoryDetails: {
         title: "Запаси",
         labels: {
           stock: "Запас",
+          reserved: "Зарезервовано",
+          sold: "Початково продано",
         },
         placeholders: {
+          required: "Поле обов'язкове",
           stock: "Введіть кількість запасу",
         },
       },
       productImages: {
         title: "Завантажити зображення",
         description: "Перетягніть файли сюди або клацніть, щоб вибрати файли",
+
+        max: "Максимум 10 зображень, 5 МБ кожне",
+        existingImage: "Існуючі зображення",
+      },
+      productReview: {
+        name: "Назва",
+        category: "Категорія",
+        sku: "SKU",
+        description: "Опис",
+        price: "Ціна",
+        discount: "Знижка",
+        finalPrice: "Кінцева ціна",
+        discountExpire: "Термін дії знижки",
+        weight: "Вага",
+        dimensions: "Розміри",
+        stock: "Запас",
+        reserved: "Зарезервовано",
+        sold: "Продано",
+        DiscountExpiry: "Термін дії знижки",
       },
 
       productSubmit: {
+        ProductImages: "Зображення продукту",
+
         title: "Підтвердити та надіслати",
         productName: "Назва продукту",
         category: "Категорія",
@@ -121,15 +211,23 @@ const addProduct = {
         stock: "Запас",
         loading: "Додавання продукту...",
         success: "Продукт успішно додано",
+        reviewText: "Будь ласка, перегляньте деталі перед надсиланням",
+      },
+      error: "Сталася непередбачувана помилка",
+      errors: {
+        discount: "Знижка повинна бути менше ціни",
+        discountExpire: "Дата закінчення має бути у майбутньому",
+        price: "Потрібна дійсна ціна",
       },
       button: {
+        saveDraft: "Зберегти чернетку",
         previous: "Назад",
         next: "Далі",
         submit: "Надіслати",
       },
     },
   },
-};
+} as const;
 const editProduct = {
   en: {
     metadata: {
@@ -272,7 +370,7 @@ const editProduct = {
       },
     },
   },
-};
+} as const;
 export const productsTranslate = {
   metadata: {
     en: {
@@ -288,6 +386,8 @@ export const productsTranslate = {
   },
   products: {
     en: {
+      editMode: "Editing existing product - changes will be versioned",
+      draftSaved: "Draft saved",
       title: "Manage Products",
       function: {
         handleDelete: {
@@ -300,13 +400,20 @@ export const productsTranslate = {
         },
       },
       filter: {
+        title: "Filter By Category",
         input: {
           search: "Search....",
         },
         select: {
+          title: "Sort by",
           all: "All",
           topRated: "Top Rated",
           lowestRated: "Lowest Rated",
+          newest: "Newest",
+          oldest: "Oldest",
+
+          lowestPrice: "Lowest Price",
+          highestPrice: "Highest Price",
         },
         addProduct: " Add Product",
       },
@@ -340,6 +447,8 @@ export const productsTranslate = {
       },
     },
     uk: {
+      editMode: "Редагування існуючого продукту - зміни будуть збережені",
+      draftSaved: "Чернетку збережено",
       title: "Управління продуктами",
       function: {
         handleDelete: {
@@ -353,13 +462,20 @@ export const productsTranslate = {
       },
 
       filter: {
+        title: "Фільтрувати за категорією",
         input: {
           search: "Пошук....",
         },
         select: {
+          title: "Сортувати за",
           all: "Всі",
           topRated: "Найвищий рейтинг",
           lowestRated: "Найнижчий рейтинг",
+          newest: "Найновіший",
+          oldest: "Найстарший",
+
+          lowestPrice: "Найнижча ціна",
+          highestPrice: "Найвища ціна",
         },
         addProduct: " Додати продукт",
       },

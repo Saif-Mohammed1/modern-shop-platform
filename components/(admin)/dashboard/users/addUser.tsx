@@ -2,7 +2,6 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/utilities/api";
-import toast from "react-hot-toast";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Input from "@/components/ui/Input";
@@ -19,7 +18,8 @@ import {
   FiCheckSquare,
 } from "react-icons/fi";
 import { AuthMethod, UserRole, UserStatus } from "@/app/lib/types/users.types";
-import SubmitButton from "@/components/ui/SubmitButton";
+import toast from "react-hot-toast";
+import Button from "@/components/ui/Button";
 
 const userSchema = z.object({
   name: z
@@ -78,8 +78,8 @@ type UserFormValues = z.infer<typeof userSchema>;
 
 const AddUser = () => {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<UserFormValues>({
     name: "",
     email: "",
@@ -113,8 +113,7 @@ const AddUser = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    let toastLoading: string | undefined;
-
+    setIsSubmitting(true);
     try {
       const validationResult = userSchema.safeParse(formData);
       if (!validationResult.success) {
@@ -132,14 +131,14 @@ const AddUser = () => {
         }, {});
 
         setErrors(errors);
+        return;
       } else {
         // Handle valid form submission
         setErrors({});
       }
-
-      toastLoading = toast.loading(
-        usersTranslate.users[lang].addUsers.function.handleSubmit.loading
-      );
+      if (formData.phone === "") {
+        delete formData.phone;
+      }
       const response = await api.post("/admin/dashboard/users", formData);
 
       if (response.data.error) throw new Error(response.data.error);
@@ -151,7 +150,6 @@ const AddUser = () => {
     } catch (error: any) {
       toast.error(error?.message || usersTranslate.users[lang].error.global);
     } finally {
-      toast.dismiss(toastLoading);
       setIsSubmitting(false);
     }
   };
@@ -225,7 +223,7 @@ const AddUser = () => {
               label: usersTranslate.users[lang].addUsers.form.roles[role],
             }))}
             value={formData.role}
-            onChange={(value) => handleInputChange("role", value)}
+            onChange={(e) => handleInputChange("role", e.target.value)}
             placeholder={usersTranslate.users[lang].addUsers.form.role.label}
             icon={<FiUser />}
           />
@@ -237,7 +235,7 @@ const AddUser = () => {
               label: usersTranslate.users[lang].addUsers.form.statuses[status],
             }))}
             value={formData.status}
-            onChange={(value) => handleInputChange("status", value)}
+            onChange={(e) => handleInputChange("status", e.target.value)}
             placeholder={usersTranslate.users[lang].addUsers.form.status.label}
             icon={<FiCheckSquare />}
           />
@@ -284,8 +282,8 @@ const AddUser = () => {
                       .languages[lg],
                 }))}
                 value={formData.preferences.language}
-                onChange={(value) =>
-                  handleInputChange("preferences.language", value)
+                onChange={(e) =>
+                  handleInputChange("preferences.language", e.target.value)
                 }
                 placeholder={
                   usersTranslate.users[lang].addUsers.form.preferences
@@ -304,8 +302,8 @@ const AddUser = () => {
                   })
                 )}
                 value={formData.preferences.currency}
-                onChange={(value) =>
-                  handleInputChange("preferences.currency", value)
+                onChange={(e) =>
+                  handleInputChange("preferences.currency", e.target.value)
                 }
                 placeholder={
                   usersTranslate.users[lang].addUsers.form.preferences
@@ -334,16 +332,18 @@ const AddUser = () => {
             </div>
           </div>
         </div>
-        <SubmitButton
+        <Button
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-          // disabled={isSubmitting}
-          title={
-            // isSubmitting
-            //   ? usersTranslate.users[lang].button.saving
-            //   : usersTranslate.users[lang].button.addUser
-            usersTranslate.users[lang].button.addUser
-          }
-        />
+          loading={isSubmitting}
+          disabled={isSubmitting}
+          // title={
+          //   // isSubmitting
+          //   //   ? usersTranslate.users[lang].button.saving
+          //   //   : usersTranslate.users[lang].button.addUser
+          // }
+        >
+          {usersTranslate.users[lang].button.addUser}
+        </Button>
 
         {/* <button
           type="submit"

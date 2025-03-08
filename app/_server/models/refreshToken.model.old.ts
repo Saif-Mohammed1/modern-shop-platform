@@ -11,8 +11,8 @@ export interface IRefreshTokenSchema extends Document {
   ipAddress: string;
   expiresAt: Date;
   lastActiveAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 // const refreshTokenSchema = new Schema<IRefreshToken>({
 const refreshTokenSchema = new Schema<IRefreshTokenSchema>(
@@ -64,8 +64,8 @@ export interface IRefreshToken extends Document {
   status: RefreshTokenStatus;
   expiresAt: Date;
   lastUsedAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
   loginNotificationSent: boolean;
 }
 

@@ -43,17 +43,17 @@
 type InputProps = {
   label?: React.ReactNode;
   icon?: React.ReactNode;
-  value: string;
+  // value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  type?: string;
-  className?: string;
-  name?: string;
-  required?: boolean;
-  disabled?: boolean;
-  autoComplete?: string;
+  // placeholder?: string;
+  // type?: string;
+  // className?: string;
+  // name?: string;
+  // required?: boolean;
+  // disabled?: boolean;
+  // autoComplete?: string;
   error?: string | string[]; // Add error prop
-};
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
 const Input = ({
   label,

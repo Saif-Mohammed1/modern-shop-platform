@@ -24,8 +24,8 @@ export interface IProductSchema extends Document {
   stock: number;
   ratingsAverage: number;
   ratingsQuantity: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
   active: boolean;
   slug: string;
   reserved: number;

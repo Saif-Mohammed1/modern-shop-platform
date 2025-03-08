@@ -1,12 +1,26 @@
 "use client";
 
 import { FC, useEffect, useRef, useState } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa";
-
+import {
+  FaDollarSign,
+  FaTag,
+  FaCalendarAlt,
+  FaCube,
+  FaChartBar,
+  FaStar,
+  FaCheckCircle,
+  FaArchive,
+  FaUserCircle,
+  FaEdit,
+  FaTrash,
+  FaTimesCircle,
+  FaWeightHanging,
+  FaRulerCombined,
+  FaUserEdit,
+} from "react-icons/fa";
 import Image from "next/image";
 // import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Pagination, { PaginationType } from "@/components/pagination/Pagination";
-import moment from "moment";
 import toast from "react-hot-toast";
 import api from "@/app/lib/utilities/api";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
@@ -17,6 +31,12 @@ import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import Link from "next/link";
 import { Event, ProductType } from "@/app/lib/types/products.types";
 import { TfiReload } from "react-icons/tfi";
+import { HiFilter } from "react-icons/hi";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import SearchBar from "@/components/ui/SearchBar";
+import Select from "@/components/ui/Select";
+import { DateTime } from "luxon";
+import MobileFilter from "@/components/ui/MobileFilter";
 type Category = string;
 type ProductListProps = {
   products: ProductType[];
@@ -28,6 +48,8 @@ const ProductList: FC<ProductListProps> = ({
   categories,
   pagination,
 }) => {
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
   const [searchQuery, setSearchQuery] = useQueryState(
     "search",
     parseAsString
@@ -145,56 +167,70 @@ const ProductList: FC<ProductListProps> = ({
   }, [searchQuery, categoryFilter, currentPage, sortOrder, products]);
   return (
     <div className="p-2 bg-gray-100 /max-h-screen /overflow-hidden">
-      <div className="flex flex-col sm:flex-row items-center mb-6 gap-2">
-        <input
-          type="text"
-          placeholder={productsTranslate.products[lang].filter.input.search}
-          className="p-2 border border-gray-300 rounded-lg mr-4 w-full"
-          value={searchQuery}
-          onChange={handleSearch}
-        />{" "}
-        <select
+      {/* Mobile Filter Button */}
+      <button
+        onClick={() => setIsMobileFiltersOpen(true)}
+        className="md:hidden flex w-full  items-center gap-2 p-3 bg-white rounded-lg shadow-md"
+      >
+        <HiFilter className="text-xl" />
+        {shopPageTranslate[lang].shopPage.content.filters}
+      </button>
+      <div className="hidden md:flex flex-row items-center mb-6 gap-2">
+        {/* Search Section */}
+        <SearchBar
+          className="w-full"
+          searchQuery={searchQuery}
+          handleSearch={handleSearch}
+          placeholder={shopPageTranslate[lang].shopPage.content.search}
+        />
+        <Select
           id="categoryFilter"
           value={categoryFilter}
+          options={[
+            ...categories.map((category) => ({
+              value: category,
+              label: category,
+            })),
+          ]}
+          placeholder={productsTranslate.products[lang].filter.select.all}
           onChange={handleCategoryFilterChange}
           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2 w-full"
-        >
-          <option value="">
-            {productsTranslate.products[lang].filter.select.all}
-          </option>
-          {/* Add more categories as options here */}
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-        {/* <select
-            className="p-2 border border-gray-300 rounded-lg mr-4"
-            value={categoryFilter}
-            onChange={handleCategoryFilterChange}
-          >
-            <option value="">All Categories</option>
-            {/* Populate categories dynamically */}
-        {/* <option value="electronics">Electronics</option>
-            <option value="clothing">Clothing</option>
-            <option value="accessories">Accessories</option>
-          </select> */}
-        <select
-          className="p-2 border border-gray-300 rounded-lg w-full"
+        />
+        <Select
+          id="sortFilter"
           value={sortOrder}
+          options={[
+            {
+              value: "-createdAt",
+              label: productsTranslate.products[lang].filter.select.newest,
+            },
+            {
+              value: "createdAt",
+              label: productsTranslate.products[lang].filter.select.oldest,
+            },
+            {
+              value: "-price",
+              label:
+                productsTranslate.products[lang].filter.select.highestPrice,
+            },
+            {
+              value: "price",
+              label: productsTranslate.products[lang].filter.select.lowestPrice,
+            },
+
+            {
+              value: "-ratingsAverage",
+              label: productsTranslate.products[lang].filter.select.topRated,
+            },
+            {
+              value: "ratingsAverage",
+              label: productsTranslate.products[lang].filter.select.lowestRated,
+            },
+          ]}
+          placeholder={productsTranslate.products[lang].filter.select.all}
           onChange={handleSortFilterChange}
-        >
-          <option value="">
-            {productsTranslate.products[lang].filter.select.all}
-          </option>
-          <option value="-ratingsAverage">
-            {productsTranslate.products[lang].filter.select.topRated}
-          </option>
-          <option value="ratingsAverage">
-            {productsTranslate.products[lang].filter.select.lowestRated}
-          </option>
-        </select>
+          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2 w-full"
+        />
         <Link
           href="/dashboard/products/add"
           className="ml-auto p-2 bg-blue-500 text-white rounded-lg w-full
@@ -204,94 +240,262 @@ const ProductList: FC<ProductListProps> = ({
           {productsTranslate.products[lang].filter.addProduct}
         </Link>
       </div>
+      {/* Mobile Filters */}
+      {isMobileFiltersOpen && (
+        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+          <div className="flex flex-col  items-center mb-6 gap-2">
+            {/* Search Section */}
+            <SearchBar
+              className="w-full"
+              searchQuery={searchQuery}
+              handleSearch={handleSearch}
+              placeholder={shopPageTranslate[lang].shopPage.content.search}
+              isMobile
+            />
+            <Select
+              id="categoryFilter"
+              value={categoryFilter}
+              options={[
+                ...categories.map((category) => ({
+                  value: category,
+                  label: category,
+                })),
+              ]}
+              placeholder={productsTranslate.products[lang].filter.select.all}
+              onChange={handleCategoryFilterChange}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2 w-full"
+              isMobile
+              label={productsTranslate.products[lang].filter.title}
+            />
+            <Select
+              id="sortFilter"
+              value={sortOrder}
+              options={[
+                {
+                  value: "-createdAt",
+                  label: productsTranslate.products[lang].filter.select.newest,
+                },
+                {
+                  value: "createdAt",
+                  label: productsTranslate.products[lang].filter.select.oldest,
+                },
+                {
+                  value: "-price",
+                  label:
+                    productsTranslate.products[lang].filter.select.highestPrice,
+                },
+                {
+                  value: "price",
+                  label:
+                    productsTranslate.products[lang].filter.select.lowestPrice,
+                },
+
+                {
+                  value: "-ratingsAverage",
+                  label:
+                    productsTranslate.products[lang].filter.select.topRated,
+                },
+                {
+                  value: "ratingsAverage",
+                  label:
+                    productsTranslate.products[lang].filter.select.lowestRated,
+                },
+              ]}
+              placeholder={productsTranslate.products[lang].filter.select.all}
+              onChange={handleSortFilterChange}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2 w-full"
+              label={productsTranslate.products[lang].filter.select.title}
+              isMobile
+            />
+            <Link
+              href="/dashboard/products/add"
+              className="ml-auto p-2 bg-blue-500 text-white rounded-lg w-full
+          cursor-pointer text-center my-2"
+              /* onClick={() => router.push("/dashboard/products/add")} */
+            >
+              {productsTranslate.products[lang].filter.addProduct}
+            </Link>
+          </div>
+        </MobileFilter>
+      )}
       <div ref={productsContainerRef} className="max-h-[70dvh] overflow-y-auto">
         <div
-          className="grid col "
-          style={{ "--col-min-width": "200px" } as React.CSSProperties}
-          //grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3
+          className="grid col gap-4 p-4"
+          style={
+            {
+              "--col-min-width": "320px",
+              // "--col-gap": "1.5rem",
+            } as React.CSSProperties
+          }
         >
           {productsList.map((product) => {
-            const discountExpireDate = moment(product.discountExpire);
-            const currentDate = moment();
-            const daysToExpire = discountExpireDate.diff(currentDate, "days");
+            const discountExpireDate = product.discountExpire
+              ? DateTime.fromJSDate(new Date(product.discountExpire))
+              : null;
+            const daysToExpire = discountExpireDate?.diffNow("days").days ?? 0;
+            const formattedExpireDate =
+              discountExpireDate?.toFormat("MMM dd, yyyy") || "N/A";
 
             return (
               <div
                 key={product.slug}
-                className="bg-white p-4 rounded-lg shadow-md overflow-hidden"
+                className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 group"
               >
-                <div className="imgParent">
-                  <Image
-                    src={imageSrc(product)}
-                    alt={product.name}
-                    //w-full h-40 object-cover
-                    // className="  "
-                    // className="w-full h-full #h-auto object-cover rounded-lg"
-                    width={150}
-                    height={150}
-                    style={{ objectFit: "cover" }}
-                    priority
-                  />
-                </div>
-                <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-                <p className="text-gray-600 mb-2">
-                  {productsTranslate.products[lang].details.category}:{" "}
-                  {product.category}
-                </p>
-                <p className="text-gray-600 mb-2">
-                  {productsTranslate.products[lang].details.price}: $
-                  {parseFloat(product.price.toString()).toFixed(2)}
-                </p>
-                <p className="text-gray-600 mb-2">
-                  {productsTranslate.products[lang].details.discount}: $
-                  {parseFloat(product.discount.toString()).toFixed(2)}
-                </p>
-                <p className="text-gray-600 mb-2">
-                  {productsTranslate.products[lang].details.discountExpiry}:{" "}
-                  {daysToExpire > 0
-                    ? `${daysToExpire}  ${productsTranslate.products[lang].details.daysleft}`
-                    : productsTranslate.products[lang].details.expired}
-                </p>
-                <p className="text-gray-600 mb-2">
-                  {productsTranslate.products[lang].details.stock}:{" "}
-                  {product.stock}
-                </p>
-                <p className="text-gray-600 mb-2">
-                  {productsTranslate.products[lang].details.rating}:{" "}
-                  {product.ratingsAverage}
-                </p>
-                <div className="flex justify-between items-center">
-                  <p className="text-gray-600 mb-2">
-                    {productsTranslate.products[lang].details.archived.title}:{" "}
-                  </p>
-                  <p className="text-gray-600 mb-2 mx-1">
-                    {" "}
-                    {" " + product.active
-                      ? productsTranslate.products[lang].details.archived.no
-                      : productsTranslate.products[lang].details.archived.yes}
-                  </p>
-                  <button
-                    className="flex justify-end flex-1"
-                    onClick={() => toggleProductStatus(product.slug)}
-                  >
-                    <TfiReload size={20} />{" "}
-                  </button>
-                </div>
-                <div className="flex justify-between">
-                  <Link
-                    href={`/dashboard/products/edit/${product.slug}`}
-                    /* onClick={() => handleEdit(product.slug)} */
-                    className="text-blue-500 hover:underline   cursor-pointer text-center"
-                  >
-                    <FaEdit /> {productsTranslate.products[lang].details.edit}
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(product.slug)}
-                    className="text-red-500 hover:underline   cursor-pointer text-center"
-                  >
-                    <FaTrash />{" "}
-                    {productsTranslate.products[lang].details.delete}
-                  </button>
+                <div className="p-6 flex flex-col gap-4">
+                  {/* Product Header */}
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900 truncate">
+                        {product.name}
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-1">
+                        SKU: {product.sku}
+                      </p>
+                    </div>
+                    <span className="bg-indigo-600/10 text-indigo-600 text-xs font-semibold px-2.5 py-1 rounded-full">
+                      {product.category}
+                    </span>
+                  </div>
+
+                  {/* Product Image */}
+                  <div className="relative aspect-video rounded-xl overflow-hidden border">
+                    <Image
+                      src={imageSrc(product)}
+                      alt={product.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      priority
+                    />
+                  </div>
+
+                  {/* Key Metrics Grid */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-gray-50 p-3 rounded-lg text-center">
+                      <p className="text-sm text-gray-500 mb-1">Price</p>
+                      <p className="font-semibold text-gray-900">
+                        ${product.price.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg text-center">
+                      <p className="text-sm text-gray-500 mb-1">Stock</p>
+                      <p className="font-semibold text-gray-900">
+                        {product.stock}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg text-center">
+                      <p className="text-sm text-gray-500 mb-1">Sold</p>
+                      <p className="font-semibold text-gray-900">
+                        {product.sold}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Discount & Expiry */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FaTag className="text-purple-600" />
+                        <span className="font-medium">Discount:</span>
+                        <span className="text-purple-600">
+                          ${product.discount.toFixed(2)}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-sm ${daysToExpire > 0 ? "text-green-600" : "text-red-600"}`}
+                      >
+                        {daysToExpire > 0 ? (
+                          <>
+                            <FaCalendarAlt className="inline mr-1" />
+                            {Math.floor(daysToExpire)}d
+                          </>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <FaTimesCircle className="inline" /> Expired
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Details Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <FaStar className="text-yellow-400" />
+                        <span>Rating</span>
+                      </div>
+                      <span className="font-medium">
+                        {product.ratingsAverage}/5
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <FaWeightHanging />
+                        <span>Weight</span>
+                      </div>
+                      <span className="font-medium">
+                        {product.shippingInfo?.weight} kg
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <FaRulerCombined />
+                        <span>Dimensions</span>
+                      </div>
+                      <span className="font-medium">
+                        {product.shippingInfo?.dimensions?.length}x
+                        {product.shippingInfo?.dimensions?.width}x
+                        {product.shippingInfo?.dimensions?.height}cm
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Status & Actions */}
+                  <div className="border-t pt-4 mt-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`flex items-center gap-1 text-sm ${
+                            product.active ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {product.active ? <FaCheckCircle /> : <FaArchive />}
+                          <span>{product.active ? "Active" : "Archived"}</span>
+                        </div>
+                        {product.lastModifiedBy && (
+                          <div className="flex items-center gap-1 text-gray-400 text-sm">
+                            <FaUserEdit />
+                            <span className="truncate max-w-[120px]">
+                              {product.lastModifiedBy.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleProductStatus(product.slug)}
+                          className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-indigo-600 transition-colors"
+                        >
+                          <TfiReload className="w-4 h-4" />
+                        </button>
+                        <Link
+                          href={`/dashboard/products/edit/${product.slug}`}
+                          className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-blue-600 transition-colors"
+                        >
+                          <FaEdit className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(product.slug)}
+                          className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-red-600 transition-colors"
+                        >
+                          <FaTrash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -304,7 +508,3 @@ const ProductList: FC<ProductListProps> = ({
 };
 
 export default ProductList;
-
-{
-  /* export default AdminProducts; */
-}

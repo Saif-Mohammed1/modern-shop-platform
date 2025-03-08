@@ -4,6 +4,7 @@ import { OrderService } from "../services/order.service";
 import AppError from "@/app/lib/utilities/appError";
 import { OrderTranslate } from "@/public/locales/server/Order.Translate";
 import { lang } from "@/app/lib/utilities/lang";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 
 class OrderController {
   private readonly orderService: OrderService = new OrderService();
@@ -30,14 +31,25 @@ class OrderController {
     return NextResponse.json(order, { status: 200 });
   }
   async getLatestOrder(req: NextRequest) {
-    const order = await this.orderService.getLatestOrder(req.user?._id);
+    if (!req.user?._id) {
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+    }
+    const order = await this.orderService.getLatestOrder(
+      req.user?._id.toString()
+    );
     return NextResponse.json(order, { status: 200 });
   }
   async getOrdersByUserId(req: NextRequest) {
-    const orders = await this.orderService.getOrdersByUserId(req.user?._id, {
-      query: req.nextUrl.searchParams,
-      populate: true,
-    });
+    if (!req.user?._id) {
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+    }
+    const orders = await this.orderService.getOrdersByUserId(
+      req.user?._id.toString(),
+      {
+        query: req.nextUrl.searchParams,
+        populate: true,
+      }
+    );
     return NextResponse.json(orders, { status: 200 });
   }
   async updateOrderStatus(req: NextRequest) {

@@ -251,6 +251,8 @@ const editUsers = {
       success: "User updated successfully",
       canceled: "update user canceled",
       failed: "Failed to update user",
+      save: "Save Changes",
+      NoDeviceInfo: "No device info",
     },
     sections: {
       security: "Security",
@@ -359,6 +361,8 @@ const editUsers = {
       success: "Користувач успішно оновлений",
       canceled: "оновлення користувача скасовано",
       failed: "Не вдалося оновити користувача",
+      save: "Зберегти зміни",
+      NoDeviceInfo: "Немає інформації про пристрій",
     },
 
     sections: {
@@ -457,6 +461,7 @@ export const usersTranslate = {
             },
           },
           activity: {
+            all: "All",
             title: "Filter by Activity",
             options: {
               active: "Active",
@@ -513,6 +518,7 @@ export const usersTranslate = {
             },
           },
           activity: {
+            all: "всі",
             title: "Фільтрувати за активністю",
             options: {
               active: "Активний",

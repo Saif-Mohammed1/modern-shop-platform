@@ -33,6 +33,11 @@ const AuditLogSchema = new Schema<IAuditLog>(
     toJSON: {
       virtuals: true,
       transform: (_, ret) => {
+        ["createdAt", "updatedAt"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
         delete ret.__v;
         return ret;
       },

@@ -90,7 +90,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
       queryBuilder.populate([{ path: "userId", select: "name email" }]);
     }
 
-    return queryBuilder.execute();
+    return await queryBuilder.execute();
   }
 
   async getOrders(
@@ -132,7 +132,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
       queryBuilder.populate([{ path: "userId", select: "name email" }]);
     }
 
-    return queryBuilder.execute();
+    return await queryBuilder.execute();
   }
   async getLatestOrder(userId: string): Promise<IOrder | null> {
     return await this.model

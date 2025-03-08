@@ -6,8 +6,8 @@ export interface IWishlistSchema extends Document {
   user: IUser["_id"];
   product: IProductSchema["_id"];
   // favorite: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 const FavoriteSchema = new Schema<IWishlistSchema>(
   {

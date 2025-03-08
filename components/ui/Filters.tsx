@@ -2,6 +2,7 @@ import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppag
 import { FC } from "react";
 import { lang } from "../../app/lib/utilities/lang";
 import { Event } from "@/app/lib/types/products.types";
+import Select from "./Select";
 
 type FiltersProps = {
   categories: string[];
@@ -37,7 +38,7 @@ const Filters: FC<FiltersProps> = ({
   <div
     className={`flex ${isMobile ? "flex-col" : "items-center"} gap-4 w-full`}
   >
-    <FilterSelect
+    <Select
       id="categoryFilter"
       label={
         shopPageTranslate[lang].shopPage.content.select.categoryFilter.label
@@ -55,7 +56,7 @@ const Filters: FC<FiltersProps> = ({
       isMobile={isMobile}
     />
 
-    <FilterSelect
+    <Select
       id="priceFilter"
       label={shopPageTranslate[lang].shopPage.content.select.priceFilter.label}
       value={priceFilter}
@@ -82,7 +83,7 @@ const Filters: FC<FiltersProps> = ({
       isMobile={isMobile}
     />
 
-    <FilterSelect
+    <Select
       id="ratingFilter"
       label={shopPageTranslate[lang].shopPage.content.select.ratingFilter.label}
       value={ratingFilter}
@@ -104,36 +105,36 @@ const Filters: FC<FiltersProps> = ({
 );
 
 // Enhanced FilterSelect Component
-const FilterSelect: FC<FilterSelectProps> = ({
-  id,
-  label,
-  value,
-  onChange,
-  options,
-  isMobile = false,
-}) => (
-  <div
-    className={`flex ${isMobile ? "flex-col" : "items-center gap-2"} w-full`}
-  >
-    <label
-      htmlFor={id}
-      className={`${isMobile ? "mb-2" : ""} text-gray-700 font-medium`}
-    >
-      {label}
-    </label>
-    <select
-      id={id}
-      value={value}
-      onChange={onChange}
-      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </div>
-);
+// const FilterSelect: FC<FilterSelectProps> = ({
+//   id,
+//   label,
+//   value,
+//   onChange,
+//   options,
+//   isMobile = false,
+// }) => (
+//   <div
+//     className={`flex ${isMobile ? "flex-col" : "items-center gap-2"} w-full`}
+//   >
+//     <label
+//       htmlFor={id}
+//       className={`${isMobile ? "mb-2" : ""} text-gray-700 font-medium`}
+//     >
+//       {label}
+//     </label>
+//     <select
+//       id={id}
+//       value={value}
+//       onChange={onChange}
+//       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+//     >
+//       {options.map((option) => (
+//         <option key={option.value} value={option.value}>
+//           {option.label}
+//         </option>
+//       ))}
+//     </select>
+//   </div>
+// );
 
 export default Filters;

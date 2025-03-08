@@ -6,6 +6,7 @@ type ButtonProps = {
   icon?: ReactNode;
   danger?: boolean;
   children?: ReactNode;
+  loading?: boolean;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Button = ({
@@ -13,6 +14,7 @@ const Button = ({
   size = "md",
   icon,
   danger = false,
+  loading = false,
   children,
   ...props
 }: ButtonProps) => {
@@ -34,10 +36,16 @@ const Button = ({
   return (
     <button
       {...props}
-      className={`inline-flex items-center gap-2 rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${props.className || ""}`}
+      className={`inline-flex justify-center items-center gap-2 rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${props.className || ""}`}
     >
-      {icon}
-      {children}
+      {loading ? (
+        <span className="animate-spin inline-block h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>
+      ) : (
+        <>
+          {icon}
+          {children}
+        </>
+      )}
     </button>
   );
 };

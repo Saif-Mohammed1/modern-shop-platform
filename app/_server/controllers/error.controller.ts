@@ -148,6 +148,8 @@ const ErrorHandler = (error: any, req: NextRequest): NextResponse => {
   if (error instanceof z.ZodError) {
     err = handleZodValidationError(error);
   }
+  if (error.name === "JsonWebTokenError") err = handleJWTError();
+  if (error.name === "TokenExpiredError") err = handleJWTExpiredError();
   // Production error processing
   if (process.env.NODE_ENV === "production") {
     if (error instanceof z.ZodError) {
@@ -157,8 +159,8 @@ const ErrorHandler = (error: any, req: NextRequest): NextResponse => {
     if (error.name === "CastError") err = handleCastErrorDB(error);
     if (error.code === 11000) err = handleDuplicateFieldsDB(error);
     if (error.name === "ValidationError") err = handleValidationErrorDB(error);
-    if (error.name === "JsonWebTokenError") err = handleJWTError();
-    if (error.name === "TokenExpiredError") err = handleJWTExpiredError();
+    // if (error.name === "JsonWebTokenError") err = handleJWTError();
+    // if (error.name === "TokenExpiredError") err = handleJWTExpiredError();
     // Log errors
     // Enhanced logging with translation context
     logRequestError(err, req);

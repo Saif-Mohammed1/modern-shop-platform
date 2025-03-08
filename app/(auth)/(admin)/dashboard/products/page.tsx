@@ -25,8 +25,8 @@ const queryParams = async (searchParams: ProductsSearchParams) => {
   if (searchParams.category !== undefined) {
     url.append("category", searchParams.category);
   }
-  if (searchParams.name !== undefined) {
-    url.append("name", searchParams.name);
+  if (searchParams.search !== undefined) {
+    url.append("search", searchParams.search);
   }
   if (searchParams.sort !== undefined) {
     url.append("sort", searchParams.sort);

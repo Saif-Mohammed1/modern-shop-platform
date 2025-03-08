@@ -5,6 +5,7 @@ import { AddressService } from "../services/address.service";
 import { AddressValidation } from "../dtos/address.dto";
 import { AddressTranslate } from "@/public/locales/server/Address.Translate";
 import { lang } from "@/app/lib/utilities/lang";
+import AppError from "@/app/lib/utilities/appError";
 
 class AddressController {
   private readonly addressService = new AddressService();
@@ -62,6 +63,9 @@ class AddressController {
   }
   async updateMyAddress(req: NextRequest) {
     try {
+      if (!req.id) {
+        throw new AppError("Address id is required", 400);
+      }
       const body = req.json();
       const result = AddressValidation.validateUpdateAddress({
         userId: req.user?._id,

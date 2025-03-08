@@ -23,8 +23,8 @@ const queryParams = async (searchParams: SearchParams) => {
   if (searchParams.search !== undefined) {
     url.append("search", searchParams.search);
   }
-  if (searchParams.active !== undefined) {
-    url.append("active", searchParams.active);
+  if (searchParams.status !== undefined) {
+    url.append("status", searchParams.status);
   }
   if (searchParams.sort !== undefined) {
     url.append("sort", searchParams.sort);

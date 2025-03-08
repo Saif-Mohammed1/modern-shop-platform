@@ -139,6 +139,7 @@ export class QueryBuilder<T extends Document> {
     if (this.config.fixedFilters) {
       this.filter = { ...this.filter, ...this.config.fixedFilters };
     }
+    this.query = this.query.find(this.filter);
     return this;
   }
 
@@ -257,21 +258,61 @@ export class QueryBuilder<T extends Document> {
     return links;
   }
 
+  // async execute(): Promise<QueryBuilderResult<T>> {
+  //   try {
+  //     // sanitize input before building query
+  //     this.sanitizeInput();
+  //     this.buildFilter().buildSort().buildPagination().buildProjection();
+
+  //     //  Clone base query for count
+  //     const countQuery = this.baseQuery.clone().merge(this.filter);
+
+  //     // Apply population to both queries
+  //     if (this.populateOptions.length) {
+  //       this.populateOptions.forEach((p) => {
+  //         this.query = this.query.populate(p);
+  //         countQuery.populate(p);
+  //       });
+  //     }
+
+  //     const [total, results] = await Promise.all([
+  //       countQuery.countDocuments(),
+  //       this.query
+  //         .skip((this.page - 1) * this.limit)
+  //         .limit(this.limit)
+  //         .exec(),
+  //     ]);
+
+  //     const totalPages = Math.ceil(total / this.limit);
+  //     const meta: PaginationMeta = {
+  //       total,
+  //       page: this.page,
+  //       limit: this.limit,
+  //       totalPages,
+  //       hasNext: this.page < totalPages,
+  //       hasPrev: this.page > 1,
+  //     };
+
+  //     return {
+  //       docs: results,
+  //       meta,
+  //       links: this.buildLinks(totalPages),
+  //     };
+  //   } catch (error) {
+  //     throw new QueryBuilderError("Failed to execute query", error);
+  //   }
+  // }
   async execute(): Promise<QueryBuilderResult<T>> {
     try {
-      // sanitize input before building query
       this.sanitizeInput();
       this.buildFilter().buildSort().buildPagination().buildProjection();
 
-      // Clone base query for count
-      const countQuery = this.baseQuery.clone().merge(this.filter);
+      // Clone the filtered query and clear pagination/sorting for count
+      const countQuery = this.query.model.find(this.query.getFilter());
 
-      // Apply population to both queries
+      // Copy over population and other query settings
       if (this.populateOptions.length) {
-        this.populateOptions.forEach((p) => {
-          this.query = this.query.populate(p);
-          countQuery.populate(p);
-        });
+        countQuery.populate(this.populateOptions);
       }
 
       const [total, results] = await Promise.all([

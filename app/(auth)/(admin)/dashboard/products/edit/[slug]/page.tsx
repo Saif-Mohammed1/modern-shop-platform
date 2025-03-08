@@ -1,5 +1,5 @@
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import EditProduct from "@/components/(admin)/dashboard/products/editProduct/editProduct";
+import EditProduct from "@/components/(admin)/dashboard/products/addProduct/EditProductForm";
 import ErrorHandler from "@/components/Error/errorHandler";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     const {
-      data: { data: product },
+      data: { product },
     } = await api.get(`/admin/dashboard/products/${slug}`, {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
@@ -43,11 +43,11 @@ const page = async ({ params }: Props) => {
 
   try {
     const {
-      data: { data },
+      data: { product },
     } = await api.get(`/admin/dashboard/products/${slug}`, {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
-    return <EditProduct product={data} />;
+    return <EditProduct defaultValues={product} />;
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
   }

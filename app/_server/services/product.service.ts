@@ -135,6 +135,24 @@ export class ProductService {
           404
         );
       }
+      let uploadedImages: IProduct["images"] = []; // [];
+
+      // If images are base64 strings, upload them
+      if (dto.images) {
+        const images = dto.images.filter((img) => !(typeof img === "object"));
+        for (const image of images) {
+          this.validateBase64Image(image);
+          const result = await uploadImage(image, "shop/shop-products");
+
+          uploadedImages.push({
+            link: result.secure_url,
+            public_id: result.public_id,
+          });
+        }
+      }
+      dto.images = [...(oldProduct.images || []), ...uploadedImages].filter(
+        Boolean
+      );
       const updatedProduct = await this.repository.update(
         slug,
         { ...dto, actorId },

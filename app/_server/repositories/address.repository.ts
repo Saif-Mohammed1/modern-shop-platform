@@ -76,7 +76,7 @@ export class AddressRepository extends BaseRepository<IAddress> {
       queryBuilder.populate([{ path: "userId", select: "name email" }]);
     }
 
-    return queryBuilder.execute();
+    return await queryBuilder.execute();
   }
   async startSession(): Promise<ClientSession> {
     return await this.model.db.startSession();

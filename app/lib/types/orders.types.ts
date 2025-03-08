@@ -36,12 +36,12 @@ export enum OrderStatus {
 export type OrderType = {
   _id: string;
   shippingInfo: IShippingInfo;
-  user: Partial<UserAuthType>;
+  userId: Partial<UserAuthType>;
   items: IItems[];
   status: OrderStatus;
   invoiceId: string;
   invoiceLink: string;
   totalPrice: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 };

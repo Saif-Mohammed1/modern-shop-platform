@@ -41,3 +41,5 @@ next-env.d.ts
 # ignore any folder named "test" or "tests"
 **/test/
 **/tests/
+
+certificates

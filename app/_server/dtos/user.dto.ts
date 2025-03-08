@@ -1,4 +1,6 @@
 // import { lang } from "@/app/lib/util/lang";
+import { AuditAction } from "@/app/lib/types/audit.types";
+import { UserRole, UserStatus } from "@/app/lib/types/users.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 import { z } from "zod";
@@ -64,12 +66,18 @@ export class UserValidation {
   static createUserByAdminSchema = z
     .object({
       ...this.userCreateSchema._def.schema.shape, // Extract base shape
-      role: z.enum(["customer", "admin", "moderator"]).default("customer"),
+      role: z
+        .enum(Object.values(UserRole) as [string, ...string[]])
+        .default("customer"),
+      confirmPassword: z.string().optional(), // Make confirmPassword optional
     })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: userZodValidatorTranslate[lang].confirmPassword.invalid,
-      path: ["confirmPassword"],
-    });
+    .refine(
+      (data) => !data.confirmPassword || data.password === data.confirmPassword,
+      {
+        message: userZodValidatorTranslate[lang].confirmPassword.invalid,
+        path: ["confirmPassword"],
+      }
+    );
 
   // Schema for login validation (debuggable)
   static loginSchema = z.object({
@@ -146,12 +154,24 @@ export class UserValidation {
       message: userZodValidatorTranslate[lang].confirmPassword.invalid,
       path: ["confirmPassword"],
     });
+
+  static updateUserByAdminSchema = z.object({
+    name: z.string().optional(),
+    email: z.string().optional(),
+    status: z
+      .enum(Object.values(UserStatus) as [string, ...string[]])
+      .optional(),
+    role: z.enum(Object.values(UserRole) as [string, ...string[]]).optional(),
+    auditAction: z
+      .enum(Object.values(AuditAction) as [string, ...string[]])
+      .optional(),
+  });
   static validateName(name: string) {
     return z
       .string({
         required_error: userZodValidatorTranslate[lang].name.required,
       })
-      .min(3, userZodValidatorTranslate[lang].name.minLength)
+      .min(8, userZodValidatorTranslate[lang].name.minLength)
       .max(50, userZodValidatorTranslate[lang].name.maxLength)
       .parse(name);
   }
@@ -270,6 +290,13 @@ export class UserValidation {
 
     return { ...result, email: this.sanitizeEmail(result.email) };
   }
+  static validateUpdateUserByAdminDTO(data: any) {
+    const result = this.updateUserByAdminSchema.parse(data);
+    if (result.email) {
+      result.email = this.sanitizeEmail(result.email);
+    }
+    return result;
+  }
 }
 
 // Export Types
@@ -284,4 +311,7 @@ export type UserPasswordResetDTO = z.infer<
 >;
 export type CreateUserByAdminDTO = z.infer<
   typeof UserValidation.createUserByAdminSchema
+>;
+export type UpdateUserByAdminDTO = z.infer<
+  typeof UserValidation.updateUserByAdminSchema
 >;

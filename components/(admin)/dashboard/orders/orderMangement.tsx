@@ -21,6 +21,10 @@ import SkeletonTable from "@/components/ui/SkeletonTable";
 import toast from "react-hot-toast";
 import { OrderStatus } from "@/app/lib/types/orders.types";
 import { Event } from "@/app/lib/types/products.types";
+import SearchBar from "@/components/ui/SearchBar";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import { HiFilter } from "react-icons/hi";
+import MobileFilter from "@/components/ui/MobileFilter";
 
 type StatusOption = {
   value: OrderStatus;
@@ -84,6 +88,8 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
 }) => {
   const [orders, setOrders] = useState<OrderType[]>(initialOrders || []);
   const [loading, setLoading] = useState(false);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
   // get all orders that relate to email
   const [searchInput, setSearchInput] = useQueryState(
     "email",
@@ -161,38 +167,91 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
 
   return (
     <div className="p-6 max-w-7xl mx-auto bg-white rounded-lg shadow-sm">
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">
-          {ordersTranslate.orders[lang].title}
-        </h2>
+      <h2 className="text-2xl font-bold text-gray-800 my-3">
+        {ordersTranslate.orders[lang].title}
+      </h2>{" "}
+      <button
+        onClick={() => setIsMobileFiltersOpen(true)}
+        className="md:hidden flex items-center gap-2 my-1 mb-4 p-3 bg-gray-100 rounded-lg shadow-md w-full "
+      >
+        <HiFilter className="text-xl" />
+        {shopPageTranslate[lang].shopPage.content.filters}
+      </button>
+      <div className="hidden mb-6 md:flex justify-between items-center gap-4">
+        {/* <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2"> */}
 
-        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
-          <Input
-            icon={<FiSearch className="text-gray-400" />}
-            placeholder={
-              ordersTranslate.orders[lang].filter.input.search.placeholder
-            }
-            value={searchInput}
-            onChange={(e: Event) => setSearchInput(e.target.value)}
-            className="w-full sm:w-64"
-          />
+        <SearchBar
+          className="w-full"
+          searchQuery={searchInput}
+          handleSearch={(e) => setSearchInput(e.target.value)}
+          placeholder={
+            ordersTranslate.orders[lang].filter.input.search.placeholder
+          }
+        />
+        <Select
+          options={statusOptions}
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          placeholder={ordersTranslate.orders[lang].filter.select.title}
+          // className="w-full sm:w-48"
+        />
 
-          <Select
-            options={statusOptions}
-            value={filterStatus}
-            onChange={(value: string) => setFilterStatus(value)}
-            placeholder={ordersTranslate.orders[lang].filter.select.title}
-            className="w-full sm:w-48"
-          />
+        {/* <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2"> */}
+        <Input
+          type="date"
+          icon={<FiCalendar />}
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          placeholder="Start Date"
+          // className="w-full sm:w-48"
+        />
+        <Input
+          type="date"
+          icon={<FiCalendar />}
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          placeholder="End Date"
+          // className="w-full sm:w-48"
+        />
+        {/* </div> */}
+      </div>
+      {/* </div> */}
+      {isMobileFiltersOpen && (
+        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+          <div className="mb-6 flex flex-col justify-between  gap-4">
+            {/* <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2"> */}
 
-          <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+            <SearchBar
+              className="w-full"
+              searchQuery={searchInput}
+              handleSearch={(e) => setSearchInput(e.target.value)}
+              placeholder={
+                ordersTranslate.orders[lang].filter.input.search.placeholder
+              }
+              isMobile
+            />
+            <Select
+              options={statusOptions}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              placeholder={
+                ordersTranslate.orders[lang].filter.select.options.all
+              }
+              label={ordersTranslate.orders[lang].filter.select.title}
+              id="status"
+              // className="w-full sm:w-48"
+              isMobile
+            />
+
+            {/* <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2"> */}
             <Input
               type="date"
               icon={<FiCalendar />}
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               placeholder="Start Date"
-              className="w-full sm:w-48"
+              label="Start Date"
+              // className="w-full sm:w-48"
             />
             <Input
               type="date"
@@ -200,12 +259,13 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               placeholder="End Date"
-              className="w-full sm:w-48"
+              label="End Date"
+              // className="w-full sm:w-48"
             />
+            {/* </div> */}
           </div>
-        </div>
-      </div>
-
+        </MobileFilter>
+      )}
       <div className="overflow-x-auto rounded-lg border border-gray-100">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -243,7 +303,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
                     #{order._id.slice(-8)}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {order.user.email}
+                    {order.userId.email}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {moment(order.createdAt).format("MMM D, YYYY")}
@@ -255,8 +315,11 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
                     <Select
                       value={order.status}
                       options={statusOptions}
-                      onChange={(value: string) =>
-                        handleStatusUpdate(order._id, value as OrderStatus)
+                      onChange={(e) =>
+                        handleStatusUpdate(
+                          order._id,
+                          e.target.value as OrderStatus
+                        )
                       }
                       customStyle={StatusColors[order.status]}
                     />
@@ -288,7 +351,6 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
           </tbody>
         </table>
       </div>
-
       <div className="mt-6">
         <Pagination meta={pagination.meta} onPageChange={handelPageChange} />
       </div>

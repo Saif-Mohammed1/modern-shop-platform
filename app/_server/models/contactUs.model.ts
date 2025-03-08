@@ -10,8 +10,8 @@ export interface IContactUsSchema extends Document {
   subject: string;
   message: string;
   status: status;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 const ContactUsSchema = new Schema<IContactUsSchema>(
   {

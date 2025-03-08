@@ -158,6 +158,13 @@ const ProductSchema = new Schema<IProduct>(
       transform: function (_, ret) {
         // ret.id = ret._id;
         // delete ret._id;
+        ["createdAt", "updatedAt", "discountExpire", "lastReserved"].forEach(
+          (field) => {
+            if (ret[field]) {
+              ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+            }
+          }
+        );
         delete ret.__v;
         return ret;
       },

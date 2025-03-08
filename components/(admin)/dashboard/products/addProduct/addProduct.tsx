@@ -1,107 +1,144 @@
+// add-product.tsx (main form component)
 "use client";
-import { useState } from "react";
-import ProductDetails from "./productDetails";
-import ProductPricing from "./productPrice";
-import ProductInventory from "./productInventory";
-import ProductImages from "./productImages";
-import ProductSubmit from "./productSubmit";
+import { useState, useEffect } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import ProductDetails from "./product-details";
+import ProductShipping from "./product-shipping";
+import FormProgress from "./form-progress";
+import ProductImages from "./product-images";
+import ProductReview from "./product-review";
+import ProductPricing from "./product-pricing";
+import ProductInventory from "./product-inventory";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { FaTimesCircle } from "react-icons/fa";
-// import dynamic from "next/dynamic";
-// const ProductDetails = dynamic(() => import("./productDetails"));
-// const ProductPricing = dynamic(() => import("./productPrice"));
-// const ProductInventory = dynamic(() => import("./productInventory"));
-// const ProductImages = dynamic(() => import("./productImages"));
-// const ProductSubmit = dynamic(() => import("./productSubmit"));
+import { ProductType } from "@/app/lib/types/products.types";
+import toast from "react-hot-toast";
+import api from "@/app/lib/utilities/api";
+export type PreviewFile = string;
+// export type PreviewFile = File & { preview: string };
+interface FormData
+  extends Omit<
+    ProductType,
+    "_id" | "slug" | "ratingsAverage" | "ratingsQuantity" | "active" | "images"
+  > {
+  images: PreviewFile[];
+}
 
 export default function AddProduct() {
-  const [step, setStep] = useState<number>(
-    Number(localStorage.getItem("step")) || 1
+  const methods = useForm<FormData>({
+    defaultValues: {
+      shippingInfo: {
+        weight: 0,
+        dimensions: { length: 0, width: 0, height: 0 },
+      },
+      attributes: {},
+      reserved: 0,
+      sold: 0,
+    },
+  });
+
+  const [step, setStep] = useState(1);
+  const totalSteps = 6;
+
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, totalSteps));
+  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const saveDraft = () => {
+    const formData = methods.getValues();
+    localStorage.setItem("productDraft", JSON.stringify(formData));
+    toast.success(productsTranslate.products[lang].draftSaved);
+  };
+
+  // Update form submission handler
+  const onSubmit = async (data: FormData) => {
+    if (step === totalSteps) {
+      let toastLoading;
+
+      try {
+        toastLoading = toast.loading(
+          productsTranslate.products[lang].addProduct.form.productSubmit.loading
+        );
+        await api.post("/admin/dashboard/products/", data);
+        toast.success(
+          productsTranslate.products[lang].addProduct.form.productSubmit.success
+        );
+        localStorage.removeItem("productDraft");
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(
+            error?.message || productsTranslate.products[lang].error.general
+          );
+        } else {
+          toast.error(productsTranslate.products[lang].error.general);
+        }
+      } finally {
+        toast.dismiss(toastLoading);
+      }
+    } else {
+      nextStep();
+    }
+  };
+  useEffect(() => {
+    const draft = localStorage.getItem("productDraft");
+    if (draft) {
+      methods.reset(JSON.parse(draft));
+    }
+  }, [methods]);
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <FormProvider {...methods}>
+        <FormProgress currentStep={step} totalSteps={totalSteps} />
+
+        <form
+          onSubmit={methods.handleSubmit(onSubmit)}
+          className="bg-white rounded-xl shadow-lg p-6"
+        >
+          {step === 1 && <ProductDetails />}
+          {step === 2 && <ProductPricing />}
+          {step === 3 && <ProductShipping />}
+          {step === 4 && <ProductInventory />}
+          {step === 5 && <ProductImages />}
+          {step === 6 && <ProductReview />}
+
+          <div className="mt-8 flex justify-between gap-4">
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="btn-secondary flex-1"
+              >
+                {
+                  productsTranslate.products[lang].addProduct.form.button
+                    .previous
+                }
+              </button>
+            )}
+
+            {step < totalSteps ? (
+              <>
+                <button
+                  type="button"
+                  onClick={saveDraft}
+                  className="btn-gray flex-1"
+                >
+                  {
+                    productsTranslate.products[lang].addProduct.form.button
+                      .saveDraft
+                  }
+                </button>
+                <button type="submit" className="btn-primary flex-1">
+                  {productsTranslate.products[lang].addProduct.form.button.next}
+                </button>
+              </>
+            ) : (
+              <button type="submit" className="btn-success flex-1">
+                {productsTranslate.products[lang].addProduct.form.button.submit}
+              </button>
+            )}
+          </div>
+        </form>
+      </FormProvider>
+    </div>
   );
-  const [productDetails, setProductDetails] = useState({
-    name: "",
-    category: "",
-    description: "",
-  });
-  const [pricingDetails, setPricingDetails] = useState({
-    price: 0,
-    discount: 0,
-    discountExpire: "",
-  });
-  const [inventoryDetails, setInventoryDetails] = useState({
-    stock: 0,
-  });
-  const [imageDetails, setImageDetails] = useState<{ images: string[] }>({
-    images: [],
-  });
-
-  const nextStep = () => {
-    const newStep = step + 1;
-
-    localStorage.setItem("step", newStep.toString());
-    return setStep(step + 1);
-  };
-  const prevStep = () => {
-    const newStep = step - 1;
-
-    localStorage.setItem("step", newStep.toString());
-    return setStep(step - 1);
-  };
-
-  switch (step) {
-    case 1:
-      return (
-        <ProductDetails
-          nextStep={nextStep}
-          setProductDetails={setProductDetails}
-        />
-      );
-    case 2:
-      return (
-        <ProductPricing
-          nextStep={nextStep}
-          prevStep={prevStep}
-          setPricingDetails={setPricingDetails}
-        />
-      );
-    case 3:
-      return (
-        <ProductInventory
-          nextStep={nextStep}
-          prevStep={prevStep}
-          setInventoryDetails={setInventoryDetails}
-        />
-      );
-    case 4:
-      return (
-        <ProductImages
-          nextStep={nextStep}
-          prevStep={prevStep}
-          setImageDetails={setImageDetails}
-        />
-      );
-    case 5:
-      return (
-        <ProductSubmit
-          prevStep={prevStep}
-          productDetails={productDetails}
-          pricingDetails={pricingDetails}
-          inventoryDetails={inventoryDetails}
-          imageDetails={imageDetails}
-        />
-      );
-    default:
-      return (
-        <div className="m-auto text-red-500">
-          <FaTimesCircle className="text-6xl mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">
-            {productsTranslate.products[lang].error.unknownStep}
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {productsTranslate.products[lang].error.message}
-          </p>
-        </div>
-      );
-  }
 }

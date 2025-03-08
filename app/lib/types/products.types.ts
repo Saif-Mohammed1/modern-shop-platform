@@ -4,6 +4,7 @@ import { UserAuthType } from "./users.types";
 export type ProductsSearchParams = {
   category?: string;
   name?: string;
+  search?: string;
   sort?: string;
   fields?: string;
   page?: string;
@@ -15,7 +16,7 @@ export type ProductsSearchParams = {
 
 export type Event = React.ChangeEvent<HTMLInputElement | HTMLSelectElement>;
 
-type OldImage = {
+export type OldImage = {
   public_id: string;
   link: string;
 };
@@ -55,4 +56,5 @@ export type ProductType = {
     };
   };
   reviews: ReviewsType[];
+  lastModifiedBy?: UserAuthType;
 };

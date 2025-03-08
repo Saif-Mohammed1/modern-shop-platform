@@ -351,6 +351,20 @@ class EmailService {
       html: this.baseTemplate(content),
     });
   }
+  async forcePasswordReset(email: string, password: string): Promise<void> {
+    const content = `
+      <h2 style="color: #2d3748; margin-top: 0;">Password Reset Request</h2>
+      <p>Your password has been reset by an administrator. Please use the following password to login:</p>
+      ${this.createCodeBlock(password)}
+      <p style="color: #718096; font-size: 14px;">
+        we recommend changing your password after logging in.
+      </p>
+    `;
+    await this.sendEmail(email, {
+      subject: `Password Reset Request - ${this.appName}`,
+      html: this.baseTemplate(content),
+    });
+  }
   // async sendPasswordReset(email: string, token: string): Promise<void> {
   //   const content = `
   //     <h2 style="color: #2d3748; margin-top: 0;">Password Reset Request</h2>

@@ -8,8 +8,8 @@ export interface ICart extends Document {
   userId: IUser["_id"];
   productId: IProduct["_id"];
   quantity: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
   expiresAt: Date;
 }
 
@@ -39,7 +39,17 @@ const CartSchema = new Schema<ICart>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: function (_, ret) {
+        ["createdAt", "updatedAt", "expiresAt"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   }
 );

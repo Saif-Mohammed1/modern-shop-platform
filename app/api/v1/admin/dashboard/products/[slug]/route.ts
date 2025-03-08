@@ -18,7 +18,7 @@ export const GET = async (
     await connectDB();
     await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
     req.slug = slug;
-    return await productController.getProductBySlug(req);
+    return await productController.getProductMetaDataBySlug(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

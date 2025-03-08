@@ -105,8 +105,8 @@ export interface IUser extends Document {
   security: ISecurity;
   verification: IVerification;
   socialProfiles: Map<string, string>;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 
   // Methods
   comparePassword(candidatePassword: string): Promise<boolean>;

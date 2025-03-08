@@ -70,7 +70,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
         rating: "ratingsAverage",
       },
       searchFields: ["name", "description"],
-      // enableTextSearch: true,
+      enableTextSearch: true,
       allowedSorts: ["createdAt", "updatedAt", "price"] as Array<
         keyof IProduct
       >,
@@ -95,7 +95,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
       queryBuilder.populate([{ path: "userId", select: "name " }]);
     }
 
-    return queryBuilder.execute();
+    return await queryBuilder.execute();
   }
   async getProductBySlug(
     slug: string,

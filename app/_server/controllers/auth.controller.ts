@@ -4,6 +4,7 @@ import { UserService } from "../services/user.service";
 import { getDeviceFingerprint } from "@/app/lib/utilities/DeviceFingerprint.utility";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 import { lang } from "@/app/lib/utilities/lang";
+import AppError from "@/app/lib/utilities/appError";
 
 class AuthController {
   private userService = new UserService();
@@ -124,11 +125,14 @@ class AuthController {
   }
   async requestEmailChange(req: NextRequest) {
     try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
       const body = await req.json();
       const email = UserValidation.isEmailValid(body.email);
       const deviceInfo = await getDeviceFingerprint(req);
       await this.userService.requestEmailChange(
-        req.user?._id,
+        req.user?._id.toString(),
         email,
         deviceInfo
       );
@@ -164,9 +168,12 @@ class AuthController {
   }
   async verifyEmail(req: NextRequest) {
     try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
       const body = await req.json();
       const code = UserValidation.isVerificationCodeValid(body.code);
-      await this.userService.verifyEmail(req.user?._id, code);
+      await this.userService.verifyEmail(req.user?._id.toString(), code);
       return NextResponse.json(
         {
           message: AuthTranslate[lang].auth.verifyEmail.emailVerified,
@@ -194,7 +201,10 @@ class AuthController {
   // }
   async sendNewVerificationCode(req: NextRequest) {
     try {
-      await this.userService.sendVerificationCode(req.user?._id);
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
+      await this.userService.sendVerificationCode(req.user?._id.toString());
       return NextResponse.json(
         {
           message: AuthTranslate[lang].auth.sendNewVerificationCode.success,
@@ -207,9 +217,12 @@ class AuthController {
   }
   async updateName(req: NextRequest) {
     try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
       const body = await req.json();
       const result = UserValidation.validateName(body.name);
-      await this.userService.updateName(req.user?._id, result);
+      await this.userService.updateName(req.user?._id.toString(), result);
       return NextResponse.json(
         {
           message: AuthTranslate[lang].auth.updateName.success,
@@ -223,7 +236,12 @@ class AuthController {
 
   async getActiveSessions(req: NextRequest) {
     try {
-      const sessions = await this.userService.getActiveSessions(req.user?._id);
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      }
+      const sessions = await this.userService.getActiveSessions(
+        req.user?._id.toString()
+      );
       return NextResponse.json({ sessions }, { status: 200 });
     } catch (error) {
       throw error;

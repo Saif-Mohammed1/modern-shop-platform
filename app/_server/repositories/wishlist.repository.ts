@@ -68,7 +68,7 @@ export class WishlistRepository extends BaseRepository<IWishlist> {
       ]);
     }
 
-    return queryBuilder.execute();
+    return await queryBuilder.execute();
   }
 
   async isWishlist(userId: string, productId: string): Promise<boolean> {

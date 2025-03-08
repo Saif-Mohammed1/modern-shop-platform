@@ -9,8 +9,8 @@ export interface IReviewSchema extends Document {
   product: IProduct["_id"]; // Only store the ObjectId of the Product
   rating: number;
   reviewText: string;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 interface IReviewModel extends Model<IReviewSchema> {
   calcAverageRatings(productId: string): Promise<void>;

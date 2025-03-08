@@ -37,12 +37,10 @@ const page = async ({ params }: Props) => {
   const { id } = params;
 
   try {
-    const {
-      data: { data },
-    } = await api.get(`/admin/dashboard/users/${id}`, {
+    const { data } = await api.get(`/admin/dashboard/users/${id}`, {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
-    return <EditUser currentUser={data} />;
+    return <EditUser user={data} />;
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
   }

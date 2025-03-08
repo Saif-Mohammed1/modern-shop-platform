@@ -18,8 +18,8 @@ export interface IOrder extends Document {
   invoiceId: string;
   invoiceLink: string;
   totalPrice: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 const OrderSchema = new Schema<IOrder>(
   {
@@ -113,6 +113,17 @@ const OrderSchema = new Schema<IOrder>(
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (_, ret) {
+        ["createdAt", "updatedAt"].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+          }
+        });
+        return ret;
+      },
+    },
   }
 );
 OrderSchema.index({ createdAt: 1 });

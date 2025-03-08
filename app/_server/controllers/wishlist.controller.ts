@@ -9,6 +9,7 @@ class WishlistController {
 
   async toggleWishlist(req: NextRequest) {
     try {
+      if (!req.user?._id) return;
       const check = WishlistValidation.validateCreateWishlist({
         productId: req.id,
         userId: req.user._id,
@@ -42,6 +43,7 @@ class WishlistController {
 
   async checkWishlist(req: NextRequest) {
     try {
+      if (!req.user?._id) return;
       const check = WishlistValidation.validateCreateWishlist({
         productId: req.id,
         userId: req.user._id,

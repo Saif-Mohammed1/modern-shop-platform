@@ -1,10 +1,9 @@
 import ErrorHandler from "@/app/_server/controllers/error.controller";
 import userController from "@/app/_server/controllers/user.controller";
-
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
 import { UserRole } from "@/app/lib/types/users.types";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 //  /admin/dashboard/users/[id]
 export const GET = async (
   req: NextRequest,
@@ -25,7 +24,32 @@ export const GET = async (
   }
 };
 
-export const PUT = async (
+// export const PUT = async (
+//   req: NextRequest,
+//   {
+//     params,
+//   }: {
+//     params: { id: string };
+//   }
+// ) => {
+//   const { id } = params;
+//   try {
+//     await connectDB();
+//     await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
+
+//     req.id = id;
+//     return await userController.updateUserByAdmin(req);
+//     // const { data, statusCode } = await updateOne<IUser>(req, User, [
+//     //   "name",
+//     //   "email",
+//     //   "role",
+//     //   "active",
+//     // ]);
+//   } catch (error) {
+//     return ErrorHandler(error, req);
+//   }
+// };
+export const PATCH = async (
   req: NextRequest,
   {
     params,
@@ -39,14 +63,13 @@ export const PUT = async (
     await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
 
     req.id = id;
-    const { data, statusCode } = await updateOne<IUser>(req, User, [
-      "name",
-      "email",
-      "role",
-      "active",
-    ]);
-
-    return NextResponse.json({ data }, { status: statusCode });
+    return await userController.updateUserByAdmin(req);
+    // const { data, statusCode } = await updateOne<IUser>(req, User, [
+    //   "name",
+    //   "email",
+    //   "role",
+    //   "active",
+    // ]);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -65,7 +88,7 @@ export const DELETE = async (
     await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
 
     req.id = id;
-    return await userController.deactivateAccount(req);
+    return await userController.deleteAccountByAdmin(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

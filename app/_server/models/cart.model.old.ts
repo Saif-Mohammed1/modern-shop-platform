@@ -7,8 +7,8 @@ export interface ICartSchema extends Document {
   user: IUser["_id"]; // Only store the ObjectId of the User
   product: IProductSchema["_id"]; // Only store the ObjectId of the Product
   quantity: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 const CartSchema = new Schema<ICartSchema>(
   {

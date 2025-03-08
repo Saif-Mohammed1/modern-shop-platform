@@ -10,8 +10,8 @@ export interface IRefundSchema extends Document {
   reason: string;
   invoiceId: string;
   amount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  // createdAt: Date;
+  // updatedAt: Date;
 }
 const RefundSchema = new Schema<IRefundSchema>(
   {

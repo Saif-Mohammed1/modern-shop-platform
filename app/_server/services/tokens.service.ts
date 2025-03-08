@@ -110,14 +110,47 @@ export class TokensService {
           1000
     );
   }
-  generateEmailChangeToken(userId: string, email: string): string {
+  generateEmailChangeTokenAndHashed(): {
+    token: string;
+    hashedToken: string;
+  } {
     const token = crypto.randomBytes(32).toString("hex");
-    const hashedToken = this.hashVerificationToken(token);
-    return hashedToken;
+    const hashedToken = this.hashEmailChangeToken(token);
+    return {
+      token,
+      hashedToken,
+    };
   }
   //   getAccessTokenExpiry(): Date {
   //     return process.env.JWT_ACCESS_TOKEN_EXPIRES_IN;
   //   }
+  generateForceRestPassword(): string {
+    const length = Math.floor(Math.random() * (35 - 10 + 1)) + 10; // Random length between 10 and 35
+    const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercase = "abcdefghijklmnopqrstuvwxyz";
+    const numbers = "0123456789";
+    const specialChars = "@!$%*?&";
+    const allChars = uppercase + lowercase + numbers + specialChars;
+
+    let password = "";
+
+    // Ensure at least one character from each required category
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += specialChars[Math.floor(Math.random() * specialChars.length)];
+
+    // Fill the rest with random characters
+    for (let i = password.length; i < length; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    // Shuffle password to randomize character positions
+    return password
+      .split("")
+      .sort(() => Math.random() - 0.5)
+      .join("");
+  }
 
   clearRefreshTokenCookies() {
     cookies().set(this.COOKIE_NAME, "", {
