@@ -1,99 +1,96 @@
-// @ts-ignore
-import { Model, Query, Schema, model, models } from "mongoose";
-import User, { IUser } from "./User.model";
-import Product, { IProduct } from "./Product.model";
-import { Document } from "mongoose";
+import { Schema, model, models, Document, Model, Types } from "mongoose";
+import { IProduct } from "./Product.model";
+import { IUser } from "./User.model";
 import {
+  IOrderItem,
   IShippingInfo,
-  IItems,
   OrderStatus,
+  PaymentsMethod,
 } from "@/app/lib/types/orders.types";
+import { UserCurrency } from "@/app/lib/types/users.types";
 
 export interface IOrder extends Document {
-  _id: Schema.Types.ObjectId;
+  _id: Types.ObjectId;
   userId: IUser["_id"];
-  shippingInfo: IShippingInfo;
-  items: IItems[];
+  items: IOrderItem[];
+  shippingAddress: IShippingInfo;
+
+  payment: {
+    method: string;
+    transactionId: string;
+  };
   status: OrderStatus;
   invoiceId: string;
   invoiceLink: string;
-  totalPrice: number;
-  // createdAt: Date;
-  // updatedAt: Date;
+  subtotal: number;
+  // shippingCost: number;
+  tax: number;
+  total: number;
+  currency: string;
+  orderNotes?: string[];
+  cancellationReason?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
 const OrderSchema = new Schema<IOrder>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-
       ref: "User",
       required: true,
       index: true,
     },
-    shippingInfo: {
-      street: {
-        type: String,
-        required: true,
-      },
-      city: {
-        type: String,
-        required: true,
-      },
-      state: {
-        type: String,
-        required: true,
-      },
-      postalCode: {
-        type: String,
-        required: true,
-      },
-      phone: {
-        type: String,
-        required: true,
-      },
-
-      country: {
-        type: String,
-        required: true,
-      },
-    },
     items: [
       {
-        _id: {
+        productId: {
           type: Schema.Types.ObjectId,
-
           ref: "Product",
           required: true,
-          index: true,
         },
-        name: {
-          type: String,
-          required: true,
+        name: { type: String, required: true },
+        price: { type: Number, required: true, min: 0.01 },
+        discount: { type: Number, default: 0, min: 0 },
+        quantity: { type: Number, required: true, min: 1 },
+        sku: { type: String, required: true },
+        attributes: { type: Map, of: Schema.Types.Mixed },
+        shippingInfo: {
+          weight: { type: Number, min: 0 },
+          dimensions: {
+            length: { type: Number, min: 0 },
+            width: { type: Number, min: 0 },
+            height: { type: Number, min: 0 },
+          },
         },
-        quantity: {
-          type: Number,
-          required: true,
-        },
-        price: {
-          type: Number,
-          required: true,
-        },
-        discount: {
-          type: Number,
-          default: 0,
-        },
-        finalPrice: {
-          type: Number,
-          required: true,
-        },
-        discountExpire: Date,
+        finalPrice: { type: Number, required: true, min: 0.01 },
       },
     ],
+    shippingAddress: {
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      country: { type: String, required: true },
+      phone: { type: String, required: true },
+    },
+    payment: {
+      method: {
+        type: String,
+        required: true,
+        enum: Object.values(PaymentsMethod),
+      },
+      transactionId: { type: String, required: true },
+      // status: {
+      //   type: String,
+      //   enum: Object.values(PaymentStatus),
+
+      //   default: PaymentStatus.Pending,
+      // },
+    },
     status: {
       type: String,
-      // required: true,
-
       enum: Object.values(OrderStatus),
+      // enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
       default: OrderStatus.Pending,
       index: true,
     },
@@ -105,11 +102,18 @@ const OrderSchema = new Schema<IOrder>(
       type: String,
       required: true,
     },
-    totalPrice: {
-      type: Number,
-      required: true,
-      index: true,
+    subtotal: { type: Number, required: true, min: 0 },
+    // shippingCost: { type: Number, required: true, min: 0 },
+    tax: { type: Number, required: true, min: 0 },
+    total: { type: Number, required: true, min: 0 },
+    currency: {
+      type: String,
+      default: UserCurrency.UAH,
+      enum: Object.values(UserCurrency),
     },
+    orderNotes: [{ type: String }],
+    cancellationReason: String,
+    // refundStatus: { type: String, enum: ["requested", "processed", "denied"] },
   },
   {
     timestamps: true,
@@ -121,62 +125,39 @@ const OrderSchema = new Schema<IOrder>(
             ret[field] = new Date(ret[field]).toISOString().split("T")[0];
           }
         });
+        delete ret.__v;
         return ret;
       },
     },
   }
 );
-OrderSchema.index({ createdAt: 1 });
-OrderSchema.index({ userId: 1 });
-OrderSchema.index({ "items._id": 1 });
 
-// OrderSchema.index({ "items._id": 1 });
-OrderSchema.pre<Query<any, IOrder>>(/^find/, function (next) {
-  this.populate({
-    path: "userId",
-    select: "name email",
-    model: User,
-    options: { lean: true },
-  });
-  //.populate({
-  //   path: "shippingInfo",
-  // });
+// Indexes
+OrderSchema.index({ createdAt: -1 });
+OrderSchema.index({ "items.productId": 1 });
+OrderSchema.index({ "payment.transactionId": 1 }, { unique: true });
 
-  // this.populate({
-  //   path: "user",
-  //   select: "name photo",
-  // });
-  next();
+// Virtuals
+OrderSchema.virtual("userDetails", {
+  ref: "User",
+  localField: "userId",
+  foreignField: "_id",
+  justOne: true,
 });
 
-// comvert price to two decimal places
-OrderSchema.set("toJSON", {
-  versionKey: false,
-
-  transform: function (_, ret) {
-    ret.totalPrice = parseFloat(ret.totalPrice.toFixed(2));
-    ret.items.forEach((item: any) => {
-      item.price = parseFloat(item.price.toFixed(2));
-      item.finalPrice = parseFloat(item.finalPrice.toFixed(2));
-      if (item.discount) {
-        item.discount = parseFloat(item.discount.toFixed(2));
-      }
-    });
-    return ret;
-  },
-});
-OrderSchema.post(/^find/, function (docs, next) {
-  // Ensure `docs` is an array (it should be for `find`)
-  if (Array.isArray(docs)) {
-    // Filter out documents where `product` is null
-    const filteredDocs = docs.filter((doc) => doc.userId !== null);
-    // You cannot just replace `docs` with `filteredDocs`, as `docs` is what the caller receives
-    // You would need to mutate `docs` directly if you need to change the actual array being passed back
-    docs.splice(0, docs.length, ...filteredDocs);
+// Pre-save hook for price validation
+OrderSchema.pre("save", function (next) {
+  if (this.isModified("items")) {
+    this.subtotal = this.items.reduce(
+      (sum, item) => sum + item.finalPrice * item.quantity,
+      0
+    );
+    // this.total = this.subtotal + this.shippingCost + this.tax;
+    this.total = this.subtotal + this.tax;
   }
   next();
 });
+
 const OrderModel: Model<IOrder> =
   models.Order || model<IOrder>("Order", OrderSchema);
-
 export default OrderModel;

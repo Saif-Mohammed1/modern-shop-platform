@@ -58,7 +58,7 @@ class OrderController {
     }
     const body = await req.json();
     const dto = OrderValidation.validateUpdateOrderStatus(body);
-    const order = await this.orderService.updateOrderStatus(req.id, dto);
+    const order = await this.orderService.updateOrderStatus(req.id, dto.status);
     return NextResponse.json(order, { status: 200 });
   }
   async updateOrder(req: NextRequest) {

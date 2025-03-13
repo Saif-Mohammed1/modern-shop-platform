@@ -1,6 +1,9 @@
 import { OrderStatus } from "@/app/lib/types/orders.types";
 import { faker } from "@faker-js/faker";
 import { assignAsObjectId } from "./assignAsObjectId";
+import { NextRequest } from "next/server";
+import productController from "@/app/_server/controllers/product.controller";
+import { IUser } from "@/app/_server/models/User.model";
 // create a random user
 interface IUserInput {
   name: string;
@@ -9,6 +12,45 @@ interface IUserInput {
   //   passwordConfirm: string | undefined;
   emailVerify: boolean;
 }
+// export const createRandomUsers = async (count: number) => {
+//   const userAgent = faker.internet.userAgent();
+//   const ip = faker.internet.ip();
+
+//   for (let i = 0; i < count; i++) {
+//     const randomName = faker.person.fullName(); // Rowan Nikolaus
+//     const randomEmail = faker.internet.email(); //
+//     const randomPassword = "Pa@password12345";
+//     const emailVerify = faker.datatype.boolean();
+//     const req = new NextRequest(
+//       new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/register"),
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//           Accept: "application/json",
+//           "User-Agent": userAgent,
+//           "x-client-ip": ip,
+//           "x-forwarded-for": ip,
+//         },
+//         method: "POST",
+//         body: JSON.stringify({
+//           name: randomName,
+//           email: randomEmail,
+//           password: randomPassword,
+//           confirmPassword: randomPassword,
+//           emailVerify,
+//         }),
+//       }
+//     );
+//     await authController.register(req);
+//     // users.push({
+//     //   name: randomName,
+//     //   email: randomEmail,
+//     //   password: randomPassword,
+//     //   emailVerify: emailVerify,
+//     // });
+//   }
+//   // return users;
+// }; // create a random product
 
 export const createRandomUsers = (count: number) => {
   const users = [] as IUserInput[];
@@ -118,6 +160,107 @@ export const createRandomProducts = (count: number, userId: string) => {
     });
   }
   return products;
+};
+export const editRandomProducts = async (products: any[], userId: IUser[]) => {
+  // const editedProducts = [] as IProductInput[];
+  const req = [];
+  for (let i = 0; i < products.length; i++) {
+    const userAgent = faker.internet.userAgent();
+    const ip = faker.internet.ipv4();
+    const images = [];
+    const randomName = faker.commerce.productName(); // Rowan Nikolaus
+    const randomCategory = faker.commerce.department();
+    const randomPrice = parseFloat(faker.commerce.price());
+    const randomUserId = faker.helpers.arrayElement(userId);
+    //  make it form 0 to randomPrice -1
+    const randomDiscount = faker.number.float({ min: 0, max: randomPrice - 1 });
+    const randomDiscountExpire = faker.date.future();
+    for (let j = 0; j < faker.number.int({ min: 1, max: 4 }); j++) {
+      const randomWidth = faker.number.int({ min: 100, max: 1000 });
+      const randomHeight = faker.number.int({ min: 100, max: 1000 });
+      const randomImage = faker.image.url({
+        height: randomHeight,
+        width: randomWidth,
+      });
+      images.push({ link: randomImage, public_id: randomImage });
+    }
+    const randomDescription = faker.commerce.productDescription(); //
+    const randomStock = faker.number.int({ min: 0, max: 100 });
+    const randomRating = faker.number.float({ min: 1, max: 5 });
+    const randomRatingQuantity = faker.number.int({ min: 0, max: 100 });
+    const slug = faker.helpers.slugify(randomName);
+    const sku = faker.helpers.fromRegExp("[0-9]{9}");
+    const attributes = {
+      color: faker.color.human(),
+      size: faker.commerce.productMaterial(),
+      weight: faker.number.int({ min: 1, max: 10 }),
+    };
+    const shippingInfo = {
+      weight: faker.number.int({ min: 1, max: 10 }),
+      dimensions: {
+        length: faker.number.int({ min: 1, max: 10 }),
+        width: faker.number.int({ min: 1, max: 10 }),
+        height: faker.number.int({ min: 1, max: 10 }),
+      },
+    };
+    // editedProducts.push({
+    //   name: randomName,
+    //   category: randomCategory,
+    //   price: randomPrice,
+    //   discount: randomDiscount,
+    //   discountExpire: randomDiscountExpire,
+    //   images,
+    //   description: randomDescription,
+    //   stock: randomStock,
+    //   ratingsAverage: randomRating,
+    //   ratingsQuantity: randomRatingQuantity,
+    //   active: true,
+    //   slug,
+    //   reserved: 0,
+    //   sold: 0,
+    //   sku,
+    //   attributes,
+    //   shippingInfo,
+    //   userId,
+    // });
+    const reqs = new NextRequest(
+      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/products"),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "User-Agent": userAgent,
+          "x-client-ip": ip,
+          "x-forwarded-for": ip,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          name: randomName,
+          category: randomCategory,
+          price: randomPrice,
+          discount: randomDiscount,
+          discountExpire: randomDiscountExpire,
+          images,
+          description: randomDescription,
+          stock: randomStock,
+          ratingsAverage: randomRating,
+          ratingsQuantity: randomRatingQuantity,
+          active: true,
+          slug,
+          reserved: 0,
+          sold: 0,
+          sku,
+          attributes,
+          shippingInfo,
+          userId: randomUserId["_id"],
+        }),
+      }
+    );
+    reqs.slug = products[i].slug;
+    reqs.user = randomUserId;
+    req.push(productController.updateProduct(reqs));
+  }
+  await Promise.all(req);
 };
 export const createRandomReviews = (productId: any[], userId: any[]) => {
   // {

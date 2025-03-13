@@ -511,7 +511,7 @@ function SecurityMetric({
   );
 }
 
-function RelativeTime({ date }: { date: string }) {
+export function RelativeTime({ date }: { date: string }) {
   const relativeTime = DateTime.fromISO(date).toRelative();
   return (
     <time dateTime={date} className="text-muted-foreground">

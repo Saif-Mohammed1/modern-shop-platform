@@ -1,8 +1,4 @@
-import {
-  QueryBuilderConfig,
-  QueryBuilderResult,
-  QueryOptionConfig,
-} from "@/app/lib/types/queryBuilder.types";
+import { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
 import {
   CreateProductDto,
   ProductLogsDto,
@@ -14,30 +10,18 @@ import AppError from "@/app/lib/utilities/appError";
 import { productControllerTranslate } from "@/public/locales/server/productControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { destroyImage, uploadImage } from "@/app/lib/utilities/cloudinary";
-import AuditLogModel, { IAuditLog } from "../models/audit-log.model";
+import AuditLogModel from "../models/audit-log.model";
 import { ClientSession, Types } from "mongoose";
-import {
-  AuditAction,
-  AuditSource,
-  EntityType,
-} from "@/app/lib/types/audit.types";
-import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 
 export class ProductService {
   private repository = new ProductRepository(ProductModel);
   private async logAction(
-    action: AuditAction,
-    entityId: string,
+    action: "CREATE" | "UPDATE" | "DELETE" | "IMAGE_DELETE",
+    entityId: Types.ObjectId,
     actor: Types.ObjectId,
-    changes: Array<{
-      field: string;
-      before?: any;
-      after?: any;
-      changeType: "ADD" | "MODIFY" | "REMOVE";
-    }>,
+    changes: Record<string, any>,
     ipAddress: string,
     userAgent: string,
-    source: AuditSource = AuditSource.WEB,
     session?: ClientSession
   ) {
     await AuditLogModel.create(
@@ -45,20 +29,20 @@ export class ProductService {
         {
           actor,
           action,
-          entityType: EntityType.PRODUCT,
           entityId,
           changes,
           ipAddress,
           userAgent,
-          source,
         },
       ],
-      { session }
+      {
+        session,
+      }
     );
   }
 
   private getUpdateChanges(oldDoc: IProduct, newDoc: IProduct) {
-    const changes = [];
+    const changes: Record<string, any> = {};
     const trackedFields = [
       "name",
       "price",
@@ -74,14 +58,13 @@ export class ProductService {
       const newValue = newDoc[field as keyof IProduct];
 
       if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-        changes.push({
-          field,
-          before: oldValue,
-          after: newValue,
-          changeType: "MODIFY" as const,
-        });
+        changes[field] = {
+          old: oldValue,
+          new: newValue,
+        };
       }
     }
+
     return changes;
   }
   async createProduct(
@@ -112,23 +95,16 @@ export class ProductService {
 
       const product = await this.repository.create(dto, session);
 
-      const { userId, ...productData } = dto;
-      productData.images = uploadedImages;
-
-      const changes = Object.entries(productData).map(([field, value]) => ({
-        field,
-        after: value,
-        changeType: "ADD" as const,
-      }));
-
       await this.logAction(
-        AuditAction.CREATE,
-        product.slug,
+        "CREATE",
+        product._id,
         dto.userId,
-        changes,
+        {
+          ...dto,
+          images: uploadedImages,
+        },
         logs.ipAddress,
         logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
         session
       );
 
@@ -192,13 +168,12 @@ export class ProductService {
       const changes = this.getUpdateChanges(oldProduct, updatedProduct);
       if (Object.keys(changes).length > 0) {
         await this.logAction(
-          AuditAction.UPDATE,
-          updatedProduct.slug,
+          "UPDATE",
+          updatedProduct._id,
           actorId,
           changes,
           logs.ipAddress,
           logs.userAgent,
-          logs.source as AuditSource, // Add source to ProductLogsDto
           session
         );
       }
@@ -242,21 +217,12 @@ export class ProductService {
         session
       );
       await this.logAction(
-        AuditAction.DELETE,
-        product.slug,
+        "DELETE",
+        product._id,
         actorId,
-        [
-          {
-            changeType: "REMOVE",
-            field: "product",
-            before: product,
-            after: undefined,
-          },
-        ],
-
+        product.toObject(),
         logs.ipAddress,
         logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
         session
       );
       await session.commitTransaction();
@@ -324,21 +290,16 @@ export class ProductService {
         actorId,
         session
       );
-      const changes = imagesToDelete.map((image) => ({
-        field: "images",
-        before: image,
-        after: undefined,
-        changeType: "REMOVE" as const,
-      }));
-
       await this.logAction(
-        AuditAction.IMAGE_REMOVE, // Fixed action type
-        product.slug,
+        "IMAGE_DELETE",
+        product._id,
         actorId,
-        changes,
+        {
+          deletedImages: imagesToDelete,
+          remainingImages: product.images,
+        },
         logs.ipAddress,
         logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
         session
       );
 
@@ -401,176 +362,6 @@ export class ProductService {
     userId: CreateProductDto["userId"]
   ) {
     return await this.repository.toggleProductActivity(slug, userId);
-  }
-  async getProductHistory(
-    slug: string,
-    options: QueryOptionConfig,
-    versionId?: string
-  ): Promise<QueryBuilderResult<IAuditLog>> {
-    const queryConfig: QueryBuilderConfig<IAuditLog> = {
-      allowedFilters: [
-        "entityType",
-        "entityId",
-        "actor",
-        "action",
-
-        "createdAt",
-      ],
-
-      allowedSorts: ["createdAt", "updatedAt"],
-    };
-
-    //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
-    //   maxLimit: 100,
-    const query = new URLSearchParams({
-      ...options.query,
-      entityType: EntityType.PRODUCT,
-      entityId: slug,
-    });
-
-    if (versionId) {
-      const targetVersion = await AuditLogModel.findById(versionId);
-      if (!targetVersion) throw new AppError("Invalid version", 400);
-      query.append("createAt[lte]", targetVersion.createdAt.toISOString());
-    }
-    const queryBuilder = new QueryBuilder<IAuditLog>(
-      AuditLogModel,
-      query,
-      queryConfig
-    );
-
-    if (options?.populate) {
-      queryBuilder.populate([{ path: "actor", select: "name email" }]);
-    }
-
-    const logs = await queryBuilder.execute();
-
-    return this.reconstructProduct(logs);
-  }
-
-  private reconstructProduct(
-    logsResult: QueryBuilderResult<IAuditLog>
-  ): QueryBuilderResult<IAuditLog> {
-    let product: any = {};
-    const reconstructedVersions: any[] = [];
-
-    for (const log of logsResult.docs) {
-      switch (log.action) {
-        case AuditAction.CREATE:
-          log.changes.forEach((change) => {
-            if (change.changeType === "ADD") {
-              product[change.field] = change.after;
-            }
-          });
-          break;
-
-        case AuditAction.UPDATE:
-          log.changes.forEach((change) => {
-            product[change.field] = change.after;
-          });
-          break;
-
-        case AuditAction.DELETE:
-          product = null;
-          break;
-
-        case AuditAction.RESTORE:
-          product = log.changes[0]?.after || {};
-          break;
-
-        case AuditAction.IMAGE_ADD:
-          product.images = product.images || [];
-          log.changes.forEach((change) => {
-            product.images.push(change.after);
-          });
-          break;
-
-        case AuditAction.IMAGE_REMOVE:
-          product.images = (product.images || []).filter(
-            (img: any) =>
-              !log.changes.some((c) => c.before.public_id === img.public_id)
-          );
-          break;
-      }
-
-      // Save snapshot at each version
-      reconstructedVersions.push({
-        ...product,
-        versionId: log._id,
-        timestamp: log.createdAt,
-      });
-    }
-
-    return {
-      ...logsResult,
-      docs: reconstructedVersions, // Return product versions with pagination
-    };
-  }
-  async restoreProductVersion(
-    slug: string,
-    versionId: string,
-    actorId: Types.ObjectId,
-    logs: ProductLogsDto
-  ): Promise<IProduct> {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-
-    try {
-      // Get current product first to ensure it exists
-      const currentProduct = await this.repository.getProductBySlug(slug);
-      if (!currentProduct) {
-        throw new AppError("Product not found", 404);
-      }
-
-      // Get historical version data using product ID
-      const historicalData = await this.getProductHistory(
-        slug,
-        { query: new URLSearchParams() }, // Default query options
-        versionId
-      );
-
-      if (!historicalData.docs.length) {
-        throw new AppError("Historical version not found", 404);
-      }
-
-      // Get the reconstructed product version
-      const productVersion = historicalData.docs[0] as unknown as IProduct;
-      // Prepare update payload from reconstructed version
-      const updatePayload: Partial<IProduct> = {
-        name: productVersion.name,
-        price: productVersion.price,
-        discount: productVersion.discount,
-        stock: productVersion.stock,
-        description: productVersion.description,
-        // images: productVersion.images || [],
-      };
-      // Perform update
-      const updatedProduct = await this.repository.update(
-        slug,
-        updatePayload,
-        session
-      );
-
-      // Log restoration action with proper entity ID
-      await this.logAction(
-        AuditAction.RESTORE,
-        currentProduct.slug, // Use ObjectId instead of slug
-        actorId,
-        this.getUpdateChanges(currentProduct, updatedProduct!),
-        logs.ipAddress,
-        logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
-        session
-      );
-
-      await session.commitTransaction();
-      return updatedProduct!;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
   }
 }
 /**   topOfferProducts: products[0].topOfferProducts,

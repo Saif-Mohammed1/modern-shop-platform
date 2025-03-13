@@ -29,6 +29,9 @@ export const OrderTranslate = {
         quantity: {
           required: "Product quantity is required",
         },
+        sku: {
+          required: "Product Sku is required",
+        },
         price: {
           required: "Product price is required",
         },
@@ -56,6 +59,21 @@ export const OrderTranslate = {
       },
       status: {
         required: "Status is required",
+      },
+      subtotal: {
+        required: "Subtotal is required",
+      },
+      // shippingCost: {
+      //   required: "Shipping cost is required",
+      // },
+      tax: {
+        required: "Tax is required",
+      },
+      orderNotes: {
+        required: "Order notes are required",
+      },
+      cancellationReason: {
+        required: "Cancellation reason is required",
       },
     },
     functions: {
@@ -114,6 +132,9 @@ export const OrderTranslate = {
         quantity: {
           required: "Кількість продукту обов'язкова",
         },
+        sku: {
+          required: "Артикул продукту обов'язковий",
+        },
         price: {
           required: "Ціна продукту обов'язкова",
         },
@@ -141,6 +162,22 @@ export const OrderTranslate = {
       },
       status: {
         required: "Статус обов'язковий",
+      },
+
+      subtotal: {
+        required: "Проміжна сума обов'язкова",
+      },
+      // shippingCost: {
+      //   required: "Вартість доставки обов'язкова",
+      // },
+      tax: {
+        required: "Податок обов'язковий",
+      },
+      orderNotes: {
+        required: "Примітки до замовлення обов'язкові",
+      },
+      cancellationReason: {
+        required: "Причина скасування обов'язкова",
       },
     },
     functions: {

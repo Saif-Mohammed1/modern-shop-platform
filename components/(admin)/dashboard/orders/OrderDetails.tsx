@@ -1,143 +1,349 @@
+// import React, { useState, useEffect } from "react";
+// import { useRouter } from "next/navigation";
+// import { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
+// import api from "@/app/lib/utilities/api";
+// import toast from "react-hot-toast";
+// import StatusBadge from "@/components/ui/StatusBadge";
+// import Button from "@/components/ui/Button";
+// import { Card, CardContent, CardHeader } from "@/components/ui/card";
+// import Select from "@/components/ui/Select";
+// import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
+// import { lang } from "@/app/lib/utilities/lang";
+// import { formatUAH } from "@/app/lib/utilities/formatCurrency";
+
+// interface AdminOrderDetailsProps {
+//   order: OrderType;
+// }
+
+// export const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
+//   const router = useRouter();
+//   const [status, setStatus] = useState<OrderStatus>(order.status);
+//   const [isUpdating, setIsUpdating] = useState(false);
+
+//   useEffect(() => {
+//     setStatus(order.status);
+//   }, [order.status]);
+
+//   const handleStatusUpdate = async () => {
+//     try {
+//       setIsUpdating(true);
+//       await api.put(`/api/orders/${order._id}`, { status });
+//       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
+//       router.refresh();
+//     } catch (error: any) {
+//       toast.error(error.message || ordersTranslate.functions[lang].error);
+//     } finally {
+//       setIsUpdating(false);
+//     }
+//   };
+
+//   return (
+//     <div className="space-y-6">
+//       <div className="flex justify-between items-center">
+//         <div>
+//           <h1 className="text-2xl font-bold">Order #{order._id}</h1>
+//           <StatusBadge status={order.status} />
+//         </div>
+//         <Button onClick={() => router.push("/dashboard/orders")}>
+//           Back to Orders
+//         </Button>
+//       </div>
+
+//       <Card>
+//         <CardHeader className="text-lg font-semibold">
+//           Shipping Information
+//         </CardHeader>
+//         <CardContent className="grid grid-cols-2 gap-4">
+//           <div>
+//             <p className="font-medium">Contact</p>
+//             <p>{order.shippingInfo.phone}</p>
+//           </div>
+//           <div>
+//             <p className="font-medium">Address</p>
+//             <p>
+//               {order.shippingInfo.street}, {order.shippingInfo.city}
+//               <br />
+//               {order.shippingInfo.state} {order.shippingInfo.postalCode}
+//               <br />
+//               {order.shippingInfo.country}
+//             </p>
+//           </div>
+//         </CardContent>
+//       </Card>
+
+//       <Card>
+//         <CardHeader className="text-lg font-semibold">Order Items</CardHeader>
+//         <CardContent className="space-y-4">
+//           {order.items.map((item, index) => (
+//             <div
+//               key={index}
+//               className="flex justify-between items-center border-b pb-2"
+//             >
+//               <div>
+//                 <p className="font-medium">{item.name}</p>
+//                 <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
+//                 {item.variant && (
+//                   <p className="text-sm text-muted-foreground">
+//                     Variant: {item.variant}
+//                   </p>
+//                 )}
+//               </div>
+//               <div className="text-right">
+//                 <p>
+//                   {item.quantity} × {formatUAH(item.finalPrice)}
+//                 </p>
+//                 <p className="text-sm text-muted-foreground">
+//                   {formatUAH(item.quantity * item.finalPrice)}
+//                 </p>
+//               </div>
+//             </div>
+//           ))}
+//         </CardContent>
+//       </Card>
+
+//       <Card>
+//         <CardHeader className="text-lg font-semibold">Order Summary</CardHeader>
+//         <CardContent className="space-y-2">
+//           <div className="flex justify-between">
+//             <span>Subtotal</span>
+//             <span>{formatUAH(order.subtotal)}</span>
+//           </div>
+//           <div className="flex justify-between">
+//             <span>Shipping</span>
+//             <span>{formatUAH(order.shippingCost)}</span>
+//           </div>
+//           <div className="flex justify-between">
+//             <span>Tax</span>
+//             <span>{formatUAH(order.tax)}</span>
+//           </div>
+//           <div className="flex justify-between font-bold">
+//             <span>Total</span>
+//             <span>{formatUAH(order.total)}</span>
+//           </div>
+//         </CardContent>
+//       </Card>
+
+//       <Card>
+//         <CardHeader className="text-lg font-semibold">Order Status</CardHeader>
+//         <CardContent className="flex items-center gap-4">
+//           <Select
+//             options={[
+//               {
+//                 label: ordersTranslate.orders[lang].filter.select.options.all,
+//                 value: "",
+//               },
+//               ...Object.values(OrderStatus).map((status) => ({
+//                 label:
+//                   ordersTranslate.orders[lang].filter.select.options[status],
+//                 value: status,
+//               })),
+//             ]}
+//             value={status}
+//             onChange={(e) => setStatus(e.target.value as OrderStatus)}
+//             placeholder="Select Status"
+//           />
+//           <Button
+//             onClick={handleStatusUpdate}
+//             disabled={isUpdating || status === order.status}
+//           >
+//             {isUpdating ? "Updating..." : "Update Status"}
+//           </Button>
+//         </CardContent>
+//       </Card>
+//     </div>
+//   );
+// };
 "use client";
-import React, { FC, useState } from "react";
-import toast from "react-hot-toast";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
 import api from "@/app/lib/utilities/api";
+import toast from "react-hot-toast";
+import StatusBadge from "@/components/ui/StatusBadge";
+import Button from "@/components/ui/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Select from "@/components/ui/Select";
 import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
-import { useRouter } from "next/navigation";
+import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
 
-type Props = {
+interface AdminOrderDetailsProps {
   order: OrderType;
-};
+}
 
-const AdminOrderDetails: FC<Props> = ({ order }) => {
-  const [status, setStatus] = useState<OrderStatus>(order.status);
+const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
   const router = useRouter();
-  const handleStatusChange = async () => {
-    let toastLoading;
-    try {
-      toastLoading = toast.loading(
-        ordersTranslate.functions[lang].handleStatusUpdate.loading
-      );
+  const [status, setStatus] = useState<OrderStatus>(order.status);
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  useEffect(() => {
+    setStatus(order.status);
+  }, [order.status]);
+
+  const handleStatusUpdate = async () => {
+    try {
+      setIsUpdating(true);
       await api.put(`/admin/dashboard/orders/${order._id}`, { status });
-      setStatus(status);
       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message || ordersTranslate.functions[lang].error);
-      } else {
-        toast.error(ordersTranslate.functions[lang].error);
-      }
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error.message || ordersTranslate.functions[lang].error);
     } finally {
-      toast.dismiss(toastLoading);
+      setIsUpdating(false);
     }
-  };
-  const goBack = () => {
-    router.push("/dashboard/orders");
   };
 
   return (
-    <div className="p-6 max-w-4xl #mx-auto bg-white rounded-lg shadow-lg">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-semibold mb-4">
-          {ordersTranslate.orders[lang].details.title}
-        </h2>
-        <button
-          onClick={goBack}
-          className="p-2 bg-blue-500 text-white rounded-md"
-        >
-          {ordersTranslate.orders[lang].details.goBack}
-        </button>
-      </div>
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl mb-4">
-          {ordersTranslate.orders[lang].details.shippingInfo.title}
-        </h3>
-        <p>
-          {ordersTranslate.orders[lang].details.shippingInfo.street}:
-          {order.shippingInfo.street}
-        </p>
-        <p>
-          {ordersTranslate.orders[lang].details.shippingInfo.city}:{" "}
-          {order.shippingInfo.city}
-        </p>
-        <p>
-          {ordersTranslate.orders[lang].details.shippingInfo.state}:{" "}
-          {order.shippingInfo.state}
-        </p>
-        <p>
-          {ordersTranslate.orders[lang].details.shippingInfo.postalCode}:{" "}
-          {order.shippingInfo.postalCode}
-        </p>
-        <p>
-          {ordersTranslate.orders[lang].details.shippingInfo.phone}:{" "}
-          {order.shippingInfo.phone}
-        </p>
-        <p>
-          {ordersTranslate.orders[lang].details.shippingInfo.country}:{" "}
-          {order.shippingInfo.country}
-        </p>
+        <div>
+          <h1 className="text-2xl font-bold">Order #{order.invoiceId}</h1>
+          <StatusBadge status={order.status as OrderStatus} />
+        </div>
+        <Button onClick={() => router.push("/dashboard/orders")}>
+          Back to Orders
+        </Button>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow-lg mt-4">
-        <h3 className="text-xl mb-4">
-          {ordersTranslate.orders[lang].details.items.title}
-        </h3>
-        <div className="max-h-[50vh] overscroll-y-auto ">
+      <Card>
+        <CardHeader className="text-lg font-semibold">
+          Shipping Information
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="font-medium">Contact</p>
+            <p>{order.shippingAddress.phone}</p>
+          </div>
+          <div>
+            <p className="font-medium">Address</p>
+            <p>
+              {order.shippingAddress.street}, {order.shippingAddress.city}
+              <br />
+              {order.shippingAddress.state} {order.shippingAddress.postalCode}
+              <br />
+              {order.shippingAddress.country}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="text-lg font-semibold">Order Items</CardHeader>
+        <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
           {order.items.map((item, index) => (
-            <div key={index}>
-              <p>{item.name}</p>
-              <p>
-                {ordersTranslate.orders[lang].details.items.quantity}:{" "}
-                {item.quantity}
-              </p>
-              <p>
-                {ordersTranslate.orders[lang].details.items.price}: $
-                {item.price}
-              </p>
+            <div
+              key={index}
+              className="flex justify-between items-center border-b pb-2"
+            >
+              <div>
+                <p className="font-medium">{item.name}</p>
+                <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
+                {/* {item.attributes && Object.keys(item.attributes).length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Attributes: {JSON.stringify(item.attributes)}
+                  </p>
+                )} */}
+                {item.attributes &&
+                  Object.entries(item.attributes).map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <dt className="text-gray-600 capitalize">{key}</dt>
+                      <dd className="text-gray-900 font-medium">{value}</dd>
+                    </div>
+                  ))}
+              </div>
+              <div className="text-right">
+                <p>
+                  {item.quantity} ×{" "}
+                  {formatCurrency(item.finalPrice, {
+                    currency: order.currency,
+                  })}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {formatCurrency(item.quantity * item.finalPrice, {
+                    currency: order.currency,
+                  })}
+                </p>
+              </div>
             </div>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="bg-white p-6 rounded-lg shadow-lg mt-4">
-        <h3 className="text-xl mb-4">
-          {ordersTranslate.orders[lang].details.status}
-        </h3>
-        <select
-          value={status}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setStatus(e.target.value as OrderStatus)
-          }
-          className="p-2 border border-gray-300 rounded-md"
-        >
-          <option value="pending">
-            {ordersTranslate.orders[lang].filter.select.options.pending}
-          </option>
-          <option value="completed">
-            {ordersTranslate.orders[lang].filter.select.options.completed}
-          </option>
-          <option value="refunded">
-            {ordersTranslate.orders[lang].filter.select.options.refunded}
-          </option>
-          <option value="processing">
-            {ordersTranslate.orders[lang].filter.select.options.processing}
-          </option>
-          <option value="cancelled">
-            {ordersTranslate.orders[lang].filter.select.options.cancelled}
-          </option>
-        </select>
-        <button
-          onClick={handleStatusChange}
-          className="ml-4 p-2 bg-blue-500 text-white rounded-md"
-        >
-          {ordersTranslate.orders[lang].details.submit}{" "}
-        </button>
-      </div>
+      <Card>
+        <CardHeader className="text-lg font-semibold">
+          Financial Details
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>
+              {formatCurrency(order.subtotal, { currency: order.currency })}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Tax</span>
+            <span>
+              {formatCurrency(order.tax, { currency: order.currency })}
+            </span>
+          </div>
+          <div className="flex justify-between font-bold">
+            <span>Total</span>
+            <span>
+              {formatCurrency(order.total, { currency: order.currency })}
+            </span>
+          </div>
+          <div className="pt-4">
+            <p className="text-sm text-muted-foreground">
+              Invoice ID: {order.invoiceId}
+            </p>
+            {order.invoiceLink && (
+              <a
+                href={order.invoiceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline text-sm"
+              >
+                View Invoice
+              </a>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="text-lg font-semibold">Order Status</CardHeader>
+        <CardContent className="flex items-center gap-4">
+          <Select
+            options={Object.values(OrderStatus).map((status) => ({
+              label: ordersTranslate.orders[lang].filter.select.options[status],
+              value: status,
+            }))}
+            value={status}
+            onChange={(e) => setStatus(e.target.value as OrderStatus)}
+            placeholder="Select Status"
+          />
+          <Button
+            onClick={handleStatusUpdate}
+            disabled={isUpdating || status === order.status}
+          >
+            {isUpdating ? "Updating..." : "Update Status"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {order.orderNotes && order.orderNotes.length > 0 && (
+        <Card>
+          <CardHeader className="text-lg font-semibold">Order Notes</CardHeader>
+          <CardContent className="space-y-2">
+            {order.orderNotes.map((note, index) => (
+              <p key={index} className="text-sm text-muted-foreground">
+                {note}
+              </p>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
-
 export default AdminOrderDetails;

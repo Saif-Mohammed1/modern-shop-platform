@@ -6,6 +6,9 @@ import {
 } from "../dtos/order.dto";
 import OrderModel from "../models/Order.model ";
 import { OrderRepository } from "../repositories/order.repository";
+import AppError from "@/app/lib/utilities/appError";
+import { OrderTranslate } from "@/public/locales/server/Order.Translate";
+import { lang } from "@/app/lib/utilities/lang";
 
 export class OrderService {
   private repository = new OrderRepository(OrderModel);
@@ -15,8 +18,9 @@ export class OrderService {
     session.startTransaction();
 
     try {
-      await this.repository.create(dto, session);
+      const order = await this.repository.create(dto, session);
       await session.commitTransaction();
+      return order;
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -26,28 +30,47 @@ export class OrderService {
   }
 
   async getOrders(options: QueryOptionConfig) {
-    return await this.repository.getOrders(options);
+    return (await this.repository.getOrders(options)) || [];
   }
 
   async getOrderById(id: string) {
-    return this.repository.findById(id);
+    const order = await this.repository.findById(id);
+    if (!order) {
+      throw new AppError(OrderTranslate[lang].errors.noDocumentsFound, 404);
+    }
+    return order;
   }
   async getLatestOrder(userId: string) {
-    return this.repository.getLatestOrder(userId);
+    const order = await this.repository.getLatestOrder(userId);
+    if (!order) {
+      throw new AppError(OrderTranslate[lang].errors.noDocumentsFound, 404);
+    }
+    return order;
   }
   async getOrdersByUserId(userId: string, options: QueryOptionConfig) {
     return this.repository.findByUser(userId, options);
   }
-  async updateOrderStatus(orderId: string, status: UpdateOrderStatusDto) {
-    return this.repository.updateStatus(orderId, status);
+  async updateOrderStatus(
+    orderId: string,
+    status: UpdateOrderStatusDto["status"]
+  ) {
+    const order = await this.repository.updateStatus(orderId, status);
+    if (!order) {
+      throw new AppError(OrderTranslate[lang].errors.noDocumentsFound, 404);
+    }
+    return order;
   }
   async updateOrder(id: string, dto: UpdateOrderDto) {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
-      await this.repository.update(id, dto, session);
+      const order = await this.repository.update(id, dto, session);
+      if (!order) {
+        throw new AppError(OrderTranslate[lang].errors.noDocumentsFound, 404);
+      }
 
       await session.commitTransaction();
+      return order;
     } catch (error) {
       await session.abortTransaction();
       throw error;

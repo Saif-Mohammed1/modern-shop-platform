@@ -618,9 +618,7 @@ export class UserRepository extends BaseRepository<IUser> {
     options: QueryOptionConfig
   ): Promise<QueryBuilderResult<IUser> | []> {
     const queryConfig: QueryBuilderConfig<IUser> = {
-      allowedFilters: ["name", "email", "role", "status", "createdAt"].filter(
-        Boolean
-      ) as Array<keyof IUser>,
+      allowedFilters: ["name", "email", "role", "status", "createdAt"],
       searchFields: ["name", "email"],
       // allowedSorts: ["createdAt", "updatedAt"],
     };

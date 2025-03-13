@@ -1,6 +1,10 @@
 // import { lang } from "@/app/lib/util/lang";
 import { AuditAction } from "@/app/lib/types/audit.types";
-import { UserRole, UserStatus } from "@/app/lib/types/users.types";
+import {
+  UserCurrency,
+  UserRole,
+  UserStatus,
+} from "@/app/lib/types/users.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 import { z } from "zod";
@@ -54,7 +58,9 @@ export class UserValidation {
       preferences: z
         .object({
           language: z.enum(["en", "uk", "es", "fr", "de"]).default("uk"),
-          currency: z.enum(["USD", "EUR", "GBP", "UAH"]).default("UAH"),
+          currency: z
+            .enum(Object.values(UserCurrency) as [string, ...string[]])
+            .default(UserCurrency.UAH),
           marketingOptIn: z.boolean().default(false),
         })
         .optional(),

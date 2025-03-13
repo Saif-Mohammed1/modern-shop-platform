@@ -43,10 +43,10 @@ class ProductController {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
       const ipAddress =
+        req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
         req.ip;
-
       const userAgent = req.headers.get("user-agent");
       const logs = ProductValidation.validateProductLogs({
         ipAddress,
@@ -97,8 +97,12 @@ class ProductController {
         this.productService.getProducts(
           {
             query: req.nextUrl.searchParams,
+            populate:
+              req.user?.role.includes(UserRole.ADMIN) ||
+              req.user?.role.includes(UserRole.MODERATOR),
           },
-          req.user?.role.includes(UserRole.ADMIN)
+          req.user?.role.includes(UserRole.ADMIN) ||
+            req.user?.role.includes(UserRole.MODERATOR)
         ),
         this.productService.getProductsCategory(),
       ]);
@@ -194,6 +198,52 @@ class ProductController {
       },
       { status: 200 }
     );
+  }
+  async getProductHistory(req: NextRequest) {
+    try {
+      if (!req?.slug) {
+        throw new AppError(ProductTranslate[lang].slug, 400);
+      }
+      const product = await this.productService.getProductHistory(req?.slug, {
+        query: req.nextUrl.searchParams,
+        populate:
+          req.user?.role.includes(UserRole.ADMIN) ||
+          req.user?.role.includes(UserRole.MODERATOR),
+      });
+      return NextResponse.json({ product }, { status: 200 });
+    } catch (err) {
+      throw err;
+    }
+  }
+  async restoreProduct(req: NextRequest) {
+    try {
+      if (!req?.slug || !req.user?._id) {
+        throw new AppError(ProductTranslate[lang].slug, 400);
+      }
+      const ipAddress =
+        req.headers.get("x-forwarded-for") ||
+        req.headers.get("x-real-ip") ||
+        req.ip;
+
+      const userAgent = req.headers.get("user-agent");
+      const logs = ProductValidation.validateProductLogs({
+        ipAddress,
+        userAgent,
+      });
+      const { versionId } = await req.json();
+      if (!versionId) {
+        throw new AppError(ProductTranslate[lang].dto.versionId.required, 400);
+      }
+      const product = await this.productService.restoreProductVersion(
+        req?.slug,
+        versionId,
+        req.user?._id,
+        logs
+      );
+      return NextResponse.json({ product }, { status: 200 });
+    } catch (err) {
+      throw err;
+    }
   }
 }
 

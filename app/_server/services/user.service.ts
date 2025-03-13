@@ -256,8 +256,8 @@ export class UserService {
     await this.repository.incrementRateLimit(user, action);
   }
   // Password Management
-  async findUserById(userId: string): Promise<IUser | null> {
-    return this.repository.findById(userId);
+  async findUserById(userId: string, options?: string): Promise<IUser | null> {
+    return this.repository.findById(userId, options);
   }
   async logOut(): Promise<{
     message: string;

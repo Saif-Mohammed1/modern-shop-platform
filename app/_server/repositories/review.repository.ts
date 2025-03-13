@@ -3,6 +3,7 @@ import { BaseRepository } from "./BaseRepository";
 import { Model } from "mongoose";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import {
+  QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
@@ -29,20 +30,18 @@ export class ReviewRepository extends BaseRepository<IReview> {
     productId: string,
     options: QueryOptionConfig
   ): Promise<QueryBuilderResult<IReview>> {
-    const queryConfig = {
-      allowedFilters: ["userId", "productId", "createdAt"] as Array<
-        keyof IReview
-      >,
+    const queryConfig: QueryBuilderConfig<IReview> = {
+      allowedFilters: ["userId", "productId", "createdAt"],
       //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
 
     const searchParams = new URLSearchParams({
+      ...options.query,
       productId,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
-      ...options.query,
     });
 
     const queryBuilder = new QueryBuilder<IReview>(
@@ -183,20 +182,18 @@ export class ReviewRepository extends BaseRepository<IReview> {
     userId: string,
     options: QueryOptionConfig
   ): Promise<QueryBuilderResult<IReview>> {
-    const queryConfig = {
-      allowedFilters: ["userId", "productId", "createdAt"] as Array<
-        keyof IReview
-      >,
+    const queryConfig: QueryBuilderConfig<IReview> = {
+      allowedFilters: ["userId", "productId", "createdAt"],
       //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
 
     const searchParams = new URLSearchParams({
+      ...options.query,
       userId,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
-      ...options.query,
     });
 
     const queryBuilder = new QueryBuilder<IReview>(

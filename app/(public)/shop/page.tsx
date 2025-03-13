@@ -84,21 +84,8 @@ const queryParams = async (searchParams: SearchParams) => {
 };
 
 const page = async ({ searchParams }: { searchParams: SearchParams }) => {
-  const defaultSearchParams = {
-    category: searchParams.category || undefined,
-    name: searchParams.name || undefined,
-    search: searchParams.search || undefined,
-    sort: searchParams.sort || undefined,
-    fields: searchParams.fields || undefined,
-    page: searchParams.page || undefined,
-    limit: searchParams.limit || undefined,
-    rating: searchParams.rating || undefined,
-    min: searchParams.min || undefined,
-    max: searchParams.max || undefined,
-  };
   try {
-    const { docs, categories, pagination } =
-      await queryParams(defaultSearchParams);
+    const { docs, categories, pagination } = await queryParams(searchParams);
     // await new Promise<void>((resolve) => {
     //   setTimeout(() => {
     //     resolve();

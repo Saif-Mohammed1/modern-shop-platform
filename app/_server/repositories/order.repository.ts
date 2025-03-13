@@ -13,7 +13,7 @@ import {
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import User from "../models/user.model.old";
+import UserModel from "../models/User.model";
 
 export class OrderRepository extends BaseRepository<IOrder> {
   constructor(model: Model<IOrder>) {
@@ -36,7 +36,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
 
   async updateStatus(
     orderId: string,
-    status: UpdateOrderStatusDto
+    status: UpdateOrderStatusDto["status"]
   ): Promise<IOrder | null> {
     return await this.model
       .findByIdAndUpdate(
@@ -73,11 +73,11 @@ export class OrderRepository extends BaseRepository<IOrder> {
     };
 
     const searchParams = new URLSearchParams({
+      ...options.query,
       userId,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
-      ...options.query,
     });
 
     const queryBuilder = new QueryBuilder<IOrder>(
@@ -99,11 +99,10 @@ export class OrderRepository extends BaseRepository<IOrder> {
     const queryConfig: QueryBuilderConfig<IOrder> = {
       allowedFilters: ["userId", "createdAt", "status"],
       allowedSorts: ["createdAt", "updatedAt"],
-
       //   maxLimit: 100,
     };
     if (options.query.get("email")) {
-      const users = await User.find({
+      const users = await UserModel.find({
         email: new RegExp(options.query.get("email") || "", "i"),
       })
         .select("_id")
@@ -122,6 +121,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
         };
       options.query.set("userId", users.map((u) => u._id.toString()).join(","));
     }
+    console.log(options.query);
     const queryBuilder = new QueryBuilder<IOrder>(
       this.model,
       options.query,
@@ -131,7 +131,6 @@ export class OrderRepository extends BaseRepository<IOrder> {
     if (options?.populate) {
       queryBuilder.populate([{ path: "userId", select: "name email" }]);
     }
-
     return await queryBuilder.execute();
   }
   async getLatestOrder(userId: string): Promise<IOrder | null> {

@@ -10,14 +10,32 @@ export interface IShippingInfo {
   phone: string;
   country: string;
 }
-export interface IItems {
-  _id: IProduct["_id"];
+// export interface IItems {
+//   _id: IProduct["_id"];
+//   name: string;
+//   quantity: number;
+//   price: number;
+//   discount: number;
+//   finalPrice: number;
+//   discountExpire: Date;
+// }
+export interface IOrderItem {
+  productId: IProduct["_id"];
   name: string;
-  quantity: number;
   price: number;
   discount: number;
+  quantity: number;
+  sku: string;
+  attributes: Record<string, any>;
+  shippingInfo: {
+    weight: number;
+    dimensions: {
+      length: number;
+      width: number;
+      height: number;
+    };
+  };
   finalPrice: number;
-  discountExpire: Date;
 }
 export enum OrderStatus {
   Pending = "pending", // Order placed, waiting for confirmation/payment
@@ -32,16 +50,28 @@ export enum OrderStatus {
   PartiallyRefunded = "partially_refunded", // Part of the order refunded
   Disputed = "disputed", // Customer has raised a dispute
 }
-
+// ["credit_card", "paypal", "crypto"],
+export enum PaymentsMethod {
+  Credit_card = "credit_card",
+  Paypal = "paypal",
+  // Credit_card=""
+}
 export type OrderType = {
   _id: string;
-  shippingInfo: IShippingInfo;
+  shippingAddress: IShippingInfo;
   userId: Partial<UserAuthType>;
-  items: IItems[];
+  items: IOrderItem[];
   status: OrderStatus;
   invoiceId: string;
   invoiceLink: string;
-  totalPrice: number;
-  // createdAt: Date;
-  // updatedAt: Date;
+  subtotal: number;
+  // shippingCost: number;
+  tax: number;
+  total: number;
+  currency: string;
+  orderNotes?: string[];
+  cancellationReason?: string;
+  // totalPrice: number;
+  createdAt: Date;
+  updatedAt: Date;
 };

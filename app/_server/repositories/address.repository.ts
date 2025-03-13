@@ -59,11 +59,11 @@ export class AddressRepository extends BaseRepository<IAddress> {
     };
 
     const searchParams = new URLSearchParams({
+      ...options.query,
       userId,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
-      ...options.query,
     });
 
     const queryBuilder = new QueryBuilder<IAddress>(

@@ -25,6 +25,6 @@ export type sessionInfo = {
   status: RefreshTokenStatus;
   expiresAt: Date;
   lastUsedAt: Date;
-  // createdAt: Date;
-  // updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 };

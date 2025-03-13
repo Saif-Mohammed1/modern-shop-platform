@@ -71,9 +71,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
       },
       searchFields: ["name", "description"],
       enableTextSearch: true,
-      allowedSorts: ["createdAt", "updatedAt", "price"] as Array<
-        keyof IProduct
-      >,
+      allowedSorts: ["createdAt", "updatedAt", "price"],
       fixedFilters: !isAdmin ? { active: true } : undefined,
     };
 

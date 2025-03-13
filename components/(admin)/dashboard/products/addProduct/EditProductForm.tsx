@@ -12,6 +12,11 @@ import ProductInventory from "./product-inventory";
 import ProductImages from "./product-images";
 import ProductReview from "./product-review";
 import FormControls from "./FormControls";
+import api from "@/app/lib/utilities/api";
+import toast from "react-hot-toast";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+import { lang } from "@/app/lib/utilities/lang";
+import { useRouter } from "next/navigation";
 
 interface EditProductFormProps {
   defaultValues: ProductType;
@@ -23,13 +28,35 @@ export default function EditProductForm({
   const methods = useForm<ProductType>({ defaultValues });
   const [step, setStep] = useState(1);
   const totalSteps = 6;
-
-  const handleSubmit = methods.handleSubmit((data) => {
+  const router = useRouter();
+  const handleSubmit = methods.handleSubmit(async (data) => {
+    let toastLoading;
     if (step === totalSteps) {
       if (data.images) {
         data.images = data.images.filter((img) => !(typeof img === "object"));
       }
-      console.log(data);
+      try {
+        toastLoading = toast.loading(
+          productsTranslate.products[lang].editProduct.form.productSubmit
+            .loading
+        );
+        await api.put(`/admin/dashboard/products/${defaultValues.slug}`, data);
+        toast.success(
+          productsTranslate.products[lang].editProduct.form.productSubmit
+            .success
+        );
+        router.push("/dashboard/products?search=" + defaultValues.name);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast.error(
+            error?.message || productsTranslate.products[lang].error.general
+          );
+        } else {
+          toast.error(productsTranslate.products[lang].error.general);
+        }
+      } finally {
+        toast.dismiss(toastLoading);
+      }
     } else {
       setStep((prev) => Math.min(prev + 1, totalSteps));
     }

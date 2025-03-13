@@ -37,6 +37,7 @@ import SearchBar from "@/components/ui/SearchBar";
 import Select from "@/components/ui/Select";
 import { DateTime } from "luxon";
 import MobileFilter from "@/components/ui/MobileFilter";
+import { MdHistory } from "react-icons/md";
 type Category = string;
 type ProductListProps = {
   products: ProductType[];
@@ -475,6 +476,13 @@ const ProductList: FC<ProductListProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {" "}
+                        <Link
+                          href={`/dashboard/products/${product.slug}/history`}
+                          className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-blue-600 transition-colors"
+                        >
+                          <MdHistory className="w-4 h-4" />
+                        </Link>
                         <button
                           onClick={() => toggleProductStatus(product.slug)}
                           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-indigo-600 transition-colors"
@@ -482,7 +490,7 @@ const ProductList: FC<ProductListProps> = ({
                           <TfiReload className="w-4 h-4" />
                         </button>
                         <Link
-                          href={`/dashboard/products/edit/${product.slug}`}
+                          href={`/dashboard/products/${product.slug}/edit`}
                           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-blue-600 transition-colors"
                         >
                           <FaEdit className="w-4 h-4" />

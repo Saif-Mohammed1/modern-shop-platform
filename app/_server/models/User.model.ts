@@ -12,6 +12,7 @@ import {
 import {
   accountAction,
   AuthMethod,
+  UserCurrency,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
@@ -105,8 +106,8 @@ export interface IUser extends Document {
   security: ISecurity;
   verification: IVerification;
   socialProfiles: Map<string, string>;
-  // createdAt: Date;
-  // updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 
   // Methods
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -192,8 +193,8 @@ const UserSchema = new Schema<IUser>(
       },
       currency: {
         type: String,
-        default: "UAH",
-        enum: ["USD", "EUR", "GBP", "UAH"],
+        default: UserCurrency.UAH,
+        enum: Object.values(UserCurrency),
       },
       marketingOptIn: {
         type: Boolean,
@@ -312,7 +313,6 @@ const UserSchema = new Schema<IUser>(
         delete ret.security?.previousPasswords;
         delete ret.verification?.emailChangeToken;
         delete ret.verification?.verificationToken;
-        ret.twoFactorEnabled = ret.security?.twoFactorEnabled || false;
 
         ["createdAt", "updatedAt"].forEach((field) => {
           if (ret[field]) {

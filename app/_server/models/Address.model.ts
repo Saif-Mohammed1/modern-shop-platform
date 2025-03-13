@@ -9,8 +9,8 @@ export interface IAddress extends Document {
   phone: string;
   country: string;
   userId: IUser["_id"];
-  // createdAt: Date;
-  // updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const AddressSchema = new Schema<IAddress>(

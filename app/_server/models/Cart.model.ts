@@ -8,8 +8,8 @@ export interface ICart extends Document {
   userId: IUser["_id"];
   productId: IProduct["_id"];
   quantity: number;
-  // createdAt: Date;
-  // updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
   expiresAt: Date;
 }
 

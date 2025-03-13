@@ -99,7 +99,20 @@ export class QueryBuilder<T extends Document> {
     if (/^\d+\.\d+$/.test(value)) return parseFloat(value);
     if (value.toLowerCase() === "true") return true;
     if (value.toLowerCase() === "false") return false;
-    if (Date.parse(value)) return new Date(value);
+    // if (Date.parse(value)) return new Date(value);
+
+    // Handle date parsing explicitly
+    if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+      // MM-DD-YYYY format
+      const [month, day, year] = value.split("-").map(Number);
+      return new Date(Date.UTC(year, month - 1, day));
+    }
+
+    // Fallback to default parsing for ISO dates
+    if (Date.parse(value)) {
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? value : date;
+    }
     if (value.includes(",")) return value.split(",").map(this.parseValue);
     return value;
   }
@@ -117,28 +130,68 @@ export class QueryBuilder<T extends Document> {
     const filter: Record<string, any> = {};
 
     for (const [key, value] of this.originalParams) {
+      const operatorMatch = key.match(/^(\w+)\[(\w+)\]$/);
+      const [baseKey, operator] = operatorMatch
+        ? [operatorMatch[1], operatorMatch[2]]
+        : [key, null];
+      // : [key, null];
+
       // const dbField = this.config.filterMap[key] || key;
-      const aliasKey = this.config.paramAliases[key] || key;
+      // const aliasKey = this.config.paramAliases[key] || key;
+      const aliasKey = this.config.paramAliases[baseKey] || baseKey;
       const dbField = this.config.filterMap[aliasKey] || aliasKey;
-      const parsedValue = this.parseValue(value);
+      let parsedValue = this.parseValue(value);
       if (aliasKey === "search") {
         this.handleTextSearch(parsedValue);
         continue;
       }
 
-      if (this.config.allowedFilters.includes(dbField as keyof T)) {
-        filter[dbField as string] = this.buildOperatorFilter(
-          aliasKey,
-          parsedValue
-        );
+      // we dont need to check if the field is allowed or not becuse sentize input already did that
+      // if (this.config.allowedFilters.includes(dbField as keyof T)) {
+      //   filter[dbField as string] = this.buildOperatorFilter(
+      //     aliasKey,
+      //     parsedValue
+      //   );
+      // }
+      if (!this.config.allowedFilters.includes(dbField as keyof T)) {
+        continue;
+      }
+      // Adjust dates based on operator
+      if (parsedValue instanceof Date && operator) {
+        parsedValue = this.adjustDateForOperator(parsedValue, operator);
+      }
+      if (operator) {
+        if (
+          !["eq", "ne", "gt", "gte", "lt", "lte", "in", "nin"].includes(
+            operator
+          )
+        ) {
+          console.warn(`Invalid operator: ${operator}`);
+          continue; // Skip invalid operators
+        }
+        // Merge operators for the same field
+        if (filter[dbField as string]) {
+          filter[dbField as string] = {
+            ...filter[dbField as string],
+            [`$${operator}`]: parsedValue,
+          };
+        } else {
+          filter[dbField as string] = { [`$${operator}`]: parsedValue };
+        }
+      } else {
+        filter[dbField as string] = parsedValue;
       }
     }
 
-    this.filter = { ...this.filter, ...filter };
-    // Apply fixed filters from config
-    if (this.config.fixedFilters) {
-      this.filter = { ...this.filter, ...this.config.fixedFilters };
-    }
+    this.filter = {
+      ...this.filter,
+      ...filter,
+      ...(this.config.fixedFilters || {}),
+    };
+    // // Apply fixed filters from config
+    // if (this.config.fixedFilters) {
+    //   this.filter = { ...this.filter, ...this.config.fixedFilters };
+    // }
     this.query = this.query.find(this.filter);
     return this;
   }
@@ -153,29 +206,6 @@ export class QueryBuilder<T extends Document> {
     }
   }
 
-  // private buildSort(): this {
-  //   const sortParam =
-  //     this.originalParams.get("sort") || this.config.defaultSort;
-  //   const sortFields = sortParam.split(",").reduce(
-  //     (acc, field) => {
-  //       const [rawField, order] = field.split(":");
-  //       const direction = order === "desc" ? -1 : 1;
-  //       const dbField = (this.config.filterMap[rawField] || rawField) as string;
-  //       console.log("dbField", dbField);
-  //       console.log("direction", direction);
-  //       if (this.config.allowedSorts.includes(dbField as keyof T)) {
-  //         acc[dbField] = direction;
-  //       }
-  //       return acc;
-  //     },
-  //     {} as Record<string, SortOrder>
-  //   );
-
-  //   if (Object.keys(sortFields).length) {
-  //     this.query = this.query.sort(sortFields);
-  //   }
-  //   return this;
-  // }
   private buildSort(): this {
     const sortParam =
       this.originalParams.get("sort") || this.config.defaultSort;
@@ -258,50 +288,26 @@ export class QueryBuilder<T extends Document> {
     return links;
   }
 
-  // async execute(): Promise<QueryBuilderResult<T>> {
-  //   try {
-  //     // sanitize input before building query
-  //     this.sanitizeInput();
-  //     this.buildFilter().buildSort().buildPagination().buildProjection();
+  private adjustDateForOperator(date: Date, operator: string): Date {
+    // Clone to avoid mutating original date
+    const adjustedDate = new Date(date);
+    switch (operator) {
+      case "gte":
+        adjustedDate.setUTCHours(0, 0, 0, 0); // Start of day
+        break;
+      case "lte":
+        adjustedDate.setUTCHours(23, 59, 59, 999); // End of day
+        break;
+      case "gt":
+        adjustedDate.setUTCHours(23, 59, 59, 999); // Treat as end of day
+        break;
+      case "lt":
+        adjustedDate.setUTCHours(0, 0, 0, 0); // Treat as start of day
+        break;
+    }
 
-  //     //  Clone base query for count
-  //     const countQuery = this.baseQuery.clone().merge(this.filter);
-
-  //     // Apply population to both queries
-  //     if (this.populateOptions.length) {
-  //       this.populateOptions.forEach((p) => {
-  //         this.query = this.query.populate(p);
-  //         countQuery.populate(p);
-  //       });
-  //     }
-
-  //     const [total, results] = await Promise.all([
-  //       countQuery.countDocuments(),
-  //       this.query
-  //         .skip((this.page - 1) * this.limit)
-  //         .limit(this.limit)
-  //         .exec(),
-  //     ]);
-
-  //     const totalPages = Math.ceil(total / this.limit);
-  //     const meta: PaginationMeta = {
-  //       total,
-  //       page: this.page,
-  //       limit: this.limit,
-  //       totalPages,
-  //       hasNext: this.page < totalPages,
-  //       hasPrev: this.page > 1,
-  //     };
-
-  //     return {
-  //       docs: results,
-  //       meta,
-  //       links: this.buildLinks(totalPages),
-  //     };
-  //   } catch (error) {
-  //     throw new QueryBuilderError("Failed to execute query", error);
-  //   }
-  // }
+    return adjustedDate;
+  }
   async execute(): Promise<QueryBuilderResult<T>> {
     try {
       this.sanitizeInput();
@@ -310,9 +316,9 @@ export class QueryBuilder<T extends Document> {
       // Clone the filtered query and clear pagination/sorting for count
       const countQuery = this.query.model.find(this.query.getFilter());
 
-      // Copy over population and other query settings
+      // Apply population to MAIN QUERY
       if (this.populateOptions.length) {
-        countQuery.populate(this.populateOptions);
+        this.query = this.query.populate(this.populateOptions);
       }
 
       const [total, results] = await Promise.all([

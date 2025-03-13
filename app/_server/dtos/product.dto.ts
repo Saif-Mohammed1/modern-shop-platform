@@ -1,3 +1,4 @@
+import { AuditSource } from "@/app/lib/types/audit.types";
 import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import { lang } from "@/app/lib/utilities/lang";
 import { ProductTranslate } from "@/public/locales/server/Product.Translate";
@@ -71,7 +72,10 @@ export class ProductValidation {
       )
       .optional(),
     // .max(100, "Discount cannot exceed 100"),
-    discountExpire: z.date().optional(),
+    discountExpire: z
+      .union([z.string(), z.date()]) // Accept both string & Date
+      .transform((val) => new Date(val)) // Convert string to Date
+      .optional(),
     images: this.imagesSchema,
 
     userId: zObjectId, // Assuming it's a string
@@ -147,6 +151,9 @@ export class ProductValidation {
         required_error: ProductTranslate[lang].dto.userAgent.required,
       })
       .min(1, ProductTranslate[lang].dto.userAgent.required),
+    source: z
+      .enum(Object.values(AuditSource) as [string, ...string[]])
+      .default(AuditSource.WEB),
   });
   // **Update Schema** - Partial to allow optional updates
   static updateProductSchema = this.productSchema.partial();

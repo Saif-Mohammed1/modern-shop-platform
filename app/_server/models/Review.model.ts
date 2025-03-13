@@ -9,6 +9,8 @@ export interface IReview extends Document {
   productId: IProduct["_id"];
   rating: number;
   comment: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface IReviewModel extends Model<IReview> {

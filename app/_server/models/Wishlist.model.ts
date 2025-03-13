@@ -10,8 +10,8 @@ export interface IWishlist extends Document {
   _id: Types.ObjectId;
   userId: IUser["_id"];
   productId: IProduct["_id"];
-  // createdAt: Date;
-  // // updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const WishlistSchema = new Schema<IWishlist>(

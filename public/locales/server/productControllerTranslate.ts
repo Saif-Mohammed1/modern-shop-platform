@@ -62,6 +62,7 @@ export const productControllerTranslate = {
     },
 
     errors: {
+      noProductHistory: "No product history found.",
       notFoundProduct: "Product not found.",
       noProductFoundWithId: "No product found with that ID",
       requiredFields: "Please fill in all required fields.",
@@ -132,6 +133,7 @@ export const productControllerTranslate = {
     },
 
     errors: {
+      noProductHistory: "Історія прод продуктом не знайдена.",
       notFoundProduct: "Продукт не знайдено.",
       noProductFoundWithId: "Продукт з таким ідентифікатором не знайдено",
       requiredFields: "Будь ласка, заповніть всі обов'язкові поля.",

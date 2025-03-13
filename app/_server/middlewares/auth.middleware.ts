@@ -45,7 +45,10 @@ export class AuthMiddleware {
           );
         }
         const decoded = await this.tokenService.decodedAccessToken(result.data);
-        const user = await this.userService.findUserById(decoded.userId);
+        const user = await this.userService.findUserById(
+          decoded.userId
+          // "-security"
+        );
         if (!user)
           throw new AppError(commonTranslations[lang].userNotExists, 404);
 

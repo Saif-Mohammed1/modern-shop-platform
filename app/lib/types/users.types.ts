@@ -15,7 +15,13 @@ export enum UserRole {
   ADMIN = "admin",
   MODERATOR = "moderator",
 }
-
+//  enum: ["USD", "EUR", "GBP", "UAH"],
+export enum UserCurrency {
+  USD = "USD",
+  ERU = "ERU",
+  GBP = "GBP",
+  UAH = "USD",
+}
 export type accountAction =
   | "login"
   | "passwordReset"

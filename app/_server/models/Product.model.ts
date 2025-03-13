@@ -30,6 +30,8 @@ export interface IProduct extends Document {
     };
   };
   lastModifiedBy?: Types.ObjectId | IUser;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ProductSchema = new Schema<IProduct>(

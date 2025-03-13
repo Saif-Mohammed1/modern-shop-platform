@@ -1,6 +1,7 @@
 // wishlist.repository.ts
 
 import {
+  QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
@@ -39,20 +40,18 @@ export class WishlistRepository extends BaseRepository<IWishlist> {
     userId: string,
     options: QueryOptionConfig
   ): Promise<QueryBuilderResult<IWishlist>> {
-    const queryConfig = {
-      allowedFilters: ["userId", "productId", "createdAt"] as Array<
-        keyof IWishlist
-      >,
+    const queryConfig: QueryBuilderConfig<IWishlist> = {
+      allowedFilters: ["userId", "productId", "createdAt"],
       //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
 
     const searchParams = new URLSearchParams({
+      ...options.query,
       userId,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
-      ...options.query,
     });
 
     const queryBuilder = new QueryBuilder<IWishlist>(

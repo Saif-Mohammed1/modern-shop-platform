@@ -29,8 +29,8 @@ export interface ITwoFactorAuth extends Document {
   lastUsed?: Date;
   auditLogs: AuditLog[];
 
-  // createdAt: Date;
-  // updatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(

@@ -49,6 +49,26 @@ export enum AuditAction {
   AUDIT_LOG_CLEAR = "AUDIT_LOG_CLEAR",
   AUDIT_LOG_VIEW = "AUDIT_LOG_VIEW",
 }
+// Enum for maintainability
+export enum AuditAction {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+  RESTORE = "RESTORE",
+  IMAGE_ADD = "IMAGE_ADD",
+  IMAGE_REMOVE = "IMAGE_REMOVE",
+  STATUS_CHANGE = "STATUS_CHANGE",
+}
+export enum AuditSource {
+  WEB = "WEB",
+  API = "API",
+  SYSTEM = "SYSTEM",
+}
+export enum EntityType {
+  PRODUCT = "PRODUCT",
+  USER = "USER",
+  ORDER = "ORDER",
+}
 // audit.types.ts
 export interface AuditLogDetails {
   success: boolean;

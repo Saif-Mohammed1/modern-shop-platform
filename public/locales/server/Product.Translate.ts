@@ -85,6 +85,9 @@ export const ProductTranslate = {
       userAgent: {
         required: "User Agent must be required",
       },
+      versionId: {
+        required: "Version ID must be required",
+      },
     },
   },
   uk: {
@@ -172,6 +175,9 @@ export const ProductTranslate = {
       },
       userAgent: {
         required: "Ідентифікатор користувача повинен бути обов'язковим",
+      },
+      versionId: {
+        required: "Ідентифікатор версії повинен бути обов'язковим",
       },
     },
   },
