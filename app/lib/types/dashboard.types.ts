@@ -1,5 +1,5 @@
 import { IOrder } from "@/app/_server/models/Order.model ";
-import { IRefundSchema } from "@/app/_server/models/refund.model";
+import { IRefundSchema } from "@/app/_server/models/Refund.model";
 
 export interface DashboardData {
   users: {

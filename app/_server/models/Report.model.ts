@@ -5,7 +5,7 @@ import Product, { IProduct } from "./Product.model";
 
 export interface IReportSchema extends Document {
   _id: Schema.Types.ObjectId;
-  user: IUser["_id"];
+  userId: IUser["_id"];
   product: IProduct["_id"];
   status: "pending" | "resolved" | "rejected";
   name: string;
@@ -16,7 +16,7 @@ export interface IReportSchema extends Document {
 }
 const ReportSchema = new Schema<IReportSchema>(
   {
-    user: {
+    userId: {
       type: Schema.Types.ObjectId,
 
       ref: "User",
@@ -64,7 +64,7 @@ ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
     options: { lean: true },
     // select: "name description price",
   }).populate({
-    path: "user",
+    path: "userId",
     select: "name email",
     model: User,
     options: { lean: true },
@@ -72,44 +72,16 @@ ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
 
   next();
 });
-// ReportSchema.pre("aggregate", function (next) {
-//   // Adding $lookup stages to simulate population.
-//   this.pipeline().unshift(
-//     {
-//       $lookup: {
-//         from: "users", // Assuming 'users' is the name of the collection where user documents are stored
-//         localField: "user", // The field in 'reports' collection that holds the reference
-//         foreignField: "_id", // The _id field in 'users' collection
-//         as: "user", // Where to store the joined documents in the output documents
-//       },
-//     },
-//     {
-//       $unwind: {
-//         // Optionally unwind the array if you expect one user per report
-//         path: "$user",
-//         preserveNullAndEmptyArrays: false, // This ensures documents without users are not included
-//       },
-//     },
-//     {
-//       $lookup: {
-//         from: "products", // Assuming 'products' is the collection name
-//         localField: "product", // The field in 'reports' collection
-//         foreignField: "_id", // The _id field in 'products' collection
-//         as: "product", // Where to store the joined documents
-//       },
-//     },
-//     {
-//       $unwind: {
-//         // Optionally unwind if you expect at least one product per report
-//         path: "$product",
-//         preserveNullAndEmptyArrays: false, // This ensures documents without products are not included
-//       },
-//     }
-//   );
+ReportSchema.index({ status: 1, createdAt: -1 });
 
-//   next();
-// });
+// Add validation for enum values
+ReportSchema.path("status").validate(function (value) {
+  return ["pending", "resolved", "rejected"].includes(value);
+}, "Invalid report status");
 
+ReportSchema.virtual("displayStatus").get(function () {
+  return this.status.charAt(0).toUpperCase() + this.status.slice(1);
+});
 ReportSchema.pre("aggregate", function (next) {
   this.pipeline().unshift(
     {
@@ -127,7 +99,13 @@ ReportSchema.pre("aggregate", function (next) {
 
   next();
 });
-
+// Add to ReportSchema
+ReportSchema.virtual("predictedResolution").get(function () {
+  const keywords = ["urgent", "broken", "defective"];
+  return keywords.some((kw) => this.issue.toLowerCase().includes(kw))
+    ? "24h"
+    : "72h";
+});
 ReportSchema.post(/^find/, function (docs, next) {
   // Ensure `docs` is an array (it should be for `find`)
   if (Array.isArray(docs)) {
@@ -141,7 +119,7 @@ ReportSchema.post(/^find/, function (docs, next) {
   }
   next();
 });
-const Report: Model<IReportSchema> =
+const ReportModel: Model<IReportSchema> =
   models.Report || model<IReportSchema>("Report", ReportSchema);
 
-export default Report;
+export default ReportModel;

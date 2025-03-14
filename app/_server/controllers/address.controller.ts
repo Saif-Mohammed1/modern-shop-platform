@@ -12,7 +12,7 @@ class AddressController {
 
   async addAddress(req: NextRequest) {
     try {
-      const body = req.json();
+      const body = await req.json();
       const result = AddressValidation.validateCreateAddress({
         userId: req.user?._id,
         ...body,
@@ -21,6 +21,7 @@ class AddressController {
 
       return NextResponse.json(address, { status: 201 });
     } catch (error) {
+      console.error("error from address", error);
       throw error;
     }
   }
@@ -66,7 +67,7 @@ class AddressController {
       if (!req.id) {
         throw new AppError("Address id is required", 400);
       }
-      const body = req.json();
+      const body = await req.json();
       const result = AddressValidation.validateUpdateAddress({
         userId: req.user?._id,
         ...body,

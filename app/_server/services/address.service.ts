@@ -12,8 +12,9 @@ export class AddressService {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
-      await this.repository.create(dto, session);
+      const address = await this.repository.create(dto, session);
       await session.commitTransaction();
+      return address;
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -29,6 +30,7 @@ export class AddressService {
       if (!address)
         throw new AppError(AddressTranslate[lang].error.addressNotFound, 404);
       await session.commitTransaction();
+      return address;
     } catch (error) {
       await session.abortTransaction();
       throw error;

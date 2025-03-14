@@ -1,7 +1,7 @@
 import { Model } from "mongoose";
 import { type NextRequest } from "next/server";
 
-import { IReportSchema } from "../models/report.model";
+import { IReportSchema } from "../models/Report.model";
 import AppError from "@/app/lib/utilities/appError";
 import { reportUsControllerTranslate } from "../../../public/locales/server/reportControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";

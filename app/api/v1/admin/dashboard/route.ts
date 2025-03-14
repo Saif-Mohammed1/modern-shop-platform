@@ -1,5 +1,4 @@
 import { mainDashboard } from "@/app/_server/controllers/adminDashboardController";
-import { isAuth, restrictTo } from "@/app/_server/controllers/authController";
 import ErrorHandler from "@/app/_server/controllers/error.controller";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";

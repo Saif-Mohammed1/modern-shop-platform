@@ -535,15 +535,22 @@ export class ProductService {
 
       // Get the reconstructed product version
       const productVersion = historicalData.docs[0] as unknown as IProduct;
-      // Prepare update payload from reconstructed version
+
+      // Prepare update payload, filtering out null, undefined, or empty values
       const updatePayload: Partial<IProduct> = {
-        name: productVersion.name,
-        price: productVersion.price,
-        discount: productVersion.discount,
-        stock: productVersion.stock,
-        description: productVersion.description,
-        // images: productVersion.images || [],
+        name: productVersion.name || undefined,
+        price: productVersion.price ?? undefined,
+        discount: productVersion.discount ?? undefined,
+        stock: productVersion.stock ?? undefined,
+        description: productVersion.description || undefined,
       };
+
+      // Remove keys that are still `undefined`
+      Object.keys(updatePayload).forEach(
+        (key) =>
+          updatePayload[key as keyof IProduct] === undefined &&
+          delete updatePayload[key as keyof IProduct]
+      );
       // Perform update
       const updatedProduct = await this.repository.update(
         slug,

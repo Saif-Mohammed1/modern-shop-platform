@@ -64,10 +64,11 @@ const ProductSchema = new Schema<IProduct>(
           // Check if the discount is less than the price
           return discount < price;
         },
+
         message: "{VALUE} must be less than the price",
         type: "discountValidation", // Custom error type
       },
-
+      set: (v: number) => Number(v.toFixed(2)), // Round to 2 decimal places
       min: 0,
       // max: [100, "Discount cannot exceed 100%"],
     },

@@ -65,23 +65,12 @@ WishlistSchema.virtual("product", {
   justOne: true,
 });
 
-// Pre-save validation for references
-// WishlistSchema.pre<IWishlist>("save", async function (next) {
-//   try {
-//     const [userExists, productExists] = await Promise.all([
-//       User.exists({ _id: this.userId }),
-//       Product.exists({ _id: this.productId }),
-//     ]);
-
-//     if (!userExists)
-//       throw new AppError(commonTranslations[lang].userDoesNotExist, 404);
-//     if (!productExists)
-//       throw new AppError(commonTranslations[lang].productDoesNotExist, 404);
-//     next();
-//   } catch (error) {
-//     next(error as Error);
-//   }
-// });
+WishlistSchema.virtual("purchased", {
+  type: Boolean,
+  ref: "Order",
+  localField: "productId",
+  foreignField: "items.productId",
+});
 
 const WishlistModel: Model<IWishlist> =
   models.Wishlist || model<IWishlist>("Wishlist", WishlistSchema);

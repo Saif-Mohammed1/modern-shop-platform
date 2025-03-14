@@ -1,28 +1,71 @@
 import AppError from "@/app/lib/utilities/appError";
 import { createReviewDto, updateReviewDto } from "../dtos/reviews.dto";
-import ReviewModel, { IReview } from "../models/Review.model";
-import { IUser } from "../models/User.model";
+import ReviewModel from "../models/Review.model";
 import { ReviewRepository } from "../repositories/review.repository";
 import { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import { OrderRepository } from "../repositories/order.repository";
+import OrderModel from "../models/Order.model ";
+import { reviewControllerTranslate } from "@/public/locales/server/reviewControllerTranslate";
+import { lang } from "@/app/lib/utilities/lang";
+import { OrderStatus } from "@/app/lib/types/orders.types";
 
 export class ReviewService {
   private reviewRepository = new ReviewRepository(ReviewModel);
+  private orderRepository = new OrderRepository(OrderModel);
+  async checkIfUserHasOrderedProduct(userId: string, productId: string) {
+    const order = await this.orderRepository.findByUserAndProduct(
+      userId,
+      productId
+    );
+    // if (!order) {
+    //   throw new AppError(
+    //     "You must have ordered this product to review it",
+    //     403
+    //   );
+    // }
+    if (!order) {
+      throw new AppError(
+        reviewControllerTranslate[
+          lang
+        ].controllers.checkReview.needToBuyProductFirst,
+        404
+      );
+    }
 
-  async createReview(user: IUser, dto: createReviewDto) {
-    const reviewData = {
-      userId: user._id,
-      productId: dto.productId,
-      rating: dto.rating,
-      comment: dto.comment,
-    };
-
-    return this.reviewRepository.create(reviewData);
+    if (order.status !== OrderStatus.Completed) {
+      throw new AppError(
+        reviewControllerTranslate[
+          lang
+        ].controllers.checkReview.needToWaitForOrderCompletion,
+        404
+      );
+    }
+  }
+  async createReview(dto: createReviewDto) {
+    await this.checkIfUserHasOrderedProduct(
+      dto.userId.toString(),
+      dto.productId.toString()
+    );
+    const existingReview = await this.reviewRepository.findByProductAndUser(
+      dto.productId,
+      dto.userId
+    );
+    if (existingReview) {
+      // throw new AppError("You have already reviewed this product", 403);
+      throw new AppError(
+        reviewControllerTranslate[
+          lang
+        ].controllers.checkReview.oneReviewPerProduct,
+        400
+      );
+    }
+    return this.reviewRepository.create(dto);
   }
 
-  async updateReview(reviewId: string, userId: string, dto: updateReviewDto) {
+  async updateReview(reviewId: string, dto: updateReviewDto) {
     const review = await this.reviewRepository.findById(reviewId);
     if (!review) throw new AppError("Review not found", 404);
-    if (review.userId.toString() !== userId.toString()) {
+    if (review.userId.toString() !== dto.userId.toString()) {
       throw new AppError("Unauthorized to update this review", 403);
     }
 

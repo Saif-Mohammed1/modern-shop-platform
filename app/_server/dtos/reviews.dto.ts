@@ -6,6 +6,7 @@ import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
 export class ReviewValidation {
   static createReviewSchema = z.object({
+    userId: zObjectId,
     productId: zObjectId,
     rating: z
       .number({
@@ -13,7 +14,6 @@ export class ReviewValidation {
           reviewControllerTranslate[lang].controllers.createReviews
             .ratingRequired,
       })
-      .int()
       .min(1, {
         message:
           reviewControllerTranslate[lang].controllers.createReviews
@@ -46,13 +46,14 @@ export class ReviewValidation {
   };
 
   static UpdateReviewDto = z.object({
+    userId: zObjectId,
+    // productId: zObjectId,
     rating: z
       .number({
         required_error:
           reviewControllerTranslate[lang].controllers.createReviews
             .ratingRequired,
       })
-      .int()
       .min(1, {
         message:
           reviewControllerTranslate[lang].controllers.createReviews

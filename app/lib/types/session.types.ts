@@ -4,7 +4,13 @@ export enum RefreshTokenStatus {
   Revoked = "revoked",
   Rotated = "rotated",
 }
-
+export interface GeoLocation {
+  city: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  source: "ip" | "gps" | "user";
+}
 export type DeviceInfo = {
   os: string;
   browser: string;
@@ -13,7 +19,7 @@ export type DeviceInfo = {
   model?: string;
   isBot: boolean;
   ip: string;
-  location?: string;
+  location: GeoLocation;
   fingerprint: string;
 };
 // old db.types.ts

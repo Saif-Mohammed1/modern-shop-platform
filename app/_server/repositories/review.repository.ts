@@ -9,13 +9,14 @@ import {
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 import { IReview } from "../models/Review.model";
+import { createReviewDto } from "../dtos/reviews.dto";
 
 export class ReviewRepository extends BaseRepository<IReview> {
   constructor(model: Model<IReview>) {
     super(model);
   }
   async create(
-    data: Partial<IReview>,
+    data: createReviewDto,
     session?: ClientSession
   ): Promise<IReview> {
     const [review] = await this.model.create([data], { session });

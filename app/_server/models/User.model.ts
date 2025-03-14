@@ -266,7 +266,13 @@ const UserSchema = new Schema<IUser>(
           model: { type: String },
           isBot: { type: Boolean, required: true },
           ip: { type: String, required: true },
-          location: { type: String },
+          location: {
+            city: { type: String, required: true },
+            country: { type: String, required: true },
+            latitude: { type: Number, required: true },
+            longitude: { type: Number, required: true },
+            source: { type: String, required: true },
+          },
           fingerprint: { type: String, required: true, index: true },
           timestamp: { type: Date, default: Date.now },
           success: { type: Boolean, required: true },
@@ -349,7 +355,9 @@ UserSchema.index({
   "security.behavioralFlags.suspiciousDeviceChange": 1,
   "security.behavioralFlags.impossibleTravel": 1,
 });
-
+UserSchema.index({ "security.loginHistory.location.city": 1 });
+UserSchema.index({ "security.loginHistory.location.country": 1 });
+UserSchema.index({ "security.loginHistory.timestamp": 1 });
 // Middleware
 
 UserSchema.pre<IUser>("save", async function (next) {
@@ -422,7 +430,10 @@ UserSchema.pre<IUser>("save", function (next) {
         attempts: loginLimits.attempts,
         locations: this.security.loginHistory
           .map((entry) => entry.location)
-          .filter((location): location is string => location !== undefined),
+          .filter(
+            (location): location is DeviceInfo["location"] =>
+              location.longitude !== 0
+          ), //modify by me
       });
     }
   }

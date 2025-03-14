@@ -74,7 +74,6 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
             <TableHead>Date</TableHead>
             <TableHead>Product Name</TableHead>
             <TableHead>Price</TableHead>
-            {/* Add Discount and Description headers */}
             <TableHead>Discount</TableHead>
             <TableHead>Stock</TableHead>
             <TableHead>Description</TableHead>
@@ -93,13 +92,19 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
                 <TableCell>
                   {new Date(version.timestamp).toLocaleDateString()}
                 </TableCell>
-                <TableCell>{version.name}</TableCell>
-                <TableCell>${version.price.toFixed(2)}</TableCell>
+                <TableCell>{version.name ?? "no value"}</TableCell>
+                <TableCell>
+                  {version.price ? "$" + version.price.toFixed(2) : "no value"}
+                </TableCell>
                 {/* Add Discount and Description cells */}
-                <TableCell>${version.discount.toFixed(2)}</TableCell>
-                <TableCell>{version.stock}</TableCell>
+                <TableCell>
+                  {version.discount
+                    ? "$" + version.discount.toFixed(2)
+                    : "no value"}
+                </TableCell>
+                <TableCell>{version.stock ?? "no value"}</TableCell>
                 <TableCell className="max-w-[200px] truncate">
-                  {version.description}
+                  {version.description ?? "no value"}
                 </TableCell>
                 <TableCell>
                   <ConfirmModal

@@ -121,7 +121,6 @@ export class OrderRepository extends BaseRepository<IOrder> {
         };
       options.query.set("userId", users.map((u) => u._id.toString()).join(","));
     }
-    console.log(options.query);
     const queryBuilder = new QueryBuilder<IOrder>(
       this.model,
       options.query,
@@ -141,6 +140,18 @@ export class OrderRepository extends BaseRepository<IOrder> {
       })
       .lean();
   }
+  async findByUserAndProduct(
+    userId: string,
+    productId: string
+  ): Promise<IOrder | null> {
+    return await this.model
+      .findOne({
+        userId,
+        "items.productId": productId,
+      })
+      .lean();
+  }
+
   async startSession(): Promise<ClientSession> {
     return await this.model.db.startSession();
   }

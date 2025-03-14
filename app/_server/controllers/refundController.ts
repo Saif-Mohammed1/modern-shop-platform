@@ -3,7 +3,7 @@ import User from "../models/User.model";
 import Order from "../models/Order.model ";
 import type { NextRequest } from "next/server";
 import { Model } from "mongoose";
-import { IRefundSchema } from "../models/refund.model";
+import { IRefundSchema } from "../models/Refund.model";
 import { refundUsControllerTranslate } from "../../../public/locales/server/refundControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 

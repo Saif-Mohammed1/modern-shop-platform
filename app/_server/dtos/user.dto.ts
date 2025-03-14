@@ -163,7 +163,14 @@ export class UserValidation {
 
   static updateUserByAdminSchema = z.object({
     name: z.string().optional(),
-    email: z.string().optional(),
+    email: z
+      .string()
+      .email(userZodValidatorTranslate[lang].email.invalid)
+      .refine((email) => {
+        const domain = email.split("@")[1];
+        return this.allowedEmailDomains.includes(domain);
+      }, userZodValidatorTranslate[lang].email.domainNotAllowed)
+      .optional(),
     status: z
       .enum(Object.values(UserStatus) as [string, ...string[]])
       .optional(),

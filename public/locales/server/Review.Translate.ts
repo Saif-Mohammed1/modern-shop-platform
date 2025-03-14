@@ -8,7 +8,13 @@ export const ReviewTranslate = {
       deleteReview: {
         success: "Review deleted successfully",
       },
+      checkReview: {
+        needToBuyProductFirst: "You need to buy the product first",
+        needToWaitForOrderCompletion: "You need to wait for order completion",
+        oneReviewPerProduct: "You have already reviewed this product",
+      },
     },
+
     errors: {
       noDocumentsFound: "No documents found",
     },
@@ -21,6 +27,12 @@ export const ReviewTranslate = {
       },
       deleteReview: {
         success: "Відгук успішно видалено",
+      },
+      checkReview: {
+        needToBuyProductFirst: "Спочатку вам потрібно купити продукт",
+        needToWaitForOrderCompletion:
+          "Вам потрібно зачекати завершення замовлення",
+        oneReviewPerProduct: "Ви вже залишили відгук на цей продукт",
       },
     },
     errors: {

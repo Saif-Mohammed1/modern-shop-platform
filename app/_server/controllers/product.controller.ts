@@ -15,6 +15,7 @@ class ProductController {
   async createProduct(req: NextRequest) {
     try {
       const ipAddress =
+        req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
         req.ip;

@@ -36,9 +36,10 @@ export const POST = async (
     await connectDB();
     await AuthMiddleware.requireAuth()(req);
     req.id = id;
-    await checkReview(req);
-    const { data, statusCode } = await createReviews(req);
-    return NextResponse.json({ data }, { status: statusCode });
+    // await checkReview(req);
+    // const { data, statusCode } = await createReviews(req);
+    // return NextResponse.json({ data }, { status: statusCode });
+    return await reviewController.createReview(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
@@ -52,8 +53,7 @@ export const PATCH = async (
     await connectDB();
     await AuthMiddleware.requireAuth()(req);
     req.id = id;
-    const { data, statusCode } = await checkReview(req);
-    return NextResponse.json({ data }, { status: statusCode });
+    return await reviewController.checkReview(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

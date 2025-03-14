@@ -1,7 +1,7 @@
 import Order, { IOrderSchema } from "../models/Order.model ";
 import Product from "../models/Product.model";
-import Refund, { IRefundSchema } from "../models/refund.model";
-import Report from "../models/report.model";
+import Refund, { IRefundSchema } from "../models/Refund.model";
+import Report from "../models/Report.model";
 import User from "../models/User.model";
 import Cart from "../models/Cart.model";
 import Wishlist from "../models/Wishlist.model";

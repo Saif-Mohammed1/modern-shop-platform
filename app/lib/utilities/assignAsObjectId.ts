@@ -12,9 +12,17 @@ export const assignAsObjectId = (id: string) => new mongoose.Types.ObjectId(id);
 //   message: commonTranslations[lang].objectIdInvalid,
 // });
 
+// export const zObjectId = z.union([z.string(), z.number()])
+//   .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+//     message: commonTranslations[lang].objectIdInvalid,
+//   })
+//   .transform((id) => new mongoose.Types.ObjectId(id)); // Converts string to ObjectId
+
 export const zObjectId = z
-  .string()
-  .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+  .union([z.string(), z.instanceof(mongoose.Types.ObjectId)]) // Accept string or ObjectId
+  .refine((id) => mongoose.Types.ObjectId.isValid(id.toString()), {
     message: commonTranslations[lang].objectIdInvalid,
   })
-  .transform((id) => new mongoose.Types.ObjectId(id)); // Converts string to ObjectId
+  .transform((id) =>
+    typeof id === "string" ? new mongoose.Types.ObjectId(id) : id
+  ); // Convert string to ObjectId, keep ObjectId unchanged

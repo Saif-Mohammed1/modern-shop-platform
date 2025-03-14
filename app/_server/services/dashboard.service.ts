@@ -21,6 +21,7 @@ export class DashboardService {
       this.repo.getProductAnalytics(),
       this.repo.getReportAnalytics(),
       this.repo.getRefundAnalytics(),
+      this.repo.getUserInterestAnalytics(),
       this.repo.getRecentActivities(),
       this.repo.getUserInterest(),
       this.repo.getProductPerformance(),

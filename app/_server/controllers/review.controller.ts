@@ -10,12 +10,15 @@ class ReviewController {
   private reviewService = new ReviewService();
 
   async createReview(req: NextRequest) {
+    if (!req.id)
+      throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
     const body = await req.json();
-    const dto = ReviewValidation.validateCreateReview(body);
-    const review = await this.reviewService.createReview(
-      req.user as IUser,
-      dto
-    );
+    const dto = ReviewValidation.validateCreateReview({
+      ...body,
+      userId: (req.user as IUser)._id.toString(),
+      productId: req.id,
+    });
+    const review = await this.reviewService.createReview(dto);
     return NextResponse.json(review, { status: 201 });
   }
 
@@ -23,12 +26,11 @@ class ReviewController {
     if (!req.id)
       throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
     const body = await req.json();
-    const dto = ReviewValidation.validateUpdateReview(body);
-    const review = await this.reviewService.updateReview(
-      req.id,
-      (req.user as IUser)._id.toString(),
-      dto
-    );
+    const dto = ReviewValidation.validateUpdateReview({
+      ...body,
+      userId: (req.user as IUser)._id.toString(),
+    });
+    const review = await this.reviewService.updateReview(req.id, dto);
     return NextResponse.json(review, { status: 200 });
   }
 
@@ -79,6 +81,15 @@ class ReviewController {
       }
     );
     return NextResponse.json(reviews, { status: 200 });
+  }
+  async checkReview(req: NextRequest) {
+    if (!req.id)
+      throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
+    await this.reviewService.checkIfUserHasOrderedProduct(
+      (req.user as IUser)._id.toString(),
+      req.id
+    );
+    return NextResponse.json({ exist: true }, { status: 200 });
   }
 }
 export default new ReviewController();

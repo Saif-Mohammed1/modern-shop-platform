@@ -196,7 +196,7 @@
 // };
 // src/lib/services/email.service.ts
 import nodemailer from "nodemailer";
-import { DeviceInfo } from "../types/session.types";
+import { DeviceInfo, GeoLocation } from "../types/session.types";
 import UserModel from "@/app/_server/models/User.model";
 
 interface EmailConfig {
@@ -223,7 +223,7 @@ export enum SecurityAlertType {
 interface SecurityAlertEmailParams {
   type: SecurityAlertType;
   attempts?: number;
-  locations?: string[];
+  locations?: GeoLocation[];
   device?: string;
   timestamp?: Date;
   ipAddress?: string;
@@ -577,7 +577,7 @@ class EmailService {
   private getAlertDetails(
     type: SecurityAlertType,
     attempts?: number,
-    locations?: string[],
+    locations?: GeoLocation[],
     device?: string,
     ip?: string
   ) {
