@@ -25,7 +25,7 @@ import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 
 export class ProductService {
   private repository = new ProductRepository(ProductModel);
-  private async logAction(
+  async logAction(
     action: AuditAction,
     entityId: string,
     actor: Types.ObjectId,
@@ -272,8 +272,8 @@ export class ProductService {
   async getProducts(options: QueryOptionConfig, isAdmin?: boolean) {
     return this.repository.getProducts(options, isAdmin);
   }
-  async getProductById(id: string) {
-    return this.repository.findById(id);
+  async getProductById(id: string, session?: ClientSession) {
+    return this.repository.findById(id, session);
   }
   async getProductBySlug(slug: string) {
     return this.repository.getProductBySlug(slug);

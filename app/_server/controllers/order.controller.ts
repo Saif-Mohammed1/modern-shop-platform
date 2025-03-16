@@ -32,7 +32,7 @@ class OrderController {
   }
   async getLatestOrder(req: NextRequest) {
     if (!req.user?._id) {
-      throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     const order = await this.orderService.getLatestOrder(
       req.user?._id.toString()
@@ -41,7 +41,7 @@ class OrderController {
   }
   async getOrdersByUserId(req: NextRequest) {
     if (!req.user?._id) {
-      throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     const orders = await this.orderService.getOrdersByUserId(
       req.user?._id.toString(),

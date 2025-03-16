@@ -18,22 +18,40 @@ export class ProductValidation {
 
   // Allow `images` to be either an array of strings (base64) or an array of objects
   private static imagesSchema = z.union([
-    z.array(z.string()).min(1, {
-      message: ProductTranslate[lang].dto.images.required,
-    }),
+    z
+      .array(
+        z.string({
+          required_error: ProductTranslate[lang].dto.images.required,
+        })
+      )
+      .min(1, {
+        message: ProductTranslate[lang].dto.images.required,
+      }),
     z.array(this.imageObjectSchema).min(1),
   ]);
   // Define dimensions schema
   private static dimensionsSchema = z.object({
-    length: z.number().min(0, {
-      message: ProductTranslate[lang].dto.length.min,
-    }),
-    width: z.number().min(0, {
-      message: ProductTranslate[lang].dto.width.min,
-    }),
-    height: z.number().min(0, {
-      message: ProductTranslate[lang].dto.height.min,
-    }),
+    length: z
+      .number({
+        required_error: ProductTranslate[lang].dto.length.min,
+      })
+      .min(0, {
+        message: ProductTranslate[lang].dto.length.min,
+      }),
+    width: z
+      .number({
+        required_error: ProductTranslate[lang].dto.width.min,
+      })
+      .min(0, {
+        message: ProductTranslate[lang].dto.width.min,
+      }),
+    height: z
+      .number({
+        required_error: ProductTranslate[lang].dto.height.min,
+      })
+      .min(0, {
+        message: ProductTranslate[lang].dto.height.min,
+      }),
   });
 
   // Define product schema

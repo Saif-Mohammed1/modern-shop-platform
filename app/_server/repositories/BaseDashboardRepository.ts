@@ -1,6 +1,6 @@
 // src/repositories/dashboard.repo.ts
-import { SecurityDashboardData } from "@/app/lib/types/security.types";
-import { Types } from "mongoose";
+// import { SecurityDashboardData } from "@/app/lib/types/security.types";
+// import { Types } from "mongoose";
 interface UserAnalytics {
   totalUsers: number;
   activeUsers: number;
@@ -33,6 +33,12 @@ interface UserAnalytics {
   deviceDiversity: {
     totalDevices: number;
   };
+  weeklyGrowth: Array<{
+    label: string;
+    currentLogins: number;
+    previousLogins: number;
+    growthPercentage: string;
+  }>;
 }
 interface ProductAnalytics {
   inventory: {
@@ -79,6 +85,13 @@ interface ProductAnalytics {
   risk: {
     stockConflicts: number;
   };
+  weeklyGrowth: Array<{
+    label: string;
+    salesGrowth: number;
+    revenueGrowth: number;
+    currentSales: number;
+    currentRevenue: number;
+  }>;
 }
 interface OrderAnalytics {
   summary: {
@@ -96,7 +109,6 @@ interface OrderAnalytics {
       monthly: number;
     };
     refundRate: number;
-    weeklyGrowth: number;
   };
   customerBehavior: {
     repeatRate: number;
@@ -140,6 +152,13 @@ interface OrderAnalytics {
     orderCount: number;
     revenue: number;
   }>;
+  weeklyGrowth: Array<{
+    label: string;
+    orderGrowth: number;
+    revenueGrowth: number;
+    currentOrders: number;
+    currentRevenue: number;
+  }>;
 }
 
 interface ReportAnalytics {
@@ -162,6 +181,13 @@ interface ReportAnalytics {
     createdAt: Date;
   }>;
   dailyTrend: Array<{ date: string; reports: number }>;
+  weeklyTrends: Array<{
+    label: string;
+    resolutionGrowth: string;
+    reportGrowth: string;
+    currentResolved: number;
+    currentTotal: number;
+  }>;
 }
 
 interface RefundAnalytics {
@@ -183,6 +209,20 @@ interface RefundAnalytics {
     createdAt: Date;
     invoiceId: string;
   }>;
+  weeklyGrowth: Array<{
+    label: string;
+    amountGrowth: string;
+    countGrowth: string;
+    currentAmount: number;
+    currentCount: number;
+  }>;
+  // weeklyGrowth: Array<{
+  //   week: string;
+  //   year: number;
+  //   totalAmount: number;
+  //   count: number;
+  //   growthPercentage: string;
+  // }>;
 }
 
 export interface BaseDashboardRepository {

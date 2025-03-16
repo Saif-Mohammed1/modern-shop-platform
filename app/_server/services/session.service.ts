@@ -2,7 +2,7 @@ import { DeviceInfo } from "@/app/lib/types/session.types";
 import SessionModel, { ISession } from "../models/Session.model";
 import { SessionRepository } from "../repositories/session.repository";
 import { TokensService } from "./tokens.service";
-import { AuditAction } from "@/app/lib/types/audit.types";
+import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import { ClientSession } from "mongoose";
 
 export class SessionService {

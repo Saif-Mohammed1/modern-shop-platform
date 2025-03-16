@@ -39,12 +39,18 @@ export class TwoFactorValidation {
     return this.TwoFactorLoginSchema.parse(data);
   }
   static SecurityMetadataSchema = z.object({
-    ipAddress: z.string().ip({
-      version: "v4" as IpVersion,
-      message: TwoFactorTranslate[lang].dto.ipAddress.invalid,
-    }),
+    ipAddress: z
+      .string({
+        message: TwoFactorTranslate[lang].dto.ipAddress.required,
+      })
+      .ip({
+        version: "v4" as IpVersion,
+        message: TwoFactorTranslate[lang].dto.ipAddress.invalid,
+      }),
     userAgent: z
-      .string()
+      .string({
+        message: TwoFactorTranslate[lang].dto.userAgent.required,
+      })
       .min(1, TwoFactorTranslate[lang].dto.userAgent.required),
     location: z
       .object({
@@ -83,7 +89,11 @@ export class TwoFactorValidation {
   });
 
   static TwoFactorVerifySchema = z.object({
-    token: z.string({}).length(6),
+    token: z
+      .string({
+        message: TwoFactorTranslate[lang].dto.temToken.required,
+      })
+      .length(6),
     // deviceInfo: this.SecurityMetadataSchema,
   });
 

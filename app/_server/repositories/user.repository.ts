@@ -2,7 +2,10 @@ import { BaseRepository } from "./BaseRepository";
 import { ClientSession, Model } from "mongoose";
 import crypto from "crypto";
 import { DeviceInfo } from "@/app/lib/types/session.types";
-import { AuditAction, AuditLogDetails } from "@/app/lib/types/audit.types";
+import {
+  SecurityAuditAction,
+  AuditLogDetails,
+} from "@/app/lib/types/audit.types";
 import { TokensService } from "../services/tokens.service";
 import { IUser } from "../models/User.model";
 import {
@@ -253,7 +256,7 @@ export class UserRepository extends BaseRepository<IUser> {
   }
   async createAuditLog(
     userId: string,
-    action: AuditAction,
+    action: SecurityAuditAction,
     details: AuditLogDetails,
     session?: ClientSession
   ): Promise<void> {

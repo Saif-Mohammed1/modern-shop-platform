@@ -6,7 +6,7 @@ import Product, { IProduct } from "./Product.model";
 export interface IReportSchema extends Document {
   _id: Schema.Types.ObjectId;
   userId: IUser["_id"];
-  product: IProduct["_id"];
+  productId: IProduct["_id"];
   status: "pending" | "resolved" | "rejected";
   name: string;
   issue: string;
@@ -23,7 +23,7 @@ const ReportSchema = new Schema<IReportSchema>(
       required: true,
       index: true,
     },
-    product: {
+    productId: {
       type: Schema.Types.ObjectId,
 
       ref: "Product",
@@ -57,21 +57,21 @@ const ReportSchema = new Schema<IReportSchema>(
   }
 );
 ReportSchema.set("toJSON", { versionKey: false });
-ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
-  this.populate({
-    path: "product",
-    model: Product,
-    options: { lean: true },
-    // select: "name description price",
-  }).populate({
-    path: "userId",
-    select: "name email",
-    model: User,
-    options: { lean: true },
-  });
+// ReportSchema.pre<Query<any, IReportSchema>>(/^find/, function (next) {
+//   this.populate({
+//     path: "productId",
+//     model: Product,
+//     options: { lean: true },
+//     // select: "name description price",
+//   }).populate({
+//     path: "userId",
+//     select: "name email",
+//     model: User,
+//     options: { lean: true },
+//   });
 
-  next();
-});
+//   next();
+// });
 ReportSchema.index({ status: 1, createdAt: -1 });
 
 // Add validation for enum values
@@ -82,23 +82,23 @@ ReportSchema.path("status").validate(function (value) {
 ReportSchema.virtual("displayStatus").get(function () {
   return this.status.charAt(0).toUpperCase() + this.status.slice(1);
 });
-ReportSchema.pre("aggregate", function (next) {
-  this.pipeline().unshift(
-    {
-      $lookup: {
-        from: "products",
-        localField: "product",
-        foreignField: "_id",
-        as: "product",
-      },
-    },
-    {
-      $unwind: "$product",
-    }
-  );
+// ReportSchema.pre("aggregate", function (next) {
+//   this.pipeline().unshift(
+//     {
+//       $lookup: {
+//         from: "products",
+//         localField: "productId",
+//         foreignField: "_id",
+//         as: "product",
+//       },
+//     },
+//     {
+//       $unwind: "$product",
+//     }
+//   );
 
-  next();
-});
+//   next();
+// });
 // Add to ReportSchema
 ReportSchema.virtual("predictedResolution").get(function () {
   const keywords = ["urgent", "broken", "defective"];
@@ -111,7 +111,7 @@ ReportSchema.post(/^find/, function (docs, next) {
   if (Array.isArray(docs)) {
     // Filter out documents where `product` is null
     const filteredDocs = docs.filter(
-      (doc) => doc.user !== null && doc.product !== null
+      (doc) => doc.userId !== null && doc.productId !== null
     );
     // You cannot just replace `docs` with `filteredDocs`, as `docs` is what the caller receives
     // You would need to mutate `docs` directly if you need to change the actual array being passed back

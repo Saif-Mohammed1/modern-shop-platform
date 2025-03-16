@@ -8,7 +8,7 @@ import ProductModel from "../models/Product.model";
 
 import CartModel from "../models/Cart.model";
 import WishlistModel from "../models/Wishlist.model";
-import { SecurityDashboardData } from "@/app/lib/types/security.types";
+// import { SecurityDashboardData } from "@/app/lib/types/security.types";
 import { UserStatus } from "@/app/lib/types/users.types";
 import { OrderStatus } from "@/app/lib/types/orders.types";
 import RefundModel from "../models/Refund.model";
@@ -24,6 +24,7 @@ export class DashboardRepository implements BaseDashboardRepository {
     const last24h = DateTime.now().minus({ days: 1 }).toJSDate();
     const last7d = DateTime.now().minus({ days: 7 }).toJSDate();
     const lastWeekDate = DateTime.now().minus({ weeks: 1 }).toJSDate();
+    const last8WeekDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
     // const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     // const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     // const lastWeekDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -256,10 +257,225 @@ export class DashboardRepository implements BaseDashboardRepository {
             },
             { $sort: { count: -1 } },
           ],
+          // weeklyGrowth: [
+          //   {
+          //     $match: {
+          //       "security.loginHistory.timestamp": {
+          //         $gte: last8WeekDate,
+          //       },
+          //     },
+          //   },
+          //   {
+          //     $unwind: "$security.loginHistory",
+          //   },
+          //   {
+          //     $group: {
+          //       _id: {
+          //         year: { $isoWeekYear: "$security.loginHistory.timestamp" },
+          //         week: { $isoWeek: "$security.loginHistory.timestamp" },
+          //       },
+          //       currentWeekLogins: { $sum: 1 },
+          //       previousWeekLogins: {
+          //         $first: "$security.loginHistory.prevWeekCount",
+          //       },
+          //     },
+          //   },
+          //   {
+          //     $sort: { "_id.year": 1, "_id.week": 1 },
+          //   },
+          //   {
+          //     $group: {
+          //       _id: null,
+          //       weeks: {
+          //         $push: {
+          //           week: "$_id.week",
+          //           year: "$_id.year",
+          //           logins: "$currentWeekLogins",
+          //         },
+          //       },
+          //     },
+          //   },
+          //   {
+          //     $project: {
+          //       weeklyGrowth: {
+          //         $map: {
+          //           input: "$weeks",
+          //           as: "week",
+          //           in: {
+          //             week: "$$week.week",
+          //             year: "$$week.year",
+          //             currentLogins: "$$week.logins",
+          //             previousLogins: {
+          //               $ifNull: [
+          //                 {
+          //                   $arrayElemAt: [
+          //                     "$weeks.logins",
+          //                     {
+          //                       $subtract: [
+          //                         { $indexOfArray: ["$weeks", "$$week"] },
+          //                         1,
+          //                       ],
+          //                     },
+          //                   ],
+          //                 },
+          //                 0,
+          //               ],
+          //             },
+          //             growthPercentage: {
+          //               $cond: [
+          //                 { $eq: [{ $indexOfArray: ["$weeks", "$$week"] }, 0] },
+          //                 0,
+          //                 {
+          //                   $multiply: [
+          //                     {
+          //                       $divide: [
+          //                         {
+          //                           $subtract: [
+          //                             "$$week.logins",
+          //                             "$$prev.logins",
+          //                           ],
+          //                         },
+          //                         "$$prev.logins",
+          //                       ],
+          //                     },
+          //                     100,
+          //                   ],
+          //                 },
+          //               ],
+          //             },
+          //           },
+          //         },
+          //       },
+          //     },
+          //   },
+          //   { $unwind: "$weeklyGrowth" },
+          //   { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+          // ],
+          weeklyGrowth: [
+            {
+              $match: {
+                "security.loginHistory.timestamp": {
+                  $gte: last8WeekDate,
+                },
+              },
+            },
+            {
+              $unwind: "$security.loginHistory",
+            },
+            {
+              $group: {
+                _id: {
+                  year: {
+                    $isoWeekYear: "$security.loginHistory.timestamp",
+                  },
+                  week: {
+                    $isoWeek: "$security.loginHistory.timestamp",
+                  },
+                },
+                currentWeekLogins: { $sum: 1 },
+              },
+            },
+            {
+              $sort: { "_id.year": 1, "_id.week": 1 },
+            },
+            {
+              $group: {
+                _id: null,
+                weeks: {
+                  $push: {
+                    week: "$_id.week",
+                    year: "$_id.year",
+                    logins: "$currentWeekLogins",
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                weeklyGrowth: {
+                  $map: {
+                    input: "$weeks",
+                    as: "currentWeek",
+                    in: {
+                      week: "$$currentWeek.week",
+                      year: "$$currentWeek.year",
+                      currentLogins: "$$currentWeek.logins",
+                      previousLogins: {
+                        $let: {
+                          vars: {
+                            prevIndex: {
+                              $subtract: [
+                                { $indexOfArray: ["$weeks", "$$currentWeek"] },
+                                1,
+                              ],
+                            },
+                          },
+                          in: {
+                            $cond: [
+                              { $lt: ["$$prevIndex", 0] },
+                              0,
+                              {
+                                $arrayElemAt: ["$weeks.logins", "$$prevIndex"],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            { $unwind: "$weeklyGrowth" },
+            {
+              $project: {
+                _id: 0,
+                label: {
+                  $concat: [
+                    "Week ",
+                    { $toString: "$weeklyGrowth.week" },
+                    " ",
+                    { $toString: "$weeklyGrowth.year" },
+                  ],
+                },
+                currentLogins: "$weeklyGrowth.currentLogins",
+                previousLogins: "$weeklyGrowth.previousLogins",
+                growthPercentage: {
+                  $cond: [
+                    {
+                      $eq: ["$weeklyGrowth.previousLogins", 0],
+                    },
+                    0,
+                    {
+                      $multiply: [
+                        {
+                          $divide: [
+                            {
+                              $subtract: [
+                                "$weeklyGrowth.currentLogins",
+                                "$weeklyGrowth.previousLogins",
+                              ],
+                            },
+                            "$weeklyGrowth.previousLogins",
+                          ],
+                        },
+                        100,
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $sort: {
+                "weeklyGrowth.year": 1,
+                "weeklyGrowth.week": 1,
+              },
+            },
+          ],
         },
       },
     ]);
-
     return {
       // User Analytics
       totalUsers: this.getFirstNumber(result.total, "total"),
@@ -344,11 +560,25 @@ export class DashboardRepository implements BaseDashboardRepository {
         ].length,
       },
       cityGrowth: await Promise.all(
-        result.trafficSources.map((city: any) => ({
+        result.trafficSources.map(async (city: any) => ({
           ...city,
-          growthPercentage: this.calculateCityGrowth(city.city, city.country),
+          growthPercentage: await this.calculateCityGrowth(
+            city.city,
+            city.country
+          ),
         }))
       ),
+      // weeklyGrowth: result.weeklyGrowth.map((week: any) => ({
+      //   label: week.label,
+      //   // label: `Week ${week.week} ${week.year}`,
+      //   currentLogins: week.currentLogins,
+      //   previousLogins: week.previousLogins,
+      //   growthPercentage: week.growthPercentage.toFixed(1) + "%",
+      // })),
+      // trends:{
+      //   weeklyGrowth: result.weeklyGrowth
+      // }
+      weeklyGrowth: result.weeklyGrowth,
     };
   } // Product Analytics
   async getProductAnalytics() {
@@ -500,11 +730,167 @@ export class DashboardRepository implements BaseDashboardRepository {
             },
             { $count: "riskyProducts" },
           ],
+          weeklyGrowth: [
+            {
+              $match: {
+                createdAt: {
+                  $gte: DateTime.now().minus({ weeks: 8 }).toJSDate(),
+                },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  year: { $isoWeekYear: "$createdAt" },
+                  week: { $isoWeek: "$createdAt" },
+                },
+                currentWeekSales: { $sum: "$sold" },
+                currentWeekRevenue: {
+                  $sum: { $multiply: ["$price", "$sold"] },
+                },
+              },
+            },
+            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {
+              $group: {
+                _id: null,
+                weeks: {
+                  $push: {
+                    week: "$_id.week",
+                    year: "$_id.year",
+                    sales: "$currentWeekSales",
+                    revenue: "$currentWeekRevenue",
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                weeklyGrowth: {
+                  $map: {
+                    input: "$weeks",
+                    as: "week",
+                    in: {
+                      week: "$$week.week",
+                      year: "$$week.year",
+                      currentSales: "$$week.sales",
+                      previousSales: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.sales",
+                              {
+                                $subtract: [
+                                  { $indexOfArray: ["$weeks", "$$week"] },
+                                  1,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                      currentRevenue: "$$week.revenue",
+                      previousRevenue: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.revenue",
+                              {
+                                $subtract: [
+                                  { $indexOfArray: ["$weeks", "$$week"] },
+                                  1,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            { $unwind: "$weeklyGrowth" },
+            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {
+              $project: {
+                _id: 0,
+                label: {
+                  $concat: [
+                    "Week ",
+                    { $toString: "$week" },
+                    " ",
+                    { $toString: "$year" },
+                  ],
+                },
+                salesGrowth: {
+                  $cond: [
+                    { $eq: ["$previousSales", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentSales",
+                                    "$previousSales",
+                                  ],
+                                },
+                                "$previousSales",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                revenueGrowth: {
+                  $cond: [
+                    { $eq: ["$previousRevenue", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentRevenue",
+                                    "$previousRevenue",
+                                  ],
+                                },
+                                "$previousRevenue",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                currentSales: 1,
+                currentRevenue: 1,
+              },
+            },
+          ],
         },
       },
     ]);
 
     return {
+      weeklyGrowth: result.weeklyGrowth,
+
       // Core Metrics
       inventory: {
         total: this.getFirstNumber(result.stockInfo, "total"),
@@ -834,10 +1220,169 @@ export class DashboardRepository implements BaseDashboardRepository {
           ],
 
           recentOrders: [
+            { $sort: { createdAt: -1 } }, // Separate stage
+            { $limit: 5 }, // Separate stage
+          ],
+          weeklyGrowth: [
             {
-              $sort: { createdAt: -1 },
-
-              $limit: 5,
+              $match: {
+                createdAt: {
+                  $gte: DateTime.now().minus({ weeks: 8 }).toJSDate(),
+                },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  year: { $isoWeekYear: "$createdAt" },
+                  week: { $isoWeek: "$createdAt" },
+                },
+                currentWeekOrders: { $sum: 1 },
+                currentWeekRevenue: { $sum: "$total" },
+              },
+            },
+            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {
+              $group: {
+                _id: null,
+                weeks: {
+                  $push: {
+                    week: "$_id.week",
+                    year: "$_id.year",
+                    orders: "$currentWeekOrders",
+                    revenue: "$currentWeekRevenue",
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                weeklyGrowth: {
+                  $map: {
+                    input: "$weeks",
+                    as: "week",
+                    in: {
+                      week: "$$week.week",
+                      year: "$$week.year",
+                      currentOrders: "$$week.orders",
+                      previousOrders: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.orders",
+                              {
+                                $max: [
+                                  {
+                                    $subtract: [
+                                      { $indexOfArray: ["$weeks", "$$week"] },
+                                      1,
+                                    ],
+                                  },
+                                  0,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                      currentRevenue: "$$week.revenue",
+                      previousRevenue: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.revenue",
+                              {
+                                $max: [
+                                  {
+                                    $subtract: [
+                                      { $indexOfArray: ["$weeks", "$$week"] },
+                                      1,
+                                    ],
+                                  },
+                                  0,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            { $unwind: "$weeklyGrowth" },
+            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {
+              $project: {
+                _id: 0,
+                label: {
+                  $concat: [
+                    "Week ",
+                    { $toString: "$week" },
+                    " ",
+                    { $toString: "$year" },
+                  ],
+                },
+                orderGrowth: {
+                  $cond: [
+                    { $eq: ["$previousOrders", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentOrders",
+                                    "$previousOrders",
+                                  ],
+                                },
+                                "$previousOrders",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                revenueGrowth: {
+                  $cond: [
+                    { $eq: ["$previousRevenue", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentRevenue",
+                                    "$previousRevenue",
+                                  ],
+                                },
+                                "$previousRevenue",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                currentOrders: 1,
+                currentRevenue: 1,
+              },
             },
           ],
         },
@@ -846,6 +1391,8 @@ export class DashboardRepository implements BaseDashboardRepository {
 
     return {
       // Core Business Health
+      weeklyGrowth: result.weeklyGrowth,
+
       summary: {
         totalOrders: this.getFirstNumber(result.summary, "totalOrders"),
         completedOrders: this.getFirstNumber(result.summary, "completedOrders"),
@@ -955,7 +1502,7 @@ export class DashboardRepository implements BaseDashboardRepository {
   // Report Analytics
   async getReportAnalytics() {
     const lastWeekDate = DateTime.now().minus({ weeks: 1 }).toJSDate();
-
+    const last8WeeksDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
     const [result] = await ReportModel.aggregate([
       {
         $facet: {
@@ -1019,6 +1566,166 @@ export class DashboardRepository implements BaseDashboardRepository {
             { $sort: { count: -1 } },
             { $limit: 5 },
           ],
+          weeklyGrowth: [
+            {
+              $match: {
+                createdAt: { $gte: last8WeeksDate },
+                status: "resolved",
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  year: { $isoWeekYear: "$createdAt" },
+                  week: { $isoWeek: "$createdAt" },
+                },
+                resolvedCount: { $sum: 1 },
+                totalCount: { $sum: 1 },
+              },
+            },
+            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {
+              $group: {
+                _id: null,
+                weeks: {
+                  $push: {
+                    week: "$_id.week",
+                    year: "$_id.year",
+                    resolved: "$resolvedCount",
+                    total: "$totalCount",
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                weeklyGrowth: {
+                  $map: {
+                    input: "$weeks",
+                    as: "week",
+                    in: {
+                      week: "$$week.week",
+                      year: "$$week.year",
+                      currentResolved: "$$week.resolved",
+                      previousResolved: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.resolved",
+                              {
+                                $max: [
+                                  {
+                                    $subtract: [
+                                      { $indexOfArray: ["$weeks", "$$week"] },
+                                      1,
+                                    ],
+                                  },
+                                  0,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                      currentTotal: "$$week.total",
+                      previousTotal: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.total",
+                              {
+                                $max: [
+                                  {
+                                    $subtract: [
+                                      { $indexOfArray: ["$weeks", "$$week"] },
+                                      1,
+                                    ],
+                                  },
+                                  0,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            { $unwind: "$weeklyGrowth" },
+            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {
+              $project: {
+                label: {
+                  $concat: [
+                    "Week ",
+                    { $toString: "$week" },
+                    " ",
+                    { $toString: "$year" },
+                  ],
+                },
+                resolutionGrowth: {
+                  $cond: [
+                    { $eq: ["$previousResolved", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentResolved",
+                                    "$previousResolved",
+                                  ],
+                                },
+                                "$previousResolved",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                reportGrowth: {
+                  $cond: [
+                    { $eq: ["$previousTotal", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentTotal",
+                                    "$previousTotal",
+                                  ],
+                                },
+                                "$previousTotal",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                currentResolved: 1,
+                currentTotal: 1,
+              },
+            },
+          ],
         },
       },
     ]);
@@ -1045,13 +1752,18 @@ export class DashboardRepository implements BaseDashboardRepository {
         date: t._id,
         reports: t.count,
       })),
+      weeklyTrends: result.weeklyGrowth.map((week: any) => ({
+        ...week,
+        resolutionGrowth: `${week.resolutionGrowth.toFixed(1)}%`,
+        reportGrowth: `${week.reportGrowth.toFixed(1)}%`,
+      })),
     };
   }
 
   // Refund Analytics
   async getRefundAnalytics() {
     const lastMonthDate = DateTime.now().minus({ months: 1 }).toJSDate();
-
+    const last8WeeksDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
     const [result] = await RefundModel.aggregate([
       {
         $facet: {
@@ -1132,6 +1844,248 @@ export class DashboardRepository implements BaseDashboardRepository {
               },
             },
           ],
+          // weeklyGrowth: [
+          //   {
+          //     $match: {
+          //       createdAt: { $gte: last8WeeksDate },
+          //       status: "approved", // Track only approved refunds for growth
+          //     },
+          //   },
+          //   {
+          //     $group: {
+          //       _id: {
+          //         year: { $isoWeekYear: "$createdAt" },
+          //         week: { $isoWeek: "$createdAt" },
+          //       },
+          //       totalAmount: { $sum: "$amount" },
+          //       count: { $sum: 1 },
+          //     },
+          //   },
+          //   { $sort: { "_id.year": 1, "_id.week": 1 } },
+          //   {
+          //     $group: {
+          //       _id: null,
+          //       weeks: {
+          //         $push: {
+          //           week: { $concat: ["Week ", { $toString: "$_id.week" }] },
+          //           year: "$_id.year",
+          //           totalAmount: 1,
+          //           count: 1,
+          //         },
+          //       },
+          //     },
+          //   },
+          //   {
+          //     $project: {
+          //       weeklyGrowth: {
+          //         $map: {
+          //           input: "$weeks",
+          //           as: "week",
+          //           in: {
+          //             week: "$$week.week",
+          //             year: "$$week.year",
+          //             totalAmount: "$$week.totalAmount",
+          //             count: "$$week.count",
+          //             growthPercentage: {
+          //               $cond: [
+          //                 { $eq: ["$$week.week", 1] }, // First week has no previous
+          //                 0,
+          //                 {
+          //                   $multiply: [
+          //                     {
+          //                       $divide: [
+          //                         {
+          //                           $subtract: [
+          //                             "$$week.totalAmount",
+          //                             {
+          //                               $arrayElemAt: [
+          //                                 "$weeks.totalAmount",
+          //                                 { $subtract: ["$$week.week", 2] },
+          //                               ],
+          //                             },
+          //                           ],
+          //                         },
+          //                         {
+          //                           $arrayElemAt: [
+          //                             "$weeks.totalAmount",
+          //                             { $subtract: ["$$week.week", 2] },
+          //                           ],
+          //                         },
+          //                       ],
+          //                     },
+          //                     100,
+          //                   ],
+          //                 },
+          //               ],
+          //             },
+          //           },
+          //         },
+          //       },
+          //     },
+          //   },
+          //   { $unwind: "$weeklyGrowth" },
+          //   { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+          // ],
+          weeklyGrowth: [
+            {
+              $match: {
+                createdAt: { $gte: last8WeeksDate },
+                status: "approved",
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  year: { $isoWeekYear: "$createdAt" },
+                  week: { $isoWeek: "$createdAt" },
+                },
+                totalAmount: { $sum: "$amount" },
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {
+              $group: {
+                _id: null,
+                weeks: {
+                  $push: {
+                    week: "$_id.week",
+                    year: "$_id.year",
+                    totalAmount: "$totalAmount",
+                    count: "$count",
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                weeklyGrowth: {
+                  $map: {
+                    input: "$weeks",
+                    as: "week",
+                    in: {
+                      week: "$$week.week",
+                      year: "$$week.year",
+                      currentAmount: "$$week.totalAmount",
+                      previousAmount: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.totalAmount",
+                              {
+                                $max: [
+                                  {
+                                    $subtract: [
+                                      { $indexOfArray: ["$weeks", "$$week"] },
+                                      1,
+                                    ],
+                                  },
+                                  0,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                      currentCount: "$$week.count",
+                      previousCount: {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              "$weeks.count",
+                              {
+                                $max: [
+                                  {
+                                    $subtract: [
+                                      { $indexOfArray: ["$weeks", "$$week"] },
+                                      1,
+                                    ],
+                                  },
+                                  0,
+                                ],
+                              },
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            { $unwind: "$weeklyGrowth" },
+            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {
+              $project: {
+                label: {
+                  $concat: [
+                    "Week ",
+                    { $toString: "$week" },
+                    " ",
+                    { $toString: "$year" },
+                  ],
+                },
+                amountGrowth: {
+                  $cond: [
+                    { $eq: ["$previousAmount", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentAmount",
+                                    "$previousAmount",
+                                  ],
+                                },
+                                "$previousAmount",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                countGrowth: {
+                  $cond: [
+                    { $eq: ["$previousCount", 0] },
+                    0,
+                    {
+                      $round: [
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                {
+                                  $subtract: [
+                                    "$currentCount",
+                                    "$previousCount",
+                                  ],
+                                },
+                                "$previousCount",
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                        1,
+                      ],
+                    },
+                  ],
+                },
+                currentAmount: 1,
+                currentCount: 1,
+              },
+            },
+          ],
         },
       },
     ]);
@@ -1159,10 +2113,11 @@ export class DashboardRepository implements BaseDashboardRepository {
         financialImpact: r.totalAmount,
       })),
       recentRefunds: result.recentRefunds,
+      weeklyGrowth: result.weeklyGrowth,
     };
   }
   async getUserInterestAnalytics() {
-    const lastMonth = DateTime.now().minus({ months: 1 }).toJSDate();
+    // const lastMonth = DateTime.now().minus({ months: 1 }).toJSDate();
 
     const [cartInsights, wishlistInsights, combinedData] = await Promise.all([
       CartModel.aggregate([

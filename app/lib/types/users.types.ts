@@ -20,7 +20,7 @@ export enum UserCurrency {
   USD = "USD",
   ERU = "ERU",
   GBP = "GBP",
-  UAH = "USD",
+  UAH = "UAH",
 }
 export type accountAction =
   | "login"

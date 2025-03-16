@@ -17,7 +17,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import logger from "@/app/lib/logger/logs";
 import { SessionService } from "./session.service";
 import { DeviceInfo } from "@/app/lib/types/session.types";
-import { AuditAction } from "@/app/lib/types/audit.types";
+import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import {
   emailService,
   SecurityAlertType,
@@ -257,7 +257,7 @@ export class TwoFactorService {
 
       await this.userService.createAuditLog(
         user._id.toString(),
-        AuditAction.BACKUP_CODE_RECOVERY,
+        SecurityAuditAction.BACKUP_CODE_RECOVERY,
         {
           success: true,
           codesUsed: usedCodes,
@@ -290,7 +290,7 @@ export class TwoFactorService {
     } catch (error) {
       await this.userService.createAuditLog(
         user._id.toString(),
-        AuditAction.BACKUP_CODE_RECOVERY,
+        SecurityAuditAction.BACKUP_CODE_RECOVERY,
         {
           success: false,
           error: (error as any).message,

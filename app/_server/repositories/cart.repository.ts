@@ -35,29 +35,28 @@ export class CartRepository extends BaseRepository<ICart> {
   /**
    * Get user's cart with populated product details
    */
-  async getUserCart(userId: string): Promise<Partial<CartItemsType>[] | []> {
+  // Optimized cart population with lean data
+  async getUserCart(userId: string): Promise<CartItemsType[]> {
     const cartItems = await this.model
       .find({ userId })
       .populate<{ productId: IProduct }>({
         path: "productId",
-        match: { active: true }, // Only include active products
+        select: "name price images stock slug category discountExpire discount",
+        match: {
+          active: true,
+          stock: { $gte: 1 },
+        },
         options: { lean: true },
       })
       .lean();
+
     return cartItems
       .filter((item) => item.productId !== null)
       .map(({ productId, quantity, expiresAt }) => ({
-        product: {
-          _id: productId._id,
-          name: productId.name,
-          price: productId.price,
-          images: productId.images,
-          stock: productId.stock,
-          slug: productId.slug,
-          category: productId.category,
-        },
-        quantity,
+        ...productId,
+        _id: productId!._id.toString(),
         expiresAt,
+        quantity,
       }));
   }
   async getCartWithProducts(userId: string): Promise<ICart[]> {
@@ -127,8 +126,8 @@ export class CartRepository extends BaseRepository<ICart> {
   /**
    * Clear user's entire cart
    */
-  async clearCart(userId: string): Promise<boolean> {
-    const cart = await this.model.deleteMany({ userId });
+  async clearCart(userId: string, session?: ClientSession): Promise<boolean> {
+    const cart = await this.model.deleteMany({ userId }, { session });
     return cart.deletedCount !== 0;
   }
   async saveLocalCartToDB(
@@ -146,7 +145,12 @@ export class CartRepository extends BaseRepository<ICart> {
     }));
     await this.model.bulkWrite(bulkOps, { session });
   }
-
+  async deleteManyByProductId(
+    userId: string,
+    productIds: string[]
+  ): Promise<void> {
+    await this.model.deleteMany({ userId, productId: { $in: productIds } });
+  }
   async startSession(): Promise<ClientSession> {
     return await this.model.db.startSession();
   }

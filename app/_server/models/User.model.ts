@@ -3,7 +3,7 @@ import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { DeviceInfo } from "@/app/lib/types/session.types";
-import { AuditAction } from "@/app/lib/types/audit.types";
+import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import AppError from "@/app/lib/utilities/appError";
 import {
   emailService,
@@ -26,7 +26,7 @@ interface ILoginHistory extends DeviceInfo {
 }
 interface IAuditLog {
   timestamp: Date;
-  action: AuditAction;
+  action: SecurityAuditAction;
   details: string;
 }
 interface IRateLimits {
@@ -249,7 +249,7 @@ const UserSchema = new Schema<IUser>(
 
           action: {
             type: String,
-            enum: Object.values(AuditAction),
+            enum: Object.values(SecurityAuditAction),
             required: true,
           },
           details: { type: Object, required: true },
@@ -417,7 +417,7 @@ UserSchema.pre<IUser>("save", function (next) {
       loginLimits.lockUntil = new Date(Date.now() + 24 * 3600000); // 24h lock
       this.security.auditLog.push({
         timestamp: new Date(),
-        action: AuditAction.ACCOUNT_LOCKED,
+        action: SecurityAuditAction.ACCOUNT_LOCKED,
         details: `Automatic lockdown due to ${loginLimits.attempts} failed attempts`,
       });
     }

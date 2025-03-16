@@ -36,8 +36,11 @@ export const stripeControllerTranslate = {
       },
     },
     errors: {
+      notFoundProduct: (name: string) => `Product ${name} not found`,
+      cartEmpty: "Cart is empty",
       noUserFound: "There is no user related to that Email.",
       failedPayment: "Payment not completed.",
+      InventoryError: "Inventory reservation failed",
     },
   },
   uk: {
@@ -73,10 +76,13 @@ export const stripeControllerTranslate = {
       },
     },
     errors: {
+      notFoundProduct: (name: string) => `Продукт ${name} не знайдено`,
+      cartEmpty: "Кошик порожній",
       noUserFound:
         "Не знайдено жодного користувача, пов'язаного з цією адресою електронної пошти.",
 
       failedPayment: "Оплата не завершена.",
+      InventoryError: "Не вдалося зарезервувати запаси",
     },
   },
 } as const;

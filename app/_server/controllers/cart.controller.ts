@@ -11,7 +11,7 @@ class CartController {
   async getMyCart(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const cart = await this.cartService.getMyCart(req.user._id.toString());
 
@@ -23,12 +23,12 @@ class CartController {
   async addToCart(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const body = await req.json();
       const result = CartValidation.isCartValid({
-        productId: req.id,
         ...body,
+        productId: req.id,
       });
       const cart = await this.cartService.addToCart(
         req.user._id.toString(),
@@ -43,7 +43,7 @@ class CartController {
   async decreaseQuantity(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const id = CartValidation.isValidProductId(req.id);
       const cart = await this.cartService.decreaseQuantity(
@@ -58,7 +58,7 @@ class CartController {
   async removeProductFromCart(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const id = CartValidation.isValidProductId(req.id);
       const cart = await this.cartService.removeProductFromCart(
@@ -73,7 +73,7 @@ class CartController {
   async clearCart(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       await this.cartService.clearCart(req.user._id.toString());
       return NextResponse.json(
@@ -99,7 +99,7 @@ class CartController {
   async saveLocalCartToDB(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const body = await req.json();
       const result = CartValidation.validateLocalCart(body);

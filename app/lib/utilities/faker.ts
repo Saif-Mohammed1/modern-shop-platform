@@ -7,6 +7,9 @@ import { IUser } from "@/app/_server/models/User.model";
 import authController from "@/app/_server/controllers/auth.controller";
 import addressController from "@/app/_server/controllers/address.controller";
 import reviewController from "@/app/_server/controllers/review.controller";
+import cartController from "@/app/_server/controllers/cart.controller";
+import wishlistController from "@/app/_server/controllers/wishlist.controller";
+import stripeController from "@/app/_server/controllers/stripe.controller";
 // create a random user
 interface IUserInput {
   name: string;
@@ -475,12 +478,12 @@ export const createRandomOrders = (
   name: string;
   issue: string;
   message: string;*/
-export const createRandomReport = (
+export const createRandomReport = async (
   count: number,
   productId: any[],
   userId: any[]
 ) => {
-  const reports = [] as any[];
+  const req = [];
   for (let i = 0; i < userId.length; i++) {
     for (let j = 0; j < count; j++) {
       const randomProduct = faker.helpers.arrayElement(productId);
@@ -493,18 +496,43 @@ export const createRandomReport = (
       const randomName = faker.lorem.words();
       const randomIssue = faker.lorem.sentence();
       const randomMessage = faker.lorem.paragraph();
-      reports.push({
-        user: randomUser["_id"],
-        product: randomProduct["_id"],
-        status: randomStatus,
-        name: randomName,
-        issue: randomIssue,
-        message: randomMessage,
-      });
+      const reqs = new NextRequest(
+        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/report"),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "User-Agent": faker.internet.userAgent(),
+            "x-client-ip": faker.internet.ipv4(),
+            "x-forwarded-for": faker.internet.ipv4(),
+          },
+          method: "POST",
+          body: JSON.stringify({
+            status: randomStatus,
+            name: randomName,
+            issue: randomIssue,
+            message: randomMessage,
+          }),
+        }
+      );
+      reqs.user = randomUser;
+      reqs.id = randomProduct;
+      req.push(reqs); /// not working
     }
+    // reports.push({
+    //   user: randomUser["_id"],
+    //   product: randomProduct["_id"],
+    //   status: randomStatus,
+    //   name: randomName,
+    //   issue: randomIssue,
+    //   message: randomMessage,
+    // });
   }
-  return reports;
+  if (req.length > 0) {
+    await Promise.all(req);
+  }
 };
+
 export const createRandomRefund = (count: number, userId: any[]) => {
   const refunds = [] as any[];
   for (let i = 0; i < userId.length; i++) {
@@ -532,44 +560,79 @@ export const createRandomRefund = (count: number, userId: any[]) => {
   return refunds;
 };
 
-export const createRandomCartItems = (
+export const createRandomCartItems = async (
   count: number,
   userId: any[],
   productId: any[]
 ) => {
-  const cartItems = [] as any[];
+  const req = [];
   for (let i = 0; i < userId.length; i++) {
     for (let j = 0; j < count; j++) {
-      const randomUser = userId[i]["_id"];
+      const randomUser = userId[i];
       // const randomProduct = faker.helpers.arrayElement(productId);
       const randomProduct = productId[j];
       const randomQuantity = faker.number.int({ min: 1, max: 5 });
-      cartItems.push({
-        userId: randomUser,
-        productId: randomProduct["_id"],
-        quantity: randomQuantity,
-      });
+      const reqs = new NextRequest(
+        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/cart"),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "User-Agent": faker.internet.userAgent(),
+            "x-client-ip": faker.internet.ipv4(),
+            "x-forwarded-for": faker.internet.ipv4(),
+          },
+          method: "POST",
+          body: JSON.stringify({
+            quantity: randomQuantity,
+          }),
+        }
+      );
+      reqs.user = randomUser;
+      reqs.id = randomProduct["_id"];
+      req.push(cartController.addToCart(reqs));
+      // cartItems.push({
+      //   userId: randomUser,
+      //   productId: randomProduct["_id"],
+      //   quantity: randomQuantity,
+      // });
     }
   }
-  return cartItems;
+  await Promise.all(req);
 };
-export const createRandomWishlistItems = (
+export const createRandomWishlistItems = async (
   count: number,
   userId: any[],
   productId: any[]
 ) => {
-  const wishlistItems = [] as any[];
+  const req = [];
   for (let i = 0; i < userId.length; i++) {
     for (let j = 0; j < count; j++) {
-      const randomUser = userId[i]["_id"];
-      const randomProduct = faker.helpers.arrayElement(productId);
-      wishlistItems.push({
-        userId: randomUser,
-        productId: randomProduct["_id"],
-      });
+      const randomUser = userId[i];
+      const randomProduct = productId[j];
+      // const randomProduct = faker.helpers.arrayElement(productId);
+      const reqs = new NextRequest(
+        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/wishlist"),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "User-Agent": faker.internet.userAgent(),
+            "x-client-ip": faker.internet.ipv4(),
+            "x-forwarded-for": faker.internet.ipv4(),
+          },
+          method: "POST",
+          body: JSON.stringify({
+            productId: randomProduct["_id"],
+          }),
+        }
+      );
+      reqs.user = randomUser;
+      reqs.id = randomProduct["_id"];
+      req.push(wishlistController.toggleWishlist(reqs));
     }
   }
-  return wishlistItems;
+  await Promise.all(req);
 };
 export const createRandomMessages = (count: number, userId: any[]) => {
   const messages = [] as any[];
@@ -598,4 +661,37 @@ export const createRandomNotifications = (count: number, userId: any[]) => {
     }
   }
   return notifications;
+};
+
+export const createRandomStripeSession = async (
+  userId: any[],
+  shippingInfo: any[]
+) => {
+  const req = [];
+  for (let i = 0; i < userId.length; i++) {
+    const randomUser = userId[i];
+    const reqs = new NextRequest(
+      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/stripe"),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "User-Agent": faker.internet.userAgent(),
+          "x-client-ip": faker.internet.ipv4(),
+          "x-forwarded-for": faker.internet.ipv4(),
+        },
+        method: "POST",
+        body: JSON.stringify({ shippingInfo: shippingInfo[0] }),
+      }
+    );
+    reqs.user = randomUser;
+    req.push(stripeController.createStripeSession(reqs));
+  }
+  // return await Promise.all(req);
+  const responses = await Promise.all(req);
+  // responses.forEach(async (res, index) => {
+  //   const response = await res.json();
+  //   console.log(`Response ${index + 1}:`, response);
+  // });
+  return responses;
 };

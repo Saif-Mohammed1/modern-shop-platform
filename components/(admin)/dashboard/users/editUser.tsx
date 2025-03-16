@@ -20,7 +20,7 @@ import {
 } from "react-icons/fi";
 import { SecurityActionsModal } from "./SecurityActionsModal";
 import AuditLogTable from "./AuditLogTable";
-import { AuditAction } from "@/app/lib/types/audit.types";
+import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
@@ -30,7 +30,7 @@ interface UserEditPageProps {
     security: {
       auditLog: {
         timestamp: Date;
-        action: AuditAction;
+        action: SecurityAuditAction;
         details: {
           device: {
             browser: string;
@@ -78,7 +78,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
           email: userData.email,
           role: userData.role,
           status: userData.status,
-          auditAction: AuditAction.USER_UPDATE,
+          auditAction: SecurityAuditAction.USER_UPDATE,
         }
       );
       setUser(response.data);

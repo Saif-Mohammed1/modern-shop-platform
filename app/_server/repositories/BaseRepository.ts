@@ -1,9 +1,10 @@
+import { ClientSession } from "mongoose";
 import { Model, Document, FilterQuery } from "mongoose";
 
 // type id = Schema.Types.ObjectId;
 export interface Repository<T> {
   find(filter?: FilterQuery<T>): Promise<T[]>;
-  findById(id: string): Promise<T | null>;
+  findById(id: string, session?: ClientSession | null): Promise<T | null>;
   create(data: Omit<T, "_id">): Promise<T>;
   update(id: string, data: Partial<T>): Promise<T | null>;
   delete(id: string): Promise<boolean>;
@@ -18,8 +19,11 @@ export abstract class BaseRepository<T extends Document>
     return this.model.find(filter);
   }
 
-  async findById(id: string): Promise<T | null> {
-    return this.model.findById(id);
+  async findById(
+    id: string,
+    session: ClientSession | null = null
+  ): Promise<T | null> {
+    return this.model.findById(id).session(session);
   }
 
   async create(data: T): Promise<T> {

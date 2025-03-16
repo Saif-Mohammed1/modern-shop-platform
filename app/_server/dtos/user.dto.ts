@@ -1,5 +1,5 @@
 // import { lang } from "@/app/lib/util/lang";
-import { AuditAction } from "@/app/lib/types/audit.types";
+import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import {
   UserCurrency,
   UserRole,
@@ -176,7 +176,7 @@ export class UserValidation {
       .optional(),
     role: z.enum(Object.values(UserRole) as [string, ...string[]]).optional(),
     auditAction: z
-      .enum(Object.values(AuditAction) as [string, ...string[]])
+      .enum(Object.values(SecurityAuditAction) as [string, ...string[]])
       .optional(),
   });
   static validateName(name: string) {

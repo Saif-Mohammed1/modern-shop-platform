@@ -5,6 +5,7 @@ import { ProductService } from "./product.service";
 import { CartTranslate } from "@/public/locales/server/Cart.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 import { localCartDto } from "../dtos/cart.dto";
+import { ClientSession } from "mongoose";
 
 export class CartService {
   constructor(
@@ -66,8 +67,8 @@ export class CartService {
    * @returns
    *  Clear user's entire cart
    */
-  async clearCart(userId: string) {
-    return await this.repository.clearCart(userId);
+  async clearCart(userId: string, session?: ClientSession): Promise<boolean> {
+    return await this.repository.clearCart(userId, session);
   }
   async saveLocalCartToDB(userId: string, products: localCartDto) {
     const session = await this.repository.startSession();
@@ -81,5 +82,8 @@ export class CartService {
     } finally {
       session.endSession();
     }
+  }
+  async deleteManyByProductId(userId: string, productId: string[]) {
+    return await this.repository.deleteManyByProductId(userId, productId);
   }
 }

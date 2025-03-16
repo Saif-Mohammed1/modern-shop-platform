@@ -7,15 +7,39 @@ const phoneRegex = /^\+380\d{9}$/;
 export class AddressValidation {
   static CreateAddressDto = z.object({
     userId: zObjectId,
-    street: z.string().trim().min(1, AddressTranslate[lang].street.required),
-    city: z.string().trim().min(1, AddressTranslate[lang].city.required),
-    state: z.string().trim().min(1, AddressTranslate[lang].state.required),
+    street: z
+      .string({ required_error: AddressTranslate[lang].street.required })
+      .trim()
+      .min(1, AddressTranslate[lang].street.required),
+    city: z
+      .string({
+        required_error: AddressTranslate[lang].city.required,
+      })
+      .trim()
+      .min(1, AddressTranslate[lang].city.required),
+    state: z
+      .string({
+        required_error: AddressTranslate[lang].state.required,
+      })
+      .trim()
+      .min(1, AddressTranslate[lang].state.required),
     postalCode: z
-      .string()
+      .string({
+        required_error: AddressTranslate[lang].postalCode.required,
+      })
       .trim()
       .min(1, AddressTranslate[lang].postalCode.required),
-    phone: z.string().regex(phoneRegex, AddressTranslate[lang].phone.invalid),
-    country: z.string().trim().min(1, AddressTranslate[lang].country.required),
+    phone: z
+      .string({
+        required_error: AddressTranslate[lang].phone.required,
+      })
+      .regex(phoneRegex, AddressTranslate[lang].phone.invalid),
+    country: z
+      .string({
+        required_error: AddressTranslate[lang].country.required,
+      })
+      .trim()
+      .min(1, AddressTranslate[lang].country.required),
   });
   static UpdateAddressDto = this.CreateAddressDto.partial();
   static validatePhone(phone: string): boolean {

@@ -6,11 +6,14 @@ import { UserValidation } from "../dtos/user.dto";
 import { UserTranslate } from "@/public/locales/server/User.translate";
 import { lang } from "@/app/lib/utilities/lang";
 import { UserService } from "../services/user.service";
+import AppError from "@/app/lib/utilities/appError";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 
 class UserController {
   private userService = new UserService();
   async deactivateAccount(req: NextRequest) {
-    if (!req.user) return;
+    if (!req.user)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
 
     await this.userService.deactivateAccount(String(req.user._id));
 
@@ -22,7 +25,8 @@ class UserController {
     );
   }
   async deleteAccountByAdmin(req: NextRequest) {
-    if (!req.id) return;
+    if (!req.id)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
 
     await this.userService.deleteUserByAdmin(req.id);
 
@@ -38,7 +42,9 @@ class UserController {
     return NextResponse.json(users, { status: 200 });
   }
   async getUser(req: NextRequest) {
-    if (!req.id) return;
+    if (!req.id)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+
     const user = await this.userService.findUserById(req.id);
     return NextResponse.json(user?.filterForRole(req.user?.role), {
       status: 200,
@@ -51,14 +57,17 @@ class UserController {
     return NextResponse.json(user, { status: 201 });
   }
   async updateUserByAdmin(req: NextRequest) {
-    if (!req.id) return;
+    if (!req.id)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+
     const body = await req.json();
     const result = UserValidation.validateUpdateUserByAdminDTO(body);
     const user = await this.userService.updateUserByAdmin(req.id, result);
     return NextResponse.json(user, { status: 200 });
   }
   async revokeAllUserSessions(req: NextRequest) {
-    if (!req.id) return;
+    if (!req.id)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
 
     await this.userService.revokeAllSessionsByAdmin(req.id);
     return NextResponse.json(
@@ -67,7 +76,9 @@ class UserController {
     );
   }
   async forceRestPassword(req: NextRequest) {
-    if (!req.id) return;
+    if (!req.id)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+
     await this.userService.forcePasswordResetByAdmin(req.id);
     return NextResponse.json(
       { message: UserTranslate[lang].forceRestPassword },
@@ -75,7 +86,9 @@ class UserController {
     );
   }
   async lockUserAccount(req: NextRequest) {
-    if (!req.id) return;
+    if (!req.id)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+
     await this.userService.lockUserAccount(req.id);
     return NextResponse.json(
       { message: UserTranslate[lang].lockUserAccount },
@@ -83,7 +96,9 @@ class UserController {
     );
   }
   async unlockUserAccount(req: NextRequest) {
-    if (!req.id) return;
+    if (!req.id)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+
     await this.userService.unlockUserAccount(req.id);
     return NextResponse.json(
       { message: UserTranslate[lang].unlockUserAccount },

@@ -143,7 +143,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       );
       const { data } = await api.post("/customers/orders", {
         shippingInfo: selectedAddress,
-        products: cartItems,
+        // products: cartItems,
       });
       toast.success(
         checkoutPageTranslate[lang].functions.handelCheckout.success

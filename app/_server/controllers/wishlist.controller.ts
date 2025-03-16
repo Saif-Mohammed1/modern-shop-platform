@@ -3,13 +3,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { WishlistService } from "../services/wishlist.service";
 import { WishlistValidation } from "../dtos/wishlist.dto";
+import AppError from "@/app/lib/utilities/appError";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+import { lang } from "@/app/lib/utilities/lang";
 
 class WishlistController {
   private readonly WishlistService = new WishlistService();
 
   async toggleWishlist(req: NextRequest) {
     try {
-      if (!req.user?._id) return;
+      if (!req.user)
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+
       const check = WishlistValidation.validateCreateWishlist({
         productId: req.id,
         userId: req.user._id,
@@ -43,7 +48,9 @@ class WishlistController {
 
   async checkWishlist(req: NextRequest) {
     try {
-      if (!req.user?._id) return;
+      if (!req.user)
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+
       const check = WishlistValidation.validateCreateWishlist({
         productId: req.id,
         userId: req.user._id,

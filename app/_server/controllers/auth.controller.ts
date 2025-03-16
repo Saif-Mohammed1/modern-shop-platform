@@ -126,7 +126,7 @@ class AuthController {
   async requestEmailChange(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const body = await req.json();
       const email = UserValidation.isEmailValid(body.email);
@@ -169,7 +169,7 @@ class AuthController {
   async verifyEmail(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const body = await req.json();
       const code = UserValidation.isVerificationCodeValid(body.code);
@@ -202,7 +202,7 @@ class AuthController {
   async sendNewVerificationCode(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       await this.userService.sendVerificationCode(req.user?._id.toString());
       return NextResponse.json(
@@ -218,7 +218,7 @@ class AuthController {
   async updateName(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const body = await req.json();
       const result = UserValidation.validateName(body.name);
@@ -237,7 +237,7 @@ class AuthController {
   async getActiveSessions(req: NextRequest) {
     try {
       if (!req.user?._id) {
-        throw new AppError(AuthTranslate[lang].errors.userNotFound, 400);
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
       const sessions = await this.userService.getActiveSessions(
         req.user?._id.toString()

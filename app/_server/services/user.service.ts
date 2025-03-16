@@ -13,7 +13,10 @@ import {
 } from "../dtos/user.dto";
 import { cookies } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
-import { AuditAction, AuditLogDetails } from "@/app/lib/types/audit.types";
+import {
+  SecurityAuditAction,
+  AuditLogDetails,
+} from "@/app/lib/types/audit.types";
 import UserModel, { IUser } from "../models/User.model";
 import {
   accountAction,
@@ -136,7 +139,7 @@ export class UserService {
         // Audit log
         this.repository.createAuditLog(
           user._id.toString(),
-          AuditAction.REGISTRATION,
+          SecurityAuditAction.REGISTRATION,
           {
             success: true,
             device: deviceInfo,
@@ -287,7 +290,7 @@ export class UserService {
         emailService.sendPasswordReset(user.email, resetToken),
         this.repository.createAuditLog(
           user._id.toString(),
-          AuditAction.PASSWORD_RESET_REQUEST,
+          SecurityAuditAction.PASSWORD_RESET_REQUEST,
           { device: deviceInfo, success: true },
           session
         ),
@@ -318,7 +321,7 @@ export class UserService {
         emailService.forcePasswordReset(user.email, password),
         this.repository.createAuditLog(
           user._id.toString(),
-          AuditAction.FORCE_PASSWORD_RESET,
+          SecurityAuditAction.FORCE_PASSWORD_RESET,
           { success: true },
           session
         ),
@@ -384,7 +387,7 @@ export class UserService {
 
       await this.repository.createAuditLog(
         user._id.toString(),
-        AuditAction.PASSWORD_RESET,
+        SecurityAuditAction.PASSWORD_RESET,
         {
           device: deviceInfo,
           success: true,
@@ -396,7 +399,7 @@ export class UserService {
         //   this.repository.invalidateResetToken(user._id.toString(), session),
         //   this.repository.createAuditLog(
         //     user._id.toString(),
-        //     AuditAction.PASSWORD_RESET,
+        //     SecurityAuditAction.PASSWORD_RESET,
         //     {
         //       device: deviceInfo,
         //     },
@@ -424,7 +427,7 @@ export class UserService {
   //   }
   async createAuditLog(
     userId: string,
-    action: AuditAction,
+    action: SecurityAuditAction,
     details: AuditLogDetails,
     session?: ClientSession
   ): Promise<void> {
@@ -468,7 +471,7 @@ export class UserService {
     } catch (error) {
       await this.repository.createAuditLog(
         user._id.toString(),
-        AuditAction.VERIFICATION_EMAIL_FAILURE,
+        SecurityAuditAction.VERIFICATION_EMAIL_FAILURE,
         {
           success: false,
         }
@@ -491,7 +494,7 @@ export class UserService {
         emailService.sendVerification(user.email, verificationToken),
         this.repository.createAuditLog(
           user._id.toString(),
-          AuditAction.VERIFICATION_EMAIL_REQUEST,
+          SecurityAuditAction.VERIFICATION_EMAIL_REQUEST,
           {
             success: true,
           },
@@ -507,7 +510,7 @@ export class UserService {
   //   ),
   //   this.repository.createAuditLog(
   //     user._id.toString(),
-  //     AuditAction.VERIFICATION_EMAIL_REQUEST,
+  //     SecurityAuditAction.VERIFICATION_EMAIL_REQUEST,
   //     {
   //       success: true,
   //     }
@@ -535,7 +538,7 @@ export class UserService {
     } catch (error) {
       await this.repository.createAuditLog(
         user._id.toString(),
-        AuditAction.VERIFICATION_EMAIL_FAILURE,
+        SecurityAuditAction.VERIFICATION_EMAIL_FAILURE,
         {
           success: false,
         }
@@ -625,7 +628,7 @@ export class UserService {
     );
     await this.repository.createAuditLog(
       userId,
-      AuditAction.EMAIL_CHANGE_REQUEST,
+      SecurityAuditAction.EMAIL_CHANGE_REQUEST,
       {
         success: true,
         device: deviceInfo,
@@ -647,7 +650,7 @@ export class UserService {
         this.repository.processEmailChange(user._id.toString(), session),
         this.repository.createAuditLog(
           user._id.toString(),
-          AuditAction.EMAIL_CHANGE_CONFIRMATION,
+          SecurityAuditAction.EMAIL_CHANGE_CONFIRMATION,
           {
             newEmail: user.verification.emailChange,
             success: true,
@@ -659,7 +662,7 @@ export class UserService {
     } catch (error) {
       this.repository.createAuditLog(
         user._id.toString(),
-        AuditAction.EMAIL_CHANGE_FAILURE,
+        SecurityAuditAction.EMAIL_CHANGE_FAILURE,
         {
           newEmail: user.verification.emailChange,
           success: false,
@@ -735,7 +738,7 @@ export class UserService {
         this.sessionService.revokeAllSessionsByAdmin(userId, session),
         this.repository.createAuditLog(
           userId,
-          AuditAction.REVOKE_ALL_SESSIONS,
+          SecurityAuditAction.REVOKE_ALL_SESSIONS,
           {
             success: true,
           },
@@ -757,7 +760,7 @@ export class UserService {
       await this.repository.lockUserAccount(userId);
       await this.repository.createAuditLog(
         userId,
-        AuditAction.ACCOUNT_LOCKED,
+        SecurityAuditAction.ACCOUNT_LOCKED,
         {
           success: true,
         },
@@ -778,7 +781,7 @@ export class UserService {
       await this.repository.unlockUserAccount(userId);
       await this.repository.createAuditLog(
         userId,
-        AuditAction.ACCOUNT_UNLOCKED,
+        SecurityAuditAction.ACCOUNT_UNLOCKED,
         {
           success: true,
         },
