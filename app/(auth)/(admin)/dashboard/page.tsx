@@ -15,9 +15,7 @@ export const metadata: Metadata = {
 };
 const page = async () => {
   try {
-    const {
-      data: { data },
-    } = await api.get("/admin/dashboard", {
+    const { data } = await api.get("/admin/dashboard", {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
     return <Dashboard dashboardData={data} />;

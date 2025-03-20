@@ -4,7 +4,7 @@ import {
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../dtos/order.dto";
-import OrderModel from "../models/Order.model ";
+import OrderModel from "../models/Order.model";
 import { OrderRepository } from "../repositories/order.repository";
 import AppError from "@/app/lib/utilities/appError";
 import { OrderTranslate } from "@/public/locales/server/Order.Translate";

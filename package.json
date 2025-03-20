@@ -17,7 +17,6 @@
     "apexcharts": "^4.4.0",
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
-    "chart.js": "^4.4.4",
     "cloudinary": "^2.4.0",
     "countries-cities": "^0.0.11",
     "crypto": "^1.0.1",
@@ -37,7 +36,6 @@
     "qrcode": "^1.5.4",
     "react": "^18",
     "react-apexcharts": "^1.7.0",
-    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.54.2",
@@ -79,6 +77,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.0",
     "postcss": "^8",
+    "puppeteer": "^24.4.0",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"

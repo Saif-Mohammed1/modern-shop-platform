@@ -1,5 +1,6 @@
 import ErrorHandler from "@/app/_server/controllers/error.controller";
 import orderController from "@/app/_server/controllers/order.controller";
+import stripeController from "@/app/_server/controllers/stripe.controller";
 import { createStripeProduct } from "@/app/_server/controllers/stripeController";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
@@ -19,16 +20,26 @@ export const POST = async (req: NextRequest) => {
     await connectDB();
 
     await AuthMiddleware.requireAuth()(req);
-    const { sessionId, url, statusCode } = await createStripeProduct(req);
-
-    return NextResponse.json(
-      {
-        sessionId,
-        url,
-      },
-      { status: statusCode }
-    );
+    return await stripeController.createStripeSession(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }
 };
+// export const POST = async (req: NextRequest) => {
+//   try {
+//     await connectDB();
+
+//     await AuthMiddleware.requireAuth()(req);
+//     const { sessionId, url, statusCode } = await createStripeProduct(req);
+
+//     return NextResponse.json(
+//       {
+//         sessionId,
+//         url,
+//       },
+//       { status: statusCode }
+//     );
+//   } catch (error) {
+//     return ErrorHandler(error, req);
+//   }
+// };

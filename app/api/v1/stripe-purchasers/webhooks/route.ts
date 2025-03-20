@@ -1,28 +1,39 @@
 import ErrorHandler from "@/app/_server/controllers/error.controller";
-import { handleStripeWebhook } from "@/app/_server/controllers/stripeController";
+import stripeController from "@/app/_server/controllers/stripe.controller";
+// import { handleStripeWebhook } from "@/app/_server/controllers/stripeController";
 import { connectDB } from "@/app/_server/db/db";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 // /stripe-purchasers/webhooks
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
 
-    const result = await handleStripeWebhook(req);
-    if (!result) {
-      throw new Error("Error in stripe webhook");
-    }
-    const { statusCode } = result;
-    if ("session" in result) {
-      return NextResponse.json(
-        { session: result.session },
-        { status: statusCode }
-      );
-    }
-    return NextResponse.json(
-      { message: "No session available" },
-      { status: statusCode }
-    );
+    return await stripeController.handleWebhookEvent(req);
   } catch (error) {
+    console.log("error stripeController.handleWebhookEvent", error);
     return ErrorHandler(error, req);
   }
 };
+// export const POST = async (req: NextRequest) => {
+//   try {
+//     await connectDB();
+
+//     const result = await handleStripeWebhook(req);
+//     if (!result) {
+//       throw new Error("Error in stripe webhook");
+//     }
+//     const { statusCode } = result;
+//     if ("session" in result) {
+//       return NextResponse.json(
+//         { session: result.session },
+//         { status: statusCode }
+//       );
+//     }
+//     return NextResponse.json(
+//       { message: "No session available" },
+//       { status: statusCode }
+//     );
+//   } catch (error) {
+//     return ErrorHandler(error, req);
+//   }
+// };

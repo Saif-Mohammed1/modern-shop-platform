@@ -10,6 +10,8 @@ import reviewController from "@/app/_server/controllers/review.controller";
 import cartController from "@/app/_server/controllers/cart.controller";
 import wishlistController from "@/app/_server/controllers/wishlist.controller";
 import stripeController from "@/app/_server/controllers/stripe.controller";
+import puppeteer from "puppeteer";
+
 // create a random user
 interface IUserInput {
   name: string;
@@ -669,6 +671,10 @@ export const createRandomStripeSession = async (
 ) => {
   const req = [];
   for (let i = 0; i < userId.length; i++) {
+    const findRelatedAddress = shippingInfo.filter(
+      (item) => String(item.userId) === String(userId[i]["_id"])
+    );
+    const randomShippingInfo = faker.helpers.arrayElement(findRelatedAddress);
     const randomUser = userId[i];
     const reqs = new NextRequest(
       new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/stripe"),
@@ -681,17 +687,201 @@ export const createRandomStripeSession = async (
           "x-forwarded-for": faker.internet.ipv4(),
         },
         method: "POST",
-        body: JSON.stringify({ shippingInfo: shippingInfo[0] }),
+        body: JSON.stringify({ shippingInfo: randomShippingInfo }),
       }
     );
     reqs.user = randomUser;
     req.push(stripeController.createStripeSession(reqs));
   }
+  const results = [];
+
   // return await Promise.all(req);
   const responses = await Promise.all(req);
-  // responses.forEach(async (res, index) => {
-  //   const response = await res.json();
-  //   console.log(`Response ${index + 1}:`, response);
-  // });
+  responses.forEach(async (res, index) => {
+    const response = await res.json();
+    // console.log(`Response ${index + 1}:`, response);
+    try {
+      // 2. Automate checkout
+      const success = await automateStripeCheckout(response.url);
+
+      results.push({
+        userId,
+        sessionId: response.sessionId,
+        success,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Rate limiting
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    } catch (error: any) {
+      console.error(`Failed for user ${userId}:`, error);
+      results.push({
+        userId,
+        success: false,
+        error: error.message,
+      });
+    }
+  });
   return responses;
 };
+
+const STRIPE_TEST_CARD = "4242424242424242"; // Standard test card
+// const STRIPE_TEST_CVC = "123";
+// const STRIPE_TEST_EXP = "12/34";
+
+export const automateStripeCheckout = async (checkoutUrl: string) => {
+  const browser = await puppeteer.launch({
+    headless: false, // Set to true for CI/CD
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  try {
+    const page = await browser.newPage();
+
+    // Configure browser context
+    await page.setUserAgent(faker.internet.userAgent());
+    await page.setExtraHTTPHeaders({
+      "x-client-ip": faker.internet.ipv4(),
+      "x-forwarded-for": faker.internet.ipv4(),
+    });
+
+    // Navigate to Stripe checkout
+    await page.goto(checkoutUrl, { waitUntil: "networkidle2" });
+
+    // Wait for the payment form to be visible
+    await page.waitForSelector(".App-Payment");
+    // await page.waitForSelector("#cardNumber");
+    const cardExpiryData = faker.helpers.fromRegExp("[0-9]{2}/2[5-9]");
+    // Fill payment details (No iframe required)
+    await page.type("#cardNumber", STRIPE_TEST_CARD);
+    await page.type("#cardExpiry", cardExpiryData);
+    await page.type("#cardCvc", faker.helpers.fromRegExp("[0-9]{3}"));
+    await page.type("#billingName", faker.person.fullName());
+
+    // Submit payment
+    await page.click(".SubmitButton");
+
+    // Wait for success
+    await page.waitForNavigation({
+      waitUntil: "networkidle2",
+      timeout: 15000,
+    });
+
+    // Verify success
+    if (page.url().includes("/success")) {
+      console.log("Payment successful");
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Checkout failed:", error);
+    return false;
+  } finally {
+    await browser.close();
+  }
+};
+
+// export const automateStripeCheckout = async (checkoutUrl: string) => {
+//   const browser = await puppeteer.launch({
+//     headless: false, // Set to true for CI/CD
+//     args: ["--no-sandbox", "--disable-setuid-sandbox"],
+//   });
+
+//   try {
+//     const page = await browser.newPage();
+
+//     // Configure browser context
+//     await page.setUserAgent(faker.internet.userAgent());
+//     await page.setExtraHTTPHeaders({
+//       "x-client-ip": faker.internet.ipv4(),
+//       "x-forwarded-for": faker.internet.ipv4(),
+//     });
+//     // Navigate to Stripe checkout
+//     await page.goto(checkoutUrl, { waitUntil: "networkidle2" });
+
+//     // Fill payment details
+//     // await page.waitForSelector(
+//     //   'iframe[title="Secure card payment input frame"]'
+//     // );
+//     await page.waitForSelector('div[class="App-Payment is-noBackground"]');
+
+//     const cardFrame = page
+//       .frames()
+//       .find((f) => f.url().includes("elements-inner-card"));
+
+//     await cardFrame?.type('input[name="cardNumber"]', STRIPE_TEST_CARD);
+//     await cardFrame?.type('input[name="cardExpiry"]', STRIPE_TEST_EXP);
+//     await cardFrame?.type('input[name="cardCvc"]', STRIPE_TEST_CVC);
+//     await cardFrame?.type('input[name="billingName"]', faker.person.fullName());
+
+//     // Submit payment
+//     // await page.click('button[type="submit"]');
+//     await page.click(".SubmitButton-Icon");
+
+//     // Wait for success
+//     await page.waitForNavigation({
+//       waitUntil: "networkidle2",
+//       timeout: 15000,
+//     });
+
+//     // Verify success
+//     if (page.url().includes("/success")) {
+//       console.log("Payment successful");
+//       return true;
+//     }
+
+//     return false;
+//   } catch (error) {
+//     console.error("Checkout failed:", error);
+//     return false;
+//   } finally {
+//     await browser.close();
+//   }
+// };
+
+// export const createAndTestStripeSession = async (
+//   userIds: string[],
+//   shippingInfo: any[]
+// ) => {
+//   const results = [];
+
+//   for (const userId of userIds) {
+//     try {
+//       // 1. Create session
+//       const sessionResponse = await stripeController.createStripeSession({
+//         user: { _id: userId },
+//         body: { shippingInfo: shippingInfo[0] },
+//       });
+
+//       const { sessionId, url } = await sessionResponse.json();
+
+//       // 2. Automate checkout
+//       const success = await automateStripeCheckout(url);
+
+//       results.push({
+//         userId,
+//         sessionId,
+//         success,
+//         timestamp: new Date().toISOString(),
+//       });
+
+//       // Rate limiting
+//       await new Promise((resolve) => setTimeout(resolve, 2000));
+//     } catch (error: any) {
+//       console.error(`Failed for user ${userId}:`, error);
+//       results.push({
+//         userId,
+//         success: false,
+//         error: error.message,
+//       });
+//     }
+//   }
+
+//   return results;
+// };
+
+// // Usage
+// createAndTestStripeSession(['user1', 'user2'], [{}])
+//   .then(results => console.log('Test results:', results))
+//   .catch(console.error);

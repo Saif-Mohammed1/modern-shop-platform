@@ -2,7 +2,7 @@ import AppError from "@/app/lib/utilities/appError";
 import { lang } from "@/app/lib/utilities/lang";
 import { redis } from "@/app/lib/utilities/Redis";
 import { stripeControllerTranslate } from "@/public/locales/server/stripeControllerTranslate";
-import mongoose from "mongoose";
+import mongoose, { MongooseError } from "mongoose";
 import Stripe from "stripe";
 import UserModel, { IUser } from "../models/User.model";
 import { ShippingInfoDto } from "../dtos/stripe.dto";
@@ -18,7 +18,7 @@ import {
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 import { v4 as uuidv4 } from "uuid";
 import { setTimeout } from "timers/promises";
-import OrderModel from "../models/Order.model ";
+import OrderModel from "../models/Order.model";
 import {
   IOrderItem,
   OrderStatus,
@@ -29,6 +29,7 @@ import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import AuditLogModel from "../models/audit-log.model";
 import { UserCurrency } from "@/app/lib/types/users.types";
 import { Types } from "mongoose";
+import { MongoBulkWriteError } from "mongodb";
 // stripe.service.ts
 
 export interface FailedOrderData {
@@ -39,17 +40,20 @@ export interface FailedOrderData {
   products: Array<{ productId: string; quantity: number }>;
 }
 export const stripe = new Stripe(process.env.STRIPE_SECRET!, {
-  apiVersion: "2024-06-20",
+  // apiVersion: "2024-06-20",
+  maxNetworkRetries: 3, // Retry 3 times on network errors
+  timeout: 15_000, // 15 seconds
   typescript: true,
 });
 
-const RESERVATION_TIMEOUT = Number(process.env.RESERVATION_TIMEOUT || 15) * 60; // 15 minutes in seconds
-const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
-// Tax rate caching with TTL
-const TAX_RATE_TTL = 3600; // 1 hour in seconds
-const CACHE_PREFIX = "taxRate:";
-
 export class StripeService {
+  private RESERVATION_TIMEOUT =
+    Number(process.env.RESERVATION_TIMEOUT || 15) * 60; // 15 minutes in seconds
+  private feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
+  // Tax rate caching with TTL
+  private TAX_RATE_TTL = 3600; // 1 hour in seconds
+  private CACHE_PREFIX = "taxRate:";
+
   private userCartService = new CartService();
   private productService = new ProductService();
 
@@ -58,75 +62,160 @@ export class StripeService {
     shippingInfo: ShippingInfoDto
   ): Promise<{ sessionId: string; url: string }> {
     await this.validateEnvironment();
-    const transaction = await mongoose.startSession();
-    transaction.startTransaction();
+    const MAX_RETRIES = 3;
+    let retryCount = 0;
 
-    try {
-      const BASE_URL = new URL(process.env.NEXTAUTH_URL!);
-      const userCart = await this.userCartService.getMyCart(
-        user._id.toString()
-      );
-      // 1. Get and validate cart FIRST
-      if (userCart.length === 0) {
-        throw new AppError("Cart is empty", 400);
+    while (retryCount < MAX_RETRIES) {
+      const transaction = await mongoose.startSession();
+      transaction.startTransaction();
+      try {
+        const BASE_URL = new URL(process.env.NEXTAUTH_URL!);
+        const userCart = await this.userCartService.getMyCart(
+          user._id.toString()
+        );
+        // 1. Get and validate cart FIRST
+        if (userCart.length === 0) {
+          throw new AppError("Cart is empty", 400);
+        }
+        // 2. Validate cart items first
+        const { validProducts, invalidProducts } =
+          await this.validateCartProducts(userCart);
+        if (invalidProducts.length > 0) {
+          // await this.handleInvalidCartItems(user._id.toString(), invalidProducts);
+          throw new AppError(invalidProducts[0].message, 400);
+        }
+
+        // 3. Generate idempotency key based on validated products
+        const idempotencyPayload = {
+          validProducts: validProducts.map((p) => ({
+            id: p.product._id.toString(),
+            quantity: p.quantity,
+          })),
+          shippingInfo: this.normalizeShippingInfo(shippingInfo), // Normalized
+          userId: user._id.toString(),
+        };
+        const idempotencyKey = crypto
+          .createHash("sha256")
+          .update(JSON.stringify(idempotencyPayload))
+          .digest("hex");
+
+        const cachedSession = await this.getCachedSession(idempotencyKey);
+        if (cachedSession) return cachedSession;
+
+        // const reservationId = uuidv4();
+        // 4. Reserve inventory using validated products
+        await this.reserveInventoryWithRetry(
+          validProducts.map((p) => ({
+            _id: p.product._id,
+            quantity: p.quantity,
+          })),
+          user,
+          // reservationId,
+          transaction
+        );
+
+        const session = await this.createStripeCheckoutSession(
+          user,
+          validProducts,
+          shippingInfo,
+          BASE_URL,
+          idempotencyKey
+        );
+        await this.cacheSession(idempotencyKey, session);
+
+        await transaction.commitTransaction();
+        console.count("session count");
+        return { sessionId: session.id, url: session.url! };
+      } catch (error) {
+        await transaction.abortTransaction();
+
+        if (this.isTransientError(error)) {
+          retryCount++;
+          await setTimeout(50 * retryCount);
+          continue;
+        }
+
+        await this.handleCreateSessionError(error as Error, user);
+        throw error;
+      } finally {
+        transaction.endSession();
       }
-      // 2. Validate cart items first
-      const { validProducts, invalidProducts } =
-        await this.validateCartProducts(userCart);
-      if (invalidProducts.length > 0) {
-        // await this.handleInvalidCartItems(user._id.toString(), invalidProducts);
-        throw new AppError(invalidProducts[0].message, 400);
-      }
-
-      // 3. Generate idempotency key based on validated products
-      const idempotencyPayload = {
-        validProducts: validProducts.map((p) => ({
-          id: p.product._id.toString(),
-          quantity: p.quantity,
-        })),
-        shippingInfo: this.normalizeShippingInfo(shippingInfo), // Normalized
-        userId: user._id.toString(),
-      };
-      const idempotencyKey = crypto
-        .createHash("sha256")
-        .update(JSON.stringify(idempotencyPayload))
-        .digest("hex");
-
-      const cachedSession = await this.getCachedSession(idempotencyKey);
-      if (cachedSession) return cachedSession;
-
-      const reservationId = uuidv4();
-      // 4. Reserve inventory using validated products
-      await this.reserveInventoryWithRetry(
-        validProducts.map((p) => ({
-          _id: p.product._id,
-          quantity: p.quantity,
-        })),
-        user,
-        reservationId,
-        transaction
-      );
-      console.log("Before Session created", idempotencyKey);
-
-      const session = await this.createStripeCheckoutSession(
-        user,
-        validProducts,
-        shippingInfo,
-        BASE_URL,
-        idempotencyKey
-      );
-      console.log("Session created", session);
-      await this.cacheSession(idempotencyKey, session);
-      await transaction.commitTransaction();
-      return { sessionId: session.id, url: session.url! };
-    } catch (error) {
-      await transaction.abortTransaction();
-      await this.handleCreateSessionError(error as Error, user);
-      throw error;
-    } finally {
-      transaction.endSession();
     }
+    throw new AppError("Max retries reached for transaction", 500);
   }
+
+  // async createStripeSessionOld(
+  //   user: IUser,
+  //   shippingInfo: ShippingInfoDto
+  // ): Promise<{ sessionId: string; url: string }> {
+  //   await this.validateEnvironment();
+  //   const transaction = await mongoose.startSession();
+  //   transaction.startTransaction();
+
+  //   try {
+  //     const BASE_URL = new URL(process.env.NEXTAUTH_URL!);
+  //     const userCart = await this.userCartService.getMyCart(
+  //       user._id.toString()
+  //     );
+  //     // 1. Get and validate cart FIRST
+  //     if (userCart.length === 0) {
+  //       throw new AppError("Cart is empty", 400);
+  //     }
+  //     // 2. Validate cart items first
+  //     const { validProducts, invalidProducts } =
+  //       await this.validateCartProducts(userCart);
+  //     if (invalidProducts.length > 0) {
+  //       // await this.handleInvalidCartItems(user._id.toString(), invalidProducts);
+  //       throw new AppError(invalidProducts[0].message, 400);
+  //     }
+
+  //     // 3. Generate idempotency key based on validated products
+  //     const idempotencyPayload = {
+  //       validProducts: validProducts.map((p) => ({
+  //         id: p.product._id.toString(),
+  //         quantity: p.quantity,
+  //       })),
+  //       shippingInfo: this.normalizeShippingInfo(shippingInfo), // Normalized
+  //       userId: user._id.toString(),
+  //     };
+  //     const idempotencyKey = crypto
+  //       .createHash("sha256")
+  //       .update(JSON.stringify(idempotencyPayload))
+  //       .digest("hex");
+
+  //     const cachedSession = await this.getCachedSession(idempotencyKey);
+  //     if (cachedSession) return cachedSession;
+
+  //     const reservationId = uuidv4();
+  //     // 4. Reserve inventory using validated products
+  //     await this.reserveInventoryWithRetry(
+  //       validProducts.map((p) => ({
+  //         _id: p.product._id,
+  //         quantity: p.quantity,
+  //       })),
+  //       user,
+  //       reservationId,
+  //       transaction
+  //     );
+
+  //     const session = await this.createStripeCheckoutSession(
+  //       user,
+  //       validProducts,
+  //       shippingInfo,
+  //       BASE_URL,
+  //       idempotencyKey
+  //     );
+  //     await this.cacheSession(idempotencyKey, session);
+  //     await transaction.commitTransaction();
+  //     return { sessionId: session.id, url: session.url! };
+  //   } catch (error) {
+  //     await transaction.abortTransaction();
+  //     await this.handleCreateSessionError(error as Error, user);
+  //     throw error;
+  //   } finally {
+  //     transaction.endSession();
+  //   }
+  // }
 
   private async createStripeCheckoutSession(
     user: IUser,
@@ -147,7 +236,7 @@ export class StripeService {
     );
 
     // 4. Proceed with session creation
-    return stripe.checkout.sessions.create(
+    return await stripe.checkout.sessions.create(
       {
         payment_method_types: ["card"],
         mode: "payment",
@@ -194,10 +283,10 @@ export class StripeService {
         metadata: {
           shippingInfo: JSON.stringify(normalizedShippingInfo),
           idempotencyKey,
-          reservationTimeout: Date.now() + RESERVATION_TIMEOUT * 1000,
+          reservationTimeout: Date.now() + this.RESERVATION_TIMEOUT * 1000,
         },
-      },
-      { idempotencyKey }
+      }
+      // { idempotencyKey }
     );
   }
 
@@ -233,6 +322,10 @@ export class StripeService {
     session: Stripe.Checkout.Session,
     transaction: mongoose.ClientSession
   ): Promise<void> {
+    const lockKey = `order:${session.id}`;
+    const locked = await this.acquireLock(lockKey);
+    if (!locked) throw new AppError("Concurrent order processing", 409);
+
     // Validate session metadata
     if (!session.metadata?.shippingInfo || !session.metadata?.idempotencyKey) {
       throw new AppError("Invalid session metadata", 400);
@@ -243,88 +336,56 @@ export class StripeService {
       transaction
     );
     if (!user) throw new AppError("User not found", 404);
+    try {
+      // Parse shipping information
+      const shippingInfo = this.parseShippingInfo(
+        session.metadata.shippingInfo
+      );
+      // Retrieve Stripe invoice and line items
+      const [lineItems, invoice] = await Promise.all([
+        stripe.checkout.sessions.listLineItems(session.id, {
+          expand: ["data.price.product"],
+        }),
+        stripe.invoices.retrieve(session.invoice as string),
+      ]);
 
-    // Parse shipping information
-    const shippingInfo = this.parseShippingInfo(session.metadata.shippingInfo);
+      // Create order items
+      const orderItems = await this.processOrderItems(
+        lineItems.data,
+        transaction
+      );
 
-    // Retrieve Stripe invoice and line items
-    const invoice = await stripe.invoices.retrieve(session.invoice as string);
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-      expand: ["data.price.product"],
-    });
+      // Create order document
+      const order = await this.createOrderFromSession(
+        session,
+        user,
+        shippingInfo,
+        transaction,
+        orderItems,
+        invoice
+      );
+      // Update inventory and clear cart
+      await this.updateInventory(orderItems, user, transaction);
+      // await this.cartService.clearCart(user._id.toString(), transaction);
 
-    // Create order items
-    const orderItems = await Promise.all(
-      lineItems.data.map(async (item) => {
-        const productMetadata = (item?.price?.product as Stripe.Product)
-          .metadata; // Assuming you stored _id in metadata
+      // Send order confirmation
+      // await this.sendOrderConfirmation(user, order, transaction);
 
-        const product = await ProductModel.findById(
-          productMetadata._id
-        ).session(transaction);
-
-        if (!product)
-          throw new AppError(`Product not found: ${productMetadata.name}`, 404);
-
-        return {
-          productId: product._id,
-          name: product.name,
-          price: product.price,
-          discount: product.discount || 0,
-          quantity: item.quantity || 0,
-          sku: product.sku,
-          attributes: product.attributes || {},
-          shippingInfo: {
-            weight: product.shippingInfo.weight || 0,
-            dimensions: product.shippingInfo.dimensions || {
-              length: 0,
-              width: 0,
-              height: 0,
-            },
-          },
-          finalPrice: this.calculateFinalPrice(product, item.quantity || 1),
-        };
-      })
-    );
-
-    // Create order document
-    const order = await OrderModel.create(
-      [
-        {
-          userId: user._id,
-          items: orderItems,
-          shippingAddress: shippingInfo,
-          payment: {
-            method: PaymentsMethod.Credit_card, // Map from Stripe payment method
-            transactionId: session.payment_intent as string,
-          },
-          status: OrderStatus.Processing,
-          invoiceId: invoice.id,
-          invoiceLink: invoice.invoice_pdf || "",
-          subtotal: session.amount_subtotal ? session.amount_subtotal / 100 : 0,
-          tax: session.total_details?.amount_tax
-            ? session.total_details.amount_tax / 100
-            : 0,
-          total: session.amount_total ? session.amount_total / 100 : 0,
-          currency: session.currency?.toUpperCase() || UserCurrency.UAH,
-        },
-      ],
-      { session: transaction }
-    );
-
-    // Update inventory and clear cart
-    await this.updateInventory(orderItems, user, transaction);
-    // await this.cartService.clearCart(user._id.toString(), transaction);
-
-    // Audit log
-    await this.createAuditLog(
-      user._id,
-      AuditAction.ORDER_CREATED,
-      EntityType.ORDER,
-      order[0]._id.toString(),
-      { stripeSessionId: session.id },
-      transaction
-    );
+      // // Audit log
+      // await this.createAuditLog(
+      //   user._id,
+      //   AuditAction.ORDER_CREATED,
+      //   EntityType.ORDER,
+      //   order[0]._id.toString(),
+      //   { stripeSessionId: session.id },
+      //   transaction
+      // );
+    } catch (error) {
+      await this.handleOrderFailure(user, error as Error);
+      throw error;
+    } finally {
+      await this.releaseLock(lockKey);
+    }
   }
   private async handleChargeRefunded(
     charge: Stripe.Charge,
@@ -359,7 +420,7 @@ export class StripeService {
     entityType: EntityType,
     entityId: string,
     context: Record<string, any>,
-    session: mongoose.ClientSession
+    session?: mongoose.ClientSession
   ): Promise<void> {
     await AuditLogModel.create(
       [
@@ -387,7 +448,11 @@ export class StripeService {
       updateOne: {
         filter: { _id: item.productId },
         update: {
-          $inc: { stock: -item.quantity, sold: item.quantity },
+          $inc: {
+            stock: -item.quantity,
+            sold: item.quantity,
+            reserved: -item.quantity,
+          },
           $set: { modifiedAt: new Date(), lastModifiedBy: user._id },
         },
       },
@@ -395,38 +460,253 @@ export class StripeService {
 
     await ProductModel.bulkWrite(bulkOps, { session });
   }
-  private async reserveInventoryWithRetry(
-    userCart: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+  private async processOrderItems(
+    items: Stripe.LineItem[],
+    session: mongoose.ClientSession
+  ) {
+    return await Promise.all(
+      items.map(async (item) => {
+        const productMetadata = (item?.price?.product as Stripe.Product)
+          .metadata; // Assuming you stored _id in metadata
+
+        const product = await ProductModel.findById(
+          productMetadata._id
+        ).session(session);
+
+        if (!product)
+          throw new AppError(`Product not found: ${productMetadata.name}`, 404);
+
+        return {
+          productId: product._id,
+          name: product.name,
+          price: product.price,
+          discount: product.discount || 0,
+          quantity: item.quantity || 0,
+          sku: product.sku,
+          attributes: product.attributes || {},
+          shippingInfo: {
+            weight: product.shippingInfo.weight || 0,
+            dimensions: product.shippingInfo.dimensions || {
+              length: 0,
+              width: 0,
+              height: 0,
+            },
+          },
+          finalPrice: this.calculateFinalPrice(product, item.quantity || 1),
+        };
+      })
+    );
+  }
+  private async createOrderFromSession(
+    session: Stripe.Checkout.Session,
     user: IUser,
-    reservationId: string,
-    session: mongoose.ClientSession,
-    retries = 3
-  ): Promise<void> {
-    const lockKey = `inventory_lock:${reservationId}`;
-    let locked = false;
-
+    shippingInfo: ShippingInfoDto,
+    transaction: mongoose.ClientSession,
+    orderItems: IOrderItem[],
+    invoice: Stripe.Invoice
+  ) {
     try {
-      locked = await this.acquireLock(lockKey, 30);
-      if (!locked) throw new AppError("Inventory reservation conflict", 409);
-
-      await this.reserveInventory(userCart, user, session);
+      await OrderModel.create(
+        [
+          {
+            userId: user._id,
+            items: orderItems,
+            shippingAddress: shippingInfo,
+            payment: {
+              method: PaymentsMethod.Credit_card, // Map from Stripe payment method
+              transactionId: session.payment_intent as string,
+            },
+            status: OrderStatus.Processing,
+            invoiceId: invoice.id,
+            invoiceLink: invoice.invoice_pdf || "",
+            subtotal: session.amount_subtotal
+              ? session.amount_subtotal / 100
+              : 0,
+            tax: session.total_details?.amount_tax
+              ? session.total_details.amount_tax / 100
+              : 0,
+            total: session.amount_total ? session.amount_total / 100 : 0,
+            currency: session.currency?.toUpperCase() || UserCurrency.UAH,
+          },
+        ],
+        { session: transaction }
+      );
     } catch (error) {
-      if (retries > 0 && error instanceof AppError) {
-        const delay = 2 ** (4 - retries) * 100; // Exponential backoff
-        await setTimeout(delay);
-        return this.reserveInventoryWithRetry(
-          userCart,
-          user,
-          reservationId,
-          session,
-          retries - 1
-        );
-      }
+      await this.handleOrderFailure(user, error as Error);
+
       throw error;
-    } finally {
-      if (locked) await this.releaseLock(lockKey);
     }
   }
+  private async handleOrderFailure(user: IUser, error: Error) {
+    await this.createAuditLog(
+      user._id,
+      AuditAction.ORDER_FAILURE,
+      EntityType.ORDER,
+      "N/A",
+
+      {
+        error: error.message,
+        stack: error.stack,
+      }
+    );
+  }
+  // private async reserveInventoryWithRetry3(
+  //   products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+  //   user: IUser,
+  //   session: mongoose.ClientSession
+  // ) {
+  //   const sortedProducts = [...products].sort((a, b) =>
+  //     a._id.toString().localeCompare(b._id.toString())
+  //   );
+
+  //   const lockPromises = sortedProducts.map(async (product) => {
+  //     const lockKey = `product_lock:${product._id}`;
+  //     let acquired = false;
+  //     let attempts = 0;
+
+  //     while (!acquired && attempts < 5) {
+  //       acquired = await this.acquireLock(lockKey, 60); // 60 second TTL
+  //       if (!acquired) {
+  //         attempts++;
+  //         await setTimeout(200 * attempts); // Linear backoff
+  //       }
+  //     }
+
+  //     if (!acquired) throw new AppError(`Lock failed for ${product._id}`, 409);
+  //     return lockKey;
+  //   });
+
+  //   const lockKeys = await Promise.all(lockPromises);
+
+  //   try {
+  //     await this.reserveInventory(sortedProducts, user, session);
+  //   } finally {
+  //     await Promise.all(lockKeys.map((key) => this.releaseLock(key)));
+  //   }
+  // }
+  private async reserveInventoryWithRetry(
+    products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+    user: IUser,
+    // reservationId: string,
+    session: mongoose.ClientSession,
+    maxRetries = 5
+  ): Promise<void> {
+    // Sort products by ID to prevent deadlocks
+    const sortedProducts = [...products].sort((a, b) =>
+      a._id.toString().localeCompare(b._id.toString())
+    );
+
+    const lockKeys = sortedProducts.map(
+      (p) => `product_lock:${p._id.toString()}`
+    );
+    const acquiredLocks: string[] = [];
+
+    try {
+      // Acquire all locks with retries
+      for (const [index, lockKey] of lockKeys.entries()) {
+        let attempts = 0;
+        while (attempts < maxRetries) {
+          const acquired = await this.acquireLock(lockKey, 60); // 60 second TTL
+          if (lockKey.includes("67b5bc3c6929f25809e5c853")) {
+            console.count("lockKey 67b5bc3c6929f25809e5c853");
+          }
+          if (acquired) {
+            acquiredLocks.push(lockKey);
+            break;
+          }
+
+          attempts++;
+          const delay = Math.min(100 * Math.pow(2, attempts), 6000);
+          await setTimeout(delay);
+
+          if (attempts === maxRetries) {
+            throw new AppError(
+              `Failed to acquire lock for product ${sortedProducts[index]._id} after ${maxRetries} attempts`,
+              409
+            );
+          }
+        }
+      }
+
+      // Proceed with inventory reservation after acquiring all locks
+      await this.reserveInventory(sortedProducts, user, session);
+    } finally {
+      // Release all locks in reverse order
+      for (const lockKey of [...acquiredLocks].reverse()) {
+        await this.releaseLock(lockKey).catch((error) => {
+          console.error(`Error releasing lock ${lockKey}:`, error);
+        });
+      }
+    }
+  }
+  // private async reserveInventoryWithRetryOld2(
+  //   products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+  //   user: IUser,
+  //   // reservationId: string,
+  //   session: mongoose.ClientSession,
+  //   retries = 3
+  // ): Promise<void> {
+  //   // Sort products by ID to acquire locks in consistent order
+  //   const sortedProducts = [...products].sort((a, b) =>
+  //     a._id.toString().localeCompare(b._id.toString())
+  //   );
+
+  //   const lockKeys = sortedProducts.map((p) => `product_lock:${p._id}`);
+
+  //   try {
+  //     // Acquire all locks in order
+  //     for (const lockKey of lockKeys) {
+  //       let acquired = false;
+  //       while (!acquired && retries > 0) {
+  //         acquired = await this.acquireLock(lockKey, 30);
+  //         if (!acquired) {
+  //           retries--;
+  //           await setTimeout(100);
+  //         }
+  //       }
+  //       if (!acquired) throw new AppError("Failed to acquire locks", 409);
+  //     }
+
+  //     await this.reserveInventory(sortedProducts, user, session);
+  //   } finally {
+  //     // Release all locks in reverse order
+  //     for (const lockKey of lockKeys.reverse()) {
+  //       await this.releaseLock(lockKey);
+  //     }
+  //   }
+  // }
+  // private async reserveInventoryWithRetryOld(
+  //   userCart: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+  //   user: IUser,
+  //   reservationId: string,
+  //   session: mongoose.ClientSession,
+  //   retries = 3
+  // ): Promise<void> {
+  //   const lockKey = `inventory_lock:${reservationId}`;
+  //   let locked = false;
+
+  //   try {
+  //     locked = await this.acquireLock(lockKey, 30);
+  //     if (!locked) throw new AppError("Inventory reservation conflict", 409);
+
+  //     await this.reserveInventory(userCart, user, session);
+  //   } catch (error) {
+  //     if (retries > 0 && error instanceof AppError) {
+  //       const delay = 2 ** (4 - retries) * 100; // Exponential backoff
+  //       await setTimeout(delay);
+  //       return this.reserveInventoryWithRetry(
+  //         userCart,
+  //         user,
+  //         reservationId,
+  //         session,
+  //         retries - 1
+  //       );
+  //     }
+  //     throw error;
+  //   } finally {
+  //     if (locked) await this.releaseLock(lockKey);
+  //   }
+  // }
 
   private async handleCreateSessionError(
     error: Error,
@@ -447,23 +727,31 @@ export class StripeService {
       },
     ]);
   }
-
   private async reserveInventory(
     products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
     user: IUser,
     session: mongoose.ClientSession
   ): Promise<void> {
-    const bulkOps = products.map(({ _id, quantity }) => ({
+    // Aggregate quantities for duplicate products
+    const productMap = new Map<string, number>();
+
+    products.forEach(({ _id, quantity }) => {
+      const productId = _id.toString();
+      productMap.set(productId, (productMap.get(productId) || 0) + quantity);
+    });
+
+    // Create consolidated bulk operations
+    const bulkOps = Array.from(productMap.entries()).map(([_id, quantity]) => ({
       updateOne: {
         filter: {
-          _id,
-          stock: { $gte: quantity },
-          $expr: { $lt: ["$reserved", "$stock"] },
+          _id: new mongoose.Types.ObjectId(_id),
+          $expr: {
+            $gte: [{ $subtract: ["$stock", "$reserved"] }, quantity],
+          },
         },
         update: {
           $inc: { reserved: quantity },
           $set: {
-            lastReserved: new Date(),
             lastModifiedBy: user._id,
             modifiedAt: new Date(),
           },
@@ -471,17 +759,85 @@ export class StripeService {
       },
     }));
 
-    const result = await ProductModel.bulkWrite(bulkOps, { session });
+    try {
+      const result = await ProductModel.bulkWrite(bulkOps, {
+        session,
+        ordered: true, // Process in sequence
+        writeConcern: { w: "majority" },
+      });
 
-    if (result.modifiedCount !== products.length) {
-      const successfulIds = Object.keys(result.modifiedCount);
-      const failedProducts = products.filter(
-        (p) => !successfulIds.includes(p._id.toString())
-      );
+      // Handle partial failures for ordered operations
+      if (result.modifiedCount !== bulkOps.length) {
+        const successfulIds = new Set(
+          Object.values(result.upsertedIds).map((id) => id.toString()) || []
+        );
 
-      // await this.handlePartialReservationFailure(user, failedProducts);
-      throw new AppError("Partial inventory reservation failed", 409);
+        const failedProducts = bulkOps
+          .filter(
+            (op) => !successfulIds.has(op.updateOne.filter._id.toString())
+          )
+          .map((op) => ({
+            _id: op.updateOne.filter._id,
+            quantity: productMap.get(op.updateOne.filter._id.toString())!,
+          }));
+        console.log("failedProducts", failedProducts);
+        console.log("successfulIds", successfulIds);
+        console.log("result", result);
+        if (failedProducts.length > 0) {
+          await this.handlePartialReservationFailure(user, failedProducts);
+          throw new AppError(
+            `Partial reservation failed for ${failedProducts.length} products`,
+            409
+          );
+        }
+      }
+    } catch (error) {
+      if (error instanceof MongoBulkWriteError) {
+        const failedIds = (
+          Array.isArray(error.writeErrors)
+            ? error.writeErrors
+            : [error.writeErrors]
+        ).map((e) => e.op.updateOne.filter._id.toString());
+        const failedProducts = failedIds.map((id) => ({
+          _id: assignAsObjectId(id),
+          quantity: productMap.get(id)!,
+        }));
+
+        await this.handlePartialReservationFailure(user, failedProducts);
+      }
+      throw error;
     }
+  }
+  private async handlePartialReservationFailure(
+    user: IUser,
+    failedProducts: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>
+  ): Promise<void> {
+    // 1. Log audit entry
+
+    await this.productService.logAction(
+      AuditAction.INVENTORY_RESERVATION_PARTIAL,
+      "BATCH_UPDATE",
+      user._id,
+      failedProducts.map((p) => ({
+        field: "reserved",
+        productId: p._id,
+        quantity: p.quantity,
+        changeType: "MODIFY",
+      })),
+      "127.0.0.1", // Replace with actual IP address
+      "user-agent-string" // Replace with actual user agent
+    );
+
+    // 2. Notify admins
+    const adminNotification = {
+      type: "INVENTORY_RESERVATION_PARTIAL",
+      userId: user._id.toString(),
+      failedProducts: failedProducts.map((p) => ({
+        productId: p._id.toString(),
+        quantity: p.quantity,
+      })),
+      timestamp: new Date(),
+    };
   }
   private parseShippingInfo(shippingInfo: string): ShippingInfoDto {
     try {
@@ -500,9 +856,12 @@ export class StripeService {
   } // Distributed locking functions
   private async acquireLock(
     key: string,
-    ttl: number = RESERVATION_TIMEOUT
+    ttl: number = this.RESERVATION_TIMEOUT
   ): Promise<boolean> {
-    const result = await redis.set(key, "locked", { nx: true, ex: ttl });
+    const result = await redis.set(key, "locked", {
+      nx: true, // Only set if not exists
+      ex: ttl, // Set expiration
+    });
     return result === "OK";
   }
 
@@ -534,13 +893,13 @@ export class StripeService {
     await redis.set(
       idempotencyKey,
       JSON.stringify({ sessionId: session.id, url: session.url! }),
-      { ex: RESERVATION_TIMEOUT }
+      { ex: this.RESERVATION_TIMEOUT }
     );
   }
 
   private async getTaxRate(country: string): Promise<string> {
     const countryCode = country.toUpperCase();
-    const cacheKey = `${CACHE_PREFIX}${countryCode}`;
+    const cacheKey = `${this.CACHE_PREFIX}${countryCode}`;
 
     // Check cache with lock to prevent race conditions
     const lockKey = `taxrate:${countryCode}:lock`;
@@ -553,12 +912,12 @@ export class StripeService {
 
         const taxRate = await stripe.taxRates.create({
           display_name: "Sales Tax",
-          description: `${feePercentage}% Tax`,
+          description: `${this.feePercentage}% Tax`,
           jurisdiction: countryCode,
-          percentage: feePercentage,
+          percentage: this.feePercentage,
           inclusive: false,
         });
-        await redis.setex(cacheKey, TAX_RATE_TTL, taxRate.id);
+        await redis.setex(cacheKey, this.TAX_RATE_TTL, taxRate.id);
         return taxRate.id;
       } else {
         // Wait and retry if another process is creating the tax rate
@@ -595,15 +954,23 @@ export class StripeService {
     for (const item of cartItems) {
       const product = productMap.get(item._id.toString());
 
-      if (!product || product.stock < item.quantity) {
+      if (!product) {
         results.invalidProducts.push({
           name: item.name,
           _id: item._id,
-          message: `Product ${item.name} found or insufficient stock`,
+          message: `Product ${item.name} is no longer available`,
         });
         continue;
       }
-
+      const availableStock = product.stock - product.reserved;
+      if (availableStock < item.quantity) {
+        results.invalidProducts.push({
+          name: item.name,
+          _id: item._id,
+          message: `Insufficient stock. Available: ${availableStock} items for ${item.name}`,
+        });
+        continue;
+      }
       // 4. Price validation
       const currentPrice = this.calculateCurrentPrice(product);
       const currentItemPrice = this.calculateCurrentPrice(item);
@@ -676,6 +1043,7 @@ export class StripeService {
   private normalizeShippingInfo(
     shippingInfo: ShippingInfoDto
   ): ShippingInfoDto {
+    // ): Omit<ShippingInfoDto, "phone"> {
     return {
       street: shippingInfo.street.trim(),
       city: shippingInfo.city.trim(),
@@ -684,5 +1052,11 @@ export class StripeService {
       country: shippingInfo.country.trim(),
       phone: shippingInfo.phone.trim(),
     };
+  } // Type guard for transient errors
+  private isTransientError(error: any): boolean {
+    return (
+      error?.errorLabels?.includes("TransientTransactionError") ||
+      error?.codeName === "WriteConflict"
+    );
   }
 }

@@ -4,7 +4,7 @@ import ReviewModel from "../models/Review.model";
 import { ReviewRepository } from "../repositories/review.repository";
 import { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
 import { OrderRepository } from "../repositories/order.repository";
-import OrderModel from "../models/Order.model ";
+import OrderModel from "../models/Order.model";
 import { reviewControllerTranslate } from "@/public/locales/server/reviewControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { OrderStatus } from "@/app/lib/types/orders.types";

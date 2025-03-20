@@ -180,6 +180,11 @@ const ProductSchema = new Schema<IProduct>(
 // Indexes
 ProductSchema.index({ createdAt: -1 });
 ProductSchema.index({ category: 1, price: 1, ratingsAverage: -1 });
+ProductSchema.index({
+  sold: 1,
+  stock: 1,
+  reserved: 1,
+});
 ProductSchema.index(
   { name: "text", description: "text" },
   { weights: { name: 3, description: 1 } }

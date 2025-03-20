@@ -1,7 +1,7 @@
 import AppError from "@/app/lib/utilities/appError";
 import Stripe from "stripe";
 import Product from "../models/Product.model";
-import Order from "../models/Order.model ";
+import Order from "../models/Order.model";
 import { sendEmailWithInvoice } from "@/app/lib/utilities/email";
 import { headers } from "next/headers";
 import User from "../models/User.model";
@@ -784,8 +784,8 @@ const captureSuccessPayment = async (sessionId: string) => {
 //     transaction.startTransaction();
 //     try {
 //       const
-//         // session = await stripe.checkout.sessions.retrieve(sessionId);
-//         // const session = await stripe.checkout.sessions.retrieve(sessionId);
+// session = await stripe.checkout.sessions.retrieve(sessionId);
+// const session = await stripe.checkout.sessions.retrieve(sessionId);
 //         user
 //         //
 //         = await UserModel.findById(session.client_reference_id).session(

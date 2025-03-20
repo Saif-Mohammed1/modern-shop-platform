@@ -5,7 +5,7 @@ import {
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../dtos/order.dto";
-import { IOrder } from "../models/Order.model ";
+import { IOrder } from "../models/Order.model";
 import { BaseRepository } from "./BaseRepository";
 import {
   QueryBuilderConfig,

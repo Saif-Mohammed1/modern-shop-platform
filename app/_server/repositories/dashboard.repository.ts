@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { Model, Types } from "mongoose";
 import { BaseDashboardRepository } from "./BaseDashboardRepository";
 import UserModel from "../models/User.model";
-import OrderModel from "../models/Order.model ";
+import OrderModel from "../models/Order.model";
 import ProductModel from "../models/Product.model";
 
 import CartModel from "../models/Cart.model";
@@ -249,6 +249,7 @@ export class DashboardRepository implements BaseDashboardRepository {
             },
             {
               $project: {
+                _id: 0, // 👈 This removes the _id from the output
                 device: "$_id.device",
                 os: "$_id.os",
                 count: 1,
@@ -483,7 +484,16 @@ export class DashboardRepository implements BaseDashboardRepository {
       recentSignups: this.getFirstNumber(result.recent, "recent"),
       languageDistribution: this.mapToObject(result.demographics),
       geographicalInsights: {
-        topLocations: result.trafficSources,
+        // topLocations: result.trafficSources,
+        topLocations: await Promise.all(
+          result.trafficSources.map(async (city: any) => ({
+            ...city,
+            growthPercentage: await this.calculateCityGrowth(
+              city.city,
+              city.country
+            ),
+          }))
+        ),
         deviceDistribution: result.deviceUsage,
         totalCities: new Set(
           result.trafficSources.flatMap((t: any) => `${t.city}, ${t.country}`)
@@ -559,15 +569,15 @@ export class DashboardRepository implements BaseDashboardRepository {
           ...new Set(result.demographics.flatMap((d: any) => d.devices)),
         ].length,
       },
-      cityGrowth: await Promise.all(
-        result.trafficSources.map(async (city: any) => ({
-          ...city,
-          growthPercentage: await this.calculateCityGrowth(
-            city.city,
-            city.country
-          ),
-        }))
-      ),
+      // cityGrowth: await Promise.all(
+      //   result.trafficSources.map(async (city: any) => ({
+      //     ...city,
+      //     growthPercentage: await this.calculateCityGrowth(
+      //       city.city,
+      //       city.country
+      //     ),
+      //   }))
+      // ),
       // weeklyGrowth: result.weeklyGrowth.map((week: any) => ({
       //   label: week.label,
       //   // label: `Week ${week.week} ${week.year}`,

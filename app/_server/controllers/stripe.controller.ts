@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { StripeService } from "../services/stripe.service";
+import { stripe, StripeService } from "../services/stripe.service";
 import { StripeValidation } from "../dtos/stripe.dto";
 import AppError from "@/app/lib/utilities/appError";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
@@ -11,6 +11,7 @@ class StripeController {
     if (!req.user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
+    console.count("createStripeSession");
     const body = await req.json();
     const result = StripeValidation.validateShippingInfo(body.shippingInfo);
     const session = await this.stripeService.createStripeSession(
@@ -29,8 +30,7 @@ class StripeController {
       signature,
       webhookSecret
     );
-    const webhookService = new StripeWebhookService();
-    await webhookService.handleWebhookEvent(event);
+    await this.stripeService.handleWebhookEvent(event);
 
     return NextResponse.json({ received: true });
   }

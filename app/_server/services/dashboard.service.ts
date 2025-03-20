@@ -3,10 +3,10 @@ import { DashboardData } from "@/app/lib/types/dashboard.types";
 import { DashboardRepository } from "../repositories/dashboard.repository";
 
 export class DashboardService {
-  constructor(private readonly repo: DashboardRepository) {}
+  private readonly repo = new DashboardRepository();
 
-  async getMainDashboard() {
-    const [users, orders, products, reports, refunds, userInterest] =
+  async getMainDashboard(): Promise<DashboardData> {
+    const [users, orders, products, reports, refunds, userInterestProducts] =
       await Promise.all([
         this.repo.getUserAnalytics(),
         this.repo.getOrderAnalytics(),
@@ -22,7 +22,7 @@ export class DashboardService {
       products,
       reports,
       refunds,
-      userInterest,
+      userInterestProducts,
     };
   }
 
