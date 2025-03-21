@@ -20,6 +20,7 @@ import {
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { accountAction } from "@/app/lib/types/users.types";
+import { SecurityAlertType } from "@/app/lib/services/email.service";
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {
@@ -273,6 +274,7 @@ export class UserRepository extends BaseRepository<IUser> {
       },
       { session }
     );
+
     // example usage:
     // await this.repository.createAuditLog(user._id, "User updated", { email: user.email });
     // elso use this to track login attempts
@@ -282,6 +284,24 @@ export class UserRepository extends BaseRepository<IUser> {
      * userAgent: ua,
      *
      */
+  }
+  async logSecurityAlert(
+    userEmail: string,
+    type: SecurityAlertType,
+    details: AuditLogDetails
+  ): Promise<void> {
+    await this.model.findOneAndUpdate(
+      { email: userEmail },
+      {
+        $push: {
+          "security.auditLog": {
+            timestamp: new Date(),
+            action: type,
+            details,
+          },
+        },
+      }
+    );
   }
   async startSession(): Promise<ClientSession> {
     return await this.model.db.startSession();

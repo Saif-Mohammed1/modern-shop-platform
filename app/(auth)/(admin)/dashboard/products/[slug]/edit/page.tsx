@@ -1,5 +1,5 @@
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import EditProduct from "@/components/(admin)/dashboard/products/addProduct/EditProductForm";
+import EditProduct from "@/components/(admin)/dashboard/products/EditProductForm";
 import ErrorHandler from "@/components/Error/errorHandler";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";

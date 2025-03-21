@@ -271,13 +271,21 @@ export class TwoFactorService {
 
       // Security recommendations
       if (twoFA.backupCodes.length - 5 < 3) {
-        emailService.sendSecurityAlertEmail(user.email, {
+        await emailService.sendSecurityAlertEmail(user.email, {
           type: SecurityAlertType.LOW_BACKUP_CODES,
-          attempts: twoFA.backupCodes.length - 5,
+
+          additionalInfo: {
+            remainingCodes: updatedCodes.length,
+            attempts: twoFA.backupCodes.length - 5,
+          },
           timestamp: new Date(),
           ipAddress: deviceInfo.ip,
-          device: deviceInfo.device,
-          locations: [deviceInfo.location || ""],
+          device: {
+            browser: deviceInfo.browser,
+            os: deviceInfo.os,
+            model: deviceInfo.model,
+          },
+          location: `${deviceInfo.location.city}, ${deviceInfo.location.country}`,
         });
       }
       // Force password reset and session cleanup

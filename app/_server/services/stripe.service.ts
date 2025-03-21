@@ -30,6 +30,7 @@ import AuditLogModel from "../models/audit-log.model";
 import { UserCurrency } from "@/app/lib/types/users.types";
 import { Types } from "mongoose";
 import { MongoBulkWriteError } from "mongodb";
+import { emailService } from "@/app/lib/services/email.service";
 // stripe.service.ts
 
 export interface FailedOrderData {
@@ -370,7 +371,13 @@ export class StripeService {
 
       // Send order confirmation
       // await this.sendOrderConfirmation(user, order, transaction);
+      await emailService.sendEmailWithInvoice(
+        user.email,
 
+        invoice.invoice_pdf!,
+        invoice.id!,
+        new Date(invoice.created * 1000).toLocaleDateString()
+      );
       // // Audit log
       // await this.createAuditLog(
       //   user._id,
@@ -780,9 +787,7 @@ export class StripeService {
             _id: op.updateOne.filter._id,
             quantity: productMap.get(op.updateOne.filter._id.toString())!,
           }));
-        console.log("failedProducts", failedProducts);
-        console.log("successfulIds", successfulIds);
-        console.log("result", result);
+
         if (failedProducts.length > 0) {
           await this.handlePartialReservationFailure(user, failedProducts);
           throw new AppError(

@@ -4,7 +4,10 @@ import { lang } from "@/app/lib/utilities/lang";
 import { generateVerificationToken } from "@/app/lib/utilities/user.utilty";
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import { UserRepository } from "../repositories/user.repository";
-import { emailService } from "@/app/lib/services/email.service";
+import {
+  emailService,
+  SecurityAlertType,
+} from "@/app/lib/services/email.service";
 import {
   CreateUserByAdminDTO,
   UpdateUserByAdminDTO,
@@ -62,7 +65,17 @@ export class UserService {
     ]);
     this.tokensService.setRefreshTokenCookies(refreshToken);
     await this.repository.clearRateLimit(user, "login");
+    // After successful authentication
+    if (user.loginNotificationSent) {
+      user.detectAnomalies(deviceInfo);
 
+      if (user.security.behavioralFlags.impossibleTravel) {
+        await emailService.sendSecurityAlertEmail(user.email, {
+          type: SecurityAlertType.IMPOSSIBLE_TRAVEL,
+          location: `${deviceInfo.location.city}, ${deviceInfo.location.country} -> ${user.security.loginHistory[0].location.city}, ${user.security.loginHistory[0].location.country}`,
+        });
+      }
+    }
     return {
       user: user.filterForRole() as UserAuthType,
       accessToken,
@@ -126,27 +139,23 @@ export class UserService {
       const user = await this.repository.createUser(dto, session);
       // Generate and send verification token
       const verificationToken = generateVerificationToken();
+      await this.repository.setVerificationToken(
+        user._id.toString(),
+        verificationToken,
+        session
+      );
 
-      await Promise.all([
-        this.repository.setVerificationToken(
-          user._id.toString(),
-          verificationToken,
-          session
-        ),
-
-        emailService.sendVerification(user.email, verificationToken),
-
-        // Audit log
-        this.repository.createAuditLog(
-          user._id.toString(),
-          SecurityAuditAction.REGISTRATION,
-          {
-            success: true,
-            device: deviceInfo,
-          },
-          session
-        ),
-      ]);
+      await emailService.sendVerification(user.email, verificationToken);
+      // Audit log
+      await this.repository.createAuditLog(
+        user._id.toString(),
+        SecurityAuditAction.REGISTRATION,
+        {
+          success: true,
+          device: deviceInfo,
+        },
+        session
+      );
       await session.commitTransaction();
       return this.finalizeLogin(user, deviceInfo);
     } catch (err) {
@@ -285,18 +294,16 @@ export class UserService {
         session
       );
 
-      await Promise.all([
-        // await EmailService.passwordReset.sendPasswordReset(user.email, resetToken);
-        emailService.sendPasswordReset(user.email, resetToken),
-        this.repository.createAuditLog(
-          user._id.toString(),
-          SecurityAuditAction.PASSWORD_RESET_REQUEST,
-          { device: deviceInfo, success: true },
-          session
-        ),
+      // await EmailService.passwordReset.sendPasswordReset(user.email, resetToken);
+      await emailService.sendPasswordReset(user.email, resetToken);
+      await this.repository.createAuditLog(
+        user._id.toString(),
+        SecurityAuditAction.PASSWORD_RESET_REQUEST,
+        { device: deviceInfo, success: true },
+        session
+      );
 
-        this.repository.incrementRateLimit(user, "passwordReset", session),
-      ]);
+      await this.repository.incrementRateLimit(user, "passwordReset", session);
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -316,16 +323,14 @@ export class UserService {
       const password = this.tokensService.generateForceRestPassword();
       user.password = password;
       await user.save({ session });
-      await Promise.all([
-        // await EmailService.passwordReset.sendPasswordReset(user.email, resetToken);
-        emailService.forcePasswordReset(user.email, password),
-        this.repository.createAuditLog(
-          user._id.toString(),
-          SecurityAuditAction.FORCE_PASSWORD_RESET,
-          { success: true },
-          session
-        ),
-      ]);
+      // await EmailService.passwordReset.sendPasswordReset(user.email, resetToken);
+      await emailService.forcePasswordReset(user.email, password);
+      await this.repository.createAuditLog(
+        user._id.toString(),
+        SecurityAuditAction.FORCE_PASSWORD_RESET,
+        { success: true },
+        session
+      );
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -393,21 +398,21 @@ export class UserService {
           success: true,
         },
         session
-      ),
-        // await Promise.all([
-        //   this.repository.updatePassword(user, newPassword, session),
-        //   this.repository.invalidateResetToken(user._id.toString(), session),
-        //   this.repository.createAuditLog(
-        //     user._id.toString(),
-        //     SecurityAuditAction.PASSWORD_RESET,
-        //     {
-        //       device: deviceInfo,
-        //     },
-        //     session
-        //   ),
-        // ]);
-        // 6. Send security notification
-        await emailService.sendPasswordChangeConfirmation(user.email);
+      );
+      // await Promise.all([
+      //   this.repository.updatePassword(user, newPassword, session),
+      //   this.repository.invalidateResetToken(user._id.toString(), session),
+      //   this.repository.createAuditLog(
+      //     user._id.toString(),
+      //     SecurityAuditAction.PASSWORD_RESET,
+      //     {
+      //       device: deviceInfo,
+      //     },
+      //     session
+      //   ),
+      // ]);
+      // 6. Send security notification
+      await emailService.sendPasswordChangeConfirmation(user.email);
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -485,22 +490,20 @@ export class UserService {
       this.tokensService.hashVerificationToken(verificationToken);
     const session = await this.repository.startSession();
     await session.withTransaction(async () => {
-      await Promise.all([
-        this.repository.setVerificationToken(
-          user._id.toString(),
-          hashedToken,
-          session
-        ),
-        emailService.sendVerification(user.email, verificationToken),
-        this.repository.createAuditLog(
-          user._id.toString(),
-          SecurityAuditAction.VERIFICATION_EMAIL_REQUEST,
-          {
-            success: true,
-          },
-          session
-        ),
-      ]);
+      await this.repository.setVerificationToken(
+        user._id.toString(),
+        hashedToken,
+        session
+      );
+      await emailService.sendVerification(user.email, verificationToken);
+      await this.repository.createAuditLog(
+        user._id.toString(),
+        SecurityAuditAction.VERIFICATION_EMAIL_REQUEST,
+        {
+          success: true,
+        },
+        session
+      );
     });
   }
   // await Promise.all([
@@ -646,18 +649,16 @@ export class UserService {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
-      await Promise.all([
-        this.repository.processEmailChange(user._id.toString(), session),
-        this.repository.createAuditLog(
-          user._id.toString(),
-          SecurityAuditAction.EMAIL_CHANGE_CONFIRMATION,
-          {
-            newEmail: user.verification.emailChange,
-            success: true,
-          },
-          session
-        ),
-      ]);
+      await this.repository.processEmailChange(user._id.toString(), session);
+      await this.repository.createAuditLog(
+        user._id.toString(),
+        SecurityAuditAction.EMAIL_CHANGE_CONFIRMATION,
+        {
+          newEmail: user.verification.emailChange,
+          success: true,
+        },
+        session
+      );
       await session.commitTransaction();
     } catch (error) {
       this.repository.createAuditLog(
@@ -667,8 +668,8 @@ export class UserService {
           newEmail: user.verification.emailChange,
           success: false,
         }
-      ),
-        await session.abortTransaction();
+      );
+      await session.abortTransaction();
       throw error;
     } finally {
       session.endSession();
@@ -727,7 +728,13 @@ export class UserService {
       session.endSession();
     }
   }
-
+  async logSecurityAlert(
+    email: string,
+    type: SecurityAlertType,
+    details: AuditLogDetails
+  ): Promise<void> {
+    await this.repository.logSecurityAlert(email, type, details);
+  }
   // Security Functions
   async getActiveSessions(userId: string): Promise<ISession[]> {
     return this.sessionService.getUserSessions(userId);
@@ -740,17 +747,15 @@ export class UserService {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
-      await Promise.all([
-        this.sessionService.revokeAllSessionsByAdmin(userId, session),
-        this.repository.createAuditLog(
-          userId,
-          SecurityAuditAction.REVOKE_ALL_SESSIONS,
-          {
-            success: true,
-          },
-          session
-        ),
-      ]);
+      await this.sessionService.revokeAllSessionsByAdmin(userId, session);
+      await this.repository.createAuditLog(
+        userId,
+        SecurityAuditAction.REVOKE_ALL_SESSIONS,
+        {
+          success: true,
+        },
+        session
+      );
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -771,8 +776,8 @@ export class UserService {
           success: true,
         },
         session
-      ),
-        await session.commitTransaction();
+      );
+      await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -792,8 +797,8 @@ export class UserService {
           success: true,
         },
         session
-      ),
-        await session.commitTransaction();
+      );
+      await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
       throw error;

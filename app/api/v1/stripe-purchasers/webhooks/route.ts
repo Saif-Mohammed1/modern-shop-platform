@@ -7,10 +7,8 @@ import { type NextRequest } from "next/server";
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();
-
     return await stripeController.handleWebhookEvent(req);
   } catch (error) {
-    console.log("error stripeController.handleWebhookEvent", error);
     return ErrorHandler(error, req);
   }
 };

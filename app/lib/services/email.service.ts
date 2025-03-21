@@ -1,8 +1,7 @@
 // src/lib/services/email.service.ts
 import nodemailer from "nodemailer";
 import { DeviceInfo, GeoLocation } from "../types/session.types";
-import UserModel from "@/app/_server/models/User.model";
-
+import { UserService } from "@/app/_server/services/user.service";
 interface EmailConfig {
   service: string;
   auth: {
@@ -15,30 +14,64 @@ interface EmailTemplate {
   subject: string;
   html: string;
   priority?: "high" | "normal" | "low";
+  attachments?: nodemailer.SendMailOptions["attachments"]; // Add attachments property
 }
 export enum SecurityAlertType {
-  SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY",
+  SUSPICIOUS_LOGIN = "SUSPICIOUS_LOGIN",
   ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
   PASSWORD_CHANGED = "PASSWORD_CHANGED",
   NEW_DEVICE = "NEW_DEVICE",
-  LOGIN_ATTEMPT = "LOGIN_ATTEMPT",
+  IMPOSSIBLE_TRAVEL = "IMPOSSIBLE_TRAVEL",
+  SECURITY_SETTINGS_CHANGED = "SECURITY_SETTINGS_CHANGED",
+  BACKUP_CODES_GENERATED = "BACKUP_CODES_GENERATED",
+  BACKUP_CODES_CONSUMED = "BACKUP_CODES_CONSUMED",
+  MFA_ENABLED = "MFA_ENABLED",
+  MFA_DISABLED = "MFA_DISABLED",
+  BOT_DETECTED = "BOT_DETECTED",
+  DATA_EXPORT_REQUESTED = "DATA_EXPORT_REQUESTED",
+  ACCOUNT_RECOVERY_INITIATED = "ACCOUNT_RECOVERY_INITIATED",
+  UNUSUAL_ACTIVITY = "UNUSUAL_ACTIVITY",
+  CRITICAL_ALERT = "CRITICAL_ALERT",
   LOW_BACKUP_CODES = "LOW_BACKUP_CODES",
+  SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY",
 }
+// interface SecurityAlertEmailParams {
+//   type: SecurityAlertType;
+//   attempts?: number;
+//   locations?: GeoLocation[];
+//   device?: string;
+//   timestamp?: Date;
+//   ipAddress?: string;
+// }
 interface SecurityAlertEmailParams {
   type: SecurityAlertType;
-  attempts?: number;
-  locations?: GeoLocation[];
-  device?: string;
   timestamp?: Date;
   ipAddress?: string;
+  location?: string;
+  device?: {
+    os?: string;
+    browser?: string;
+    model?: string;
+  };
+  additionalInfo?: {
+    changedSetting?: string;
+    recoveryMethods?: string[];
+    locations?: string[];
+    affectedService?: string;
+    detectedLocation?: string;
+    sourceLocation?: string;
+    remainingCodes?: number; // Add this
+    attempts?: number; // Add this
+    codesGenerated?: number;
+    codesRemaining?: number;
+  };
 }
-
 class EmailService {
   private transporter: nodemailer.Transporter;
   private readonly appName: string;
   private readonly appUrl: string;
   private readonly senderEmail: string;
-
+  private readonly userServices = new UserService();
   constructor(private config: EmailConfig) {
     this.validateEnvironment();
     this.transporter = nodemailer.createTransport(config);
@@ -240,84 +273,280 @@ class EmailService {
     });
   }
 
+  // async sendSecurityAlertEmail(
+  //   userEmail: string,
+  //   alertParams: SecurityAlertEmailParams
+  // ) {
+  //   const { type, attempts, locations, device, ipAddress } = alertParams;
+
+  //   // Get user-friendly alert details
+  //   const alertDetails = this.getAlertDetails(
+  //     type,
+  //     attempts,
+  //     locations,
+  //     device,
+  //     ipAddress
+  //   );
+
+  //   // Build email template
+  //   const content = `
+  //   <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333;">
+  //     <h2 style="color: #dc3545;">Security Alert: ${alertDetails.title}</h2>
+
+  //     <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
+  //       <p>${alertDetails.message}</p>
+
+  //       ${
+  //         locations?.length
+  //           ? `
+  //         <h4 style="color: #6c757d;">Recent Activity Locations:</h4>
+  //         <ul>
+  //           ${locations.map((l) => `<li>${l}</li>`).join("")}
+  //         </ul>
+  //       `
+  //           : ""
+  //       }
+
+  //       ${device ? `<p><strong>Device:</strong> ${device}</p>` : ""}
+  //       ${ipAddress ? `<p><strong>IP Address:</strong> ${ipAddress}</p>` : ""}
+
+  //       <p style="margin-top: 20px;">
+  //         <a href="${process.env.APP_URL}/security"
+  //            style="background: #dc3545; color: white; padding: 10px 20px;
+  //                   text-decoration: none; border-radius: 5px;">
+  //           Review Account Security
+  //         </a>
+  //       </p>
+  //     </div>
+
+  //     <footer style="margin-top: 30px; font-size: 0.9em; color: #6c757d;">
+  //       <p>This is an automated security alert. If you didn't initiate this action,
+  //          <a href="${process.env.APP_URL}/support">contact support immediately</a>.</p>
+  //     </footer>
+  //   </div>
+  // `;
+
+  //   try {
+  //     await this.sendEmail(userEmail, {
+  //       subject: `🔒 Security Alert: ${alertDetails.title}`,
+
+  //       html: this.baseTemplate(content),
+  //       priority: "high",
+  //     });
+  //     // Log the alert in the user's audit trail
+  //     await UserModel.findOneAndUpdate(
+  //       { email: userEmail },
+  //       {
+  //         $push: {
+  //           "security.auditLog": {
+  //             timestamp: new Date(),
+  //             action: "SECURITY_ALERT_SENT",
+  //             details: alertDetails.auditMessage,
+  //           },
+  //         },
+  //       }
+  //     );
+  //   } catch (error) {
+  //     console.error("Failed to send security email:", error);
+  //     // Implement fallback notification here
+  //   }
+  // }
+
+  // Refactored Email Service Method
   async sendSecurityAlertEmail(
     userEmail: string,
     alertParams: SecurityAlertEmailParams
-  ) {
-    const { type, attempts, locations, device, ipAddress } = alertParams;
-
-    // Get user-friendly alert details
-    const alertDetails = this.getAlertDetails(
+  ): Promise<void> {
+    const {
       type,
-      attempts,
-      locations,
+      timestamp = new Date(),
+      ipAddress,
+      location,
       device,
-      ipAddress
+      additionalInfo,
+    } = alertParams;
+
+    const { subject, priority, template } = this.getAlertTemplate(
+      type,
+      timestamp,
+      ipAddress,
+      location,
+      device,
+      additionalInfo
     );
-
-    // Build email template
-    const content = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333;">
-      <h2 style="color: #dc3545;">Security Alert: ${alertDetails.title}</h2>
-      
-      <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
-        <p>${alertDetails.message}</p>
-        
-        ${
-          locations?.length
-            ? `
-          <h4 style="color: #6c757d;">Recent Activity Locations:</h4>
-          <ul>
-            ${locations.map((l) => `<li>${l}</li>`).join("")}
-          </ul>
-        `
-            : ""
-        }
-
-        ${device ? `<p><strong>Device:</strong> ${device}</p>` : ""}
-        ${ipAddress ? `<p><strong>IP Address:</strong> ${ipAddress}</p>` : ""}
-
-        <p style="margin-top: 20px;">
-          <a href="${process.env.APP_URL}/security" 
-             style="background: #dc3545; color: white; padding: 10px 20px; 
-                    text-decoration: none; border-radius: 5px;">
-            Review Account Security
-          </a>
-        </p>
-      </div>
-
-      <footer style="margin-top: 30px; font-size: 0.9em; color: #6c757d;">
-        <p>This is an automated security alert. If you didn't initiate this action, 
-           <a href="${process.env.APP_URL}/support">contact support immediately</a>.</p>
-      </footer>
-    </div>
-  `;
 
     try {
       await this.sendEmail(userEmail, {
-        subject: `🔒 Security Alert: ${alertDetails.title}`,
-
-        html: this.baseTemplate(content),
-        priority: "high",
+        subject,
+        html: this.baseTemplate(template),
+        priority,
+        attachments: this.generateAlertAttachments(type),
       });
-      // Log the alert in the user's audit trail
-      await UserModel.findOneAndUpdate(
-        { email: userEmail },
-        {
-          $push: {
-            "security.auditLog": {
-              timestamp: new Date(),
-              action: "SECURITY_ALERT_SENT",
-              details: alertDetails.auditMessage,
-            },
-          },
-        }
-      );
+
+      await this.userServices.logSecurityAlert(userEmail, type, {
+        success: true,
+
+        ipAddress,
+        location,
+        ...device,
+      });
     } catch (error) {
-      console.error("Failed to send security email:", error);
-      // Implement fallback notification here
+      console.error(`Failed to send ${type} alert:`, error);
+      // await this.queueRetryNotification(userEmail, type);
     }
   }
+
+  private getAlertTemplate(
+    type: SecurityAlertType,
+    timestamp: Date,
+    ipAddress?: string,
+    location?: string,
+    device?: { os?: string; browser?: string; model?: string },
+    additionalInfo?: any
+  ) {
+    const formattedTime = timestamp.toLocaleString();
+    const deviceDetails = device
+      ? `
+    <p><strong>Device:</strong> ${device.model || "Unknown"} 
+    (${device.os || "Unknown OS"} / ${device.browser || "Unknown Browser"})</p>
+  `
+      : "";
+
+    const baseContent = `
+    <div style="padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h2 style="color: #2d3748; margin-top: 0;">${this.getAlertTitle(type)}</h2>
+      <div style="color: #4a5568;">
+        <p><strong>Time:</strong> ${formattedTime}</p>
+        ${ipAddress ? `<p><strong>IP Address:</strong> ${ipAddress}</p>` : ""}
+        ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
+        ${deviceDetails}
+        ${this.getAlertSpecificContent(type, additionalInfo)}
+      </div>
+      ${this.getActionButtons(type)}
+      ${this.getSecurityRecommendations(type)}
+    </div>
+  `;
+
+    return {
+      subject: `${this.getAlertEmoji(type)} ${this.getAlertTitle(type)} - ${this.appName}`,
+      priority: this.getAlertPriority(type),
+      template: baseContent,
+    };
+  }
+
+  private getAlertSpecificContent(
+    type: SecurityAlertType,
+    additionalInfo?: any
+  ): string {
+    switch (type) {
+      case SecurityAlertType.IMPOSSIBLE_TRAVEL:
+        return `
+        <p>We detected login attempts from:</p>
+        <ul>
+          <li>${additionalInfo?.detectedLocation || "Unknown location"}</li>
+          <li>${additionalInfo?.sourceLocation || "Previous location"}</li>
+        </ul>
+      `;
+
+      case SecurityAlertType.SECURITY_SETTINGS_CHANGED:
+        return `
+        <p>Changed setting: ${additionalInfo?.changedSetting || "Unknown"}</p>
+        ${
+          additionalInfo?.recoveryMethods
+            ? `
+          <p>Updated recovery methods: 
+            ${additionalInfo.recoveryMethods.join(", ")}
+          </p>
+        `
+            : ""
+        }
+      `;
+
+      case SecurityAlertType.ACCOUNT_RECOVERY_INITIATED:
+        return `
+        <p>Recovery process started for: 
+          ${additionalInfo?.affectedService || "Account"}
+        </p>
+      `;
+
+      default:
+        return "";
+    }
+  }
+
+  private getActionButtons(type: SecurityAlertType): string {
+    const buttons = [];
+
+    if (this.requiresImmediateAction(type)) {
+      buttons.push(
+        this.createButton(`${this.appUrl}/security`, "Review Security Settings")
+      );
+    }
+
+    if (type === SecurityAlertType.ACCOUNT_LOCKED) {
+      buttons.push(
+        this.createButton(
+          `${this.appUrl}/support/emergency`,
+          "Contact Emergency Support"
+        )
+      );
+    }
+
+    return buttons.length > 0
+      ? `
+    <div style="margin: 25px 0; text-align: center;">
+      ${buttons.join("")}
+    </div>
+  `
+      : "";
+  }
+
+  private getSecurityRecommendations(type: SecurityAlertType): string {
+    let recommendations: string[] = [];
+
+    switch (type) {
+      case SecurityAlertType.NEW_DEVICE:
+        recommendations = [
+          "If you don't recognize this device, change your password immediately",
+          "Review your active sessions",
+          "Enable two-factor authentication",
+        ];
+        break;
+
+      case SecurityAlertType.ACCOUNT_LOCKED:
+        recommendations = [
+          "Wait for the lockout period to expire (typically 1 hour)",
+          "Use account recovery options after lockout expires",
+          "Contact support if you believe this is an error",
+        ];
+        break;
+
+      case SecurityAlertType.IMPOSSIBLE_TRAVEL:
+        recommendations = [
+          "Change your password immediately",
+          "Check your account activity history",
+          "Consider enabling login notifications",
+        ];
+        break;
+
+      default:
+        recommendations = [
+          "Regularly update your password",
+          "Enable two-factor authentication",
+          "Review account activity periodically",
+        ];
+    }
+
+    return `
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 20px;">
+      <h4 style="color: #4a5568; margin-top: 0;">Recommended Actions:</h4>
+      <ul style="margin: 10px 0 0 20px; color: #718096;">
+        ${recommendations.map((r) => `<li>${r}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+  }
+
   async sendSecurityAlert(
     email: string,
     device: DeviceInfo,
@@ -392,7 +621,7 @@ class EmailService {
     };
 
     switch (type) {
-      case "SUSPICIOUS_ACTIVITY":
+      case SecurityAlertType.SUSPICIOUS_LOGIN:
         return {
           ...baseDetails,
           title: "Suspicious Activity Detected",
@@ -428,6 +657,153 @@ class EmailService {
           auditMessage: "Generic security alert sent",
         };
     }
+  }
+  async sendEmailWithInvoice(
+    email: string,
+    link: string,
+    invoiceNumber: string,
+    dueDate?: string
+  ): Promise<void> {
+    const content = `
+    <h2 style="color: #2d3748; margin-top: 0;">Invoice Ready: #${invoiceNumber}</h2>
+    
+    <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+      <p style="margin: 0 0 15px 0; color: #4a5568;">
+        Your invoice is now available for download. Please click the button below 
+        to access your secure PDF invoice:
+      </p>
+      
+      ${this.createButton(link, "Download Invoice PDF")}
+      
+      ${
+        dueDate
+          ? `
+        <div style="margin-top: 20px; color: #718096; font-size: 14px;">
+          <strong>Payment Due Date:</strong> ${dueDate}
+        </div>
+      `
+          : ""
+      }
+    </div>
+
+    <div style="color: #718096; font-size: 14px; margin-top: 25px;">
+      <p style="margin: 0;">
+        <strong>Important:</strong> 
+        This secure link will expire in 7 days. For your records, we recommend:
+      </p>
+      <ul style="margin: 10px 0 0 20px;">
+        <li>Saving the PDF to your device</li>
+        <li>Printing a copy for your files</li>
+        <li>Adding accounting@${this.appName.toLowerCase().replace(/\s/g, "")}.com to your contacts</li>
+      </ul>
+    </div>
+
+    <div style="border-top: 1px solid #e8e8e8; margin-top: 30px; padding-top: 20px;">
+      <p style="color: #718096; margin: 0;">
+        Need help with your invoice? 
+        <a href="mailto:accounting@${this.appName.toLowerCase().replace(/\s/g, "")}.com" 
+           style="color: #4299e1; text-decoration: none;">
+          Contact our accounting team
+        </a>
+      </p>
+    </div>
+  `;
+
+    await this.sendEmail(email, {
+      subject: `Invoice #${invoiceNumber} Available - ${this.appName}`,
+      html: this.baseTemplate(content),
+      priority: "high",
+    });
+  }
+  // Helper Methods
+  private getAlertEmoji(type: SecurityAlertType): string {
+    const emojiMap: Record<SecurityAlertType, string> = {
+      [SecurityAlertType.SUSPICIOUS_LOGIN]: "⚠️",
+      [SecurityAlertType.ACCOUNT_LOCKED]: "🔒",
+      [SecurityAlertType.PASSWORD_CHANGED]: "🔑",
+      [SecurityAlertType.NEW_DEVICE]: "📱",
+      [SecurityAlertType.IMPOSSIBLE_TRAVEL]: "✈️",
+      [SecurityAlertType.SECURITY_SETTINGS_CHANGED]: "⚙️",
+      [SecurityAlertType.BACKUP_CODES_GENERATED]: "📝",
+      [SecurityAlertType.BACKUP_CODES_CONSUMED]: "📋",
+      [SecurityAlertType.MFA_ENABLED]: "🔐",
+      [SecurityAlertType.MFA_DISABLED]: "⚠️",
+      [SecurityAlertType.BOT_DETECTED]: "🤖",
+      [SecurityAlertType.DATA_EXPORT_REQUESTED]: "💾",
+      [SecurityAlertType.ACCOUNT_RECOVERY_INITIATED]: "🆘",
+      [SecurityAlertType.UNUSUAL_ACTIVITY]: "🚨",
+      [SecurityAlertType.CRITICAL_ALERT]: "🚨",
+
+      [SecurityAlertType.LOW_BACKUP_CODES]: "⚠️",
+
+      [SecurityAlertType.SUSPICIOUS_ACTIVITY]: "⚠️",
+    };
+
+    return emojiMap[type] || "⚠️";
+  }
+
+  private getAlertTitle(type: SecurityAlertType): string {
+    const titles: Record<SecurityAlertType, string> = {
+      [SecurityAlertType.SUSPICIOUS_LOGIN]: "Suspicious Login Attempt",
+      [SecurityAlertType.ACCOUNT_LOCKED]: "Account Temporarily Locked",
+      [SecurityAlertType.PASSWORD_CHANGED]: "Password Changed Successfully",
+      [SecurityAlertType.NEW_DEVICE]: "New Device Detected",
+      [SecurityAlertType.IMPOSSIBLE_TRAVEL]: "Impossible Travel Detected",
+      [SecurityAlertType.SECURITY_SETTINGS_CHANGED]:
+        "Security Settings Updated",
+      [SecurityAlertType.BACKUP_CODES_GENERATED]: "Backup Codes Generated",
+      [SecurityAlertType.BACKUP_CODES_CONSUMED]: "Backup Code Used",
+      [SecurityAlertType.MFA_ENABLED]: "Two-Factor Authentication Enabled",
+      [SecurityAlertType.MFA_DISABLED]: "Two-Factor Authentication Disabled",
+      [SecurityAlertType.BOT_DETECTED]: "Bot Activity Detected",
+      [SecurityAlertType.DATA_EXPORT_REQUESTED]: "Data Export Requested",
+      [SecurityAlertType.ACCOUNT_RECOVERY_INITIATED]:
+        "Account Recovery Started",
+      [SecurityAlertType.UNUSUAL_ACTIVITY]: "Unusual Activity Detected",
+      [SecurityAlertType.CRITICAL_ALERT]: "Critical Security Alert",
+
+      [SecurityAlertType.LOW_BACKUP_CODES]: "Low Backup Codes Remaining",
+
+      [SecurityAlertType.SUSPICIOUS_ACTIVITY]: "Suspicious Activity Detected",
+    };
+
+    return titles[type];
+  }
+
+  private getAlertPriority(type: SecurityAlertType): "high" | "normal" {
+    const highPriorityAlerts = [
+      SecurityAlertType.ACCOUNT_LOCKED,
+      SecurityAlertType.IMPOSSIBLE_TRAVEL,
+      SecurityAlertType.CRITICAL_ALERT,
+      SecurityAlertType.ACCOUNT_RECOVERY_INITIATED,
+      SecurityAlertType.BOT_DETECTED,
+    ];
+
+    return highPriorityAlerts.includes(type) ? "high" : "normal";
+  }
+
+  private requiresImmediateAction(type: SecurityAlertType): boolean {
+    return [
+      SecurityAlertType.SUSPICIOUS_LOGIN,
+      SecurityAlertType.NEW_DEVICE,
+      SecurityAlertType.IMPOSSIBLE_TRAVEL,
+      SecurityAlertType.ACCOUNT_RECOVERY_INITIATED,
+    ].includes(type);
+  }
+
+  private generateAlertAttachments(
+    type: SecurityAlertType
+  ): nodemailer.SendMailOptions["attachments"] {
+    if (type === SecurityAlertType.DATA_EXPORT_REQUESTED) {
+      return [
+        {
+          filename: "data-export-instructions.pdf",
+          path: "/assets/security-instructions.pdf",
+          contentType: "application/pdf",
+        },
+      ];
+    }
+    return [];
   }
 }
 

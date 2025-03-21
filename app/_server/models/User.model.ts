@@ -2,7 +2,7 @@ import { Document, Model, Schema, models, model, Types } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { DeviceInfo } from "@/app/lib/types/session.types";
+import { DeviceInfo, GeoLocation } from "@/app/lib/types/session.types";
 import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import AppError from "@/app/lib/utilities/appError";
 import {
@@ -398,7 +398,7 @@ UserSchema.pre<IUser>("save", async function (next) {
 });
 
 // enhancement for
-UserSchema.pre<IUser>("save", function (next) {
+UserSchema.pre<IUser>("save", async function (next) {
   if (this.isModified("security.rateLimits")) {
     const loginLimits = this.security.rateLimits.login;
 
@@ -424,16 +424,16 @@ UserSchema.pre<IUser>("save", function (next) {
 
     // 3. Suspicious activity notifications
     if (this.security.behavioralFlags.requestVelocity > 5) {
-      emailService.sendSecurityAlertEmail(this.email, {
+      await emailService.sendSecurityAlertEmail(this.email, {
         type: SecurityAlertType.SUSPICIOUS_ACTIVITY,
         // type: "SUSPICIOUS_ACTIVITY",
-        attempts: loginLimits.attempts,
-        locations: this.security.loginHistory
-          .map((entry) => entry.location)
-          .filter(
-            (location): location is DeviceInfo["location"] =>
-              location.longitude !== 0
-          ), //modify by me
+        additionalInfo: {
+          attempts: loginLimits.attempts,
+        },
+        location: this.security.loginHistory
+          .map((entry) => `${entry.location.city}, ${entry.location.country}`)
+          .filter((location) => location)
+          .join("; "), // Combine locations into a single string
       });
     }
   }
@@ -588,26 +588,126 @@ UserSchema.methods.incrementRateLimit = async function (
   }
 };
 
-// UserSchema.methods.detectAnomalies = function (deviceInfo: DeviceInfo) {
-//   const lastLogin = this.security.loginHistory.slice(-1)[0];
+UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
+  const MAX_LOGIN_HISTORY = 5; // Check last 5 logins
+  const IMPOSSIBLE_TRAVEL_THRESHOLD = 800; // km/h
+  const NEW_DEVICE_GRACE_PERIOD = 7 * 24 * 60 * 60 * 1000; // 1 week
 
-//   // Impossible travel detection
-//   if (lastLogin && deviceInfo.location) {
-//     const distance = calculateDistance(lastLogin.location, deviceInfo.location);
-//     const timeDiff = Date.now() - lastLogin.timestamp.getTime();
-//     if (distance / (timeDiff / 3600000) > 1000) {
-//       // 1000 km/h
-//       this.security.behavioralFlags.impossibleTravel = true;
-//     }
-//   }
+  const recentLogins = this.security.loginHistory
+    .filter((login: ILoginHistory) => login.success)
+    .slice(-MAX_LOGIN_HISTORY);
 
-//   // Device fingerprint change
-//   if (lastLogin && deviceInfo.fingerprint !== lastLogin.fingerprint) {
-//     this.security.behavioralFlags.suspiciousDeviceChange = true;
-//   }
-// };
+  // 1. Impossible Travel Detection
+  if (recentLogins.length > 0 && deviceInfo.location) {
+    const distances = recentLogins.map((login: ILoginHistory) => {
+      return calculateDistance(login.location, deviceInfo.location);
+    });
 
-// Instance Methods
+    const minDistance = Math.min(...distances);
+    const maxSpeed =
+      minDistance /
+      ((Date.now() - recentLogins[0].timestamp.getTime()) / 3600000);
+
+    if (maxSpeed > IMPOSSIBLE_TRAVEL_THRESHOLD) {
+      this.security.behavioralFlags.impossibleTravel = true;
+      this.security.auditLog.push({
+        timestamp: new Date(),
+        action: SecurityAuditAction.IMPOSSIBLE_TRAVEL,
+        details: `Detected travel speed of ${Math.round(maxSpeed)}km/h from ${recentLogins[0].location.country}`,
+      });
+    }
+  }
+
+  // 2. Device Fingerprint Analysis
+  const knownDevices = new Set(
+    this.security.loginHistory
+      .filter(
+        (login: ILoginHistory) =>
+          login.timestamp.getTime() > Date.now() - NEW_DEVICE_GRACE_PERIOD
+      )
+      .map((login: ILoginHistory) => login.fingerprint)
+  );
+
+  if (!knownDevices.has(deviceInfo.fingerprint)) {
+    this.security.behavioralFlags.suspiciousDeviceChange = true;
+
+    // Send security alert only for truly new devices
+    if (!this.loginNotificationSent) {
+      await emailService.sendSecurityAlertEmail(this.email, {
+        type: SecurityAlertType.NEW_DEVICE,
+        device: {
+          model: deviceInfo.model,
+          os: deviceInfo.os,
+          browser: deviceInfo.browser,
+        },
+        ipAddress: deviceInfo.ip,
+        location: `${deviceInfo.location.city}, ${deviceInfo.location.country} 
+          ${recentLogins[0]?.location.city}, ${recentLogins[0]?.location.country}`,
+      });
+
+      this.loginNotificationSent = true;
+      this.security.auditLog.push({
+        timestamp: new Date(),
+        action: SecurityAuditAction.NEW_DEVICE_ALERT_SENT,
+        details: {
+          success: true,
+          device: deviceInfo,
+        },
+      });
+    }
+  }
+
+  // 3. Velocity Analysis
+  const recentAttempts = this.security.loginHistory.filter(
+    (login: ILoginHistory) =>
+      Date.now() - login.timestamp.getTime() < 3600000 && // 1 hour
+      !login.success
+  );
+
+  if (recentAttempts.length > 5) {
+    this.security.behavioralFlags.requestVelocity = recentAttempts.length;
+    this.security.rateLimits.login.lockUntil = new Date(Date.now() + 3600000); // 1 hour
+
+    await emailService.sendSecurityAlertEmail(this.email, {
+      type: SecurityAlertType.SUSPICIOUS_ACTIVITY,
+      additionalInfo: {
+        attempts: recentAttempts.length,
+        locations: Array.from(
+          new Set(recentAttempts.map((a: ILoginHistory) => a.location.country))
+        ),
+      },
+    });
+  }
+
+  // 4. Bot Detection Escalation
+  if (deviceInfo.isBot) {
+    this.security.rateLimits.login.attempts += 3; // Penalize bots harder
+    this.security.auditLog.push({
+      timestamp: new Date(),
+      action: SecurityAuditAction.BOT_DETECTED,
+      details: {
+        success: true,
+        device: deviceInfo,
+      },
+    });
+  }
+};
+
+// Helper function for distance calculation
+function calculateDistance(loc1: GeoLocation, loc2: GeoLocation): number {
+  const R = 6371; // Earth radius in km
+  const dLat = ((loc2.latitude - loc1.latitude) * Math.PI) / 180;
+  const dLon = ((loc2.longitude - loc1.longitude) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((loc1.latitude * Math.PI) / 180) *
+      Math.cos((loc2.latitude * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {

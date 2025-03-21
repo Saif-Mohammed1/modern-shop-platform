@@ -61,7 +61,6 @@ const queryParams = async (searchParams: SearchParams) => {
 const page = async ({ searchParams }: { searchParams: SearchParams }) => {
   try {
     const { docs, pagination } = await queryParams(searchParams);
-    console.log("pagination", pagination);
     return <WishlistPage wishlistProduct={docs} pagination={pagination} />;
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;

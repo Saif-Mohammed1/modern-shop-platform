@@ -9,6 +9,7 @@ import type { NextRequest } from "next/server";
 import { stripeControllerTranslate } from "../../../public/locales/server/stripeControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { ProductType } from "@/app/lib/types/products.types";
+import { UserAuthType } from "@/app/lib/types/users.types";
 const stripe = new Stripe(process.env.STRIPE_SECRET as string); // Replace `process.env.STRIPE_SECRET_KEY` with your actual secret key
 const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
 type ItemType = {
@@ -330,7 +331,8 @@ const captureSuccessPayment = async (sessionId: string) => {
           country: shippingInfo.country,
         },
       });
-      await sendEmailWithInvoice(user, invoiceDe.hosted_invoice_url as string);
+      // user.twoFactorEnabled = false;
+      // await sendEmailWithInvoice(user, invoiceDe.hosted_invoice_url as string);
       return { session, statusCode: 200 };
     }
     // } else {
