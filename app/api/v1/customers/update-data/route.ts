@@ -13,3 +13,12 @@ export const PUT = async (req: NextRequest) => {
     return ErrorHandler(error, req);
   }
 };
+export const PATCH = async (req: NextRequest) => {
+  try {
+    await connectDB();
+    await AuthMiddleware.requireAuth()(req);
+    return await authController.updateLoginNotificationSent(req);
+  } catch (error) {
+    return ErrorHandler(error, req);
+  }
+};

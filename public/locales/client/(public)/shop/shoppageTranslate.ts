@@ -75,6 +75,7 @@ export const shopPageTranslate = {
     },
     productCard: {
       toggleWishlist: {
+        processing: "Processing...",
         loadingAdding: "Adding to wishlist...",
         loadingRemoving: "Removing from wishlist...",
         success: "Product Added to wishlist",
@@ -198,6 +199,7 @@ export const shopPageTranslate = {
     },
     productCard: {
       toggleWishlist: {
+        processing: "Обробка...",
         loadingAdding: "Додається до списку бажань...",
         loadingRemoving: "Видаляється зі списку бажань...",
         success: "Продукт додано до списку бажань",

@@ -8,7 +8,7 @@ export const GET = async (req: NextRequest) => {
   try {
     await connectDB();
     await AuthMiddleware.requireAuth()(req);
-    return authController.getActiveSessions(req);
+    return await authController.getActiveSessions(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

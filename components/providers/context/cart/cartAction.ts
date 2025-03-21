@@ -1,14 +1,13 @@
-import { ProductType } from "@/app/lib/types/products.types";
 import AppError from "@/app/lib/utilities/appError";
 import api from "@/app/lib/utilities/api";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { UserAuthType } from "@/app/lib/types/users.types";
-import { CartItemsType } from "@/app/lib/types/cart.types";
+import { CartItemsType, ProductCartPick } from "@/app/lib/types/cart.types";
 type User = UserAuthType | null;
 // Add item to cart
 export const addToCart = async (
-  product: ProductType,
+  product: ProductCartPick,
   user: User,
   quantity: number = 1
 ) => {
@@ -61,7 +60,7 @@ export const addToCart = async (
 
 // Remove item from cart
 export const removeFromCart = async (
-  product: ProductType,
+  product: ProductCartPick,
   user: User,
   quantity: number = 1
 ) => {
@@ -95,7 +94,10 @@ export const removeFromCart = async (
 };
 
 // Clear cart
-export const clearItemFromCart = async (product: ProductType, user: User) => {
+export const clearItemFromCart = async (
+  product: ProductCartPick,
+  user: User
+) => {
   if (user) {
     // User is signed in, clear cart in DB
     await clearCartInDB(product);
@@ -143,14 +145,14 @@ export const getCartItems = async (user: User) => {
     throw error;
   }
 };
-export const removeCartItemFromDB = async (product: ProductType) => {
+export const removeCartItemFromDB = async (product: ProductCartPick) => {
   try {
     await api.put(`/customers/cart/${product._id}`);
   } catch (error) {
     throw error;
   }
 };
-export const clearCartInDB = async (product: ProductType) => {
+export const clearCartInDB = async (product: ProductCartPick) => {
   try {
     await api.delete(`/customers/cart/${product._id}`);
   } catch (error) {

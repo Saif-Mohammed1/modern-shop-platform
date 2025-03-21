@@ -6,9 +6,11 @@ import AppError from "@/app/lib/utilities/appError";
 import { TwoFactorValidation } from "../dtos/2fa.dto";
 import { TwoFactorService } from "../services/2fa.service";
 import { UserService } from "../services/user.service";
-import { generateDeviceFingerprint } from "@/app/lib/utilities/DeviceFingerprint.utility";
+import {
+  generateDeviceFingerprint,
+  getDeviceFingerprint,
+} from "@/app/lib/utilities/DeviceFingerprint.utility";
 import { SecurityMetadata } from "../models/2fa.model";
-import { getDeviceFingerprint } from "@/app/lib/utilities/refresh-token.util";
 import { cookies } from "next/headers";
 import { UserValidation } from "../dtos/user.dto";
 
@@ -67,6 +69,7 @@ class TwoFactorController {
       });
 
       const deviceInfo = await getDeviceFingerprint(req);
+
       const metadata = this.collectSecurityMetadata(req);
 
       const user = await this.twoFactorService.verifyLogin2FA(

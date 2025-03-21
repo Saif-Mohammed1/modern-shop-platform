@@ -19,6 +19,7 @@ export const accountWishlistTranslate = {
     WishListCard: {
       functions: {
         handleWishlistClick: {
+          loading: "Processing wishlist...",
           success: "Added to wishlist",
           error: "Failed to Handel to wishlist",
           removed: "Removed from wishlist",
@@ -54,6 +55,7 @@ export const accountWishlistTranslate = {
     WishListCard: {
       functions: {
         handleWishlistClick: {
+          loading: "Обробка списку бажань...",
           success: "Додано до списку бажань",
           error: "Не вдалося обробити список бажань",
           removed: "Видалено зі списку бажань",

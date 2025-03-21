@@ -16,10 +16,11 @@ import StarRatings from "react-star-ratings";
 import { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { ReviewsType } from "@/app/lib/types/reviews.types";
+// import { ReviewsType } from "@/app/lib/types/reviews.types";
 import { useUser } from "@/components/providers/context/user/user.context";
 import api from "@/app/lib/utilities/api";
 import ComponentLoading from "@/components/spinner/componentLoading";
+import { formatDateTime } from "@/app/lib/utilities/formatDate";
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
 
@@ -44,14 +45,8 @@ const ProductDetail = ({
   const [quantity, setQuantity] = useState(1);
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const { user } = useUser();
-
-  useEffect(() => {
-    // setIsClient(true);
-    setIsWishlisted(isInWishlist(product._id));
-  }, [product._id, isInWishlist]);
-
+  const stock = product.stock - (product.reserved ?? 0);
   const discountPercentage =
     product.discount > 0
       ? Math.round((product.discount / product.price) * 100)
@@ -62,14 +57,13 @@ const ProductDetail = ({
   };
 
   const handleQuantityChange = (newQuantity: number) => {
-    setQuantity(Math.max(1, Math.min(product.stock, newQuantity)));
+    setQuantity(Math.max(1, Math.min(stock, newQuantity)));
   };
   // Toggle wishlist
   const toggleWishlistHandaler = async () => {
     let toastLoading;
     try {
       await toggleWishlist(product);
-      setIsWishlisted(!isWishlisted);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -82,7 +76,7 @@ const ProductDetail = ({
   }; // Handle add to cart
   const handleAddToCart = async () => {
     let toastLoading;
-    if (product.stock === 0) {
+    if (stock === 0) {
       toast.error(shopPageTranslate[lang].functions.handleAddToCart.outOfStock);
       return;
     }
@@ -106,18 +100,6 @@ const ProductDetail = ({
     // Add to cart logic here
   };
 
-  // Rest of the existing logic remains similar, but with improved UI components below...
-
-  // if (!product)
-  //   return (
-  //     <div className="max-w-7xl mx-auto px-4 py-8">
-  //       <Skeleton count={5} height={40} />
-  //     </div>
-  //   );
-  useEffect(() => {
-    // setIsClient(true);
-    setIsWishlisted(isInWishlist(product._id));
-  }, [product._id, isInWishlist]);
   useEffect(() => {
     const getrelatedProducts = async () => {
       try {
@@ -226,10 +208,12 @@ const ProductDetail = ({
               onClick={toggleWishlistHandaler}
               className="p-2 hover:bg-gray-100 rounded-full"
               aria-label={
-                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                isInWishlist(product._id)
+                  ? "Remove from wishlist"
+                  : "Add to wishlist"
               }
             >
-              {isWishlisted ? (
+              {isInWishlist(product._id) ? (
                 <AiFillHeart className="w-8 h-8 text-red-500" />
               ) : (
                 <AiOutlineHeart className="w-8 h-8 text-gray-400" />
@@ -257,16 +241,16 @@ const ProductDetail = ({
             <div className="flex items-center space-x-2">
               <span
                 className={`text-sm font-medium ${
-                  product.stock > 0 ? "text-green-600" : "text-red-600"
+                  stock > 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {product.stock > 0
+                {stock > 0
                   ? `${shopPageTranslate[lang].content.inStock}`
                   : shopPageTranslate[lang].content.outOfStock}
               </span>
               <span className="text-gray-500 text-sm">
-                {product.stock > 0 &&
-                  `(${shopPageTranslate[lang].content.remaining}: ${product.stock})`}
+                {stock > 0 &&
+                  `(${shopPageTranslate[lang].content.remaining}: ${stock})`}
               </span>
             </div>
           </div>
@@ -285,7 +269,7 @@ const ProductDetail = ({
                   type="number"
                   value={quantity}
                   min={1}
-                  max={product.stock}
+                  max={stock}
                   onChange={(e) =>
                     handleQuantityChange(parseInt(e.target.value))
                   }
@@ -294,7 +278,7 @@ const ProductDetail = ({
                 <button
                   onClick={() => handleQuantityChange(quantity + 1)}
                   className="px-4 py-2 hover:bg-gray-100"
-                  disabled={quantity >= product.stock}
+                  disabled={quantity >= stock}
                 >
                   +
                 </button>
@@ -302,15 +286,15 @@ const ProductDetail = ({
 
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={stock === 0}
                 className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${
-                  product.stock === 0
+                  stock === 0
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
                 }`}
               >
                 <AiOutlineShoppingCart className="inline-block mr-2 w-5 h-5" />
-                {product.stock > 0
+                {stock > 0
                   ? shopPageTranslate[lang].content.addToCart
                   : shopPageTranslate[lang].content.outOfStock}
               </button>
@@ -325,6 +309,7 @@ const ProductDetail = ({
                     month: "long",
                     day: "numeric",
                   })}
+                  {/* {formatDateTime(product.discountExpire)} */}
                 </p>
               </div>
             )}
@@ -373,7 +358,7 @@ const ProductDetail = ({
         <ReviewSection
           reviews={{
             data: product.reviews,
-            hasNextPage: true,
+            hasNextPage: product.reviews.length === 5,
             distribution: distribution,
           }}
           productId={product._id}

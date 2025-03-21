@@ -188,6 +188,14 @@ export class UserValidation {
       .max(50, userZodValidatorTranslate[lang].name.maxLength)
       .parse(name);
   }
+  static validateLoginNotificationSent(loginNotificationSent: boolean) {
+    return z
+      .boolean({
+        required_error:
+          userZodValidatorTranslate[lang].loginNotificationSent.required,
+      })
+      .parse(loginNotificationSent);
+  }
   static isVerificationCodeValid(code: string) {
     return z
       .string({

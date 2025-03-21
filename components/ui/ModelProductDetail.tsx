@@ -10,6 +10,7 @@ import { useCartItems } from "../providers/context/cart/cart.context";
 import { useWishlist } from "../providers/context/wishlist/wishlist.context";
 import StarRatings from "react-star-ratings";
 import { FaArrowRightLong } from "react-icons/fa6";
+// import { AnimatePresence, motion } from "framer-motion";
 // import { motion, AnimatePresence } from "framer-motion";
 
 const ModelProductDetail = ({ product }: { product: ProductType }) => {
@@ -18,7 +19,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
 
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  // const [isWishlisted, setIsWishlisted] = useState(false);
   // const [isZoomed, setIsZoomed] = useState(false);
   const [quantity, setQuantity] = useState(1);
   // Modify the handleAddToCart function
@@ -48,15 +49,13 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
 
   const toggleWishlistHandler = async () => {
     const toastId = toast.loading(
-      isWishlisted
+      isInWishlist(product._id)
         ? shopPageTranslate[lang].functions.toggleWishlist.loadingRemoving
         : shopPageTranslate[lang].functions.toggleWishlist.loadingAdding
     );
 
     try {
       await toggleWishlist(product);
-
-      setIsWishlisted(!isWishlisted);
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -69,9 +68,6 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const handleImageNavigation = (index: number) => {
     setCurrentImageIndex(index);
   };
-  useEffect(() => {
-    setIsWishlisted(isInWishlist(product._id));
-  }, [product._id, isInWishlist]);
 
   return (
     // <AnimatePresence>
@@ -227,10 +223,14 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             onClick={toggleWishlistHandler}
             className="p-3 rounded-lg border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-600"
             aria-label={
-              isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+              isInWishlist(product._id)
+                ? "Remove from wishlist"
+                : "Add to wishlist"
             }
           >
-            <span className="text-xl">{isWishlisted ? "❤️" : "🤍"}</span>
+            <span className="text-xl">
+              {isInWishlist(product._id) ? "❤️" : "🤍"}
+            </span>
           </button>
         </div>
         {product.discountExpire && (
@@ -244,7 +244,8 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
         )}
         <button
           onClick={() => {
-            redirect(`/shop/${product.slug}`);
+            // redirect(`/shop/${product.slug}`);
+            window.location.reload();
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors"
         >

@@ -19,9 +19,11 @@ const page = async () => {
     const { data } = await api.get("/customers/address", {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
-    const address = data.data;
+    const address = data.docs;
 
-    return <AddressBook addressList={address} hasNextPage={data.hasNextPage} />;
+    return (
+      <AddressBook addressList={address} hasNextPage={data.meta.hasNext} />
+    );
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
 

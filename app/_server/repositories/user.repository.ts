@@ -36,7 +36,7 @@ export class UserRepository extends BaseRepository<IUser> {
     return user;
   }
 
-  async findById(id: string, options?: string): Promise<IUser | null> {
+  async findUserById(id: string, options?: string): Promise<IUser | null> {
     if (!options) {
       return this.model.findById(id).select("+security");
     }
@@ -614,6 +614,19 @@ export class UserRepository extends BaseRepository<IUser> {
         _id: userId,
       },
       { name },
+      { session }
+    );
+  }
+  async updateLoginNotificationSent(
+    userId: string,
+    loginNotificationSent: boolean,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      {
+        _id: userId,
+      },
+      { loginNotificationSent },
       { session }
     );
   }

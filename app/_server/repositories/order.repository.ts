@@ -72,8 +72,8 @@ export class OrderRepository extends BaseRepository<IOrder> {
       //   maxLimit: 100,
     };
 
-    const searchParams = new URLSearchParams({
-      ...options.query,
+     const searchParams = new URLSearchParams({
+      ...Object.fromEntries(options.query.entries()),
       userId,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),

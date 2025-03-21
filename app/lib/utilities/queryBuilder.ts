@@ -48,7 +48,6 @@ export class QueryBuilder<T extends Document> {
     config: QueryBuilderConfig<T>
   ) {
     this.originalParams = new URLSearchParams(searchParams);
-
     this.config = {
       maxLimit: 15,
       enableTextSearch: false,
@@ -247,6 +246,7 @@ export class QueryBuilder<T extends Document> {
 
   private buildPagination(): this {
     this.page = Math.max(1, parseInt(this.originalParams.get("page") || "1"));
+
     this.limit = Math.min(
       this.config.maxLimit,
       parseInt(this.originalParams.get("limit") || String(this.config.maxLimit))

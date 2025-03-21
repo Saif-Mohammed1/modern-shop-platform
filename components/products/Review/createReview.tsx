@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import StarRatings from "react-star-ratings";
@@ -24,25 +24,34 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
   const [comment, setComment] = useState("");
   const router = useRouter();
 
-  const checkOrder = useCallback(async () => {
+  const checkOrder = async () => {
     setIsLoading(true);
     try {
-      await toast.promise(api.patch(`/customers/reviews/${productId}`), {
-        loading:
-          reviewsTranslate[lang].createReviewsSection.functions.checkOrder
-            .loading,
-        success:
-          reviewsTranslate[lang].createReviewsSection.functions.checkOrder
-            .success,
-        error: (error) => error.message || reviewsTranslate[lang].errors.global,
-      });
+      // await toast.promise(api.patch(`/customers/reviews/${productId}`), {
+      //   loading:
+      //     reviewsTranslate[lang].createReviewsSection.functions.checkOrder
+      //       .loading,
+      //   success:
+      //     reviewsTranslate[lang].createReviewsSection.functions.checkOrder
+      //       .success,
+      //   error: (error) => error.message || reviewsTranslate[lang].errors.global,
+      // });
+      await api.patch(`/customers/reviews/${productId}`);
+      toast.success(
+        reviewsTranslate[lang].createReviewsSection.functions.checkOrder.success
+      );
       setIsOpen(true);
+    } catch (error) {
+      toast.error(
+        (error as Error).message || reviewsTranslate[lang].errors.global
+      );
+      // Error handled by toast.promise
     } finally {
       setIsLoading(false);
     }
-  }, [productId]);
+  };
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     if (rating === 0) {
       toast.error(
         reviewsTranslate[lang].createReviewsSection.functions.handleSubmit
@@ -60,28 +69,22 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
     }
 
     try {
-      await toast.promise(
-        api.post(`/customers/reviews/${productId}`, { rating, comment }),
-        {
-          loading:
-            reviewsTranslate[lang].createReviewsSection.functions.handleSubmit
-              .loading,
-          success:
-            reviewsTranslate[lang].createReviewsSection.functions.handleSubmit
-              .success,
-          error: (error) =>
-            error.message || reviewsTranslate[lang].errors.global,
-        }
+      await api.post(`/customers/reviews/${productId}`, { rating, comment });
+      toast.success(
+        reviewsTranslate[lang].createReviewsSection.functions.handleSubmit
+          .success
       );
-
       router.refresh();
       setRating(0);
       setComment("");
       setIsOpen(false);
     } catch (error) {
+      toast.error(
+        (error as Error).message || reviewsTranslate[lang].errors.global
+      );
       // Error handled by toast.promise
     }
-  }, [rating, comment, productId, router]);
+  };
 
   const remainingCharacters = MAX_COMMENT_LENGTH - comment.length;
 

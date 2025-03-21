@@ -9,11 +9,14 @@ import {
   mergeLocalCartWithDB,
 } from "./cartAction";
 import toast from "react-hot-toast";
-import { ProductType } from "@/app/lib/types/products.types";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { useUser } from "../user/user.context";
-import { CartContextType, CartItemsType } from "@/app/lib/types/cart.types";
+import {
+  CartContextType,
+  CartItemsType,
+  ProductCartPick,
+} from "@/app/lib/types/cart.types";
 
 // Create the cart context
 export const CartContext = createContext<CartContextType>({
@@ -34,7 +37,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();
 
   const addToCartItems = async (
-    product: ProductType,
+    product: ProductCartPick,
     quantityValue: number = 1
   ) => {
     try {
@@ -63,7 +66,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       throw error;
     }
   };
-  const removeCartItem = async (product: ProductType) => {
+  const removeCartItem = async (product: ProductCartPick) => {
     try {
       setCartItems((pre) => {
         //  check if product exist in cart and quantity is greater than 1 then decrease quantity by 1
@@ -85,7 +88,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       throw error;
     }
   };
-  const clearProductFromCartItem = async (product: ProductType) => {
+  const clearProductFromCartItem = async (product: ProductCartPick) => {
     try {
       setCartItems((pre) => pre.filter((item) => item._id !== product._id));
       await clearItemFromCart(product, user);
@@ -127,8 +130,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
     const mergeCarts = async () => {
-      const storedCart = localStorage.getItem("cart");
-      if (storedCart && user) {
+      const storedCart = localStorage.getItem("cart") || [];
+      if (storedCart?.length && user) {
         try {
           await mergeLocalCartWithDB();
           if (isMounted)

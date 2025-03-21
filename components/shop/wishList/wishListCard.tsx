@@ -3,7 +3,6 @@ import { ProductType } from "@/app/lib/types/products.types";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Image from "next/image";
@@ -13,9 +12,12 @@ import {
   AiFillHeart,
   AiOutlineShoppingCart,
 } from "react-icons/ai"; // Import cart icon
+import api from "@/app/lib/utilities/api";
+import { useRouter } from "next/navigation";
 
 const WishListCard = ({ product }: { product: ProductType }) => {
-  const { toggleWishlist, isInWishlist } = useWishlist();
+  // const { toggleWishlist, isInWishlist } = useWishlist();
+  const router = useRouter();
   const { addToCartItems } = useCartItems();
   const handelAddToCart = async () => {
     let toastLoading;
@@ -38,8 +40,18 @@ const WishListCard = ({ product }: { product: ProductType }) => {
     }
   };
   const handleWishlistClick = async () => {
+    let toastLoading;
     try {
-      await toggleWishlist(product);
+      toastLoading = toast.loading(
+        accountWishlistTranslate[lang].WishListCard.functions
+          .handleWishlistClick.loading
+      );
+      await api.post("/customers/wishlist/" + product._id);
+      toast.success(
+        accountWishlistTranslate[lang].WishListCard.functions
+          .handleWishlistClick.removed
+      );
+      router.refresh();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(
@@ -50,6 +62,8 @@ const WishListCard = ({ product }: { product: ProductType }) => {
       } else {
         toast.error(accountWishlistTranslate[lang].errors.global);
       }
+    } finally {
+      toast.dismiss(toastLoading);
     }
   };
 
@@ -80,16 +94,13 @@ const WishListCard = ({ product }: { product: ProductType }) => {
           onClick={handleWishlistClick}
           // className="mt-2 flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg"
         >
-          {isInWishlist(product._id) ? (
+          <AiFillHeart className="text-red-500 mr-2 text-3xl" />
+
+          {/* {isInWishlist(product._id) ? (
             <AiFillHeart className="text-red-500 mr-2 text-3xl" />
           ) : (
             <AiOutlineHeart className="mr-2  text-3xl" />
-          )}
-          {/* {isInWishlist(product._id)
-            ? accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
-                .remove
-            : accountWishlistTranslate[lang].WishListCard.functions.isInWishlist
-                .add} */}
+          )} */}
         </button>
       </div>
     </div>

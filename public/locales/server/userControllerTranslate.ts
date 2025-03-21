@@ -228,6 +228,10 @@ export const userZodValidatorTranslate = {
       required: "Verification code must be required",
       invalid: "Invalid verification code",
     },
+    loginNotificationSent: {
+      required: "Login notification sent must be required",
+      boolean: "Login notification sent must be a boolean",
+    },
     // preferences: {
   },
   uk: {
@@ -267,6 +271,11 @@ export const userZodValidatorTranslate = {
     verificationCode: {
       required: "Код верифікації має бути обов'язковим",
       invalid: "Недійсний код верифікації",
+    },
+
+    loginNotificationSent: {
+      required: "Повідомлення про вхід має бути обов'язковим",
+      boolean: "Повідомлення про вхід має бути логічним значенням",
     },
   },
 } as const;

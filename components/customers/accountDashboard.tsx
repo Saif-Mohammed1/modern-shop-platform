@@ -34,7 +34,7 @@ const AccountDashboard = () => {
     name: session?.user?.name ?? "",
     email: session?.user?.email ?? "",
     phone: session?.user?.phone ?? "",
-    emailVerify: session?.user?.emailVerify ?? false,
+    emailVerify: session?.user?.verification.emailVerified ?? false,
   });
 
   const [formData, setFormData] = useState<FormDataType>({
@@ -85,13 +85,13 @@ const AccountDashboard = () => {
         toast.loading(
           accountDashboardTranslate[lang].functions.handleApplyChanges.loading
         );
-        const { data } = await api.put("/customers/update-data", updatedData);
+        await api.put("/customers/update-data", updatedData);
 
         await update({
           ...session,
           user: {
             ...session?.user,
-            ...data.data,
+            name: updatedData.name ?? session?.user.name,
           },
         });
 
@@ -115,7 +115,40 @@ const AccountDashboard = () => {
       }
     }
   };
-
+  const handleNotificationToggle = async () => {
+    let loadingToast;
+    try {
+      loadingToast = toast.loading(
+        accountDashboardTranslate[lang].functions.handleApplyChanges.loading
+      );
+      await api.patch("/customers/update-data", {
+        loginNotificationSent: !session?.user?.loginNotificationSent,
+      });
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          loginNotificationSent: !session?.user?.loginNotificationSent,
+        },
+      });
+      toast.success(
+        accountDashboardTranslate[lang].functions.handleApplyChanges.success
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(
+          error?.message ||
+            accountDashboardTranslate[lang].functions.handleApplyChanges.error
+        );
+      } else {
+        {
+          toast.error(accountDashboardTranslate[lang].errors.global);
+        }
+      }
+    } finally {
+      toast.dismiss(loadingToast);
+    }
+  };
   const handleSendVerificationLink = async () => {
     // Call your context function to send email verification link
     let loadingToast;
@@ -165,7 +198,10 @@ const AccountDashboard = () => {
         ...session,
         user: {
           ...session?.user,
-          emailVerify: true,
+          verification: {
+            ...session?.user.verification,
+            emailVerified: true,
+          },
         },
       });
       setShowTokenField(false);
@@ -365,7 +401,7 @@ const AccountDashboard = () => {
         </div>
         {isEditing.phone && (
           <div className="mt-2">
-            <input
+            {/* <input
               type="text"
               name="phone"
               value={formData.phone}
@@ -374,6 +410,17 @@ const AccountDashboard = () => {
                 accountDashboardTranslate[lang].form.phone.placeholder
               }
               className="border rounded px-3 py-2 w-full mt-1"
+            /> */}
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              placeholder={
+                accountDashboardTranslate[lang].form.phone.placeholder
+              }
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              pattern="[0-9]{10}"
             />
             <button
               onClick={() => handleSave("phone")}
@@ -384,7 +431,35 @@ const AccountDashboard = () => {
           </div>
         )}
       </div>
-
+      <div className="mt-6 space-y-4">
+        <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div>
+            <h3 className="font-medium text-gray-900">
+              {accountDashboardTranslate[lang].notifications.login_title}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {accountDashboardTranslate[lang].notifications.login_description}
+            </p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={session?.user?.loginNotificationSent}
+              onChange={handleNotificationToggle}
+              className={`sr-only ${session?.user?.loginNotificationSent ? "peer-checked:bg-blue-500" : ""}`}
+            />
+            <div
+              className={`w-11 h-6 bg-gray-300 rounded-full transition-colors duration-300 peer-checked:bg-blue-500`}
+            >
+              <div
+                className={`dot absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${
+                  session?.user?.loginNotificationSent ? "translate-x-5" : ""
+                }`}
+              />
+            </div>
+          </label>
+        </div>
+      </div>
       <button
         onClick={handleApplyChanges}
         className={`mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${

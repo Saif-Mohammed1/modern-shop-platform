@@ -1,11 +1,9 @@
-import {
-  accountOrdersTranslate,
-  OrdersType,
-} from "@/public/locales/client/(auth)/account/ordersTranslate";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Link from "next/link";
+import { OrderType } from "@/app/lib/types/orders.types";
 
-const OrderHistory = ({ ordersList }: { ordersList: OrdersType[] }) => {
+const OrderHistory = ({ ordersList }: { ordersList: OrderType[] }) => {
   return (
     <div className="container mx-auto mt-1 p-4 bg-gray-100 rounded-lg shadow-lg">
       <h1 className="text-3xl font-bold mb-6">
@@ -38,9 +36,9 @@ const OrderHistory = ({ ordersList }: { ordersList: OrdersType[] }) => {
                 </strong>
                 <ul className="list-disc list-inside">
                   {order.items.map((item) => (
-                    <li key={item._id}>
+                    <li key={item.productId.toString()}>
                       <Link
-                        href={`/shop/${item._id}`}
+                        href={`/shop/${item.productId.toString()}`}
                         target="_blank"
                         className="text-blue-500 hover:underline"
                       >
@@ -65,8 +63,9 @@ const OrderHistory = ({ ordersList }: { ordersList: OrdersType[] }) => {
                   }
                   :
                 </strong>{" "}
-                {order.shippingInfo.street}, {order.shippingInfo.city},{" "}
-                {order.shippingInfo.state}, {order.shippingInfo.postalCode}
+                {order.shippingAddress.street}, {order.shippingAddress.city},{" "}
+                {order.shippingAddress.state},{" "}
+                {order.shippingAddress.postalCode}
               </p>
               <p className="mb-2">
                 <strong>
@@ -76,13 +75,13 @@ const OrderHistory = ({ ordersList }: { ordersList: OrdersType[] }) => {
                   }
                   :
                 </strong>{" "}
-                {order.shippingInfo.phone}
+                {order.shippingAddress.phone}
               </p>
               <p className="mb-2">
                 <strong>
                   {accountOrdersTranslate[lang].orderHistory.order.amount}:
                 </strong>{" "}
-                ${order.totalPrice.toFixed(2)}
+                ${order.total.toFixed(2)}
               </p>
               <Link
                 href={order.invoiceLink}

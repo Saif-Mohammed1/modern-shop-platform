@@ -6,7 +6,7 @@ export const accountDashboardTranslate = {
       description: "Dashboard for the customer",
       keywords: "customer, dashboard, customer dashboard",
     },
-    title: "Account Settings",
+    title: "Account Dashboard Settings",
     functions: {
       handleApplyChanges: {
         loading: "Applying changes...",
@@ -51,6 +51,13 @@ export const accountDashboardTranslate = {
         placeholder: "Enter mobile number",
       },
     },
+    notifications: {
+      login_title: "Security Login Alerts",
+      login_description:
+        "Get notified immediately when your account is accessed from a new device or unusual location. Helps protect against unauthorized access.",
+      unknown_device: "New Device Login Detected",
+      device_details: "We noticed a login from a device we don't recognize:",
+    },
     button: {
       isEdit: {
         cancel: "Cancel",
@@ -72,7 +79,7 @@ export const accountDashboardTranslate = {
       description: "Панель для клієнта",
       keywords: "клієнт, панель, панель клієнта",
     },
-    title: "Налаштування облікового запису",
+    title: "Налаштування панелі облікового запису",
     functions: {
       handleApplyChanges: {
         loading: "Застосування змін...",
@@ -115,6 +122,13 @@ export const accountDashboardTranslate = {
         label: "Мобільний номер",
         placeholder: "Введіть мобільний номер",
       },
+    },
+    notifications: {
+      login_title: "Повідомлення про безпеку входу",
+      login_description:
+        "Отримуйте сповіщення негайно, коли ваш обліковий запис буде доступний з нового пристрою або незвичайного місця розташування. Допомагає захистити від несанкціонованого доступу.",
+      unknown_device: "Виявлено вхід на новому пристрої",
+      device_details: "Ми помітили вхід з пристрою, який ми не впізнаємо:",
     },
     button: {
       isEdit: {

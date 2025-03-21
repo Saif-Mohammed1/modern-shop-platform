@@ -105,6 +105,16 @@ class UserController {
       { status: 200 }
     );
   }
+  async updatePassword(req: NextRequest) {
+    if (!req.user)
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+    const result = UserValidation.validateChangePassword(await req.json());
+    await this.userService.changePassword(req.user._id.toString(), result);
+    return NextResponse.json(
+      { message: UserTranslate[lang].updatePassword },
+      { status: 200 }
+    );
+  }
 }
 
 export default new UserController();

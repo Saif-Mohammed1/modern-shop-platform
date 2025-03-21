@@ -170,7 +170,7 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
         className="h-screen md:h-[90dvh] overflow-y-auto"
       >
         {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"> */}
-        <div className="grid col gap-8">
+        <div className="grid col gap-12">
           {products.map((product) => (
             <ProductCard key={product._id.toString()} product={product} />
           ))}

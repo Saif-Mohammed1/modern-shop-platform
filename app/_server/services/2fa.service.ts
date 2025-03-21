@@ -171,8 +171,11 @@ export class TwoFactorService {
   }
 
   async getAuditLogs(userId: string) {
-    const twoFA = await this.repository.findOne({ userId });
-    return twoFA?.auditLogs || [];
+    const twoFA = await this.repository.findOne(
+      { userId },
+      { select: "auditLogs" }
+    );
+    return twoFA?.auditLogs.reverse().slice(0, 10) || [];
   }
 
   async validateBackupCodes(

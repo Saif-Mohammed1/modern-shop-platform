@@ -8,6 +8,7 @@ import OrderModel from "../models/Order.model";
 import { reviewControllerTranslate } from "@/public/locales/server/reviewControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { OrderStatus } from "@/app/lib/types/orders.types";
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
 export class ReviewService {
   private reviewRepository = new ReviewRepository(ReviewModel);
@@ -40,15 +41,9 @@ export class ReviewService {
         404
       );
     }
-  }
-  async createReview(dto: createReviewDto) {
-    await this.checkIfUserHasOrderedProduct(
-      dto.userId.toString(),
-      dto.productId.toString()
-    );
     const existingReview = await this.reviewRepository.findByProductAndUser(
-      dto.productId,
-      dto.userId
+      assignAsObjectId(productId),
+      assignAsObjectId(userId)
     );
     if (existingReview) {
       // throw new AppError("You have already reviewed this product", 403);
@@ -59,6 +54,25 @@ export class ReviewService {
         400
       );
     }
+  }
+  async createReview(dto: createReviewDto) {
+    await this.checkIfUserHasOrderedProduct(
+      dto.userId.toString(),
+      dto.productId.toString()
+    );
+    // const existingReview = await this.reviewRepository.findByProductAndUser(
+    //   dto.productId,
+    //   dto.userId
+    // );
+    // if (existingReview) {
+    //   // throw new AppError("You have already reviewed this product", 403);
+    //   throw new AppError(
+    //     reviewControllerTranslate[
+    //       lang
+    //     ].controllers.checkReview.oneReviewPerProduct,
+    //     400
+    //   );
+    // }
     return this.reviewRepository.create(dto);
   }
 

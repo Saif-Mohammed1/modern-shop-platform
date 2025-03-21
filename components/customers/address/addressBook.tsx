@@ -51,9 +51,9 @@ const AddressBook = ({ addressList, hasNextPage }: AddressBookProps) => {
       const newPage = page + 1;
       setPage((prevPage) => prevPage++);
       const { data } = await api.get(`/customers/address/?page=${newPage}`);
-      setMoreResults([...moreResults, ...data.data]);
+      setMoreResults([...moreResults, ...data.docs]);
       setPage(newPage);
-      setShowMore(data.hasNextPage);
+      setShowMore(data.meta.hasNext);
     } catch (error) {
       return null;
     } finally {
@@ -83,12 +83,9 @@ const AddressBook = ({ addressList, hasNextPage }: AddressBookProps) => {
       toastLoading = toast.loading(
         addressTranslate[lang].function.handleAddAddress.loading
       );
-      const {
-        data: { data },
-      } = await api.post("/customers/address", newAddress);
-
+      const { data } = await api.post("/customers/address", newAddress);
       toast.success(addressTranslate[lang].function.handleAddAddress.success);
-      setMoreResults([...moreResults, data]);
+      setMoreResults([data, ...moreResults]);
       // router.refresh();
       setNewAddress({
         street: "",
@@ -343,13 +340,12 @@ const AddressBook = ({ addressList, hasNextPage }: AddressBookProps) => {
       </div>
       {/* Button to toggle form for adding new address */}
       {!showForm && (
-        // <div className="flex justify-between my-4">
-        <>
+        <div className="flex items-center justify-between my-4">
           <button
             onClick={() => setShowForm(!showForm)}
             className="px-6 py-2 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition duration-200"
           >
-            {addressTranslate[lang].button.addNewAddress}test
+            {addressTranslate[lang].button.addNewAddress}
           </button>
           {/* Button to show more results */}
           <CustomButton
@@ -357,8 +353,7 @@ const AddressBook = ({ addressList, hasNextPage }: AddressBookProps) => {
             getMoreResults={getMoreResults}
             loading={loading}
           />
-        </>
-        // </div>
+        </div>
       )}
 
       {/* Form to add new address (hidden by default) */}

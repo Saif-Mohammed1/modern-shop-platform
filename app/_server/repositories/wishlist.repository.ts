@@ -47,13 +47,12 @@ export class WishlistRepository extends BaseRepository<IWishlist> {
     };
 
     const searchParams = new URLSearchParams({
-      ...options.query,
+      ...Object.fromEntries(options.query.entries()),
       userId,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
     });
-
     const queryBuilder = new QueryBuilder<IWishlist>(
       this.model,
       searchParams,
@@ -62,7 +61,7 @@ export class WishlistRepository extends BaseRepository<IWishlist> {
 
     if (options?.populate) {
       queryBuilder.populate([
-        { path: "userId", select: "name email" },
+        { path: "userId", select: "name" },
         { path: "productId", select: "name price images slug" },
       ]);
     }

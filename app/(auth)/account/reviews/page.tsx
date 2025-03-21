@@ -16,9 +16,9 @@ const page = async () => {
     const { data } = await api.get("/customers/reviews", {
       headers: Object.fromEntries(headers().entries()), //convert headers to object
     });
-    const reviews = data.data;
+    const reviews = data.docs;
     return (
-      <ReviewHistory reviewsList={reviews} hasNextPage={data.hasNextPage} />
+      <ReviewHistory reviewsList={reviews} hasNextPage={data.meta.hasNext} />
     );
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;

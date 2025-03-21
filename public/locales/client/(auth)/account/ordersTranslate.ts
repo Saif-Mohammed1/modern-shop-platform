@@ -213,6 +213,8 @@ const OrderCompleted = {
     summery: {
       orderId: "Order ID",
       orderDate: "Order Date",
+      subtotal: "Subtotal",
+      tax: "Tax",
       totalAmount: "Total Amount",
       Items: {
         title: "Order Items",
@@ -237,6 +239,8 @@ const OrderCompleted = {
     summery: {
       orderId: "ID замовлення",
       orderDate: "Дата замовлення",
+      subtotal: "Підсумок",
+      tax: "Податок",
       totalAmount: "Загальна сума",
       Items: {
         title: "Товари замовлення",
@@ -284,34 +288,3 @@ export const accountOrdersTranslate = {
     orderCompleted: OrderCompleted.uk,
   },
 } as const;
-
-type ShippingInfoType = {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  phone: string;
-  country: string;
-};
-type ItemsType = {
-  _id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  discount: number;
-  finalPrice: number;
-  discountExpire: Date;
-};
-export type OrdersType = {
-  _id: string;
-  user: string;
-
-  shippingInfo: ShippingInfoType;
-  items: ItemsType[];
-
-  status: string;
-  invoiceId: string;
-  invoiceLink: string;
-  totalPrice: number;
-  createdAt: Date;
-};

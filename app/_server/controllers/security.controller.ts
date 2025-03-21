@@ -1,12 +1,12 @@
 // src/controllers/security.controller.ts
 
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { SecurityService } from "../services/security.service";
 
 export class SecurityController {
   constructor(private readonly service: SecurityService) {}
 
-  async getSecurityDashboard(req: NextRequest) {
+  async getSecurityDashboard() {
     try {
       const data = await this.service.getSecurityAnalytics();
       return NextResponse.json(

@@ -275,8 +275,11 @@ export class ProductService {
   async getProductById(id: string, session?: ClientSession) {
     return this.repository.findById(id, session);
   }
-  async getProductBySlug(slug: string) {
-    return this.repository.getProductBySlug(slug);
+  async getProductBySlug(
+    slug: string,
+    options?: { populate?: boolean; select?: string }
+  ) {
+    return this.repository.getProductBySlug(slug, options);
   }
   async getProductMetaDataBySlug(slug: string) {
     return this.repository.getProductMetaDataBySlug(slug);
@@ -296,7 +299,11 @@ export class ProductService {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
-      const product = await this.repository.getProductBySlug(slug, session);
+      const product = await this.repository.getProductBySlug(
+        slug,
+        undefined,
+        session
+      );
       if (!product) {
         throw new AppError(
           productControllerTranslate[lang].errors.noProductFoundWithId,

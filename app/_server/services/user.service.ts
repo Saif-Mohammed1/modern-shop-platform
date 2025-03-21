@@ -260,7 +260,7 @@ export class UserService {
   }
   // Password Management
   async findUserById(userId: string, options?: string): Promise<IUser | null> {
-    return this.repository.findById(userId, options);
+    return this.repository.findUserById(userId, options);
   }
   async logOut(): Promise<{
     message: string;
@@ -310,7 +310,7 @@ export class UserService {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
-      const user = await this.repository.findById(id, "+password");
+      const user = await this.repository.findUserById(id, "+password");
       if (!user) return; // Don't reveal user existence
 
       const password = this.tokensService.generateForceRestPassword();
@@ -442,7 +442,7 @@ export class UserService {
     userId: string,
     dto: UserChangePasswordDTO
   ): Promise<void> {
-    const user = await this.repository.findById(userId);
+    const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError("User not found", 404);
     }
@@ -457,7 +457,7 @@ export class UserService {
 
   // Email Verification
   async sendVerificationCode(userId: string): Promise<void> {
-    const user = await this.repository.findById(userId);
+    const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError("User not found ", 404);
     }
@@ -519,7 +519,7 @@ export class UserService {
   // ]);
 
   async verifyEmail(userId: string, token: string): Promise<IUser | null> {
-    const user = await this.repository.findById(userId);
+    const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError("Invalid token", 400);
     }
@@ -618,7 +618,7 @@ export class UserService {
     if (existingUser) {
       throw new AppError("Email already in use", 409);
     }
-    const user = await this.repository.findById(userId);
+    const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError("User not found", 404);
     }
@@ -687,6 +687,12 @@ export class UserService {
   // }
   async updateName(userId: string, name: string): Promise<void> {
     await this.repository.updateName(userId, name);
+  }
+  async updateLoginNotificationSent(
+    userId: string,
+    result: boolean
+  ): Promise<void> {
+    await this.repository.updateLoginNotificationSent(userId, result);
   }
   // Admin Functions
   async getAllUsers(

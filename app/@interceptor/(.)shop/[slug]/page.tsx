@@ -15,10 +15,9 @@ const page = async ({ params }: Props) => {
     const { data } = await api.get("/shop/" + slug + "/metadata", {
       headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
     });
-    const product = data.data;
     return (
       <OverlayWrapper>
-        <ModelProductDetail product={product} />
+        <ModelProductDetail product={data} />
       </OverlayWrapper>
     );
   } catch (error: any) {

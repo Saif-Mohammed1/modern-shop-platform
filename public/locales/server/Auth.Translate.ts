@@ -29,10 +29,14 @@ export const AuthTranslate = {
         success:
           "Verification code sent successfully. Please check your email.",
       },
-      updateName:{
+      updateName: {
         success: "Name updated successfully",
-        fail: "Failed to update name"
-      }
+        fail: "Failed to update name",
+      },
+      updateLoginNotificationSent: {
+        success: "LoginNotificationSent updated successfully",
+        fail: "Failed to update LoginNotificationSent",
+      },
     },
     userService: {
       authenticateUser: {
@@ -87,10 +91,14 @@ export const AuthTranslate = {
           "Код підтвердження успішно відправлено. Будь ласка, перевірте свою електронну пошту.",
       },
 
-      updateName:{
+      updateName: {
         success: "Ім'я успішно оновлено",
-        fail: "Не вдалося оновити ім'я"
-      }
+        fail: "Не вдалося оновити ім'я",
+      },
+      updateLoginNotificationSent: {
+        success: "LoginNotificationSent успішно оновлено",
+        fail: "Не вдалося оновити LoginNotificationSent",
+      },
     },
     userService: {
       authenticateUser: {

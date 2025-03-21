@@ -1,3 +1,5 @@
+import { ProductType } from "./products.types";
+
 export interface FavoriteQueryConfig {
   query: URLSearchParams;
   // query?: Record<string, any>;
@@ -6,3 +8,8 @@ export interface FavoriteQueryConfig {
   // sort?: string;
   populate?: boolean;
 }
+export type WishlistType = {
+  productId: ProductType;
+  userId: string;
+  _id?: string;
+};

@@ -277,7 +277,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
           {accountSettingsTranslate[lang].devices.title}
         </h1>{" "}
         <div className="max-h-[50vh] md:max-h-[70vh] overflow-y-auto">
-          {devicesList && devicesList.length > 1 ? (
+          {devicesList && devicesList.length ? (
             devicesList.map((device) => (
               <DeviceInfoSection
                 key={device._id}

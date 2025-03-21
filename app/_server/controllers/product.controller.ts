@@ -131,7 +131,10 @@ class ProductController {
       if (!req.slug) {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
-      const product = await this.productService.getProductBySlug(req?.slug);
+      const product = await this.productService.getProductBySlug(req?.slug, {
+        populate: true,
+        select: "rating comment userId createdAt",
+      });
       const distribution = product?._id
         ? await this.reviewService.getRatingDistributionByProductId(
             product._id.toString()
@@ -151,7 +154,7 @@ class ProductController {
         req?.slug
       );
 
-      return NextResponse.json({ product }, { status: 200 });
+      return NextResponse.json(product, { status: 200 });
     } catch (err) {
       throw err;
     }

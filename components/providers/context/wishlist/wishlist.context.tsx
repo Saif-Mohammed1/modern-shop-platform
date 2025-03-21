@@ -6,11 +6,8 @@ import { ProductType } from "@/app/lib/types/products.types";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { useUser } from "../user/user.context";
-export type WishlistType = {
-  productId: ProductType;
-  userId: string;
-  _id?: string;
-};
+import { WishlistType } from "@/app/lib/types/wishList.types";
+
 type wishlistContextType = {
   wishlist: WishlistType[];
   toggleWishlist: (product: ProductType) => Promise<void>;
@@ -32,7 +29,7 @@ export const WishlistProvider = ({
   const getMyWishList = async () => {
     try {
       const response = await api.get("/customers/wishlist");
-      setWishlist(response.data.docs);
+      return response.data.docs || [];
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(
@@ -48,7 +45,7 @@ export const WishlistProvider = ({
       if (user) {
         try {
           const data = await getMyWishList();
-          setWishlist(data ?? []);
+          setWishlist(data);
         } catch (error: unknown) {
           if (error instanceof Error) {
             toast.error(
@@ -87,19 +84,21 @@ export const WishlistProvider = ({
             accountWishlistTranslate[lang].WishListCard.functions
               .handleWishlistClick.removed
           );
+        } else {
+          setWishlist((prevWishlist) => [
+            ...prevWishlist,
+            {
+              productId: product,
+              userId: user._id.toString(),
+            },
+          ]);
+
+          await api.post("/customers/wishlist/" + product._id);
+          toast.success(
+            accountWishlistTranslate[lang].WishListCard.functions
+              .handleWishlistClick.success
+          );
         }
-        setWishlist((prevWishlist) => [
-          ...prevWishlist,
-          {
-            productId: product,
-            userId: user._id.toString(),
-          },
-        ]);
-        toast.success(
-          accountWishlistTranslate[lang].WishListCard.functions
-            .handleWishlistClick.success
-        );
-        await api.post("/customers/wishlist/" + product._id);
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(error.message);
@@ -107,7 +106,7 @@ export const WishlistProvider = ({
           toast.error(accountWishlistTranslate[lang].errors.global);
         }
         const data = await getMyWishList();
-        setWishlist(data ?? []);
+        setWishlist(data);
         throw error;
       }
     }

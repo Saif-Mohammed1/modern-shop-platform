@@ -22,15 +22,25 @@ export type DeviceInfo = {
   location: GeoLocation;
   fingerprint: string;
 };
-// old db.types.ts
-export type sessionInfo = {
+export interface sessionInfo {
   _id: string;
-  tokenHash: string;
-  user: string;
+  userId: string; // Reference to the User Model
   deviceInfo: DeviceInfo;
-  status: RefreshTokenStatus;
-  expiresAt: Date;
+  hashedToken: string;
+  isActive: boolean; // Track if session is valid or revoked
+  revokedAt?: Date;
+  expiresAt: Date; // Set session expiration date
   lastUsedAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
+}
+// old db.types.ts
+// export type sessionInfo = {
+//   _id: string;
+//   tokenHash: string;
+//   user: string;
+//   deviceInfo: DeviceInfo;
+//   status: RefreshTokenStatus;
+//   expiresAt: Date;
+//   lastUsedAt: Date;
+//   createdAt: Date;
+//   updatedAt: Date;
+// };

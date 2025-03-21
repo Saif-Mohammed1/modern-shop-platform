@@ -1,13 +1,17 @@
 import { SecurityDashboardData } from "@/app/lib/types/security.types";
-import { DashboardRepository } from "../repositories/BaseDashboardRepository";
+import { DashboardRepository } from "../repositories/dashboard.repository";
 
 export class SecurityService {
   constructor(private readonly repo: DashboardRepository) {}
 
-  async getSecurityAnalytics(): Promise<SecurityDashboardData> {
-    const rawData = await this.repo.getSecurityAnalytics();
-    return this.transformData(rawData);
+  async getSecurityAnalytics(): Promise<void> {
+    // const rawData = await this.repo.getSecurityAnalytics();
+    // return this.transformData(rawData);
   }
+  // async getSecurityAnalytics(): Promise<SecurityDashboardData> {
+  //   // const rawData = await this.repo.getSecurityAnalytics();
+  //   // return this.transformData(rawData);
+  // }
 
   private transformData(data: SecurityDashboardData): SecurityDashboardData {
     return {

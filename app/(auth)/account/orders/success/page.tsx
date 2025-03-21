@@ -17,8 +17,8 @@ const page = async () => {
     const { data } = await api.get("/customers/orders/latest", {
       headers: Object.fromEntries(headers().entries()), // convert headers to object
     });
-    const order = data.data;
-    return <OrderCompleted order={order} />;
+
+    return <OrderCompleted order={data} />;
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
 

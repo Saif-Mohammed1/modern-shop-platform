@@ -1,12 +1,9 @@
 import ErrorHandler from "@/app/_server/controllers/error.controller";
 import reviewController from "@/app/_server/controllers/review.controller";
-import {
-  checkReview,
-  createReviews,
-} from "@/app/_server/controllers/reviewsController";
+
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
 export const GET = async (
   req: NextRequest,

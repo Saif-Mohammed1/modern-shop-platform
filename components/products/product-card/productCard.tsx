@@ -14,17 +14,14 @@ import StarRatings from "react-star-ratings";
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { addToCartItems } = useCartItems();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const [isInWishlistState, setIsInWishlistState] = useState(
-    isInWishlist(product._id)
-  );
+
   const toggleWishlistHandler = async () => {
     let toastLoading;
     try {
       toastLoading = toast.loading(
-        shopPageTranslate[lang].productCard.toggleWishlist.loadingRemoving
+        shopPageTranslate[lang].productCard.toggleWishlist.processing
       );
       await toggleWishlist(product);
-      setIsInWishlistState(!isInWishlistState);
     } catch (error: unknown) {
       toast.error(
         error instanceof Error
@@ -157,7 +154,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
             aria-label="Add to Wishlist"
             onClick={toggleWishlistHandler}
           >
-            {isInWishlistState ? <AiFillHeart /> : <AiOutlineHeart />}
+            {isInWishlist(product._id) ? <AiFillHeart /> : <AiOutlineHeart />}{" "}
           </button>
           <button
             className="text-gray-500 hover:text-gray-600 transition-colors"

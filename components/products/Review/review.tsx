@@ -53,9 +53,9 @@ const ReviewSection = ({
       const { data } = await api.get(
         `/customers/reviews/${productId}/?page=${newPage}`
       );
-      setMoreResults((prev) => [...prev, ...data.data]);
+      setMoreResults((prev) => [...prev, ...data.docs]);
       setPage(newPage);
-      setShowMore(data.hasNextPage);
+      setShowMore(data.meta.hasNext);
     } finally {
       setLoading(false);
     }

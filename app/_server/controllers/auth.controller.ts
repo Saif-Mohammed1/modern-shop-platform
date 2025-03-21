@@ -28,6 +28,7 @@ class AuthController {
 
       const result = UserValidation.validateLogin(body);
       const deviceInfo = await getDeviceFingerprint(req);
+
       const authResult = await this.userService.authenticateUser(
         result.email,
         result.password,
@@ -233,6 +234,29 @@ class AuthController {
       throw error;
     }
   }
+  async updateLoginNotificationSent(req: NextRequest) {
+    try {
+      if (!req.user?._id) {
+        throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+      }
+      const body = await req.json();
+      const result = UserValidation.validateLoginNotificationSent(
+        body.loginNotificationSent
+      );
+      await this.userService.updateLoginNotificationSent(
+        req.user?._id.toString(),
+        result
+      );
+      return NextResponse.json(
+        {
+          message: AuthTranslate[lang].auth.updateLoginNotificationSent.success,
+        },
+        { status: 200 }
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async getActiveSessions(req: NextRequest) {
     try {
@@ -242,7 +266,7 @@ class AuthController {
       const sessions = await this.userService.getActiveSessions(
         req.user?._id.toString()
       );
-      return NextResponse.json({ sessions }, { status: 200 });
+      return NextResponse.json(sessions, { status: 200 });
     } catch (error) {
       throw error;
     }

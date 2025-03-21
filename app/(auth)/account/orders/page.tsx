@@ -6,10 +6,7 @@ import api from "@/app/lib/utilities/api";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import {
-  accountOrdersTranslate,
-  OrdersType,
-} from "@/public/locales/client/(auth)/account/ordersTranslate";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 export const metadata: Metadata = {
   title: accountOrdersTranslate[lang].metadata.title,
@@ -33,7 +30,7 @@ const page = async ({ searchParams }: Props) => {
         headers: Object.fromEntries(headers().entries()), //convert headers to javascript object
       }
     );
-    const orders = data.data;
+    const orders = data.docs;
     // return <OrderHistory ordersList={orders} />;
     return (
       <div className="container mx-auto px-4 py-6">
@@ -44,7 +41,7 @@ const page = async ({ searchParams }: Props) => {
         {/* <OrderHistory ordersList={orders} />; */}
 
         {orders.length > 0 ? (
-          <UserOrderTracking orders={orders} hasNextPage={data.hasNextPage} />
+          <UserOrderTracking orders={orders} hasNextPage={data.meta.hasNext} />
         ) : (
           // <h1 className="text-3xl font-semibold mb-6 text-center">
           <h1 className="empty">

@@ -24,9 +24,9 @@ const ReviewHistory = ({
       setLoading(true);
       const newPage = page + 1;
       const { data } = await api.get(`/customers/reviews?page=${newPage}`);
-      setMoreResults([...moreResults, ...data.data]);
+      setMoreResults([...moreResults, ...data.docs]);
       setPage(newPage);
-      setShowMore(data.hasNextPage);
+      setShowMore(data.meta.hasNext);
     } catch (error) {
       return null;
     } finally {
@@ -76,12 +76,12 @@ const ReviewHistory = ({
                 >
                   <Link
                     className="text-blue-500"
-                    href={`/shop/${review.product.slug}`}
+                    href={`/shop/${review.productId.slug}`}
                     target="_blank"
                   >
                     <h2 className="text-xl font-semibold mb-2">
                       {accountReviewsTranslate[lang].review.product}:{" "}
-                      {review.product.name}
+                      {review.productId.name}
                     </h2>
                   </Link>
                   <p className="mb-2">

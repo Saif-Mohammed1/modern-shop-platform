@@ -697,7 +697,7 @@ export const createRandomStripeSession = async (
 
   // return await Promise.all(req);
   const responses = await Promise.all(req);
-  responses.forEach(async (res, index) => {
+  responses.forEach(async (res) => {
     const response = await res.json();
     // console.log(`Response ${index + 1}:`, response);
     try {
@@ -751,7 +751,10 @@ export const automateStripeCheckout = async (checkoutUrl: string) => {
     // Wait for the payment form to be visible
     await page.waitForSelector(".App-Payment");
     // await page.waitForSelector("#cardNumber");
-    const cardExpiryData = faker.helpers.fromRegExp("[0-9]{2}/2[5-9]");
+    const cardExpiryData = `${faker.number.int({
+      min: 1,
+      max: 12,
+    })}/${faker.number.int({ min: 25, max: 35 })}`;
     // Fill payment details (No iframe required)
     await page.type("#cardNumber", STRIPE_TEST_CARD);
     await page.type("#cardExpiry", cardExpiryData);

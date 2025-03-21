@@ -1,5 +1,10 @@
 const deviceInfoTranslate = {
   en: {
+    confirmRevoke: {
+      title: "Revoke Device Access",
+      message:
+        "Are you sure you want to revoke this device's access? This action cannot be undone.",
+    },
     title: "My Devices",
     functions: {
       handleDelete: {
@@ -15,12 +20,16 @@ const deviceInfoTranslate = {
     },
 
     actions: {
+      confirmRevoke: "Revoke Access",
+
       revoke: "Revoke Session",
       renew: "Renew Session",
     },
 
     noDevices: "No devices found",
     details: {
+      expired: "Expired Session",
+
       ip: "IP Address",
       lastActive: "Last Active",
       expires: "Expires",
@@ -32,6 +41,11 @@ const deviceInfoTranslate = {
     },
   },
   uk: {
+    confirmRevoke: {
+      title: "Скасувати доступ до пристрою",
+      message:
+        "Ви впевнені, що хочете скасувати доступ до цього пристрою? Цю дію не можна скасувати.",
+    },
     title: "Мої пристрої",
     functions: {
       handleDelete: {
@@ -47,12 +61,14 @@ const deviceInfoTranslate = {
     },
 
     actions: {
+      confirmRevoke: "Скасувати доступ",
       revoke: "Скасувати сесію",
       renew: "Оновити сесію",
     },
 
     noDevices: "Пристрої не знайдено",
     details: {
+      expired: "Закінчився термін сесії",
       ip: "IP адреса",
       lastActive: "Остання активність",
       expires: "Закінчується",

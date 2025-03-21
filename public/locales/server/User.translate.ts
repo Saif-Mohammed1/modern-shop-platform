@@ -8,6 +8,7 @@ export const UserTranslate = {
     forceRestPassword: "Password reset",
     lockUserAccount: "User locked",
     unlockUserAccount: "User unlocked",
+    updatePassword: "Password updated",
     editUsers: {
       form: {
         NoDeviceInfo: "No Device Info",
@@ -23,6 +24,8 @@ export const UserTranslate = {
     forceRestPassword: "Скидання пароля",
     lockUserAccount: "Користувач заблокований",
     unlockUserAccount: "Користувач розблокований",
+
+    updatePassword: "Пароль оновлено",
 
     editUsers: {
       form: {

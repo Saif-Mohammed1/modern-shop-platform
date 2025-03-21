@@ -71,7 +71,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
       },
       searchFields: ["name", "description"],
       enableTextSearch: true,
-      allowedSorts: ["createdAt", "updatedAt", "price"],
+      allowedSorts: ["createdAt", "updatedAt", "price", "ratingsAverage"],
       fixedFilters: !isAdmin ? { active: true } : undefined,
     };
 
@@ -97,18 +97,37 @@ export class ProductRepository extends BaseRepository<IProduct> {
   }
   async getProductBySlug(
     slug: string,
+    options?: { populate?: boolean; select?: string },
     session?: ClientSession
   ): Promise<IProduct | null> {
-    return await this.model
-      .findOne({ slug, active: true })
-      .populate({
-        path: "reviews",
-        select: "rating comment userId createdAt",
-        options: { sort: { createdAt: -1 }, limit: 5 }, // Ensure sorting & limiting
-        model: ReviewModel,
-      })
-      .session(session ?? null);
-    // .lean({ virtuals: true }); // This ensures virtuals are included
+    // return await this.model
+    //   .findOne({ slug, active: true })
+    //   .populate({
+    //     path: "reviews",
+    //     select: "rating comment userId createdAt",
+    //     options: { sort: { createdAt: -1 }, limit: 5 }, // Ensure sorting & limiting
+    //     model: ReviewModel,
+    //   })
+    //   .session(session ?? null);
+    // // .lean({ virtuals: true }); // This ensures virtuals are included
+    const query = this.model.findOne({ slug, active: true });
+    if (options?.populate) {
+      query.populate([
+        {
+          path: "reviews",
+          select: options.select,
+          options: { sort: { createdAt: -1 }, limit: 5 }, // Ensure sorting & limiting
+
+          model: ReviewModel,
+          populate: {
+            path: "userId",
+            model: "User", // Your user model name
+            select: "name -_id", // Select only the name field
+          },
+        },
+      ]);
+    }
+    return await query.session(session ?? null);
   }
 
   async updateProductImages(

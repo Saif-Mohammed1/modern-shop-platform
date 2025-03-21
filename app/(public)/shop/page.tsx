@@ -51,7 +51,9 @@ const queryParams = async (searchParams: SearchParams) => {
     url.append("limit", searchParams.limit);
   }
   if (searchParams.rating !== undefined) {
-    url.append("rating", searchParams.rating);
+    url.append("rating[gte]", searchParams.rating);
+    url.append("rating[lte]", "5");
+    // url.append("sort", "-ratingsAverage");
   }
   // if (searchParams.min !== undefined) {
   //   url.append("price[gte]", searchParams.min);

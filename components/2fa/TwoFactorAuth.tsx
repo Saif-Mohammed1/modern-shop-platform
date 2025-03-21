@@ -127,7 +127,7 @@ const TwoFactorAuthDashboard = () => {
         </h1>
       </div>
 
-      {!session?.user?.isTwoFactorAuthEnabled && view === "main" ? (
+      {!session?.user?.twoFactorEnabled && view === "main" ? (
         <div className="space-y-6">
           <div className="p-4 bg-blue-50 rounded-lg">
             <p className="text-gray-600">
