@@ -15,7 +15,7 @@ export const AddressTranslate = {
     },
     phone: {
       required: "Phone is required",
-      invalid: "Invalid Ukrainian phone number",
+      invalid: "Invalid Ukrainian phone number it should be like +380xxxxxxxxx",
     },
     country: {
       required: "Country is required",
@@ -43,7 +43,8 @@ export const AddressTranslate = {
     },
     phone: {
       required: "Телефон обов'язковий",
-      invalid: "Недійсний український номер телефону",
+      invalid:
+        "Недійсний український номер телефону, він повинен бути на кшталт +380xxxxxxxxx",
     },
     country: {
       required: "Країна обов'язкова",

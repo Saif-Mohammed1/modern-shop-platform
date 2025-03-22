@@ -149,7 +149,11 @@ export const addressTranslate = {
       },
     },
     addAddress: addAddress.en,
+    editAddress: {
+      title: "Edit Address",
+    },
     button: {
+      loadMore: "Load More",
       addNewAddress: "Add New Address",
       cancel: "Cancel",
       saveAddress: "Save Address",
@@ -188,7 +192,11 @@ export const addressTranslate = {
       },
     },
     addAddress: addAddress.uk,
+    editAddress: {
+      title: "Редагувати адресу",
+    },
     button: {
+      loadMore: "Завантажити ще",
       addNewAddress: "Додати нову адресу",
       cancel: "Скасувати",
       saveAddress: "Зберегти адресу",

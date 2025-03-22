@@ -5,17 +5,18 @@ import {
 } from "@/public/locales/client/(auth)/account/addressTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { getCities } from "countries-cities";
+import Input from "@/components/ui/Input";
 
 type AddAddressComponentProps = {
-  newAddress: Partial<AddressType>;
+  newAddress: Omit<AddressType, "_id">;
   onChange: (e: Event) => void;
-  handleAddAddress: () => void;
+  handleSubmitAddress: () => void;
   handleCancelAddAddress: () => void;
 };
 const AddAddressComponent = ({
   newAddress,
   onChange,
-  handleAddAddress,
+  handleSubmitAddress,
   handleCancelAddAddress,
 }: AddAddressComponentProps) => {
   const ukraineCities = getCities("Ukraine");
@@ -25,8 +26,18 @@ const AddAddressComponent = ({
       <h3 className="text-xl font-semibold mb-4">
         {addressTranslate[lang].addAddress.title}
       </h3>
+      <Input
+        label={addressTranslate[lang].addAddress.form.street.label}
+        name="street"
+        type="text"
+        value={newAddress.street}
+        onChange={onChange}
+        className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
+        placeholder={addressTranslate[lang].addAddress.form.street.placeholder}
+        icon
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Street */}
+        {/* Street
         <div className="col-span-1">
           <label className="block text-gray-700">
             {addressTranslate[lang].addAddress.form.street.label}
@@ -41,7 +52,7 @@ const AddAddressComponent = ({
               addressTranslate[lang].addAddress.form.street.placeholder
             }
           />
-        </div>
+        </div> */}
 
         {/* City */}
         <div className="col-span-1">
@@ -144,7 +155,7 @@ const AddAddressComponent = ({
           {addressTranslate[lang].button.cancel}
         </button>
         <button
-          onClick={handleAddAddress}
+          onClick={handleSubmitAddress}
           className="mt-4 px-6 py-2 bg-green-500 text-white font-medium rounded hover:bg-green-600 transition duration-200"
         >
           {addressTranslate[lang].button.saveAddress}

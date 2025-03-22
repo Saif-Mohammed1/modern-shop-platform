@@ -11,8 +11,9 @@ import { AddressType } from "@/public/locales/client/(auth)/account/addressTrans
 import { Event } from "@/app/lib/types/products.types";
 import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-const AddAddressComponent = dynamic(
-  () => import("@/components/customers/address/addAddressReuseableComponent")
+import { AddressFormValues } from "@/components/customers/address/AddressForm";
+const AddressForm = dynamic(
+  () => import("@/components/customers/address/AddressForm")
 );
 
 const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
@@ -22,14 +23,14 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
   const [selectedAddress, setSelectedAddress] = useState(
     addresses.length ? addresses[0] : ""
   );
-  const [newAddress, setNewAddress] = useState({
-    street: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    phone: "",
-    country: "Ukraine",
-  });
+  // const [newAddress, setNewAddress] = useState({
+  //   street: "",
+  //   city: "",
+  //   state: "",
+  //   postalCode: "",
+  //   phone: "",
+  //   country: "Ukraine",
+  // });
   const [showAddressForm, setShowAddressForm] = useState(false);
 
   // Calculate subtotal of cart items
@@ -59,44 +60,25 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
     }
   };
 
-  const handleInputChange = (e: Event) => {
-    const { name, value } = e.target;
-    setNewAddress((prevAddress) => ({ ...prevAddress, [name]: value }));
-  };
+  // const handleInputChange = (e: Event) => {
+  //   const { name, value } = e.target;
+  //   setNewAddress((prevAddress) => ({ ...prevAddress, [name]: value }));
+  // };
 
-  const handleAddNewAddress = async () => {
+  const handleFormSubmit = async (data: AddressFormValues) => {
     let toastLoading;
-
-    if (
-      !newAddress.street ||
-      !newAddress.city ||
-      !newAddress.state ||
-      !newAddress.postalCode ||
-      !newAddress.phone ||
-      !newAddress.country
-    ) {
-      toast.error(checkoutPageTranslate[lang].errors.requiredField);
-      return;
-    }
 
     try {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.loading
       );
-      const { data } = await api.post("/customers/address", newAddress);
-      setAddresses((prevAddresses) => [...prevAddresses, data.data]);
+      const { data: newAddress } = await api.post("/customers/address", data);
+      setAddresses((prevAddresses) => [...prevAddresses, newAddress]);
       toast.success(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.success
       );
-      setNewAddress({
-        street: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        phone: "",
-        country: "Ukraine",
-      });
-      setSelectedAddress(data.data);
+
+      setSelectedAddress(newAddress);
       setShowAddressForm(false);
     } catch (error: unknown) {
       const errorMessage =
@@ -110,17 +92,6 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
     }
   };
 
-  const handleCancelAddAddress = () => {
-    setNewAddress({
-      street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      phone: "",
-      country: "Ukraine",
-    });
-    setShowAddressForm(false);
-  };
   const handelCheckout = async () => {
     let toastLoading;
     if (!selectedAddress) {
@@ -193,78 +164,10 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
 
         {/* Toggle Address Form */}
         {showAddressForm ? (
-          /** 
-            //   <div className="mb-4">
-            //     <input
-            //       type="text"
-            //       name="street"
-            //       value={newAddress.street}
-            //       onChange={handleInputChange}
-            //       placeholder="Street"
-            //       className="w-full p-2 border rounded-md mb-2"
-            //     />
-            //     <input
-            //       type="text"
-            //       name="city"
-            //       value={newAddress.city}
-            //       onChange={handleInputChange}
-            //       placeholder="City"
-            //       className="w-full p-2 border rounded-md mb-2"
-            //     />
-            //     <input
-            //       type="text"
-            //       name="state"
-            //       value={newAddress.state}
-            //       onChange={handleInputChange}
-            //       placeholder="State"
-            //       className="w-full p-2 border rounded-md mb-2"
-            //     />
-            //     <input
-            //       type="text"
-            //       name="postalCode"
-            //       value={newAddress.postalCode}
-            //       onChange={handleInputChange}
-            //       placeholder="Postal Code"
-            //       className="w-full p-2 border rounded-md mb-2"
-            //     />
-            //     <input
-            //       type="text"
-            //       name="phone"
-            //       value={newAddress.phone}
-            //       onChange={handleInputChange}
-            //       placeholder="Phone"
-            //       className="w-full p-2 border rounded-md mb-2"
-            //     />
-            //     <input
-            //       type="text"
-            //       name="country"
-            //       value={"Ukraine"}
-            //       readOnly
-            //       placeholder="Country"
-            //       className="w-full p-2 border rounded-md mb-2"
-            //     />
-            //     <div className="flex gap-4">
-            //       <button
-            //         onClick={handleAddNewAddress}
-            //         className="bg-blue-500 text-white px-4 py-2 rounded-md"
-            //       >
-            //         Add Address
-            //       </button>
-            //       <button
-            //         onClick={handleCancelAddAddress}
-            //         className="bg-red-500 text-white px-4 py-2 rounded-md"
-            //       >
-            //         Cancel
-            //       </button>
-            //     </div>
-            //   </div>
-
-          */
-          <AddAddressComponent
-            handleAddAddress={handleAddNewAddress}
-            onChange={handleInputChange}
-            newAddress={newAddress}
-            handleCancelAddAddress={handleCancelAddAddress}
+          <AddressForm
+            onSubmit={handleFormSubmit}
+            onCancel={() => setShowAddressForm(false)}
+            // defaultValues={
           />
         ) : (
           <button

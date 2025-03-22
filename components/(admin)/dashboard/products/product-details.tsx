@@ -3,6 +3,7 @@ import { useFormContext } from "react-hook-form";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { FaBox, FaAlignLeft } from "react-icons/fa";
+import Input from "@/components/ui/Input";
 
 export default function ProductDetails({
   editMode = false,
@@ -21,6 +22,7 @@ export default function ProductDetails({
           {productsTranslate.products[lang].editMode}
         </div>
       )}
+
       <div className="form-group">
         <label className="form-label">
           <FaBox className="form-icon" />

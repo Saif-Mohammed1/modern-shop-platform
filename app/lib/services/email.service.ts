@@ -1,7 +1,8 @@
 // src/lib/services/email.service.ts
 import nodemailer from "nodemailer";
 import { DeviceInfo, GeoLocation } from "../types/session.types";
-import { UserService } from "@/app/_server/services/user.service";
+import { UserRepository } from "@/app/_server/repositories/user.repository";
+import UserModel from "@/app/_server/models/User.model";
 interface EmailConfig {
   service: string;
   auth: {
@@ -71,7 +72,7 @@ class EmailService {
   private readonly appName: string;
   private readonly appUrl: string;
   private readonly senderEmail: string;
-  private readonly userServices = new UserService();
+  private readonly userRepo = new UserRepository(UserModel);
   constructor(private config: EmailConfig) {
     this.validateEnvironment();
     this.transporter = nodemailer.createTransport(config);
@@ -383,7 +384,7 @@ class EmailService {
         attachments: this.generateAlertAttachments(type),
       });
 
-      await this.userServices.logSecurityAlert(userEmail, type, {
+      await this.userRepo.logSecurityAlert(userEmail, type, {
         success: true,
 
         ipAddress,

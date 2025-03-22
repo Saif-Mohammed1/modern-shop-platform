@@ -10,6 +10,7 @@ import { useCartItems } from "../providers/context/cart/cart.context";
 import { useWishlist } from "../providers/context/wishlist/wishlist.context";
 import StarRatings from "react-star-ratings";
 import { FaArrowRightLong } from "react-icons/fa6";
+import Input from "./Input";
 // import { AnimatePresence, motion } from "framer-motion";
 // import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,9 +23,10 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
   // const [isWishlisted, setIsWishlisted] = useState(false);
   // const [isZoomed, setIsZoomed] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const stock = product.stock - (product.reserved || 0);
   // Modify the handleAddToCart function
   const handleAddToCart = async () => {
-    if (product.stock === 0) {
+    if (stock === 0) {
       toast.error(shopPageTranslate[lang].functions.handleAddToCart.outOfStock);
       return;
     }
@@ -173,14 +175,14 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             >
               -
             </button>
-            <input
+            <Input
               type="number"
               min="1"
-              max={product.stock}
+              max={stock}
               value={quantity}
               onChange={(e) => {
                 const value = Math.min(
-                  product.stock,
+                  stock,
                   Math.max(1, parseInt(e.target.value) || 1)
                 );
                 setQuantity(value);
@@ -188,15 +190,14 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
               className="w-16 text-center border rounded"
             />
             <button
-              onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+              onClick={() => setQuantity(Math.min(stock, quantity + 1))}
               className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
             >
               +
             </button>
           </div>
           <span className="text-sm text-gray-500">
-            {product.stock}{" "}
-            {shopPageTranslate[lang].modelProductDetails.inStock}
+            {stock} {shopPageTranslate[lang].modelProductDetails.inStock}
           </span>
         </div>
         <div

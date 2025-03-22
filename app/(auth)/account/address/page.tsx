@@ -22,7 +22,7 @@ const page = async () => {
     const address = data.docs;
 
     return (
-      <AddressBook addressList={address} hasNextPage={data.meta.hasNext} />
+      <AddressBook initialAddresses={address} hasNextPage={data.meta.hasNext} />
     );
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;

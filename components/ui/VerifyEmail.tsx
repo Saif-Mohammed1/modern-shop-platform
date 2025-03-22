@@ -6,15 +6,17 @@ import { lang } from "@/app/lib/utilities/lang";
 import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import Input from "./Input";
+import { useRouter } from "next/navigation";
 
 const VerifyEmail = () => {
-  const [code, setCode] = useState([..."".repeat(8)]);
+  // const [code, setCode] = useState<string[]>([..." ".repeat(8)]);// not work
+  const [code, setCode] = useState<string[]>(Array(8).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const { data: session, update } = useSession();
+  const router = useRouter();
   const handleChange = (index: number, value: string) => {
-    // if (!/^\d*$/.test(value)) return;
-    if (!/^[a-zA-Z0-9]{8}$/.test(value)) return;
-
+    // if (!/^[a-zA-Z0-9]{8}$/.test(value)) return;
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
@@ -22,51 +24,28 @@ const VerifyEmail = () => {
     if (value && index < code.length - 1) {
       inputs.current[index + 1]?.focus();
     }
-
-    // if (newCode.every((c) => c !== "")) {
-    //   document.getElementById("verifyCode")?.click();
-    //   //   handleSubmit(newCode.join(""));
-    // }
   };
 
-  //   const handlePaste = (e: React.ClipboardEvent) => {
-  //     e.preventDefault();
-  //     const pastedData = e.clipboardData
-  //       .getData("text/plain")
-  //       .slice(0, code.length);
-  //     if (/^\d+$/.test(pastedData)) {
-  //       const newCode = pastedData.split("").slice(0, code.length);
-  //       setCode(newCode);
-  //       if (code.every((c) => c !== "")) {
-  //         document.getElementById("verifyCode")?.click();
-  //       }
-  //       //   onVerify(newCode.join(""));
-  //       //   handleSubmit(newCode.join(""));
-  //     }
-  //   };
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pastedData = e.clipboardData
       .getData("text/plain")
       .slice(0, code.length);
-    if (/^\d+$/.test(pastedData)) {
+
+    if (/^[a-zA-Z0-9]+$/.test(pastedData)) {
+      // Allow alphanumeric
       const pastedArray = pastedData.split("").slice(0, code.length);
-      // Create a new array with exactly 7 elements, filling with pasted data or empty strings
       const newCode = Array.from({ length: code.length }, (_, i) =>
         i < pastedArray.length ? pastedArray[i] : ""
       );
+
       setCode(newCode);
-      //   // Check the newCode array for submission
-      //   if (newCode.every((c) => c !== "")) {
-      //     const form = document.getElementById(
-      //       "verifyCode"
-      //     ) as HTMLFormElement | null;
-      //     if (form) {
-      //       form.dispatchEvent(
-      //         new Event("submit", { cancelable: true, bubbles: true })
-      //       );
-      //     }
-      //   }
+
+      // Focus management
+      const nextFocusIndex = Math.min(pastedArray.length, code.length - 1);
+      setTimeout(() => {
+        inputs.current[nextFocusIndex]?.focus();
+      }, 0); // Small timeout to ensure state update
     }
   };
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,10 +61,15 @@ const VerifyEmail = () => {
         ...session,
         user: {
           ...session?.user,
-          emailVerify: true,
+
+          verification: {
+            ...session?.user.verification,
+            emailVerified: true,
+          },
         },
       });
       toast.success(message || VerifyEmailTranslate[lang].VerifyEmail.success);
+      router.push("/");
     } catch (error) {
       toast.error(
         (error as any).message || VerifyEmailTranslate[lang].VerifyEmail.fail
@@ -139,7 +123,7 @@ const VerifyEmail = () => {
       >
         <div className="flex justify-center gap-2 mb-6">
           {code.map((digit, index) => (
-            <input
+            <Input
               key={index}
               ref={(el) => {
                 inputs.current[index] = el;

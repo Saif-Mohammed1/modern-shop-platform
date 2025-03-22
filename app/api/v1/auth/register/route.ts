@@ -5,6 +5,7 @@ import { type NextRequest } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   try {
+    console.log("im here+++++++++++++");
     await connectDB();
 
     return await authController.register(req);

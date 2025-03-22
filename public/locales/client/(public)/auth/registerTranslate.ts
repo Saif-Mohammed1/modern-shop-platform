@@ -18,8 +18,8 @@ export const registerTranslate = {
     form: {
       title: "Create Your Account",
       name: {
-        label: "Name",
-        placeholder: "Enter Your Name",
+        label: "Full Name",
+        placeholder: "Enter Your Full Name",
       },
       email: {
         label: "Email Address",
@@ -56,8 +56,8 @@ export const registerTranslate = {
     form: {
       title: "Створіть свій обліковий запис",
       name: {
-        label: "Ім'я",
-        placeholder: "Введіть своє ім'я",
+        label: "Повне ім'я",
+        placeholder: "Введіть своє повне ім'я",
       },
       email: {
         label: "Адреса електронної пошти",

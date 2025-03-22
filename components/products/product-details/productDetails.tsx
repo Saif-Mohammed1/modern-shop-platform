@@ -21,6 +21,7 @@ import { useUser } from "@/components/providers/context/user/user.context";
 import api from "@/app/lib/utilities/api";
 import ComponentLoading from "@/components/spinner/componentLoading";
 import { formatDateTime } from "@/app/lib/utilities/formatDate";
+import Input from "@/components/ui/Input";
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
 
@@ -265,7 +266,7 @@ const ProductDetail = ({
                 >
                   -
                 </button>
-                <input
+                <Input
                   type="number"
                   value={quantity}
                   min={1}

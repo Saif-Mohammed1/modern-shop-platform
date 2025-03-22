@@ -17,7 +17,7 @@ const TotpInput: FC<TotpInputProps> = ({
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
+    // if (!/^\d*$/.test(value)) return;
 
     const newCode = [...code];
     newCode[index] = value;
@@ -35,11 +35,11 @@ const TotpInput: FC<TotpInputProps> = ({
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text/plain").slice(0, 6);
-    if (/^\d+$/.test(pastedData)) {
-      const newCode = pastedData.split("").slice(0, 6);
-      setCode(newCode);
-      onVerify(newCode.join(""));
-    }
+    // if (/^\d+$/.test(pastedData)) {
+    const newCode = pastedData.split("").slice(0, 6);
+    setCode(newCode);
+    onVerify(newCode.join(""));
+    // }
   };
 
   const handleSubmit = (finalCode?: string) => {
