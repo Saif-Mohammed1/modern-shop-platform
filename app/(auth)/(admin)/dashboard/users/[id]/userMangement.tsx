@@ -238,7 +238,7 @@ function UserProfileCard({ user }: { user: User }) {
                 {user.verification.emailVerified ? (
                   <AiOutlineCheckCircle className="text-green-600" size={16} />
                 ) : (
-                  <FiMail className="text-yellow-600" size={16} />
+                  <FiMail className="text-yellow-600 " size={16} />
                 )}
               </div>
               {user.phone && (
