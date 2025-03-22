@@ -131,7 +131,7 @@ const connectDB = async (): Promise<Connection> => {
   return cached.conn;
 };
 
-export default connectDB;
+// export default connectDB;
 
 const disconnectDB = async (): Promise<void> => {
   if (mongoose.connection.readyState === 0) {

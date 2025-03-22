@@ -1,8 +1,8 @@
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import userController from "@/app/_server/controllers/user.controller";
+import { type NextRequest } from "next/server";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { type NextRequest } from "next/server";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import userController from "@/app/_server/controllers/user.controller";
 
 export const DELETE = async (req: NextRequest) => {
   try {

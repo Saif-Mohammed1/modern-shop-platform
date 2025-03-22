@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
 
-import { DeviceInfo, GeoLocation } from "../types/session.types";
 import DeviceDetector from "device-detector-js"; // 725.2K (gzipped: 168.3K)
 import crypto from "crypto";
+import { DeviceInfo, GeoLocation } from "../types/session.types";
 import { TokensService } from "@/app/_server/services/tokens.service";
 const tokensService = new TokensService();
 export const getDeviceFingerprint = async (

@@ -1,8 +1,8 @@
-import authController from "@/app/_server/controllers/auth.controller";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
+import { type NextRequest } from "next/server";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { type NextRequest } from "next/server";
+import authController from "@/app/_server/controllers/auth.controller";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 
 export const POST = async (req: NextRequest) => {
   try {

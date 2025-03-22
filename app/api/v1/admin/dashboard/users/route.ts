@@ -1,9 +1,9 @@
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import userController from "@/app/_server/controllers/user.controller";
+import { type NextRequest } from "next/server";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
 import { UserRole } from "@/app/lib/types/users.types";
-import { type NextRequest } from "next/server";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import userController from "@/app/_server/controllers/user.controller";
 
 export const GET = async (req: NextRequest) => {
   try {

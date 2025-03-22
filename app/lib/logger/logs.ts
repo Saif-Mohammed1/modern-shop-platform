@@ -1,6 +1,6 @@
+import { type NextRequest } from "next/server";
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
-import { type NextRequest } from "next/server";
 
 import { v4 as uuidv4 } from "uuid";
 

@@ -1,8 +1,8 @@
-import ErrorHandler from "@/app/_server/controllers/error.controller";
+import { type NextRequest } from "next/server";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
 import twoFactorController from "@/app/_server/controllers/2fa.controller";
-import { type NextRequest } from "next/server";
 
 /**
 1. POST /api/auth/2fa - Handles 2FA setup initialization.

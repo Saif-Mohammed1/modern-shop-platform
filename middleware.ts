@@ -5,9 +5,9 @@
 //     },
 //   });
 
+import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
-import { NextResponse, type NextRequest } from "next/server";
 // import { rateLimitIp } from "./components/util/rateLimitIp";
 import { rateLimiter } from "./app/lib/utilities/rate-limiter";
 import { UserRole } from "./app/lib/types/users.types";

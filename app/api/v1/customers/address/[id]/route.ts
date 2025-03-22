@@ -1,9 +1,8 @@
-import addressController from "@/app/_server/controllers/address.controller";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
+import { type NextRequest } from "next/server";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { type NextRequest } from "next/server";
-
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import addressController from "@/app/_server/controllers/address.controller";
 export const PATCH = async (
   req: NextRequest,
   {

@@ -1,9 +1,8 @@
-import cartController from "@/app/_server/controllers/cart.controller";
-
-import ErrorHandler from "@/app/_server/controllers/error.controller";
+import { type NextRequest } from "next/server";
 import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import { type NextRequest } from "next/server";
+import ErrorHandler from "@/app/_server/controllers/error.controller";
+import cartController from "@/app/_server/controllers/cart.controller";
 
 export const POST = async (
   req: NextRequest,

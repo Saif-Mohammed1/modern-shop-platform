@@ -1,13 +1,13 @@
-import AppError from "@/app/lib/utilities/appError";
+import { NextRequest } from "next/server";
+import { connectDB } from "@/app/_server/db/db";
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies, headers } from "next/headers";
+import AppError from "@/app/lib/utilities/appError";
+import twoFactorController from "@/app/_server/controllers/2fa.controller";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { NextRequest } from "next/server";
-import twoFactorController from "@/app/_server/controllers/2fa.controller";
 
-import connectDB from "@/app/_server/db/db";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 import sessionController from "@/app/_server/controllers/session.controller";
 import authController from "@/app/_server/controllers/auth.controller";
