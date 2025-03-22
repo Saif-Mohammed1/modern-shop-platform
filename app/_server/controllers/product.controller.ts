@@ -8,6 +8,7 @@ import { ProductTranslate } from "@/public/locales/server/Product.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 import AppError from "@/app/lib/utilities/appError";
 import { UserRole } from "@/app/lib/types/users.types";
+import { LogsValidation } from "../dtos/logs.dto";
 
 class ProductController {
   private productService = new ProductService();
@@ -18,10 +19,10 @@ class ProductController {
         req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip;
-
+        req.ip ||
+        "Unknown IP";
       const userAgent = req.headers.get("user-agent");
-      const logs = ProductValidation.validateProductLogs({
+      const logs = LogsValidation.validateLogs({
         ipAddress,
         userAgent,
       });
@@ -47,9 +48,10 @@ class ProductController {
         req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip;
+        req.ip ||
+        "Unknown IP";
       const userAgent = req.headers.get("user-agent");
-      const logs = ProductValidation.validateProductLogs({
+      const logs = LogsValidation.validateLogs({
         ipAddress,
         userAgent,
       });
@@ -73,12 +75,13 @@ class ProductController {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
       const ipAddress =
+        req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip;
-
+        req.ip ||
+        "Unknown IP";
       const userAgent = req.headers.get("user-agent");
-      const logs = ProductValidation.validateProductLogs({
+      const logs = LogsValidation.validateLogs({
         ipAddress,
         userAgent,
       });
@@ -169,12 +172,14 @@ class ProductController {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
       const ipAddress =
+        req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip;
+        req.ip ||
+        "Unknown IP";
 
       const userAgent = req.headers.get("user-agent");
-      const logs = ProductValidation.validateProductLogs({
+      const logs = LogsValidation.validateLogs({
         ipAddress,
         userAgent,
       });
@@ -225,12 +230,14 @@ class ProductController {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
       const ipAddress =
+        req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip;
+        req.ip ||
+        "Unknown IP";
 
       const userAgent = req.headers.get("user-agent");
-      const logs = ProductValidation.validateProductLogs({
+      const logs = LogsValidation.validateLogs({
         ipAddress,
         userAgent,
       });

@@ -21,7 +21,6 @@ class AddressController {
 
       return NextResponse.json(address, { status: 201 });
     } catch (error) {
-      console.error("error from address", error);
       throw error;
     }
   }

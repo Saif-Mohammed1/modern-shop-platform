@@ -18,7 +18,6 @@ export class SecurityController {
         }
       );
     } catch (error) {
-      console.error("Security dashboard error:", error);
       return NextResponse.json(
         {
           error: "Failed to load security data",

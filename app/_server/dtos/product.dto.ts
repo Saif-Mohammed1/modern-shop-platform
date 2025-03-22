@@ -155,24 +155,7 @@ export class ProductValidation {
       dimensions: this.dimensionsSchema,
     }),
   });
-  static ProductLogsSchema = z.object({
-    ipAddress: z
-      .string({
-        required_error: ProductTranslate[lang].dto.ipAddress.required,
-      })
-      .ip({
-        version: "v4" as IpVersion,
-        message: ProductTranslate[lang].dto.ipAddress.invalid,
-      }),
-    userAgent: z
-      .string({
-        required_error: ProductTranslate[lang].dto.userAgent.required,
-      })
-      .min(1, ProductTranslate[lang].dto.userAgent.required),
-    source: z
-      .enum(Object.values(AuditSource) as [string, ...string[]])
-      .default(AuditSource.WEB),
-  });
+
   // **Update Schema** - Partial to allow optional updates
   static updateProductSchema = this.productSchema.partial();
 
@@ -183,15 +166,9 @@ export class ProductValidation {
   static validateUpdateProduct = (data: any) => {
     return this.updateProductSchema.parse(data);
   };
-  static validateProductLogs = (data: any) => {
-    return this.ProductLogsSchema.parse(data);
-  };
 }
 
 export type CreateProductDto = z.infer<typeof ProductValidation.productSchema>;
 export type UpdateProductDto = z.infer<
   typeof ProductValidation.updateProductSchema
->;
-export type ProductLogsDto = z.infer<
-  typeof ProductValidation.ProductLogsSchema
 >;

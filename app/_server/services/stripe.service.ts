@@ -31,6 +31,7 @@ import { UserCurrency } from "@/app/lib/types/users.types";
 import { Types } from "mongoose";
 import { MongoBulkWriteError } from "mongodb";
 import { emailService } from "@/app/lib/services/email.service";
+import { LogsTypeDto } from "../dtos/logs.dto";
 // stripe.service.ts
 
 export interface FailedOrderData {
@@ -60,7 +61,8 @@ export class StripeService {
 
   async createStripeSession(
     user: IUser,
-    shippingInfo: ShippingInfoDto
+    shippingInfo: ShippingInfoDto,
+    logs: LogsTypeDto
   ): Promise<{ sessionId: string; url: string }> {
     await this.validateEnvironment();
     const MAX_RETRIES = 3;
@@ -111,6 +113,7 @@ export class StripeService {
             quantity: p.quantity,
           })),
           user,
+          logs,
           // reservationId,
           transaction
         );
@@ -125,7 +128,6 @@ export class StripeService {
         await this.cacheSession(idempotencyKey, session);
 
         await transaction.commitTransaction();
-        console.count("session count");
         return { sessionId: session.id, url: session.url! };
       } catch (error) {
         await transaction.abortTransaction();
@@ -594,7 +596,7 @@ export class StripeService {
   private async reserveInventoryWithRetry(
     products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
     user: IUser,
-    // reservationId: string,
+    logs: LogsTypeDto,
     session: mongoose.ClientSession,
     maxRetries = 5
   ): Promise<void> {
@@ -615,7 +617,6 @@ export class StripeService {
         while (attempts < maxRetries) {
           const acquired = await this.acquireLock(lockKey, 60); // 60 second TTL
           if (lockKey.includes("67b5bc3c6929f25809e5c853")) {
-            console.count("lockKey 67b5bc3c6929f25809e5c853");
           }
           if (acquired) {
             acquiredLocks.push(lockKey);
@@ -636,12 +637,12 @@ export class StripeService {
       }
 
       // Proceed with inventory reservation after acquiring all locks
-      await this.reserveInventory(sortedProducts, user, session);
+      await this.reserveInventory(sortedProducts, user, logs, session);
     } finally {
       // Release all locks in reverse order
       for (const lockKey of [...acquiredLocks].reverse()) {
         await this.releaseLock(lockKey).catch((error) => {
-          console.error(`Error releasing lock ${lockKey}:`, error);
+          console.error(`Failed to release lock: ${lockKey}`, error);
         });
       }
     }
@@ -737,6 +738,7 @@ export class StripeService {
   private async reserveInventory(
     products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
     user: IUser,
+    logs: LogsTypeDto,
     session: mongoose.ClientSession
   ): Promise<void> {
     // Aggregate quantities for duplicate products
@@ -789,7 +791,11 @@ export class StripeService {
           }));
 
         if (failedProducts.length > 0) {
-          await this.handlePartialReservationFailure(user, failedProducts);
+          await this.handlePartialReservationFailure(
+            user,
+            failedProducts,
+            logs
+          );
           throw new AppError(
             `Partial reservation failed for ${failedProducts.length} products`,
             409
@@ -808,14 +814,15 @@ export class StripeService {
           quantity: productMap.get(id)!,
         }));
 
-        await this.handlePartialReservationFailure(user, failedProducts);
+        await this.handlePartialReservationFailure(user, failedProducts, logs);
       }
       throw error;
     }
   }
   private async handlePartialReservationFailure(
     user: IUser,
-    failedProducts: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>
+    failedProducts: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+    logs: LogsTypeDto
   ): Promise<void> {
     // 1. Log audit entry
 
@@ -829,8 +836,8 @@ export class StripeService {
         quantity: p.quantity,
         changeType: "MODIFY",
       })),
-      "127.0.0.1", // Replace with actual IP address
-      "user-agent-string" // Replace with actual user agent
+      logs.ipAddress,
+      logs.userAgent
     );
 
     // 2. Notify admins

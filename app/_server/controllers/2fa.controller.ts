@@ -217,6 +217,7 @@ class TwoFactorController {
       req.headers.get("x-client-ip") ||
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
+      req.ip ||
       "Unknown IP";
     const userAgent = req.headers.get("user-agent") || "";
     const deviceHash = generateDeviceFingerprint({

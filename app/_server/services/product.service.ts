@@ -3,11 +3,7 @@ import {
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
-import {
-  CreateProductDto,
-  ProductLogsDto,
-  UpdateProductDto,
-} from "../dtos/product.dto";
+import { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
 import ProductModel, { IProduct } from "../models/Product.model";
 import { ProductRepository } from "../repositories/product.repository";
 import AppError from "@/app/lib/utilities/appError";
@@ -22,6 +18,7 @@ import {
   EntityType,
 } from "@/app/lib/types/audit.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+import { LogsTypeDto } from "../dtos/logs.dto";
 
 export class ProductService {
   private repository = new ProductRepository(ProductModel);
@@ -86,7 +83,7 @@ export class ProductService {
   }
   async createProduct(
     dto: CreateProductDto,
-    logs: ProductLogsDto
+    logs: LogsTypeDto
   ): Promise<IProduct> {
     const session = await this.repository.startSession();
     session.startTransaction();
@@ -128,7 +125,7 @@ export class ProductService {
         changes,
         logs.ipAddress,
         logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
+        logs.source as AuditSource, // Add source to LogsTypeDto
         session
       );
 
@@ -147,7 +144,7 @@ export class ProductService {
     slug: string,
     dto: UpdateProductDto,
     actorId: CreateProductDto["userId"],
-    logs: ProductLogsDto
+    logs: LogsTypeDto
   ): Promise<IProduct | null> {
     const session = await this.repository.startSession();
     session.startTransaction();
@@ -198,7 +195,7 @@ export class ProductService {
           changes,
           logs.ipAddress,
           logs.userAgent,
-          logs.source as AuditSource, // Add source to ProductLogsDto
+          logs.source as AuditSource, // Add source to LogsTypeDto
           session
         );
       }
@@ -216,7 +213,7 @@ export class ProductService {
   async deleteProduct(
     slug: string,
     actorId: CreateProductDto["userId"],
-    logs: ProductLogsDto
+    logs: LogsTypeDto
   ): Promise<boolean> {
     const session = await this.repository.startSession();
     session.startTransaction();
@@ -256,7 +253,7 @@ export class ProductService {
 
         logs.ipAddress,
         logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
+        logs.source as AuditSource, // Add source to LogsTypeDto
         session
       );
       await session.commitTransaction();
@@ -294,7 +291,7 @@ export class ProductService {
     slug: string,
     public_id: string,
     actorId: CreateProductDto["userId"],
-    logs: ProductLogsDto
+    logs: LogsTypeDto
   ) {
     const session = await this.repository.startSession();
     session.startTransaction();
@@ -345,7 +342,7 @@ export class ProductService {
         changes,
         logs.ipAddress,
         logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
+        logs.source as AuditSource, // Add source to LogsTypeDto
         session
       );
 
@@ -517,7 +514,7 @@ export class ProductService {
     slug: string,
     versionId: string,
     actorId: Types.ObjectId,
-    logs: ProductLogsDto
+    logs: LogsTypeDto
   ): Promise<IProduct> {
     const session = await this.repository.startSession();
     session.startTransaction();
@@ -573,7 +570,7 @@ export class ProductService {
         this.getUpdateChanges(currentProduct, updatedProduct!),
         logs.ipAddress,
         logs.userAgent,
-        logs.source as AuditSource, // Add source to ProductLogsDto
+        logs.source as AuditSource, // Add source to LogsTypeDto
         session
       );
 

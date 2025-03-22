@@ -10,7 +10,6 @@ export const POST = async (req: NextRequest) => {
     await AuthMiddleware.requireAuth()(req);
     return await twoFactorController.disable2FA(req);
   } catch (error) {
-    console.error(error);
     return ErrorHandler(error, req);
   }
 };

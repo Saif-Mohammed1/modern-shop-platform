@@ -76,10 +76,11 @@ export function logRequestError(
   req: NextRequest
 ) {
   const clientIp =
+    req.headers.get("x-client-ip") ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
     req.ip ||
-    "127.0.0.1";
+    "Unknown IP";
   const meta: AppLogMeta = {
     statusCode: err.statusCode,
     path: req.nextUrl.pathname,
