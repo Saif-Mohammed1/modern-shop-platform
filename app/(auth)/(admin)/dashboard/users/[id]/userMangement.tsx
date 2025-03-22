@@ -36,8 +36,8 @@ import {
   FaUserPlus,
   FaWallet, // 👛 Wallet (FontAwesome)
 } from "react-icons/fa";
-import { StatusBadge } from "@/components/test/test";
 import { DateTime } from "luxon";
+import { UserStatus } from "@/app/lib/types/users.types";
 export interface User {
   _id: string;
   name: string;
@@ -52,7 +52,7 @@ export interface User {
   authMethods: string[];
   security: Security;
   preferences: UserPreferencesProps["preferences"];
-  status: StatusBadgeProps["status"];
+  status: UserStatus;
 }
 
 interface Security {
@@ -123,14 +123,18 @@ interface UserPreferencesProps {
     marketingOptIn: boolean;
   };
 }
-interface StatusBadgeProps {
-  status: "ACTIVE" | "SUSPENDED" | "PENDING";
-}
-
-const statusColors: Record<string, string> = {
-  ACTIVE: "bg-green-500",
-  SUSPENDED: "bg-red-500",
-  PENDING: "bg-yellow-500",
+// interface StatusBadgeProps {
+//   status: "ACTIVE" | "SUSPENDED" | "PENDING";
+// }
+//   ACTIVE = "active",
+//   INACTIVE = "inactive",
+//   DELETED = "deleted",
+const statusColors: Record<UserStatus, string> = {
+  active: "bg-green-500", // Green for active users
+  suspended: "bg-red-500", // Red for suspended users
+  // pending: "bg-yellow-500", // Yellow for pending users
+  inactive: "bg-gray-400", // Gray for inactive users
+  deleted: "bg-gray-500", // Darker gray for deleted users
 };
 export default function UserAdminPage({ user }: { user: User }) {
   if (!user) return <p className="text-red-500">User not found</p>;
@@ -581,3 +585,12 @@ function groupLogsByDate(logs: AuditLog[]) {
     {} as Record<string, AuditLog[]>
   );
 }
+const StatusBadge = ({ status }: { status: UserStatus }) => {
+  return (
+    <span
+      className={`px-2 py-1 text-xs font-bold text-white rounded-lg ${statusColors[status]}`}
+    >
+      {status}
+    </span>
+  );
+};
