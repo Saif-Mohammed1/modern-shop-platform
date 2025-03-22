@@ -1,16 +1,5 @@
 import { cn } from "@/app/lib/utilities/cn";
-// import {
-//   Clock,
-//   ShieldAlert,
-//   LockKeyhole,
-//   MailWarning,
-//   Globe,
-//   MonitorSmartphone,
-//   BadgeCheck,
-//   Languages,
-//   Wallet,
-//   BellOff,
-// } from "lucide-react";
+
 import {
   FiClock, // ⏰ Clock (Feather)
   FiShield, // 🛡️ Shield (Feather) - No direct "ShieldAlert"
@@ -126,9 +115,7 @@ interface UserPreferencesProps {
 // interface StatusBadgeProps {
 //   status: "ACTIVE" | "SUSPENDED" | "PENDING";
 // }
-//   ACTIVE = "active",
-//   INACTIVE = "inactive",
-//   DELETED = "deleted",
+
 const statusColors: Record<UserStatus, string> = {
   active: "bg-green-500", // Green for active users
   suspended: "bg-red-500", // Red for suspended users
