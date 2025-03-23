@@ -3,6 +3,10 @@ import { config } from "dotenv";
 config({ path: "./config/.env" }); // Add this at top
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    turbo: {},
+    reactCompiler: true,
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "via.placeholder.com", port: "" },
@@ -32,11 +36,20 @@ const nextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
-          // {
-          //   key: "Content-Security-Policy",
-          //   value:
-          //     "default-src 'self'; script-src 'self' 'unsafe-inline' *.trusted.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' *.api.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';",
-          // },
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; " +
+              "script-src 'self' 'unsafe-inline' *.trusted.com; " + // Add your trusted domain
+              "style-src 'self' 'unsafe-inline'; " +
+              "img-src 'self' data: https: res.cloudinary.com via.placeholder.com picsum.photos loremflickr.com; " +
+              "font-src 'self'; " +
+              "connect-src 'self' *.api.com; " + // Add your API domain
+              "frame-src 'none'; " +
+              "object-src 'none'; " +
+              "base-uri 'self'; " +
+              "form-action 'self';",
+          },
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
