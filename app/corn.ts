@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import Product from "./_server/models/Product.model";
+import Product from "./server/models/Product.model";
 import { BulkWriteResult } from "mongodb";
 
 cron.schedule("*/5 * * * *", async () => {

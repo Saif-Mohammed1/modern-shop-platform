@@ -1,6 +1,6 @@
 // Wishlist.controller.ts
 
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { WishlistService } from "../services/wishlist.service";
 import { WishlistValidation } from "../dtos/wishlist.dto";
 import AppError from "@/app/lib/utilities/appError";

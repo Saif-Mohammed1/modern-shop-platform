@@ -30,8 +30,8 @@ import AuditLogModel from "../models/audit-log.model";
 import { UserCurrency } from "@/app/lib/types/users.types";
 import { Types } from "mongoose";
 import { MongoBulkWriteError } from "mongodb";
-import { emailService } from "@/app/lib/services/email.service";
 import { LogsTypeDto } from "../dtos/logs.dto";
+import { emailService } from ".";
 // stripe.service.ts
 
 export interface FailedOrderData {

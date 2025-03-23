@@ -1,10 +1,10 @@
-export const dynamic = "force-static";
-export const revalidate = 600;
+// export const dynamic = "force-static";
+// export const revalidate = 600;
 // export const revalidate = 60 * 10; //doesn't work ; //doesn't work
 import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/_server/db/db";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import productController from "@/app/_server/controllers/product.controller";
+import { connectDB } from "@/app/server/db/db";
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import productController from "@/app/server/controllers/product.controller";
 
 export const GET = async (
   req: NextRequest,

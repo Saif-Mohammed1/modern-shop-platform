@@ -1,5 +1,5 @@
-import AppError from "@/app/lib/utilities/appError";
 import { type NextRequest, NextResponse } from "next/server";
+import AppError from "@/app/lib/utilities/appError";
 import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { z } from "zod";

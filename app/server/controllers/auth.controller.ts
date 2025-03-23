@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { UserValidation } from "../dtos/user.dto";
 import { UserService } from "../services/user.service";
 import { getDeviceFingerprint } from "@/app/lib/utilities/DeviceFingerprint.utility";

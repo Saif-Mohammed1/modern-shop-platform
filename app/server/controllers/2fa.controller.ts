@@ -1,5 +1,5 @@
 // src/app/lib/features/2fa/2fa.controller.ts
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { z } from "zod";
 import AppError from "@/app/lib/utilities/appError";

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { OrderValidation } from "../dtos/order.dto";
 import { OrderService } from "../services/order.service";
 import AppError from "@/app/lib/utilities/appError";

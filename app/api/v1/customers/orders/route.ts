@@ -1,9 +1,9 @@
 import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/_server/db/db";
-import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import orderController from "@/app/_server/controllers/order.controller";
-import stripeController from "@/app/_server/controllers/stripe.controller";
+import { connectDB } from "@/app/server/db/db";
+import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import orderController from "@/app/server/controllers/order.controller";
+import stripeController from "@/app/server/controllers/stripe.controller";
 export const GET = async (req: NextRequest) => {
   try {
     await connectDB();

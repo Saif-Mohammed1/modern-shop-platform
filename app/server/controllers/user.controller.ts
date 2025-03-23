@@ -1,7 +1,6 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import sessionController from "./session.controller";
-import { NextResponse } from "next/server";
 import { UserValidation } from "../dtos/user.dto";
 import { UserTranslate } from "@/public/locales/server/User.translate";
 import { lang } from "@/app/lib/utilities/lang";

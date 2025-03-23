@@ -1,8 +1,7 @@
 // src/lib/services/email.service.ts
 import nodemailer from "nodemailer";
-import { DeviceInfo, GeoLocation } from "../types/session.types";
-import { UserRepository } from "@/app/_server/repositories/user.repository";
-import UserModel from "@/app/_server/models/User.model";
+import { DeviceInfo, GeoLocation } from "../../lib/types/session.types";
+import { UserRepository } from "@/app/server/repositories/user.repository";
 interface EmailConfig {
   service: string;
   auth: {
@@ -67,20 +66,26 @@ interface SecurityAlertEmailParams {
     codesRemaining?: number;
   };
 }
-class EmailService {
+// Configuration and instantiation
+const emailConfig: EmailConfig = {
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL!,
+    pass: process.env.PASSWORD!,
+  },
+};
+export class EmailService {
   private transporter: nodemailer.Transporter;
   private readonly appName: string;
   private readonly appUrl: string;
   private readonly senderEmail: string;
-  constructor(
-    private config: EmailConfig,
-    private readonly userRepo: UserRepository = new UserRepository(UserModel)
-  ) {
+  private config: EmailConfig = emailConfig;
+  constructor(private readonly userRepo: UserRepository) {
     this.validateEnvironment();
-    this.transporter = nodemailer.createTransport(config);
+    this.transporter = nodemailer.createTransport(this.config);
     this.appName = process.env.APP_NAME || "Our Service";
     this.appUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    this.senderEmail = `${this.appName} <${config.auth.user}>`;
+    this.senderEmail = `${this.appName} <${this.config.auth.user}>`;
   }
 
   private validateEnvironment() {
@@ -809,14 +814,3 @@ class EmailService {
     return [];
   }
 }
-
-// Configuration and instantiation
-const emailConfig: EmailConfig = {
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL!,
-    pass: process.env.PASSWORD!,
-  },
-};
-
-export const emailService = new EmailService(emailConfig);

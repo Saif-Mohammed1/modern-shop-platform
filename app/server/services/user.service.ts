@@ -4,10 +4,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import { generateVerificationToken } from "@/app/lib/utilities/user.utilty";
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import { UserRepository } from "../repositories/user.repository";
-import {
-  emailService,
-  SecurityAlertType,
-} from "@/app/lib/services/email.service";
+import { SecurityAlertType } from "@/app/server/services/email.service";
 import {
   CreateUserByAdminDTO,
   UpdateUserByAdminDTO,
@@ -36,7 +33,7 @@ import {
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { ClientSession } from "mongoose";
-
+import { emailService } from ".";
 export class UserService {
   constructor(
     private repository: UserRepository = new UserRepository(UserModel),
@@ -224,13 +221,17 @@ export class UserService {
         user._id.toString()
       );
       const expires = new Date(Date.now() + 1000 * 60 * 5);
-      (cookies() as unknown as UnsafeUnwrappedCookies).set("tempToken", tempToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-        expires,
-        path: "/",
-      });
+      (cookies() as unknown as UnsafeUnwrappedCookies).set(
+        "tempToken",
+        tempToken,
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+          expires,
+          path: "/",
+        }
+      );
       await this.repository.incrementRateLimit(user, "2fa");
       return {
         requires2FA: true,
@@ -593,13 +594,17 @@ export class UserService {
       user._id.toString()
     );
     const expires = new Date(Date.now() + 1000 * 60 * 5);
-    (cookies() as unknown as UnsafeUnwrappedCookies).set("tempToken", tempToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      expires,
-      path: "/",
-    });
+    (cookies() as unknown as UnsafeUnwrappedCookies).set(
+      "tempToken",
+      tempToken,
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        expires,
+        path: "/",
+      }
+    );
     await this.repository.incrementRateLimit(user, "2fa");
     // return {
     //   message: "Temporary token generated",

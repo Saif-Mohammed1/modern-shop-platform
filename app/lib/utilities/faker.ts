@@ -2,14 +2,14 @@ import { OrderStatus } from "@/app/lib/types/orders.types";
 import { faker } from "@faker-js/faker";
 import { assignAsObjectId } from "./assignAsObjectId";
 import { NextRequest } from "next/server";
-import productController from "@/app/_server/controllers/product.controller";
-import { IUser } from "@/app/_server/models/User.model";
-import authController from "@/app/_server/controllers/auth.controller";
-import addressController from "@/app/_server/controllers/address.controller";
-import reviewController from "@/app/_server/controllers/review.controller";
-import cartController from "@/app/_server/controllers/cart.controller";
-import wishlistController from "@/app/_server/controllers/wishlist.controller";
-import stripeController from "@/app/_server/controllers/stripe.controller";
+import productController from "@/app/server/controllers/product.controller";
+import { IUser } from "@/app/server/models/User.model";
+import authController from "@/app/server/controllers/auth.controller";
+import addressController from "@/app/server/controllers/address.controller";
+import reviewController from "@/app/server/controllers/review.controller";
+import cartController from "@/app/server/controllers/cart.controller";
+import wishlistController from "@/app/server/controllers/wishlist.controller";
+import stripeController from "@/app/server/controllers/stripe.controller";
 import puppeteer from "puppeteer";
 
 // create a random user

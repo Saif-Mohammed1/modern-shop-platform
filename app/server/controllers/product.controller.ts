@@ -1,8 +1,7 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { ProductService } from "../services/product.service";
 import { ProductValidation } from "../dtos/product.dto";
-import { NextResponse } from "next/server";
 import { ReviewService } from "../services/review.service";
 import { ProductTranslate } from "@/public/locales/server/Product.Translate";
 import { lang } from "@/app/lib/utilities/lang";

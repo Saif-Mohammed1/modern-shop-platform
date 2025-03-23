@@ -1,6 +1,6 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 import { SessionService } from "../services/session.service";
-import { NextRequest, NextResponse } from "next/server";
 import AppError from "@/app/lib/utilities/appError";
 import { refreshTokenControllerTranslate } from "@/public/locales/server/refreshTokenControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";

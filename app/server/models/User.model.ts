@@ -5,10 +5,7 @@ import crypto from "crypto";
 import { DeviceInfo, GeoLocation } from "@/app/lib/types/session.types";
 import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import AppError from "@/app/lib/utilities/appError";
-import {
-  emailService,
-  SecurityAlertType,
-} from "@/app/lib/services/email.service";
+import { SecurityAlertType } from "@/app/server/services/email.service";
 import {
   accountAction,
   AuthMethod,
@@ -16,8 +13,9 @@ import {
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
-import { TokensService } from "@/app/_server/services/tokens.service";
+import { TokensService } from "@/app/server/services/tokens.service";
 import { obfuscateEmail } from "@/app/lib/utilities/helpers";
+import { emailService } from "../services";
 interface ILoginHistory extends DeviceInfo {
   timestamp: Date;
   //   ipAddress: string;

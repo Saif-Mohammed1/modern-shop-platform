@@ -20,7 +20,7 @@ import {
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { accountAction } from "@/app/lib/types/users.types";
-import { SecurityAlertType } from "@/app/lib/services/email.service";
+import { SecurityAlertType } from "@/app/server/services/email.service";
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {

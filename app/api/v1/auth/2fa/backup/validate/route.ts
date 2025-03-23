@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/_server/db/db";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import twoFactorController from "@/app/_server/controllers/2fa.controller";
+import { connectDB } from "@/app/server/db/db";
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import twoFactorController from "@/app/server/controllers/2fa.controller";
 export const POST = async (req: NextRequest) => {
   try {
     await connectDB();

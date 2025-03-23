@@ -1,12 +1,12 @@
 // Original path: shop/app/api/v1/shop/[slug]/rating-distribution
 // This file is generated automatically.
 
-export const dynamic = "force-static";
-export const revalidate = 600;
+// export const dynamic = "force-static";
+// export const revalidate = 600;
 // export const revalidate = 60 * 10; //doesn't work ;
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import reviewController from "@/app/_server/controllers/review.controller";
-import { connectDB } from "@/app/_server/db/db";
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import reviewController from "@/app/server/controllers/review.controller";
+import { connectDB } from "@/app/server/db/db";
 import { type NextRequest } from "next/server";
 export const GET = async (
   req: NextRequest,

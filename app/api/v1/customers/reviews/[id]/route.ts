@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/_server/db/db";
-import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import reviewController from "@/app/_server/controllers/review.controller";
+import { connectDB } from "@/app/server/db/db";
+import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import reviewController from "@/app/server/controllers/review.controller";
 
 export const GET = async (
   req: NextRequest,
@@ -22,7 +22,10 @@ export const GET = async (
   }
 };
 
-export const POST = async (req: NextRequest, props: { params: Promise<{ id: string }> }) => {
+export const POST = async (
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) => {
   const params = await props.params;
   const { id } = params;
   try {
@@ -37,7 +40,10 @@ export const POST = async (req: NextRequest, props: { params: Promise<{ id: stri
     return ErrorHandler(error, req);
   }
 };
-export const PATCH = async (req: NextRequest, props: { params: Promise<{ id: string }> }) => {
+export const PATCH = async (
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) => {
   const params = await props.params;
   const { id } = params;
   try {

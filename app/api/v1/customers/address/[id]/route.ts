@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/_server/db/db";
-import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import addressController from "@/app/_server/controllers/address.controller";
+import { connectDB } from "@/app/server/db/db";
+import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import addressController from "@/app/server/controllers/address.controller";
 export const PATCH = async (
   req: NextRequest,
   props: {

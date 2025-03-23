@@ -18,10 +18,8 @@ import logger from "@/app/lib/logger/logs";
 import { SessionService } from "./session.service";
 import { DeviceInfo } from "@/app/lib/types/session.types";
 import { SecurityAuditAction } from "@/app/lib/types/audit.types";
-import {
-  emailService,
-  SecurityAlertType,
-} from "@/app/lib/services/email.service";
+import { SecurityAlertType } from "@/app/server/services/email.service";
+import { emailService } from ".";
 
 export class TwoFactorService {
   constructor(

@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/_server/db/db";
-import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
-import ErrorHandler from "@/app/_server/controllers/error.controller";
-import productController from "@/app/_server/controllers/product.controller";
+import { connectDB } from "@/app/server/db/db";
+import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import productController from "@/app/server/controllers/product.controller";
 import { UserRole } from "@/app/lib/types/users.types";
 
 export const GET = async (req: NextRequest) => {

@@ -1,5 +1,5 @@
-import { IOrder } from "@/app/_server/models/Order.model";
-import { IRefundSchema } from "@/app/_server/models/Refund.model";
+import { IOrder } from "@/app/server/models/Order.model";
+import { IRefundSchema } from "@/app/server/models/Refund.model";
 interface UserAnalytics {
   totalUsers: number;
   activeUsers: number;

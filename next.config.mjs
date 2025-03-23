@@ -6,6 +6,10 @@ const nextConfig = {
   experimental: {
     turbo: {},
     reactCompiler: true,
+    staleTimes: {
+      dynamic: 30,
+      static: 600,
+    },
   },
   images: {
     remotePatterns: [
