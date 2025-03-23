@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 import { SessionService } from "../services/session.service";
 import { NextRequest, NextResponse } from "next/server";
 import AppError from "@/app/lib/utilities/appError";
@@ -8,13 +8,16 @@ import { TokensService } from "../services/tokens.service";
 import { ReviewTranslate } from "@/public/locales/server/Review.Translate";
 
 class SessionController {
-  private sessionService: SessionService = new SessionService();
-  private tokenService: TokensService = new TokensService();
+  constructor(
+    private readonly sessionService: SessionService = new SessionService(),
+    private readonly tokenService: TokensService = new TokensService()
+  ) {}
   async refreshAccessToken(req: NextRequest) {
     try {
       const refreshToken =
-        cookies()?.get("refreshAccessToken")?.value ||
-        req?.cookies?.get("refreshAccessToken")?.value;
+        (cookies() as unknown as UnsafeUnwrappedCookies)?.get(
+          "refreshAccessToken"
+        )?.value || req?.cookies?.get("refreshAccessToken")?.value;
 
       if (!refreshToken)
         throw new AppError(

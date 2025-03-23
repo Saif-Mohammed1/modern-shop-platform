@@ -14,6 +14,7 @@ import { UserRole } from "./app/lib/types/users.types";
 import AppError from "./app/lib/utilities/appError";
 import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
 import { lang } from "./app/lib/utilities/lang";
+import { ipAddress } from "@vercel/functions";
 
 const PROTECTED_ROUTES = [
   "/account",
@@ -53,7 +54,7 @@ const authMiddleware = async (req: NextRequest) => {
     const clientIp =
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
-      req.ip ||
+      ipAddress(req) ||
       "127.0.0.1";
     response.headers.set("x-client-ip", clientIp);
 

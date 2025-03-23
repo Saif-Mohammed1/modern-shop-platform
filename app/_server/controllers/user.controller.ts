@@ -10,7 +10,7 @@ import AppError from "@/app/lib/utilities/appError";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 
 class UserController {
-  private userService = new UserService();
+  constructor(private readonly userService: UserService = new UserService()) {}
   async deactivateAccount(req: NextRequest) {
     if (!req.user)
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);

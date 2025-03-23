@@ -7,8 +7,9 @@ import { ReviewTranslate } from "@/public/locales/server/Review.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 
 class ReviewController {
-  private reviewService = new ReviewService();
-
+  constructor(
+    private readonly reviewService: ReviewService = new ReviewService()
+  ) {}
   async createReview(req: NextRequest) {
     if (!req.id)
       throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);

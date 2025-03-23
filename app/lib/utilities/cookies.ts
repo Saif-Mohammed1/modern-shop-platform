@@ -3,6 +3,6 @@
 import { cookies } from "next/headers";
 
 export const deleteCookies = async (cookiesName: string) =>
-  cookies().delete(cookiesName);
+  (await cookies()).delete(cookiesName);
 export const getCookiesValue = async (cookiesName: string) =>
-  cookies()?.get(cookiesName)?.value;
+  (await cookies())?.get(cookiesName)?.value;

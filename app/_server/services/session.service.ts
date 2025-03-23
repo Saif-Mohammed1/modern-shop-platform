@@ -6,8 +6,12 @@ import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import { ClientSession } from "mongoose";
 
 export class SessionService {
-  private repository = new SessionRepository(SessionModel);
-  private tokensService = new TokensService();
+  constructor(
+    private readonly repository: SessionRepository = new SessionRepository(
+      SessionModel
+    ),
+    private readonly tokensService: TokensService = new TokensService()
+  ) {}
   async getSessions(userId: string): Promise<ISession[] | null> {
     return this.repository.getSessions(userId);
   }

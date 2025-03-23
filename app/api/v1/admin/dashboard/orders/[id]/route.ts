@@ -7,12 +7,11 @@ import orderController from "@/app/_server/controllers/order.controller";
 
 export const GET = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();
@@ -27,12 +26,11 @@ export const GET = async (
 
 export const PUT = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();
@@ -46,12 +44,11 @@ export const PUT = async (
 };
 export const DELETE = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();

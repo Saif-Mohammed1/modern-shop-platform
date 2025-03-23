@@ -25,10 +25,12 @@ import {
 
 export class TwoFactorService {
   constructor(
-    private readonly repository = new TwoFactorRepository(TwoFactorAuthModel),
-    private readonly userService = new UserService(),
-    private readonly cryptoService = new CryptoService(),
-    private readonly sessionService = new SessionService()
+    private readonly repository: TwoFactorRepository = new TwoFactorRepository(
+      TwoFactorAuthModel
+    ),
+    private readonly userService: UserService = new UserService(),
+    private readonly cryptoService: CryptoService = new CryptoService(),
+    private readonly sessionService: SessionService = new SessionService()
   ) {}
 
   async initialize2FA(userId: string, metadata: SecurityMetadata) {

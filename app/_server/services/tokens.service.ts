@@ -2,18 +2,21 @@ import { sign } from "jsonwebtoken";
 import crypto from "crypto";
 import { promisify } from "util";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
+import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 export class TokensService {
-  private RefreshExpiresAt = new Date(
-    Date.now() +
-      Number(process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN || 7) *
-        24 *
-        60 *
-        60 *
-        1000
-  );
-  COOKIE_NAME = "refreshAccessToken";
-
+  private readonly COOKIE_NAME;
+  private readonly RefreshExpiresAt;
+  constructor() {
+    this.RefreshExpiresAt = new Date(
+      Date.now() +
+        Number(process.env.JWT_REFRESH_TOKEN_COOKIE_EXPIRES_IN || 7) *
+          24 *
+          60 *
+          60 *
+          1000
+    );
+    this.COOKIE_NAME = "refreshAccessToken";
+  }
   generateAuthTokens(userId: string): {
     accessToken: string;
     refreshToken: string;
@@ -29,12 +32,21 @@ export class TokensService {
     return { accessToken, refreshToken, hashedToken };
   }
 
-  createAccessToken(userId: string): string {
-    return sign({ userId }, process.env.JWT_ACCESS_TOKEN_SECRET!, {
-      expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
-    });
-  }
+  // createAccessToken(userId: string): string {
+  //   return sign({ userId }, process.env.JWT_ACCESS_TOKEN_SECRET!, {
+  //     expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
+  //   });
+  // }
 
+  createAccessToken(userId: string): string {
+    return sign(
+      { userId },
+      process.env.JWT_ACCESS_TOKEN_SECRET as jwt.Secret, // 1. Type assertion for secret
+      {
+        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN as string | number, // 2. Type assertion for expiresIn
+      } as jwt.SignOptions // 3. Explicit type casting
+    );
+  }
   async decodedAccessToken(accessToken: string): Promise<{ userId: string }> {
     return (await promisify<string, jwt.Secret>(jwt.verify)(
       accessToken,
@@ -42,13 +54,23 @@ export class TokensService {
     )) as unknown as { userId: string };
   }
 
+  // private createRefreshToken(userId: string): string {
+  //   const refreshToken = sign(
+  //     { userId },
+  //     process.env.JWT_REFRESH_TOKEN_SECRET!,
+  //     {
+  //       expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
+  //     }
+  //   );
+  //   return refreshToken;
+  // }
   private createRefreshToken(userId: string): string {
     const refreshToken = sign(
       { userId },
-      process.env.JWT_REFRESH_TOKEN_SECRET!,
+      process.env.JWT_REFRESH_TOKEN_SECRET as jwt.Secret, // 1. Type assertion for secret
       {
-        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
-      }
+        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string | number, // 2. Type assertion for expiresIn
+      } as jwt.SignOptions // 3. Explicit type casting
     );
     return refreshToken;
   }
@@ -153,7 +175,7 @@ export class TokensService {
   }
 
   clearRefreshTokenCookies() {
-    cookies().set(this.COOKIE_NAME, "", {
+    (cookies() as unknown as UnsafeUnwrappedCookies).set(this.COOKIE_NAME, "", {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       secure: process.env.NODE_ENV === "production",
@@ -164,15 +186,19 @@ export class TokensService {
     });
   }
   setRefreshTokenCookies(token: string) {
-    cookies().set(this.COOKIE_NAME, token, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
-      secure: process.env.NODE_ENV === "production", // 'false' in development
-      path: "/",
-      expires: this.getRefreshTokenExpiry(),
-      // Add these for enhanced security:
-      partitioned: true, // Chrome 109+ feature
-      priority: "high", // Protect against CRIME attacks
-    });
+    (cookies() as unknown as UnsafeUnwrappedCookies).set(
+      this.COOKIE_NAME,
+      token,
+      {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
+        secure: process.env.NODE_ENV === "production", // 'false' in development
+        path: "/",
+        expires: this.getRefreshTokenExpiry(),
+        // Add these for enhanced security:
+        partitioned: true, // Chrome 109+ feature
+        priority: "high", // Protect against CRIME attacks
+      }
+    );
   }
 }

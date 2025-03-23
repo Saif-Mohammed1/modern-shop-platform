@@ -7,7 +7,11 @@ import { AddressTranslate } from "@/public/locales/server/Address.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 
 export class AddressService {
-  private repository = new AddressRepository(AddressModel);
+  constructor(
+    private readonly repository: AddressRepository = new AddressRepository(
+      AddressModel
+    )
+  ) {}
   async create(dto: CreateAddressDtoType) {
     const session = await this.repository.startSession();
     session.startTransaction();

@@ -42,7 +42,7 @@ const queryParams = async (slug: string, searchParams: SearchParams) => {
         "/history" +
         (queryString ? `?${queryString}` : ""),
       {
-        headers: Object.fromEntries(headers().entries()), // convert headers to object
+        headers: Object.fromEntries((await headers()).entries()), // convert headers to object
       }
     );
     return {
@@ -56,13 +56,14 @@ const queryParams = async (slug: string, searchParams: SearchParams) => {
     throw new AppError(error.message, error.status);
   }
 };
-const page = async ({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: SearchParams;
-}) => {
+const page = async (
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<SearchParams>;
+  }
+) => {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const { slug } = params;
 
   try {

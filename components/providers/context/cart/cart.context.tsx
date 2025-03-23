@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, use, useEffect, useState } from "react";
 import {
   addToCart,
   getCartItems,
@@ -153,7 +153,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   return (
-    <CartContext.Provider
+    <CartContext
       value={{
         cartItems,
         toggleCartStatus,
@@ -165,7 +165,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       {children}
-    </CartContext.Provider>
+    </CartContext>
   );
 };
-export const useCartItems = () => useContext(CartContext);
+export const useCartItems = () => use(CartContext);

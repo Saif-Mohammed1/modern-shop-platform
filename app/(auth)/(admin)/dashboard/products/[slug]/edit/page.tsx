@@ -11,17 +11,18 @@ import { headers } from "next/headers";
 //   keywords: "admin, edit product, admin edit product",
 // };
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { slug } = params;
 
   try {
     const {
       data: { product },
     } = await api.get(`/admin/dashboard/products/${slug}`, {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
 
     return {
@@ -38,14 +39,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 }
-const page = async ({ params }: Props) => {
+const page = async (props: Props) => {
+  const params = await props.params;
   const { slug } = params;
 
   try {
     const {
       data: { product },
     } = await api.get(`/admin/dashboard/products/${slug}`, {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return <EditProduct defaultValues={product} />;
   } catch (error: any) {

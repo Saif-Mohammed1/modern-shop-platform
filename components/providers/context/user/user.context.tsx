@@ -1,6 +1,6 @@
 "use client";
 import { signOut, useSession } from "next-auth/react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, use, useEffect, useState } from "react";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 import { UserAuthType } from "@/app/lib/types/users.types";
 
@@ -46,19 +46,17 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }, [session, status]);
   // Provide the user context value to the children components
   // return (
-  //   <UserContext.Provider value={{ user, updateUser }}>
+  //   <UserContext value={{ user, updateUser }}>
   //     {children}
-  //   </UserContext.Provider>
+  //   </UserContext>
   // );
   return status === "loading" ? (
     <div className="flex justify-center items-center h-screen">
       <div className="border-t-4 border-blue-500 rounded-full animate-spin h-12 w-12"></div>
     </div>
   ) : (
-    <UserContext.Provider value={{ user, updateUser }}>
-      {children}
-    </UserContext.Provider>
+    <UserContext value={{ user, updateUser }}>{children}</UserContext>
   );
 };
 
-export const useUser = () => useContext(UserContext);
+export const useUser = () => use(UserContext);

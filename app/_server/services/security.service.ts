@@ -2,7 +2,9 @@ import { SecurityDashboardData } from "@/app/lib/types/security.types";
 import { DashboardRepository } from "../repositories/dashboard.repository";
 
 export class SecurityService {
-  constructor(private readonly repo: DashboardRepository) {}
+  constructor(
+    private readonly repo: DashboardRepository = new DashboardRepository()
+  ) {}
 
   async getSecurityAnalytics(): Promise<void> {
     // const rawData = await this.repo.getSecurityAnalytics();

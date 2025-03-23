@@ -6,9 +6,9 @@ import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 
 type Props = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 const getProductMetaData = async (slug: string) => {
   const { data } = await api.get(
@@ -36,7 +36,8 @@ const getProductData = async (slug: string) => {
 //   });
 //   return data;
 // });
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { slug } = params;
   // api.get(`/customers/reviews/${product._slug}
   try {
@@ -58,7 +59,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 }
-const page = async ({ params }: Props) => {
+const page = async (props: Props) => {
+  const params = await props.params;
   const { slug } = params;
 
   try {
@@ -73,14 +75,13 @@ const page = async ({ params }: Props) => {
 
     return (
       // <ComponentLoading>
+      // </ComponentLoading>
       <ProductDetail
         product={product}
         distribution={distribution}
         // reviews={product.reviews}
         // relatedProducts={[]}
       />
-
-      // </ComponentLoading>
     );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;

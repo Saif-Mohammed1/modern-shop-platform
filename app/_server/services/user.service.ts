@@ -14,7 +14,7 @@ import {
   UserChangePasswordDTO,
   UserCreateDTO,
 } from "../dtos/user.dto";
-import { cookies } from "next/headers";
+import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import {
   SecurityAuditAction,
@@ -224,7 +224,7 @@ export class UserService {
         user._id.toString()
       );
       const expires = new Date(Date.now() + 1000 * 60 * 5);
-      cookies().set("tempToken", tempToken, {
+      (cookies() as unknown as UnsafeUnwrappedCookies).set("tempToken", tempToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
@@ -593,7 +593,7 @@ export class UserService {
       user._id.toString()
     );
     const expires = new Date(Date.now() + 1000 * 60 * 5);
-    cookies().set("tempToken", tempToken, {
+    (cookies() as unknown as UnsafeUnwrappedCookies).set("tempToken", tempToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",

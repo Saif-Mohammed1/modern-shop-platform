@@ -9,21 +9,24 @@ import { lang } from "@/app/lib/utilities/lang";
 import AppError from "@/app/lib/utilities/appError";
 import { UserRole } from "@/app/lib/types/users.types";
 import { LogsValidation } from "../dtos/logs.dto";
+import { ipAddress } from "@vercel/functions";
 
 class ProductController {
-  private productService = new ProductService();
-  private reviewService = new ReviewService();
+  constructor(
+    private readonly productService: ProductService = new ProductService(),
+    private readonly reviewService: ReviewService = new ReviewService()
+  ) {}
   async createProduct(req: NextRequest) {
     try {
-      const ipAddress =
+      const ip =
         req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip ||
+        ipAddress(req) ||
         "Unknown IP";
-      const userAgent = req.headers.get("user-agent");
+      const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
       const logs = LogsValidation.validateLogs({
-        ipAddress,
+        ipAddress: ip,
         userAgent,
       });
       const body = await req.json();
@@ -44,15 +47,15 @@ class ProductController {
       if (!req?.slug || !req.user?._id) {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
-      const ipAddress =
+      const ip =
         req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip ||
+        ipAddress(req) ||
         "Unknown IP";
-      const userAgent = req.headers.get("user-agent");
+      const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
       const logs = LogsValidation.validateLogs({
-        ipAddress,
+        ipAddress: ip,
         userAgent,
       });
       const body = await req.json();
@@ -74,15 +77,15 @@ class ProductController {
       if (!req?.slug || !req.user?._id) {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
-      const ipAddress =
+      const ip =
         req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip ||
+        ipAddress(req) ||
         "Unknown IP";
-      const userAgent = req.headers.get("user-agent");
+      const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
       const logs = LogsValidation.validateLogs({
-        ipAddress,
+        ipAddress: ip,
         userAgent,
       });
       const product = await this.productService.deleteProduct(
@@ -171,16 +174,16 @@ class ProductController {
       if (!req?.slug || !req.user?._id) {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
-      const ipAddress =
+      const ip =
         req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip ||
+        ipAddress(req) ||
         "Unknown IP";
 
-      const userAgent = req.headers.get("user-agent");
+      const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
       const logs = LogsValidation.validateLogs({
-        ipAddress,
+        ipAddress: ip,
         userAgent,
       });
       await this.productService.deleteProductImages(
@@ -229,16 +232,16 @@ class ProductController {
       if (!req?.slug || !req.user?._id) {
         throw new AppError(ProductTranslate[lang].slug, 400);
       }
-      const ipAddress =
+      const ip =
         req.headers.get("x-client-ip") ||
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
-        req.ip ||
+        ipAddress(req) ||
         "Unknown IP";
 
-      const userAgent = req.headers.get("user-agent");
+      const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
       const logs = LogsValidation.validateLogs({
-        ipAddress,
+        ipAddress: ip,
         userAgent,
       });
       const { versionId } = await req.json();

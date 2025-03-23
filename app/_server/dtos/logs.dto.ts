@@ -21,9 +21,10 @@ export class LogsValidation {
       .min(1, ProductTranslate[lang].dto.userAgent.required),
     source: z
       .enum(Object.values(AuditSource) as [string, ...string[]])
-      .default(AuditSource.WEB),
+      .default(AuditSource.WEB)
+      .optional(),
   });
-  static validateLogs = (data: any) => {
+  static validateLogs = (data: LogsTypeDto) => {
     return this.LogsSchema.parse(data);
   };
 }

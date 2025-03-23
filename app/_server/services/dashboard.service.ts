@@ -3,8 +3,9 @@ import { DashboardData } from "@/app/lib/types/dashboard.types";
 import { DashboardRepository } from "../repositories/dashboard.repository";
 
 export class DashboardService {
-  private readonly repo = new DashboardRepository();
-
+  constructor(
+    private readonly repo: DashboardRepository = new DashboardRepository()
+  ) {}
   async getMainDashboard(): Promise<DashboardData> {
     const [users, orders, products, reports, refunds, userInterestProducts] =
       await Promise.all([

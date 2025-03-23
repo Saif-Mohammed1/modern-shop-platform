@@ -29,7 +29,7 @@ const authOptions: AuthOptions = {
             code: number;
           };
           await connectDB();
-
+          const headerStore = await headers();
           if (!code) {
             if (!email || !password) {
               throw new AppError(
@@ -42,7 +42,7 @@ const authOptions: AuthOptions = {
             const req = new NextRequest(
               new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth"),
               {
-                headers: headers(),
+                headers: headerStore,
                 method: "POST",
                 body: JSON.stringify({
                   email: email,
@@ -81,7 +81,7 @@ const authOptions: AuthOptions = {
                 process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/2fa/verify"
               ),
               {
-                headers: headers(),
+                headers: headerStore,
                 method: "PUT",
                 body: JSON.stringify({
                   code: code,
@@ -193,10 +193,11 @@ async function refreshAccessTokenHandler(token: any) {
     //   //   "set-cookie": `refreshAccessToken=${refreshAccessToken}`,
     //   // },
     // });
+    const headerStore = await headers();
     const req = new NextRequest(
       new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/refresh-token"),
       {
-        headers: headers(),
+        headers: headerStore,
         method: "GET",
       }
     );
@@ -219,7 +220,7 @@ async function refreshAccessTokenHandler(token: any) {
       ), // Set JWT expiration
     };
   } catch (error) {
-    cookies().delete("refreshAccessToken");
+    (await cookies()).delete("refreshAccessToken");
     // return {
     //   ...token,
     //   error: "RefreshAccessTokenError",

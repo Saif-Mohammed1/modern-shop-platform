@@ -3,11 +3,12 @@ import api from "@/app/lib/utilities/api";
 import OverlayWrapper from "@/components/ui/OverlayWrapper";
 import ModelProductDetail from "@/components/ui/ModelProductDetail";
 type Props = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
-const page = async ({ params }: Props) => {
+const page = async (props: Props) => {
+  const params = await props.params;
   const { slug } = params;
 
   try {

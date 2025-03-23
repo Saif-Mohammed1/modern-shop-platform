@@ -8,8 +8,9 @@ import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 
 class WishlistController {
-  private readonly WishlistService = new WishlistService();
-
+  constructor(
+    private readonly wishlistService: WishlistService = new WishlistService()
+  ) {}
   async toggleWishlist(req: NextRequest) {
     try {
       if (!req.user)
@@ -19,7 +20,7 @@ class WishlistController {
         productId: req.id,
         userId: req.user._id,
       });
-      const result = await this.WishlistService.toggleWishlist(
+      const result = await this.wishlistService.toggleWishlist(
         check.userId.toString(),
         check.productId.toString()
       );
@@ -34,7 +35,7 @@ class WishlistController {
     try {
       const userId = String(req.user?._id);
 
-      const result = await this.WishlistService.getUserWishlists(userId, {
+      const result = await this.wishlistService.getUserWishlists(userId, {
         query: req.nextUrl.searchParams,
 
         populate: true,
@@ -55,7 +56,7 @@ class WishlistController {
         productId: req.id,
         userId: req.user._id,
       });
-      const isWishlist = await this.WishlistService.checkWishlist(
+      const isWishlist = await this.wishlistService.checkWishlist(
         check.userId.toString(),
         check.productId.toString()
       );

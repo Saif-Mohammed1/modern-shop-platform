@@ -6,8 +6,11 @@ import { WishlistTranslate } from "@/public/locales/server/Wishlist.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 
 export class WishlistService {
-  private repository = new WishlistRepository(WishlistModel);
-
+  constructor(
+    private readonly repository: WishlistRepository = new WishlistRepository(
+      WishlistModel
+    )
+  ) {}
   async getUserWishlists(userId: string, options: QueryOptionConfig) {
     return this.repository.getUserWishlists(userId, options);
   }

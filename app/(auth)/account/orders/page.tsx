@@ -14,9 +14,10 @@ export const metadata: Metadata = {
   keywords: accountOrdersTranslate[lang].metadata.keywords,
 };
 type Props = {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 };
-const page = async ({ searchParams }: Props) => {
+const page = async (props: Props) => {
+  const searchParams = await props.searchParams;
   const url = new URLSearchParams();
   if (searchParams.page !== undefined) {
     url.append("page", searchParams.page);
@@ -27,7 +28,7 @@ const page = async ({ searchParams }: Props) => {
     const { data } = await api.get(
       "/customers/orders" + (queryString ? `?${queryString}` : ""),
       {
-        headers: Object.fromEntries(headers().entries()), //convert headers to javascript object
+        headers: Object.fromEntries((await headers()).entries()), //convert headers to javascript object
       }
     );
     const orders = data.docs;
@@ -39,14 +40,13 @@ const page = async ({ searchParams }: Props) => {
         </h1>
         {/* <div className="max-h-[80vh] overflow-y-auto"> */}
         {/* <OrderHistory ordersList={orders} />; */}
-
         {orders.length > 0 ? (
           <UserOrderTracking orders={orders} hasNextPage={data.meta.hasNext} />
         ) : (
           // <h1 className="text-3xl font-semibold mb-6 text-center">
-          <h1 className="empty">
+          (<h1 className="empty">
             {accountOrdersTranslate[lang].noOrdersFound}
-          </h1>
+          </h1>)
         )}
       </div>
     );

@@ -17,7 +17,8 @@ type SearchParams = {
   email: string;
   error: string;
 };
-const page = async ({ searchParams }: { searchParams: SearchParams }) => {
+const page = async (props: { searchParams: Promise<SearchParams> }) => {
+  const searchParams = await props.searchParams;
   const token = searchParams.token || undefined;
   const email = searchParams.email || undefined;
   const error = searchParams.error || undefined;

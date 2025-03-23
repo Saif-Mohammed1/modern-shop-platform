@@ -6,12 +6,11 @@ import ErrorHandler from "@/app/_server/controllers/error.controller";
 import productController from "@/app/_server/controllers/product.controller";
 export const GET = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { slug: string };
+  props: {
+    params: Promise<{ slug: string }>;
   }
 ) => {
+  const params = await props.params;
   const { slug } = params;
   try {
     await connectDB();

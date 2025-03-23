@@ -4,6 +4,7 @@ import DeviceDetector from "device-detector-js"; // 725.2K (gzipped: 168.3K)
 import crypto from "crypto";
 import { DeviceInfo, GeoLocation } from "../types/session.types";
 import { TokensService } from "@/app/_server/services/tokens.service";
+import { ipAddress } from "@vercel/functions";
 const tokensService = new TokensService();
 export const getDeviceFingerprint = async (
   req: NextRequest
@@ -15,6 +16,7 @@ export const getDeviceFingerprint = async (
     req.headers.get("x-client-ip") ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
+    ipAddress(req) ||
     "Unknown IP";
 
   const hashedIp = tokensService.hashIpAddress(clientIp);

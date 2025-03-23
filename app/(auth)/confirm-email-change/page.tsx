@@ -15,7 +15,8 @@ type searchParams = {
   token: string;
   error?: string;
 };
-const page = async ({ searchParams }: { searchParams: searchParams }) => {
+const page = async (props: { searchParams: Promise<searchParams> }) => {
+  const searchParams = await props.searchParams;
   const token = searchParams.token || undefined;
   const error = searchParams.error || undefined;
   if (!token) notFound();
@@ -23,7 +24,7 @@ const page = async ({ searchParams }: { searchParams: searchParams }) => {
     const { data } = await api.get(
       `/customers/update-data/confirm-email-change?token=` + token,
       {
-        headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
       }
     );
     return <ConfirmEmailChange error={error} message={data.message} />;

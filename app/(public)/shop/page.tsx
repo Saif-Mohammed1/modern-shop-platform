@@ -70,7 +70,7 @@ const queryParams = async (searchParams: SearchParams) => {
         categories,
       },
     } = await api.get("/shop/" + (queryString ? `?${queryString}` : ""), {
-      headers: Object.fromEntries(headers().entries()), // convert headers to object
+      headers: Object.fromEntries((await headers()).entries()), // convert headers to object
     });
     return {
       docs,
@@ -85,7 +85,8 @@ const queryParams = async (searchParams: SearchParams) => {
   }
 };
 
-const page = async ({ searchParams }: { searchParams: SearchParams }) => {
+const page = async (props: { searchParams: Promise<SearchParams> }) => {
+  const searchParams = await props.searchParams;
   try {
     const { docs, categories, pagination } = await queryParams(searchParams);
     // await new Promise<void>((resolve) => {
@@ -96,6 +97,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
     // console.log("docs", docs);
     return (
       // <ComponentLoading>
+      // </ComponentLoading>
       <Shop
         products={docs || []}
         categories={categories || []}
@@ -113,7 +115,6 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
           }
         }
       />
-      // </ComponentLoading>
     );
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;

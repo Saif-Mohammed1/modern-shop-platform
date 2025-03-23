@@ -7,7 +7,7 @@ import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 import AppError from "@/app/lib/utilities/appError";
 
 class CartController {
-  constructor(private readonly cartService = new CartService()) {}
+  constructor(private readonly cartService: CartService = new CartService()) {}
   async getMyCart(req: NextRequest) {
     try {
       if (!req.user?._id) {

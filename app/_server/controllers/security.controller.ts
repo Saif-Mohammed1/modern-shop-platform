@@ -4,7 +4,9 @@ import { NextResponse } from "next/server";
 import { SecurityService } from "../services/security.service";
 
 export class SecurityController {
-  constructor(private readonly service: SecurityService) {}
+  constructor(
+    private readonly service: SecurityService = new SecurityService()
+  ) {}
 
   async getSecurityDashboard() {
     try {

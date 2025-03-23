@@ -6,17 +6,18 @@ import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { id } = params;
 
   try {
     const {
       data: { data: user },
     } = await api.get(`/admin/dashboard/users/${id}`, {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
 
     return {
@@ -33,12 +34,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-const page = async ({ params }: Props) => {
+const page = async (props: Props) => {
+  const params = await props.params;
   const { id } = params;
 
   try {
     const { data } = await api.get(`/admin/dashboard/users/${id}`, {
-      headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return <EditUser user={data} />;
   } catch (error: any) {

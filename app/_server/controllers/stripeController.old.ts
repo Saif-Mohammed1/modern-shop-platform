@@ -196,7 +196,7 @@ export const handleStripeWebhook = async (req: NextRequest) => {
   let event;
 
   try {
-    const signature = headers().get("stripe-signature");
+    const signature = (await headers()).get("stripe-signature");
     if (!signature) {
       throw Error;
     }

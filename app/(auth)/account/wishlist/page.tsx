@@ -43,7 +43,7 @@ const queryParams = async (searchParams: SearchParams) => {
     } = await api.get(
       "/customers/wishlist" + (queryString ? `?${queryString}` : ""),
       {
-        headers: Object.fromEntries(headers().entries()), // convert headers to object
+        headers: Object.fromEntries((await headers()).entries()), // convert headers to object
       }
     );
     return {
@@ -58,7 +58,8 @@ const queryParams = async (searchParams: SearchParams) => {
   }
 };
 
-const page = async ({ searchParams }: { searchParams: SearchParams }) => {
+const page = async (props: { searchParams: Promise<SearchParams> }) => {
+  const searchParams = await props.searchParams;
   try {
     const { docs, pagination } = await queryParams(searchParams);
     return <WishlistPage wishlistProduct={docs} pagination={pagination} />;

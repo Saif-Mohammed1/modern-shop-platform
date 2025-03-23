@@ -58,7 +58,7 @@ const queryParams = async (searchParams: SearchParams) => {
     } = await api.get(
       "/admin/dashboard/orders" + (queryString ? `?${queryString}` : ""),
       {
-        headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
       }
     );
 
@@ -68,9 +68,10 @@ const queryParams = async (searchParams: SearchParams) => {
   }
 };
 type PageProps = {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 };
-const page: FC<PageProps> = async ({ searchParams }) => {
+const page: FC<PageProps> = async (props) => {
+  const searchParams = await props.searchParams;
   // const defaultSearchParams = {
   //   email: searchParams.email || undefined,
   //   status: searchParams.status || undefined,

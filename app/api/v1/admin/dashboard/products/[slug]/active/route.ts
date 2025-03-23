@@ -7,12 +7,11 @@ import productController from "@/app/_server/controllers/product.controller";
 // /admin/dashboard/products/[slug]/active
 export const PUT = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { slug: string };
+  props: {
+    params: Promise<{ slug: string }>;
   }
 ) => {
+  const params = await props.params;
   const { slug } = params;
   try {
     await connectDB();

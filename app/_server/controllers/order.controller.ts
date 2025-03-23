@@ -7,7 +7,9 @@ import { lang } from "@/app/lib/utilities/lang";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 
 class OrderController {
-  private readonly orderService: OrderService = new OrderService();
+  constructor(
+    private readonly orderService: OrderService = new OrderService()
+  ) {}
   async createOrder(req: NextRequest) {
     const body = await req.json();
     const dto = OrderValidation.validateCreateOrder(body);

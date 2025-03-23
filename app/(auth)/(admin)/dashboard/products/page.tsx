@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 };
 const queryParams = async (searchParams: ProductsSearchParams) => {
   const url = new URLSearchParams();
@@ -61,7 +61,7 @@ const queryParams = async (searchParams: ProductsSearchParams) => {
     } = await api.get(
       "/admin/dashboard/products/" + (queryString ? `?${queryString}` : ""),
       {
-        headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
+        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
       }
     );
 
@@ -75,7 +75,8 @@ const queryParams = async (searchParams: ProductsSearchParams) => {
   }
 };
 
-const page = async ({ searchParams }: Props) => {
+const page = async (props: Props) => {
+  const searchParams = await props.searchParams;
   // const defaultSearchParams = {
   //   category: searchParams.category || undefined,
   //   name: searchParams.name || undefined,

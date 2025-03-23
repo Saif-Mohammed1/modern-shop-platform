@@ -9,8 +9,8 @@ import { ClientSession } from "mongoose";
 
 export class CartService {
   constructor(
-    private readonly repository = new CartRepository(CartModel),
-    private readonly productService = new ProductService()
+    private readonly repository: CartRepository = new CartRepository(CartModel),
+    private readonly productService: ProductService = new ProductService()
   ) {}
 
   async getMyCart(userId: string) {

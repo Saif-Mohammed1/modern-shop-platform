@@ -5,23 +5,26 @@ import AppError from "@/app/lib/utilities/appError";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 import { LogsValidation } from "../dtos/logs.dto";
+import { ipAddress } from "@vercel/functions";
 
 class StripeController {
-  private stripeService = new StripeService();
+  constructor(
+    private readonly stripeService: StripeService = new StripeService()
+  ) {}
   async createStripeSession(req: NextRequest) {
     if (!req.user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
-    const ipAddress =
+    const ip =
       req.headers.get("x-client-ip") ||
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
-      req.ip ||
+      ipAddress(req) ||
       "Unknown IP";
 
-    const userAgent = req.headers.get("user-agent");
+    const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
     const logs = LogsValidation.validateLogs({
-      ipAddress,
+      ipAddress: ip,
       userAgent,
     });
     const body = await req.json();

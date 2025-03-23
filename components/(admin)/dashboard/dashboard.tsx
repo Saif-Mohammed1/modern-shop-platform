@@ -26,10 +26,9 @@ const AdminDashboard = ({
 }: {
   dashboardData: DashboardData | null;
 }) => {
-  const [data, setData] = useState<DashboardData | null>(dashboardData);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  if (!data)
+  if (!dashboardData)
     return <div className="text-gray-500 p-6">Loading dashboard data...</div>;
 
   return (
@@ -58,9 +57,9 @@ const AdminDashboard = ({
         </div>
 
         {showAdvanced ? (
-          <AdvancedView data={data} />
+          <AdvancedView data={dashboardData} />
         ) : (
-          <BasicView data={data} />
+          <BasicView data={dashboardData} />
         )}
       </div>
     </div>
@@ -172,7 +171,7 @@ const AdvancedView = ({ data }: { data: DashboardData }) => (
 
 // Updated MetricCard with unit support
 interface MetricCardProps {
-  icon: JSX.Element;
+  icon: React.JSX.Element;
   title: string;
   value: number | string;
   growth?: number;
@@ -376,7 +375,7 @@ interface ActivityItem {
 interface RecentActivitiesProps {
   title: string;
   data: ActivityItem[];
-  icon: JSX.Element;
+  icon: React.JSX.Element;
   loading?: boolean;
   error?: string;
   onRetry?: () => void;

@@ -14,7 +14,7 @@ export const metadata = {
 const page = async () => {
   try {
     const { data } = await api.get("/customers/reviews", {
-      headers: Object.fromEntries(headers().entries()), //convert headers to object
+      headers: Object.fromEntries((await headers()).entries()), //convert headers to object
     });
     const reviews = data.docs;
     return (

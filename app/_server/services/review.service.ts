@@ -11,8 +11,14 @@ import { OrderStatus } from "@/app/lib/types/orders.types";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
 export class ReviewService {
-  private reviewRepository = new ReviewRepository(ReviewModel);
-  private orderRepository = new OrderRepository(OrderModel);
+  constructor(
+    private readonly reviewRepository: ReviewRepository = new ReviewRepository(
+      ReviewModel
+    ),
+    private readonly orderRepository: OrderRepository = new OrderRepository(
+      OrderModel
+    )
+  ) {}
   async checkIfUserHasOrderedProduct(userId: string, productId: string) {
     const order = await this.orderRepository.findByUserAndProduct(
       userId,

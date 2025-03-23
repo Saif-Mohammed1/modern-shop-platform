@@ -5,12 +5,11 @@ import ErrorHandler from "@/app/_server/controllers/error.controller";
 import addressController from "@/app/_server/controllers/address.controller";
 export const PATCH = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();
@@ -33,12 +32,11 @@ export const PATCH = async (
 
 export const DELETE = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();

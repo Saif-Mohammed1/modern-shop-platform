@@ -7,8 +7,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import AppError from "@/app/lib/utilities/appError";
 
 class AuthController {
-  private userService = new UserService();
-
+  constructor(private readonly userService: UserService = new UserService()) {}
   async register(req: NextRequest) {
     try {
       const body = await req.json();

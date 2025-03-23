@@ -20,7 +20,7 @@ type UserDataType = {
 };
 const AccountDashboard = () => {
   const { data: session, update } = useSession();
-  //   const { user } = useContext(UserContext); // Assuming these methods exist in your UserContext
+  //   const { user } = use(UserContext); // Assuming these methods exist in your UserContext
 
   const [isEditing, setIsEditing] = useState<{
     [key in EditableFields]: boolean;

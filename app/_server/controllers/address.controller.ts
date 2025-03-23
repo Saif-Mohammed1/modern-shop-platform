@@ -8,8 +8,9 @@ import { lang } from "@/app/lib/utilities/lang";
 import AppError from "@/app/lib/utilities/appError";
 
 class AddressController {
-  private readonly addressService = new AddressService();
-
+  constructor(
+    private readonly addressService: AddressService = new AddressService()
+  ) {}
   async addAddress(req: NextRequest) {
     try {
       const body = await req.json();

@@ -1,4 +1,5 @@
 import { type NextRequest } from "next/server";
+import { ipAddress } from "@vercel/functions";
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 
@@ -79,7 +80,7 @@ export function logRequestError(
     req.headers.get("x-client-ip") ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
-    req.ip ||
+    ipAddress(req) ||
     "Unknown IP";
   const meta: AppLogMeta = {
     statusCode: err.statusCode,

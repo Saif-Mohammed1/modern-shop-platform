@@ -4,10 +4,8 @@ import { connectDB } from "@/app/_server/db/db";
 import { AuthMiddleware } from "@/app/_server/middlewares/auth.middleware";
 
 import { type NextRequest, NextResponse } from "next/server";
-export const DELETE = async (
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) => {
+export const DELETE = async (req: NextRequest, props: { params: Promise<{ id: string }> }) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();

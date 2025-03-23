@@ -11,8 +11,11 @@ import { OrderTranslate } from "@/public/locales/server/Order.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 
 export class OrderService {
-  private repository = new OrderRepository(OrderModel);
-
+  constructor(
+    private readonly repository: OrderRepository = new OrderRepository(
+      OrderModel
+    )
+  ) {}
   async createOrder(dto: CreateOrderDto) {
     const session = await this.repository.startSession();
     session.startTransaction();

@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, use, useEffect } from "react";
 import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import { ProductType } from "@/app/lib/types/products.types";
@@ -117,12 +117,10 @@ export const WishlistProvider = ({
   };
 
   return (
-    <WishlistContext.Provider
-      value={{ wishlist, toggleWishlist, isInWishlist }}
-    >
+    <WishlistContext value={{ wishlist, toggleWishlist, isInWishlist }}>
       {children}
-    </WishlistContext.Provider>
+    </WishlistContext>
   );
 };
 
-export const useWishlist = () => useContext(WishlistContext);
+export const useWishlist = () => use(WishlistContext);

@@ -6,12 +6,11 @@ import cartController from "@/app/_server/controllers/cart.controller";
 
 export const POST = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();
@@ -25,12 +24,11 @@ export const POST = async (
 };
 export const PUT = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();
@@ -44,12 +42,11 @@ export const PUT = async (
 
 export const DELETE = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();

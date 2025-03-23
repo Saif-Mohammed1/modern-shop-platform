@@ -26,7 +26,7 @@
 import { tooManyRequestsTranslate } from "@/public/locales/client/(public)/tooManyRequestsTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { NextPage } from "next";
-import { cookies, headers } from "next/headers";
+import { cookies, headers, type UnsafeUnwrappedCookies, type UnsafeUnwrappedHeaders } from "next/headers";
 import Link from "next/link";
 // import { useTranslations } from 'next-intl';
 import { RiTimerFlashLine } from "react-icons/ri";
@@ -38,8 +38,8 @@ export const metadata = {
 };
 
 const TooManyRequests: NextPage = () => {
-  const retryAfter = cookies().get("Retry-After")?.value;
-  const pathname = headers().get("x-pathname") || "/";
+  const retryAfter = (cookies() as unknown as UnsafeUnwrappedCookies).get("Retry-After")?.value;
+  const pathname = (headers() as unknown as UnsafeUnwrappedHeaders).get("x-pathname") || "/";
   const formattedTime = retryAfter
     ? new Date(Date.now() + Number(retryAfter) * 1000).toLocaleTimeString()
     : null;

@@ -6,12 +6,11 @@ import reviewController from "@/app/_server/controllers/review.controller";
 
 export const GET = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { id: string };
+  props: {
+    params: Promise<{ id: string }>;
   }
 ) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();
@@ -23,10 +22,8 @@ export const GET = async (
   }
 };
 
-export const POST = async (
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) => {
+export const POST = async (req: NextRequest, props: { params: Promise<{ id: string }> }) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();
@@ -40,10 +37,8 @@ export const POST = async (
     return ErrorHandler(error, req);
   }
 };
-export const PATCH = async (
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) => {
+export const PATCH = async (req: NextRequest, props: { params: Promise<{ id: string }> }) => {
+  const params = await props.params;
   const { id } = params;
   try {
     await connectDB();

@@ -72,8 +72,10 @@ class EmailService {
   private readonly appName: string;
   private readonly appUrl: string;
   private readonly senderEmail: string;
-  private readonly userRepo = new UserRepository(UserModel);
-  constructor(private config: EmailConfig) {
+  constructor(
+    private config: EmailConfig,
+    private readonly userRepo: UserRepository = new UserRepository(UserModel)
+  ) {
     this.validateEnvironment();
     this.transporter = nodemailer.createTransport(config);
     this.appName = process.env.APP_NAME || "Our Service";

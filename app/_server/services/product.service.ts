@@ -21,7 +21,11 @@ import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 import { LogsTypeDto } from "../dtos/logs.dto";
 
 export class ProductService {
-  private repository = new ProductRepository(ProductModel);
+  constructor(
+    private readonly repository: ProductRepository = new ProductRepository(
+      ProductModel
+    )
+  ) {}
   async logAction(
     action: AuditAction,
     entityId: string,

@@ -6,12 +6,11 @@ import ErrorHandler from "@/app/_server/controllers/error.controller";
 import productController from "@/app/_server/controllers/product.controller";
 export const GET = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { slug: string };
+  props: {
+    params: Promise<{ slug: string }>;
   }
 ) => {
+  const params = await props.params;
   const { slug } = params;
   try {
     await connectDB();
@@ -24,12 +23,11 @@ export const GET = async (
 };
 export const PUT = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { slug: string };
+  props: {
+    params: Promise<{ slug: string }>;
   }
 ) => {
+  const params = await props.params;
   const { slug } = params;
   try {
     await connectDB();
@@ -51,12 +49,11 @@ export const PUT = async (
 };
 export const DELETE = async (
   req: NextRequest,
-  {
-    params,
-  }: {
-    params: { slug: string };
+  props: {
+    params: Promise<{ slug: string }>;
   }
 ) => {
+  const params = await props.params;
   const { slug } = params;
   try {
     await connectDB();

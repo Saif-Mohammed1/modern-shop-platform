@@ -49,16 +49,20 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET!, {
 });
 
 export class StripeService {
-  private RESERVATION_TIMEOUT =
-    Number(process.env.RESERVATION_TIMEOUT || 15) * 60; // 15 minutes in seconds
-  private feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
-  // Tax rate caching with TTL
-  private TAX_RATE_TTL = 3600; // 1 hour in seconds
-  private CACHE_PREFIX = "taxRate:";
-
-  private userCartService = new CartService();
-  private productService = new ProductService();
-
+  private readonly RESERVATION_TIMEOUT;
+  private readonly feePercentage;
+  private readonly TAX_RATE_TTL;
+  private readonly CACHE_PREFIX;
+  constructor(
+    private readonly userCartService: CartService = new CartService(),
+    private readonly productService: ProductService = new ProductService()
+  ) {
+    this.RESERVATION_TIMEOUT =
+      Number(process.env.RESERVATION_TIMEOUT || 15) * 60; // 15 minutes in seconds
+    this.feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
+    this.TAX_RATE_TTL = 3600; // 1 hour in seconds
+    this.CACHE_PREFIX = "taxRate:";
+  }
   async createStripeSession(
     user: IUser,
     shippingInfo: ShippingInfoDto,

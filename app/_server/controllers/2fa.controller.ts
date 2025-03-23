@@ -11,13 +11,14 @@ import {
   getDeviceFingerprint,
 } from "@/app/lib/utilities/DeviceFingerprint.utility";
 import { SecurityMetadata } from "../models/2fa.model";
-import { cookies } from "next/headers";
+import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 import { UserValidation } from "../dtos/user.dto";
+import { ipAddress } from "@vercel/functions";
 
 class TwoFactorController {
   constructor(
-    private readonly twoFactorService = new TwoFactorService(),
-    private readonly userService = new UserService()
+    private readonly twoFactorService: TwoFactorService = new TwoFactorService(),
+    private readonly userService: UserService = new UserService()
   ) {}
 
   async initialize2FA(req: NextRequest) {
@@ -58,8 +59,8 @@ class TwoFactorController {
   async verify2FALogin(req: NextRequest) {
     try {
       let cookieTempToken =
-        cookies().get("tempToken")?.value ||
-        req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
+        (cookies() as unknown as UnsafeUnwrappedCookies).get("tempToken")
+          ?.value || req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
       const body = await req.json();
       if (!cookieTempToken)
         cookieTempToken = await this.generateSessionToken(body.email);
@@ -217,9 +218,9 @@ class TwoFactorController {
       req.headers.get("x-client-ip") ||
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
-      req.ip ||
+      ipAddress(req) ||
       "Unknown IP";
-    const userAgent = req.headers.get("user-agent") || "";
+    const userAgent = req.headers.get("user-agent") || "Unknown User Agent";
     const deviceHash = generateDeviceFingerprint({
       userAgent,
       ip: clientIp,
