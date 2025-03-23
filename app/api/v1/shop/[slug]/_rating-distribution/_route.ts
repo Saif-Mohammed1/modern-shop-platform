@@ -2,7 +2,8 @@
 // This file is generated automatically.
 
 export const dynamic = "force-static";
-export const revalidate = 60 * 10;
+export const revalidate = 600;
+// export const revalidate = 60 * 10; //doesn't work ;
 import ErrorHandler from "@/app/_server/controllers/error.controller";
 import reviewController from "@/app/_server/controllers/review.controller";
 import { connectDB } from "@/app/_server/db/db";
