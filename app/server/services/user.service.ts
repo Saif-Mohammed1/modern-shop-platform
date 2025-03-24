@@ -11,7 +11,7 @@ import {
   UserChangePasswordDTO,
   UserCreateDTO,
 } from "../dtos/user.dto";
-import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
+import { cookies } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import {
   SecurityAuditAction,
@@ -60,7 +60,7 @@ export class UserService {
       this.repository.updateLastLogin(user._id),
       this.repository.clearTwoFactorSecret(String(user._id)),
     ]);
-    this.tokensService.setRefreshTokenCookies(refreshToken);
+    await this.tokensService.setRefreshTokenCookies(refreshToken);
     await this.repository.clearRateLimit(user, "login");
     // After successful authentication
     if (user.loginNotificationSent) {
@@ -221,17 +221,13 @@ export class UserService {
         user._id.toString()
       );
       const expires = new Date(Date.now() + 1000 * 60 * 5);
-      (cookies() as unknown as UnsafeUnwrappedCookies).set(
-        "tempToken",
-        tempToken,
-        {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-          expires,
-          path: "/",
-        }
-      );
+      (await cookies()).set("tempToken", tempToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        expires,
+        path: "/",
+      });
       await this.repository.incrementRateLimit(user, "2fa");
       return {
         requires2FA: true,
@@ -275,7 +271,7 @@ export class UserService {
   async logOut(): Promise<{
     message: string;
   }> {
-    this.tokensService.clearRefreshTokenCookies();
+    await this.tokensService.clearRefreshTokenCookies();
 
     return { message: AuthTranslate[lang].auth.logOut.logOutSuccess };
   }
@@ -594,17 +590,13 @@ export class UserService {
       user._id.toString()
     );
     const expires = new Date(Date.now() + 1000 * 60 * 5);
-    (cookies() as unknown as UnsafeUnwrappedCookies).set(
-      "tempToken",
-      tempToken,
-      {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-        expires,
-        path: "/",
-      }
-    );
+    (await cookies()).set("tempToken", tempToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      expires,
+      path: "/",
+    });
     await this.repository.incrementRateLimit(user, "2fa");
     // return {
     //   message: "Temporary token generated",

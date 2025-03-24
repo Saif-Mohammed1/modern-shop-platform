@@ -11,31 +11,15 @@ type Props = {
   }>;
 };
 const getProductMetaData = async (slug: string) => {
-  const { data } = await api.get(
-    "/shop/" + slug + "/metadata"
-    //   {
-    //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-    // }
-  );
+  const { data } = await api.get("/shop/" + slug + "/metadata");
   return data;
 };
 const getProductData = async (slug: string) => {
-  // const { data } = await api.get(
-  //   "/shop/" + slug
-  //   //    {
-  //   //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-  //   // }
-  // );
   const { data } = await api.get("/shop/" + slug);
 
   return data;
 };
-// const getReviewsData = (async (slug: string) => {
-//   const { data } = await api.get(`/customers/reviews/${slug}`, {
-//     headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-//   });
-//   return data;
-// });
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const { slug } = params;
@@ -65,13 +49,6 @@ const page = async (props: Props) => {
 
   try {
     const { product, distribution } = await getProductData(slug);
-    // const [product, reviews] = await Promise.all([
-    //   // const { data } = await api.get("/shop/" + slug, {
-    //   //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-    //   // });
-    //   getProductData(slug),
-    //   // getReviewsData(slug),
-    // ]);
 
     return (
       // <ComponentLoading>

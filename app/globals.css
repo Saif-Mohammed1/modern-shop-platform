@@ -1,54 +1,75 @@
 @import "tailwindcss";
-/* 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+
+@theme {
+  --color-primary: #2086ff;
+  --color-secondary: #757575;
+  --color-tertiary: #335a5a;
+  --color-neutral: #808080;
+  --color-primary-50: #f4f9ff;
+  --color-primary-100: #e9f3ff;
+  --color-primary-200: #c8e1ff;
+  --color-primary-300: #a6ceff;
+  --color-primary-400: #63aaff;
+  --color-primary-500: #2086ff;
+  --color-primary-600: #1d78e6;
+  --color-primary-700: #144f99;
+  --color-primary-800: #0f3b73;
+  --color-primary-900: #0a2850;
+
+  --color-secondary-50: #f8f8f8;
+  --color-secondary-100: #f1f1f1;
+  --color-secondary-200: #dcdcdc;
+  --color-secondary-300: #c7c7c7;
+  --color-secondary-400: #9e9e9e;
+  --color-secondary-500: #757575;
+  --color-secondary-600: #6a6a6a;
+  --color-secondary-700: #474747;
+  --color-secondary-800: #353535;
+  --color-secondary-900: #232323;
+
+  --color-tertiary-50: #f5f8f8;
+  --color-tertiary-100: #ebeeee;
+  --color-tertiary-200: #ccd1d1;
+  --color-tertiary-300: #adb6b6;
+  --color-tertiary-400: #708080;
+  --color-tertiary-500: #335a5a;
+  --color-tertiary-600: #2f5151;
+  --color-tertiary-700: #203535;
+  --color-tertiary-800: #182727;
+  --color-tertiary-900: #101a1a;
+
+  --color-neutral-50: #f9f9f9;
+  --color-neutral-100: #f3f3f3;
+  --color-neutral-200: #e0e0e0;
+  --color-neutral-300: #cdcdcd;
+  --color-neutral-400: #a6a6a6;
+  --color-neutral-500: #808080;
+  --color-neutral-600: #737373;
+  --color-neutral-700: #4d4d4d;
+  --color-neutral-800: #3b3b3b;
+  --color-neutral-900: #292929;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-} */
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-  scroll-behavior: smooth; /* Smooth scrolling */
-  -ms-overflow-style: none; /* Internet Explorer and Edge */
-  scrollbar-width: none; /* Firefox */
-}
+/** {
+  /* box-sizing: border-box;
+  /* padding: 0;
+  margin: 0; */
+/* scroll-behavior: smooth; /* Smooth scrolling */
+/* -ms-overflow-style: none; /* Internet Explorer and Edge */
+/*  scrollbar-width: none; Firefox*/
+/* } */
 *::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
 
-.no-scrollbar {
+/*.no-scrollbar {
   /* -ms-overflow-style: none; Internet Explorer and Edge */
-  /* scrollbar-width: none; Firefox */
-}
+/* scrollbar-width: none; Firefox */
+/* } */
 
-.no-scrollbar::-webkit-scrollbar {
-  /*display: none; /* Chrome, Safari, Opera */
-}
+/* .no-scrollbar::-webkit-scrollbar { */
+/*display: none; /* Chrome, Safari, Opera */
+/* } */
 
 .bg-red {
   border: 3px solid red;

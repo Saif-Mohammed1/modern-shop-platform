@@ -6,7 +6,7 @@ import {
   getCartItems,
   removeFromCart,
   clearItemFromCart,
-  mergeLocalCartWithDB,
+  // mergeLocalCartWithDB,
 } from "./cartAction";
 import toast from "react-hot-toast";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
@@ -115,9 +115,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           );
       }
     };
-    loadCart();
+    // Add small delay if experiencing race conditions
+    const timer = setTimeout(loadCart, 500);
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
   }, [user]);
 
@@ -127,30 +129,30 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [cartItems, user]);
 
   // Merge carts with cleanup
-  useEffect(() => {
-    let isMounted = true;
-    const mergeCarts = async () => {
-      const storedCart = localStorage.getItem("cart") || [];
-      if (storedCart?.length && user) {
-        try {
-          await mergeLocalCartWithDB();
-          if (isMounted)
-            toast.success(
-              cartContextTranslate[lang].cartContext.mergeLocalCart.success
-            );
-        } catch (error: any) {
-          if (isMounted)
-            toast.error(
-              error?.message || cartContextTranslate[lang].errors.global
-            );
-        }
-      }
-    };
-    mergeCarts();
-    return () => {
-      isMounted = false;
-    };
-  }, [user]);
+  // useEffect(() => {
+  //   let isMounted = true;
+  //   const mergeCarts = async () => {
+  //     const storedCart = localStorage.getItem("cart") || [];
+  //     if (storedCart?.length && user) {
+  //       try {
+  //         await mergeLocalCartWithDB();
+  //         if (isMounted)
+  //           toast.success(
+  //             cartContextTranslate[lang].cartContext.mergeLocalCart.success //"Cart merged successfully"
+  //           );
+  //       } catch (error: any) {
+  //         if (isMounted)
+  //           toast.error(
+  //             error?.message || cartContextTranslate[lang].errors.global
+  //           );
+  //       }
+  //     }
+  //   };
+  //   mergeCarts();
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, [user]);
 
   return (
     <CartContext

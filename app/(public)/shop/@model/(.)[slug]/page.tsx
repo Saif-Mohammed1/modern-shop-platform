@@ -14,13 +14,7 @@ const page = async (props: Props) => {
   try {
     const {
       data: { product },
-    } = await api.get(
-      "/shop/" + slug + "/metadata"
-
-      //   {
-      //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-      // }
-    );
+    } = await api.get("/shop/" + slug + "/metadata");
     return (
       <OverlayWrapper>
         <ModelProductDetail product={product} />

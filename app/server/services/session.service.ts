@@ -37,7 +37,7 @@ export class SessionService {
 
   async revokeAllSessions(userId: string): Promise<void> {
     await this.repository.revokeAllSessions(userId);
-    this.tokensService.clearRefreshTokenCookies();
+    await this.tokensService.clearRefreshTokenCookies();
   }
   async revokeAllSessionsByAdmin(
     userId: string,

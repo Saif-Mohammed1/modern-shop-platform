@@ -15,7 +15,7 @@ import {
 } from "@/app/lib/types/users.types";
 import { TokensService } from "@/app/server/services/tokens.service";
 import { obfuscateEmail } from "@/app/lib/utilities/helpers";
-import { emailService } from "../services";
+// import { emailService } from "../services";
 interface ILoginHistory extends DeviceInfo {
   timestamp: Date;
   //   ipAddress: string;
@@ -138,8 +138,6 @@ const UserSchema = new Schema<IUser>(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
-      index: true,
       trim: true,
       lowercase: true,
       validate: [validator.isEmail, "Please provide a valid email"],
@@ -271,7 +269,7 @@ const UserSchema = new Schema<IUser>(
             longitude: { type: Number, required: true },
             source: { type: String, required: true },
           },
-          fingerprint: { type: String, required: true, index: true },
+          fingerprint: { type: String, required: true },
           timestamp: { type: Date, default: Date.now },
           success: { type: Boolean, required: true },
           _id: false,
@@ -340,6 +338,7 @@ UserSchema.index(
 UserSchema.index({ "security.auditLog.timestamp": 1 });
 UserSchema.index({ "security.lastLogin": -1 });
 UserSchema.index({ "security.loginHistory.ip": 1 });
+UserSchema.index({ "security.loginHistory.fingerprint": 1 });
 UserSchema.index({ "verification.emailVerified": 1 });
 UserSchema.index({
   "security.rateLimits.login.lockUntil": 1,
@@ -422,6 +421,8 @@ UserSchema.pre<IUser>("save", async function (next) {
 
     // 3. Suspicious activity notifications
     if (this.security.behavioralFlags.requestVelocity > 5) {
+      const { emailService } = await import("../services");
+
       await emailService.sendSecurityAlertEmail(this.email, {
         type: SecurityAlertType.SUSPICIOUS_ACTIVITY,
         // type: "SUSPICIOUS_ACTIVITY",
@@ -631,6 +632,8 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
 
     // Send security alert only for truly new devices
     if (!this.loginNotificationSent) {
+      const { emailService } = await import("../services");
+
       await emailService.sendSecurityAlertEmail(this.email, {
         type: SecurityAlertType.NEW_DEVICE,
         device: {
@@ -665,6 +668,7 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
   if (recentAttempts.length > 5) {
     this.security.behavioralFlags.requestVelocity = recentAttempts.length;
     this.security.rateLimits.login.lockUntil = new Date(Date.now() + 3600000); // 1 hour
+    const { emailService } = await import("../services");
 
     await emailService.sendSecurityAlertEmail(this.email, {
       type: SecurityAlertType.SUSPICIOUS_ACTIVITY,

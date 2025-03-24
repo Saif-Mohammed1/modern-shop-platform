@@ -2,7 +2,7 @@ import { sign } from "jsonwebtoken";
 import crypto from "crypto";
 import { promisify } from "util";
 import jwt from "jsonwebtoken";
-import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
+import { cookies } from "next/headers";
 export class TokensService {
   private readonly COOKIE_NAME;
   private readonly RefreshExpiresAt;
@@ -174,8 +174,8 @@ export class TokensService {
       .join("");
   }
 
-  clearRefreshTokenCookies() {
-    (cookies() as unknown as UnsafeUnwrappedCookies).set(this.COOKIE_NAME, "", {
+  async clearRefreshTokenCookies() {
+    (await cookies()).set(this.COOKIE_NAME, "", {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       secure: process.env.NODE_ENV === "production",
@@ -185,20 +185,16 @@ export class TokensService {
       partitioned: true,
     });
   }
-  setRefreshTokenCookies(token: string) {
-    (cookies() as unknown as UnsafeUnwrappedCookies).set(
-      this.COOKIE_NAME,
-      token,
-      {
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
-        secure: process.env.NODE_ENV === "production", // 'false' in development
-        path: "/",
-        expires: this.getRefreshTokenExpiry(),
-        // Add these for enhanced security:
-        partitioned: true, // Chrome 109+ feature
-        priority: "high", // Protect against CRIME attacks
-      }
-    );
+  async setRefreshTokenCookies(token: string) {
+    (await cookies()).set(this.COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax", // 'Lax' in development if set none need secure to true
+      secure: process.env.NODE_ENV === "production", // 'false' in development
+      path: "/",
+      expires: this.getRefreshTokenExpiry(),
+      // Add these for enhanced security:
+      partitioned: true, // Chrome 109+ feature
+      priority: "high", // Protect against CRIME attacks
+    });
   }
 }

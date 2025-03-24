@@ -1,11 +1,13 @@
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/pagination";
 import "./styles.css";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/scrollbar";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import Image from "next/image";
-import { Fragment } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Slider() {
   const images = [
@@ -31,21 +33,18 @@ export default function Slider() {
         pagination={{ clickable: true }}
         autoplay={{ delay: 3000 }}
         modules={[Pagination, Autoplay, Navigation]}
-        className="h-[40dvh] w-100 /bg rounded-3xl"
+        className="h-[40dvh] lg:h-[60dvh]  rounded-3xl"
       >
         {images.map((image, index) => (
-          <Fragment key={index}>
-            {" "}
-            <SwiperSlide>
-              <Image
-                src={image}
-                alt={"Slide " + index + 1}
-                width={600}
-                height={600}
-                priority
-              />
-            </SwiperSlide>
-          </Fragment>
+          <SwiperSlide key={uuidv4()}>
+            <Image
+              src={image}
+              alt={"Slide " + index + 1}
+              width={600}
+              height={600}
+              priority
+            />
+          </SwiperSlide>
         ))}
       </Swiper>
     </>

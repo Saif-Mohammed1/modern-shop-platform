@@ -10,6 +10,7 @@ import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTrans
 import { lang } from "../../app/lib/utilities/lang";
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
 import api from "../../app/lib/utilities/api";
+import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -48,6 +49,10 @@ const LoginPage = () => {
       toast.success(loginTranslate[lang].functions.handleLogin.success);
       setEmail("");
       setPassword("");
+      const res = await mergeLocalCartWithDB();
+      if (res?.message) {
+        toast.success(res.message);
+      }
       if (callbackUrl) {
         router.push(callbackUrl);
       } else {

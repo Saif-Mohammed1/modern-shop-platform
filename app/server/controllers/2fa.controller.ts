@@ -11,7 +11,7 @@ import {
   getDeviceFingerprint,
 } from "@/app/lib/utilities/DeviceFingerprint.utility";
 import { SecurityMetadata } from "../models/2fa.model";
-import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
+import { cookies } from "next/headers";
 import { UserValidation } from "../dtos/user.dto";
 import { ipAddress } from "@vercel/functions";
 
@@ -59,8 +59,8 @@ class TwoFactorController {
   async verify2FALogin(req: NextRequest) {
     try {
       let cookieTempToken =
-        (cookies() as unknown as UnsafeUnwrappedCookies).get("tempToken")
-          ?.value || req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
+        (await cookies()).get("tempToken")?.value ||
+        req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
       const body = await req.json();
       if (!cookieTempToken)
         cookieTempToken = await this.generateSessionToken(body.email);

@@ -15,6 +15,7 @@ import { useState } from "react";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 import { FiLock, FiMail, FiUser } from "react-icons/fi";
 import Input from "../ui/Input";
+import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
 
 // Allowed email domains
 const allowedEmailDomains = ["gmail.com", "yahoo.com", "outlook.com"];
@@ -94,7 +95,10 @@ const RegisterPage = () => {
       });
 
       if (result?.error) throw new Error(result.error);
-
+      const res = await mergeLocalCartWithDB();
+      if (res?.message) {
+        toast.success(res.message);
+      }
       router.replace(callbackUrl || "/");
       toast.success(registerTranslate[lang].functions.handleRegister.success);
     } catch (error: unknown) {

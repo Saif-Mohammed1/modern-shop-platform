@@ -162,18 +162,26 @@ export const clearCartInDB = async (product: ProductCartPick) => {
 export const mergeLocalCartWithDB = async () => {
   try {
     const StoredCart = localStorage.getItem("cart");
+    if (!StoredCart) return;
 
-    const localCart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-
-    if (localCart.length === 0) return;
+    const localCart: CartItemsType[] = JSON.parse(StoredCart);
+    if (!Array.isArray(localCart) || localCart.length === 0) {
+      localStorage.removeItem("cart");
+      return;
+    }
     await api.post(
       "/customers/cart/merge",
 
       { products: localCart }
     );
     localStorage.removeItem("cart");
+    return {
+      message: cartContextTranslate[lang].cartContext.mergeLocalCart.success,
+    };
   } catch (error) {
-    throw error;
+    return {
+      message: cartContextTranslate[lang].cartContext.mergeLocalCart.error,
+    };
   }
 };
 const fetchCartItemsFromDB = async () => {

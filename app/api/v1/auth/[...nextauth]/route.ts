@@ -187,12 +187,6 @@ const authOptions: AuthOptions = {
 // this is next-auth jwt function what shoud be the right type for this
 async function refreshAccessTokenHandler(token: any) {
   try {
-    // const { data } = await api.get(`/auth/refresh-token`, {
-    //   headers: Object.fromEntries(headers().entries()), // Convert ReadonlyHeaders to plain object
-    //   // headers: {
-    //   //   "set-cookie": `refreshAccessToken=${refreshAccessToken}`,
-    //   // },
-    // });
     const headerStore = await headers();
     const req = new NextRequest(
       new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/refresh-token"),

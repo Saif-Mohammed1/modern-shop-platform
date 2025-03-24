@@ -3,14 +3,16 @@ import Link from "next/link";
 import StarRatings from "react-star-ratings";
 import { ProductType } from "@/app/lib/types/products.types";
 import { Swiper, SwiperSlide } from "swiper/react";
+import "./styles.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import "./styles.css";
+import "swiper/css/scrollbar";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
+import { v4 as uuidv4 } from "uuid";
 // import { useEffect, useState } from "react";
 type RelatedProductsProps = {
   title?: string;
@@ -91,8 +93,8 @@ const RelatedProducts = ({
           {...swiperConfig}
         >
           {relatedProducts.map((product) => (
-            <SwiperSlide key={product._id} style={{ width: "auto" }}>
-              <div className="card border p-4 hover:shadow-lg transition-shadow relative /w-fit shadow-lg rounded bg-gray-200/70 min-w-[160px] overflow-hidden">
+            <SwiperSlide key={uuidv4()} style={{ width: "auto" }}>
+              <div className="card  p-4 hover:shadow-lg transition-shadow relative /w-fit shadow-lg rounded bg-gray-200/70 min-w-[160px] overflow-hidden">
                 {/* Discount Badge */}
                 {product.discount > 0 && (
                   <div className="absolute top-4 -left-9 text-center -rotate-45 bg-red-500 text-white px-2 py-1 rounded-tl-md rounded-br-md shadow-md w-[149px]">
