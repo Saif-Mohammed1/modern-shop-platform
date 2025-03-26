@@ -116,5 +116,13 @@
     "next-env.d.ts", // Include all declaration files in the @types directory
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "**/*test.tsx", "**/*test.ts", ".next", "dist"]
+  "exclude": [
+    "node_modules",
+    "**/*test.tsx",
+    "**/*test.ts",
+    ".next",
+    "dist",
+    "**/**test.tsx",
+    "**/**test**/**"
+  ]
 }

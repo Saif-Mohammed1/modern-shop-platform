@@ -1,4 +1,4 @@
-// .eslintrc.js (or .eslintrc.cjs for CommonJS)
+// eslint.config.mjs (or .eslintrc.cjs for CommonJS)
 import eslintJS from "@eslint/js";
 import nextPlugin from "@next/eslint-plugin-next";
 import typescriptPlugin from "@typescript-eslint/eslint-plugin";
@@ -6,6 +6,10 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import jsdocPlugin from "eslint-plugin-jsdoc";
 import importPlugin from "eslint-plugin-import";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('eslint').Linter.Config} */
 export default [
@@ -17,7 +21,9 @@ export default [
       "build",
       "*.config.js",
       "**/*.d.ts",
-      "**/*test*",
+      "**/**test**/**", // Standard test directory pattern
+      "**/__tests__/**", // Standard test directory pattern
+      "**/__test__/**", // Your custom test directory
     ],
   },
   eslintJS.configs.recommended,
@@ -37,8 +43,9 @@ export default [
         ecmaFeatures: { jsx: true },
         ecmaVersion: "latest",
         sourceType: "module",
-        project: "./tsconfig.json",
-        // tsconfigRootDir: __dirname,
+        project: [path.join(__dirname, "tsconfig.json")],
+        tsconfigRootDir: __dirname,
+        warnOnUnsupportedTypeScriptVersion: true,
       },
     },
   },
@@ -50,6 +57,8 @@ export default [
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": "error",
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "react/jsx-curly-brace-presence": ["error", "never"],

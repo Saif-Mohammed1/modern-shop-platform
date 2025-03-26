@@ -1,86 +1,83 @@
+// lib/logger.ts
 import { type NextRequest } from "next/server";
 import { ipAddress } from "@vercel/functions";
 import winston from "winston";
-import DailyRotateFile from "winston-daily-rotate-file";
-
+import { Logtail } from "@logtail/node";
+import { LogtailTransport } from "@logtail/winston";
 import { v4 as uuidv4 } from "uuid";
 
-// Define custom log format with error typing
+// Initialize Logtail
+const logtail = new Logtail(process.env.LOGTAIL_SOURCE_TOKEN!);
+
+// Environment detection
+const isVercel = process.env.VERCEL === "1";
+const isProduction = process.env.NODE_ENV === "production";
+
 interface AppLogMeta {
   statusCode?: number;
   path?: string;
   clientIp?: string;
   method?: string;
   error?: Error;
+  correlationId?: string;
   [key: string]: unknown;
 }
 
-// Configure logger with environment-aware settings
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === "production" ? "info" : "debug",
+  level: isProduction ? "info" : "debug",
   defaultMeta: {
     service: process.env.APP_NAME || "app",
     environment: process.env.NODE_ENV || "development",
   },
   format: winston.format.combine(
-    winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
+    winston.format.timestamp({ format: "ISO8601" }),
     winston.format.errors({ stack: true }),
-    winston.format.splat(),
     winston.format.json()
   ),
   transports: [
-    // Rotating file transport (production only)
-    ...(process.env.NODE_ENV === "production"
-      ? [
-          new DailyRotateFile({
-            filename: "logs/application-%DATE%.log",
-            datePattern: "YYYY-MM-DD",
-            zippedArchive: true,
-            maxSize: "20m",
-            maxFiles: "30d",
-            auditFile: "logs/.audit.json",
-            utc: true,
-          }),
-        ]
-      : []),
-    // Enhanced console transport (development friendly)
+    // Logtail transport (production only)
+    ...(isProduction ? [new LogtailTransport(logtail)] : []),
+
+    // Console transport (all environments)
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.printf(({ timestamp, level, message, ...meta }) => {
-          return `[${timestamp}] ${level}: ${message} ${
-            Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""
-          }`;
-        })
+        winston.format.printf(
+          ({ timestamp, level, message, correlationId, ...meta }) => {
+            return `[${timestamp}] [${correlationId}] ${level}: ${message} ${
+              Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""
+            }`;
+          }
+        )
       ),
     }),
   ],
   exceptionHandlers: [
-    new DailyRotateFile({
-      filename: "logs/exceptions-%DATE%.log",
-      datePattern: "YYYY-MM-DD",
-      maxFiles: "30d",
-    }),
+    new winston.transports.Console(),
+    ...(isProduction ? [new LogtailTransport(logtail)] : []),
   ],
   rejectionHandlers: [
-    new DailyRotateFile({
-      filename: "logs/rejections-%DATE%.log",
-      datePattern: "YYYY-MM-DD",
-      maxFiles: "30d",
-    }),
+    new winston.transports.Console(),
+    ...(isProduction ? [new LogtailTransport(logtail)] : []),
   ],
 });
 
-// Add request metadata to logs
+// Add correlation ID support
+export function createRequestLogger(correlationId: string = uuidv4()) {
+  return logger.child({ correlationId });
+}
+
+// Enhanced request error logging
 export function logRequestError(
   err: Error & { statusCode?: number },
-  req: NextRequest
+  req: NextRequest,
+  correlationId?: string
 ) {
   const clientIp =
     req.headers.get("x-client-ip") ||
+    ipAddress(req) ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
-    ipAddress(req) ||
     "Unknown IP";
   const meta: AppLogMeta = {
     statusCode: err.statusCode,
@@ -88,17 +85,20 @@ export function logRequestError(
     clientIp,
     method: req.method,
     error: err,
+    correlationId,
   };
 
-  logger.log({
-    level: err.statusCode && err.statusCode >= 500 ? "error" : "warn",
-    message: err.message,
-    ...meta,
-  });
+  const logLevel = err.statusCode && err.statusCode >= 500 ? "error" : "warn";
+
+  logger.log(logLevel, err.message, meta);
 }
 
-// Optional: Add correlation ID support
-// import { v4 as uuidv4 } from "uuid";
-logger.defaultMeta.correlationId = uuidv4();
+// Vercel-specific cleanup
+if (isVercel) {
+  process.on("SIGTERM", async () => {
+    await logtail.flush();
+    process.exit(0);
+  });
+}
 
 export default logger;
