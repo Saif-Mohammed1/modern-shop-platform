@@ -5,6 +5,7 @@ import crypto from "crypto";
 import type { DeviceInfo, GeoLocation } from "../types/session.types";
 import { TokensService } from "@/app/server/services/tokens.service";
 import { ipAddress } from "@vercel/functions";
+import logger from "../logger/logs";
 const tokensService = new TokensService();
 export const getDeviceFingerprint = async (
   req: NextRequest
@@ -121,7 +122,7 @@ export const getLocationFromIp = async (
         longitude,
       };
     } catch (error) {
-      console.warn(`Error fetching from ${apis[index]}, trying next...`, error);
+      logger.warn(`Error fetching from ${apis[index]}, trying next...`, error);
       return fetchLocation(index + 1);
     }
   };

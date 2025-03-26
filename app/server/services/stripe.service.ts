@@ -36,6 +36,7 @@ import { MongoBulkWriteError } from "mongodb";
 import type { LogsTypeDto } from "../dtos/logs.dto";
 import { emailService } from ".";
 import type { AdminInventoryNotification } from "./email.service";
+import logger from "@/app/lib/logger/logs";
 // stripe.service.ts
 
 export interface FailedOrderData {
@@ -655,7 +656,7 @@ export class StripeService {
       // Release all locks in reverse order
       for (const lockKey of [...acquiredLocks].reverse()) {
         await this.releaseLock(lockKey).catch((error) => {
-          console.error(`Failed to release lock: ${lockKey}`, error);
+          logger.error(`Failed to release lock: ${lockKey}`, error);
         });
       }
     }

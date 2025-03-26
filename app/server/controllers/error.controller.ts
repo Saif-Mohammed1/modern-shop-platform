@@ -3,7 +3,10 @@ import AppError from "@/app/lib/utilities/appError";
 import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { z } from "zod";
-import { createRequestLogger, logRequestError } from "@/app/lib/logger/logs";
+import logger, {
+  createRequestLogger,
+  logRequestError,
+} from "@/app/lib/logger/logs";
 
 // Type definitions
 interface CastError {
@@ -171,7 +174,7 @@ class ErrorHandler {
 
   private sendErrorProd = (err: AppError) => {
     // Log operational errors for monitoring
-    if (!err.isOperational) console.error("ERROR 💥", err);
+    if (!err.isOperational) logger.error("ERROR 💥", err);
 
     return NextResponse.json(
       {

@@ -2,6 +2,7 @@
 import nodemailer from "nodemailer";
 import type { DeviceInfo } from "../../lib/types/session.types";
 import { UserRepository } from "@/app/server/repositories/user.repository";
+import logger from "@/app/lib/logger/logs";
 interface EmailConfig {
   service: string;
   auth: {
@@ -104,7 +105,7 @@ export class EmailService {
       throw new Error("APP_NAME environment variable is required");
     }
     if (!process.env.NEXTAUTH_URL) {
-      console.warn("NEXTAUTH_URL environment variable not set, using default");
+      logger.warn("NEXTAUTH_URL environment variable not set, using default");
     }
   }
 
@@ -116,7 +117,7 @@ export class EmailService {
         ...template,
       });
     } catch (error) {
-      console.error("Email sending failed:", error);
+      logger.error("Email sending failed:", error);
       throw new Error(
         `Email sending failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
@@ -410,7 +411,7 @@ export class EmailService {
         ...device,
       });
     } catch (error) {
-      console.error(`Failed to send ${type} alert:`, error);
+      logger.error(`Failed to send ${type} alert:`, error);
       // await this.queueRetryNotification(userEmail, type);
     }
   }
@@ -829,7 +830,7 @@ export class EmailService {
     notification: AdminInventoryNotification
   ): Promise<void> {
     if (admins.length === 0) {
-      console.warn("No admins found for notification");
+      logger.warn("No admins found for notification");
       return;
     }
 

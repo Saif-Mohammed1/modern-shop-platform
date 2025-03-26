@@ -15,6 +15,7 @@ import AppError from "./app/lib/utilities/appError";
 import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
 import { lang } from "./app/lib/utilities/lang";
 import { ipAddress } from "@vercel/functions";
+import logger from "./app/lib/logger/logs";
 
 const PROTECTED_ROUTES = [
   "/account",
@@ -151,7 +152,7 @@ const authMiddleware = async (req: NextRequest) => {
 
     return response;
   } catch (error) {
-    console.error("Middleware error:", error);
+    logger.error("Middleware error:", error);
     return NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url));
   }
 };

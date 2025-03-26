@@ -30,6 +30,7 @@ import type {
   QueryBuilderConfig,
   QueryBuilderResult,
 } from "../types/queryBuilder.types";
+import logger from "../logger/logs";
 
 export class QueryBuilder<T extends Document> {
   private populateOptions: PopulateOptions[] = [];
@@ -165,7 +166,7 @@ export class QueryBuilder<T extends Document> {
             operator
           )
         ) {
-          console.warn(`Invalid operator: ${operator}`);
+          logger.warn(`Invalid operator: ${operator}`);
           continue; // Skip invalid operators
         }
         // Merge operators for the same field

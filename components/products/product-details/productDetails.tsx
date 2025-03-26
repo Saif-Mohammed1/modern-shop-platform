@@ -110,7 +110,7 @@ const ProductDetail = ({
         setRelatedProducts(data.products.docs);
       } catch (error) {
         setRelatedProducts([]);
-        console.error(error);
+        // console.error(error);
       }
     };
     getrelatedProducts();

@@ -1,3 +1,4 @@
+import logger from "../logger/logs";
 import { redis } from "./Redis";
 
 const WINDOW_IN_SECONDS = 60; // 1 minute window
@@ -55,7 +56,7 @@ export const rateLimiter = {
 
       return response;
     } catch (error) {
-      console.error("Rate limiter error:", error);
+      logger.error("Rate limiter error:", error);
       // Fail open strategy with full allowance
       return {
         success: true,
