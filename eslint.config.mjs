@@ -1,37 +1,3 @@
-// import eslintJS from "@eslint/js";
-// const { compat } = eslintJS;
-// export default [
-//   {
-//     ignores: ["node_modules"],
-//   },
-//   // Extend the recommended configurations
-//   ...compat.extends(
-//     "eslint:recommended",
-//     "plugin:@typescript-eslint/recommended",
-//     "plugin:react/recommended",
-//     "plugin:react-hooks/recommended",
-//     "next/core-web-vitals"
-//   ),
-//   {
-//     files: ["**/*.ts", "**/*.tsx"],
-//     languageOptions: {
-//       parser: "@typescript-eslint/parser",
-//     },
-//     plugins: {
-//       "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
-//       react: require("eslint-plugin-react"),
-//       "react-hooks": require("eslint-plugin-react-hooks"),
-//     },
-//     rules: {
-//       "@typescript-eslint/no-unused-vars": [
-//         "warn",
-//         { argsIgnorePattern: "^_" }, // Ignore unused args starting with _
-//       ],
-//       "react/react-in-jsx-scope": "off", // Not needed in Next.js
-//       "react/prop-types": "off", // TypeScript removes the need for PropTypes
-//     },
-//   },
-// ];
 // .eslintrc.js (or .eslintrc.cjs for CommonJS)
 import eslintJS from "@eslint/js";
 import nextPlugin from "@next/eslint-plugin-next";
@@ -51,6 +17,7 @@ export default [
       "build",
       "*.config.js",
       "**/*.d.ts",
+      "**/*test*",
     ],
   },
   eslintJS.configs.recommended,
@@ -63,6 +30,7 @@ export default [
       jsdoc: jsdocPlugin,
       import: importPlugin,
     },
+
     languageOptions: {
       parser: typescriptPlugin.parser,
       parserOptions: {
@@ -70,6 +38,7 @@ export default [
         ecmaVersion: "latest",
         sourceType: "module",
         project: "./tsconfig.json",
+        // tsconfigRootDir: __dirname,
       },
     },
   },
