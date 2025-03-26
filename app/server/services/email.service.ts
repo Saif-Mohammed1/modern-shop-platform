@@ -1,6 +1,6 @@
 // src/lib/services/email.service.ts
 import nodemailer from "nodemailer";
-import { DeviceInfo, GeoLocation } from "../../lib/types/session.types";
+import type { DeviceInfo } from "../../lib/types/session.types";
 import { UserRepository } from "@/app/server/repositories/user.repository";
 interface EmailConfig {
   service: string;
@@ -65,6 +65,17 @@ interface SecurityAlertEmailParams {
     codesGenerated?: number;
     codesRemaining?: number;
   };
+}
+// Add type definition
+export interface AdminInventoryNotification {
+  type: "INVENTORY_RESERVATION_PARTIAL" | "INVENTORY_RESERVATION_FAILED";
+  userId: string;
+  failedProducts: Array<{
+    productId: string;
+    productName: string;
+    quantity: number;
+  }>;
+  timestamp: Date;
 }
 // Configuration and instantiation
 const emailConfig: EmailConfig = {
@@ -615,57 +626,57 @@ export class EmailService {
       html: this.baseTemplate(content),
     });
   }
-  private getAlertDetails(
-    type: SecurityAlertType,
-    attempts?: number,
-    locations?: GeoLocation[],
-    device?: string,
-    ip?: string
-  ) {
-    const baseDetails = {
-      title: "",
-      message: "",
-      auditMessage: "",
-    };
+  // private getAlertDetails(
+  //   type: SecurityAlertType,
+  //   attempts?: number,
+  //   locations?: GeoLocation[],
+  //   device?: string,
+  //   ip?: string
+  // ) {
+  //   const baseDetails = {
+  //     title: "",
+  //     message: "",
+  //     auditMessage: "",
+  //   };
 
-    switch (type) {
-      case SecurityAlertType.SUSPICIOUS_LOGIN:
-        return {
-          ...baseDetails,
-          title: "Suspicious Activity Detected",
-          message: `We detected ${attempts} failed login attempts to your account 
-                 from ${locations?.length || "multiple"} locations.`,
-          auditMessage: `Security alert sent: ${attempts} failed login attempts`,
-        };
+  //   switch (type) {
+  //     case SecurityAlertType.SUSPICIOUS_LOGIN:
+  //       return {
+  //         ...baseDetails,
+  //         title: "Suspicious Activity Detected",
+  //         message: `We detected ${attempts} failed login attempts to your account
+  //                from ${locations?.length || "multiple"} locations.`,
+  //         auditMessage: `Security alert sent: ${attempts} failed login attempts`,
+  //       };
 
-      case "ACCOUNT_LOCKED":
-        return {
-          ...baseDetails,
-          title: "Account Temporarily Locked",
-          message:
-            "Your account has been locked due to multiple failed login attempts.",
-          auditMessage: "Account locked alert sent",
-        };
+  //     case "ACCOUNT_LOCKED":
+  //       return {
+  //         ...baseDetails,
+  //         title: "Account Temporarily Locked",
+  //         message:
+  //           "Your account has been locked due to multiple failed login attempts.",
+  //         auditMessage: "Account locked alert sent",
+  //       };
 
-      case "NEW_DEVICE":
-        return {
-          ...baseDetails,
-          title: "New Device Detected",
-          message: `A login was detected from a new device (${device}) at ${ip}.`,
-          auditMessage: `New device alert: ${device} (${ip})`,
-        };
+  //     case "NEW_DEVICE":
+  //       return {
+  //         ...baseDetails,
+  //         title: "New Device Detected",
+  //         message: `A login was detected from a new device (${device}) at ${ip}.`,
+  //         auditMessage: `New device alert: ${device} (${ip})`,
+  //       };
 
-      // Add other alert types as needed
+  //     // Add other alert types as needed
 
-      default:
-        return {
-          ...baseDetails,
-          title: "Security Notice",
-          message: "Important security notice regarding your account.",
-          auditMessage: "Generic security alert sent",
-        };
-    }
-  }
+  //     default:
+  //       return {
+  //         ...baseDetails,
+  //         title: "Security Notice",
+  //         message: "Important security notice regarding your account.",
+  //         auditMessage: "Generic security alert sent",
+  //       };
+  //   }
+  // }
   async sendEmailWithInvoice(
     email: string,
     link: string,
@@ -812,5 +823,49 @@ export class EmailService {
       ];
     }
     return [];
+  } // Add to your EmailService class
+  async sendAdminNotification(
+    admins: Array<{ email: string }>,
+    notification: AdminInventoryNotification
+  ): Promise<void> {
+    if (admins.length === 0) {
+      console.warn("No admins found for notification");
+      return;
+    }
+
+    const adminEmails = admins.map((admin) => admin.email).join(", ");
+    const productList = notification.failedProducts
+      .map((p) => `• ${p.quantity}x ${p.productName} (ID: ${p.productId})`)
+      .join("<br>");
+
+    const content = `
+    <h2 style="color: #2d3748; margin-top: 0;">Inventory Reservation Issue</h2>
+    <p><strong>User ID:</strong> ${notification.userId}</p>
+    <p><strong>Timestamp:</strong> ${notification.timestamp.toLocaleString()}</p>
+    
+    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 15px 0;">
+      <h3 style="color: #4a5568; margin-top: 0;">Failed Reservations:</h3>
+      ${productList}
+    </div>
+
+    ${this.createButton(
+      `${this.appUrl}/admin/orders?userId=${notification.userId}`,
+      "View User Details"
+    )}
+
+    <div style="margin-top: 25px; color: #718096; font-size: 14px;">
+      <p>This is an automated notification. Please review inventory levels and user account:</p>
+      <ul>
+        <li><a href="${this.appUrl}/admin/inventory">Inventory Management</a></li>
+        <li><a href="${this.appUrl}/admin/users/${notification.userId}">User Profile</a></li>
+      </ul>
+    </div>
+  `;
+
+    await this.sendEmail(adminEmails, {
+      subject: `🚨 Partial Inventory Reservation - ${this.appName}`,
+      html: this.baseTemplate(content),
+      priority: "high",
+    });
   }
 }

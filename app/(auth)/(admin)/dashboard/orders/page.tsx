@@ -6,7 +6,7 @@ import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { FC } from "react";
+import type { FC } from "react";
 export const metadata: Metadata = {
   title: ordersTranslate.metadata[lang].title,
   description: ordersTranslate.metadata[lang].description,

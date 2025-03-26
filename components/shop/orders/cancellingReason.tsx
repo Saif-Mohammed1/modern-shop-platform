@@ -1,9 +1,9 @@
 "use client";
 
-import { Event } from "@/app/lib/types/products.types";
+import type { Event } from "@/app/lib/types/products.types";
 import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 
 const OrderCancellation = () => {
   const [reason, setReason] = useState("");

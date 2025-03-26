@@ -1,10 +1,7 @@
 // favorite.model.ts
 import { Document, Model, Schema, Types, model, models } from "mongoose";
-import User, { IUser } from "./User.model";
-import Product, { IProduct } from "./Product.model";
-import AppError from "@/app/lib/utilities/appError";
-import { commonTranslations } from "@/public/locales/server/Common.Translate";
-import { lang } from "@/app/lib/utilities/lang";
+import { type IUser } from "./User.model";
+import { type IProduct } from "./Product.model";
 
 export interface IWishlist extends Document {
   _id: Types.ObjectId;

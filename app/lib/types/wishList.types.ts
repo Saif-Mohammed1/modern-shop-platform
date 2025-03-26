@@ -1,4 +1,4 @@
-import { ProductType } from "./products.types";
+import type { ProductType } from "./products.types";
 
 export interface FavoriteQueryConfig {
   query: URLSearchParams;

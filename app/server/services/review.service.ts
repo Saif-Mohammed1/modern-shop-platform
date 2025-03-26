@@ -1,8 +1,8 @@
 import AppError from "@/app/lib/utilities/appError";
-import { createReviewDto, updateReviewDto } from "../dtos/reviews.dto";
+import type { createReviewDto, updateReviewDto } from "../dtos/reviews.dto";
 import ReviewModel from "../models/Review.model";
 import { ReviewRepository } from "../repositories/review.repository";
-import { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
 import { OrderRepository } from "../repositories/order.repository";
 import OrderModel from "../models/Order.model";
 import { reviewControllerTranslate } from "@/public/locales/server/reviewControllerTranslate";

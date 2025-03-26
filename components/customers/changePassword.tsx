@@ -8,7 +8,10 @@ import api from "../../app/lib/utilities/api";
 import { deleteCookies } from "../../app/lib/utilities/cookies";
 import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
 import { lang } from "../../app/lib/utilities/lang";
-import { RefreshTokenStatus, sessionInfo } from "@/app/lib/types/session.types";
+import {
+  RefreshTokenStatus,
+  type sessionInfo,
+} from "@/app/lib/types/session.types";
 
 const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
   const [devicesList, setDevicesList] = useState(devices || []);

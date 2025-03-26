@@ -1,9 +1,9 @@
-import { DeviceInfo } from "@/app/lib/types/session.types";
-import SessionModel, { ISession } from "../models/Session.model";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
+import SessionModel, {type ISession } from "../models/Session.model";
 import { SessionRepository } from "../repositories/session.repository";
 import { TokensService } from "./tokens.service";
-import { SecurityAuditAction } from "@/app/lib/types/audit.types";
-import { ClientSession } from "mongoose";
+// import { SecurityAuditAction } from "@/app/lib/types/audit.types";
+import type { ClientSession } from "mongoose";
 
 export class SessionService {
   constructor(

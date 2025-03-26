@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 
 import DeviceDetector from "device-detector-js"; // 725.2K (gzipped: 168.3K)
 import crypto from "crypto";
-import { DeviceInfo, GeoLocation } from "../types/session.types";
+import type { DeviceInfo, GeoLocation } from "../types/session.types";
 import { TokensService } from "@/app/server/services/tokens.service";
 import { ipAddress } from "@vercel/functions";
 const tokensService = new TokensService();

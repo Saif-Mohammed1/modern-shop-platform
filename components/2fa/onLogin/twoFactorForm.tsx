@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import BackupCodeInput from "./backupCodeInput";
 import TotpInput from "./totpInput";
 

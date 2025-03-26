@@ -1,7 +1,7 @@
 // components/products/EditProductForm.tsx
 "use client";
 
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import FormProgress from "./form-progress";

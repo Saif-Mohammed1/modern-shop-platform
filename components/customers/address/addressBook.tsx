@@ -1,14 +1,12 @@
 "use client";
 import { lang } from "@/app/lib/utilities/lang";
-import {
-  addressTranslate,
-  AddressType,
-} from "@/public/locales/client/(auth)/account/addressTranslate";
-import AddressForm, { AddressFormValues } from "./AddressForm";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
+import AddressForm, { type AddressFormValues } from "./AddressForm";
 import { useState } from "react";
 import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import Spinner from "@/components/spinner/spinner";
+import type { AddressType } from "@/app/lib/types/address.types";
 type AddressBookProps = {
   initialAddresses: AddressType[];
   hasNextPage: boolean;

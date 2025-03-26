@@ -13,14 +13,13 @@ import {
 } from "react-icons/ai";
 import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import StarRatings from "react-star-ratings";
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-// import { ReviewsType } from "@/app/lib/types/reviews.types";
+// import type { ReviewsType } from "@/app/lib/types/reviews.types";
 import { useUser } from "@/components/providers/context/user/user.context";
 import api from "@/app/lib/utilities/api";
 import ComponentLoading from "@/components/spinner/componentLoading";
-import { formatDateTime } from "@/app/lib/utilities/formatDate";
 import Input from "@/components/ui/Input";
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";

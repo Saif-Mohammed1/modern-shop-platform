@@ -6,17 +6,18 @@ import { TwoFactorRepository } from "../repositories/2fa.repository";
 import { UserService } from "./user.service";
 import { CryptoService } from "./crypto.service";
 import AppError from "@/app/lib/utilities/appError";
-import TwoFactorAuthModel, {
+import type {
   AuditLog,
   ITwoFactorAuth,
   SecurityMetadata,
 } from "../models/2fa.model";
+import TwoFactorAuthModel from "../models/2fa.model";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import { TwoFactorTranslate } from "@/public/locales/server/TwoFactor.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 import logger from "@/app/lib/logger/logs";
 import { SessionService } from "./session.service";
-import { DeviceInfo } from "@/app/lib/types/session.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
 import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import { SecurityAlertType } from "@/app/server/services/email.service";
 import { emailService } from ".";
@@ -52,7 +53,7 @@ export class TwoFactorService {
       encryptedSecret,
       backupCodes: backupCodes.map(this.cryptoService.hashCode),
       auditLogs: [this.createAuditLog("2FA_INIT", metadata)],
-    });
+    } as Omit<ITwoFactorAuth, "_id" | "createdAt" | "updatedAt">);
 
     const qrCode = await qrcode.toDataURL(secret.otpauth_url!);
     return {
@@ -134,7 +135,7 @@ export class TwoFactorService {
   }
 
   async disable2FA(userId: string, metadata: SecurityMetadata) {
-    const [user, twoFA] = await Promise.all([
+    const [_user, twoFA] = await Promise.all([
       this.userService.findUserById(userId),
       this.repository.findOne({ userId }),
     ]);
@@ -210,7 +211,7 @@ export class TwoFactorService {
     session.startTransaction();
     try {
       // Process all codes before failing to prevent timing attacks
-      for (const [index, code] of codes.entries()) {
+      for (const [_index, code] of codes.entries()) {
         const codeIndex = twoFA.backupCodes.findIndex((hash) =>
           this.cryptoService.verifyBackupCode(code, hash)
         );
@@ -412,6 +413,7 @@ export class TwoFactorService {
 
   private checkLockoutStatus(twoFA: ITwoFactorAuth) {
     if (
+      twoFA.recoveryAttempts &&
       twoFA.recoveryAttempts >= SECURITY_CONFIG.MAX_ATTEMPTS &&
       twoFA.lastUsed &&
       Date.now() - twoFA.lastUsed.getTime() <

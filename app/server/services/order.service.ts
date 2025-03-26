@@ -1,5 +1,5 @@
-import { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
-import {
+import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import type {
   CreateOrderDto,
   UpdateOrderDto,
   UpdateOrderStatusDto,

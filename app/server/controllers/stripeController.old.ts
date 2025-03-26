@@ -2,14 +2,14 @@ import AppError from "@/app/lib/utilities/appError";
 import Stripe from "stripe";
 import Product from "../models/Product.model";
 import Order from "../models/Order.model";
-import { sendEmailWithInvoice } from "@/app/lib/utilities/email";
+// import { sendEmailWithInvoice } from "@/app/lib/utilities/email";
 import { headers } from "next/headers";
 import User from "../models/User.model";
 import type { NextRequest } from "next/server";
 import { stripeControllerTranslate } from "../../../public/locales/server/stripeControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { ProductType } from "@/app/lib/types/products.types";
-import { UserAuthType } from "@/app/lib/types/users.types";
+import type { ProductType } from "@/app/lib/types/products.types";
+// import type { UserAuthType } from "@/app/lib/types/users.types";
 const stripe = new Stripe(process.env.STRIPE_SECRET as string); // Replace `process.env.STRIPE_SECRET_KEY` with your actual secret key
 const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
 type ItemType = {

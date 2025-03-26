@@ -1,7 +1,7 @@
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { FC } from "react";
+import type { FC } from "react";
 import { lang } from "../../app/lib/utilities/lang";
-import { Event } from "@/app/lib/types/products.types";
+import type { Event } from "@/app/lib/types/products.types";
 import Select from "./Select";
 
 type FiltersProps = {
@@ -15,14 +15,14 @@ type FiltersProps = {
   isMobile?: boolean;
 };
 
-type FilterSelectProps = {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (e: Event) => void;
-  options: Array<{ value: string; label: string }>;
-  isMobile?: boolean;
-};
+// type FilterSelectProps = {
+//   id: string;
+//   label: string;
+//   value: string;
+//   onChange: (e: Event) => void;
+//   options: Array<{ value: string; label: string }>;
+//   isMobile?: boolean;
+// };
 
 // Reusable Filters Component
 const Filters: FC<FiltersProps> = ({

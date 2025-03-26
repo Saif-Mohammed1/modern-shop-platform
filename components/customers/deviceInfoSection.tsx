@@ -14,7 +14,6 @@ import {
   FaAndroid,
   FaMobileAlt,
   FaNetworkWired,
-  FaClock,
   FaKey,
   FaRegClock,
   FaFirefox,
@@ -26,7 +25,10 @@ import {
 import api from "@/app/lib/utilities/api";
 import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { RefreshTokenStatus, sessionInfo } from "@/app/lib/types/session.types";
+import {
+  // RefreshTokenStatus,
+  type sessionInfo,
+} from "@/app/lib/types/session.types";
 import Tooltip from "../ui/Tooltip";
 import ConfirmationModal from "../ui/ConfirmationModal";
 
@@ -46,9 +48,9 @@ const DeviceSessionCard = ({
   const lastUsedRelative = DateTime.fromJSDate(
     new Date(session.lastUsedAt)
   ).toRelative();
-  const expiresFormatted = DateTime.fromJSDate(
-    new Date(session.expiresAt)
-  ).toLocaleString(DateTime.DATETIME_MED);
+  // const expiresFormatted = DateTime.fromJSDate(
+  //   new Date(session.expiresAt)
+  // ).toLocaleString(DateTime.DATETIME_MED);
   const lastUsedTooltip = DateTime.fromJSDate(
     new Date(session.lastUsedAt)
   ).toLocaleString(DateTime.DATETIME_FULL);
@@ -80,14 +82,14 @@ const DeviceSessionCard = ({
   };
 
   const StatusBadge = () => {
-    const statusConfig = {
-      [RefreshTokenStatus.Active]: { color: "bg-green-500", text: "Active" },
-      [RefreshTokenStatus.Revoked]: { color: "bg-red-500", text: "Revoked" },
-      [RefreshTokenStatus.Rotated]: {
-        color: "bg-yellow-500",
-        text: "Needs Renewal",
-      },
-    };
+    // const statusConfig = {
+    //   [RefreshTokenStatus.Active]: { color: "bg-green-500", text: "Active" },
+    //   [RefreshTokenStatus.Revoked]: { color: "bg-red-500", text: "Revoked" },
+    //   [RefreshTokenStatus.Rotated]: {
+    //     color: "bg-yellow-500",
+    //     text: "Needs Renewal",
+    //   },
+    // };
 
     return (
       <motion.div

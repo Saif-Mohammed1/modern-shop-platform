@@ -7,11 +7,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import dynamic from "next/dynamic";
-import { AddressType } from "@/public/locales/client/(auth)/account/addressTranslate";
-import { Event } from "@/app/lib/types/products.types";
+import type { Event } from "@/app/lib/types/products.types";
 import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { AddressFormValues } from "@/components/customers/address/AddressForm";
+import type { AddressFormValues } from "@/components/customers/address/AddressForm";
+import type { AddressType } from "@/app/lib/types/address.types";
 const AddressForm = dynamic(
   () => import("@/components/customers/address/AddressForm")
 );

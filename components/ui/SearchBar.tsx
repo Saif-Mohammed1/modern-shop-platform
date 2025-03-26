@@ -1,5 +1,5 @@
-import { Event } from "@/app/lib/types/products.types";
-import { FC } from "react";
+import type { Event } from "@/app/lib/types/products.types";
+import type { FC } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 
 // Search Bar Component

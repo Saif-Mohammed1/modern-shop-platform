@@ -1,7 +1,7 @@
 import WishlistModel from "../models/Wishlist.model";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import { WishlistRepository } from "../repositories/wishlist.repository";
-import { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
 import { WishlistTranslate } from "@/public/locales/server/Wishlist.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 

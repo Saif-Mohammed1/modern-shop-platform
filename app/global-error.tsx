@@ -1,7 +1,7 @@
 "use client";
 
 import ErrorHandler from "@/components/Error/errorHandler";
-import { FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import "./globals.css";
 
 type ErrorProps = {

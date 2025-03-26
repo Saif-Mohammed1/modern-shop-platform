@@ -1,11 +1,9 @@
-import { Event } from "@/app/lib/types/products.types";
-import {
-  addressTranslate,
-  AddressType,
-} from "@/public/locales/client/(auth)/account/addressTranslate";
+import type { Event } from "@/app/lib/types/products.types";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { getCities } from "countries-cities";
 import Input from "@/components/ui/Input";
+import type { AddressType } from "@/app/lib/types/address.types";
 
 type AddAddressComponentProps = {
   newAddress: Omit<AddressType, "_id">;

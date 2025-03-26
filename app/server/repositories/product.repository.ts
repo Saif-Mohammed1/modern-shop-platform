@@ -1,14 +1,14 @@
 // product.repository.ts
-import {
+import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { ClientSession, Model } from "mongoose";
+import { type ClientSession, Model } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
-import { IProduct } from "../models/Product.model";
-import { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
+import type { IProduct } from "../models/Product.model";
+import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
 import { generateSKU } from "@/app/lib/utilities/helpers";
 import ReviewModel from "../models/Review.model";
 
@@ -16,7 +16,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
   constructor(model: Model<IProduct>) {
     super(model);
   }
-  async create(
+  override async create(
     dto: CreateProductDto,
     session?: ClientSession
   ): Promise<IProduct> {
@@ -31,7 +31,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
     });
     return product;
   }
-  async update(
+  override async update(
     slug: string,
     dto: UpdateProductDto & { actorId?: IProduct["userId"] },
     session?: ClientSession
@@ -47,7 +47,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
       { new: true, session }
     );
   }
-  async delete(id: string, session?: ClientSession): Promise<boolean> {
+  override async delete(id: string, session?: ClientSession): Promise<boolean> {
     const result = await this.model.findByIdAndDelete(id, { session });
     return result !== null;
   }

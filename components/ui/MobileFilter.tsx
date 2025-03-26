@@ -1,6 +1,6 @@
 import { lang } from "@/app/lib/utilities/lang";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import React, { FC } from "react";
+import React, { type FC } from "react";
 import { HiX } from "react-icons/hi";
 
 type FiltersProps = {

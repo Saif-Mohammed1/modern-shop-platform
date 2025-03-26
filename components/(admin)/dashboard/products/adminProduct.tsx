@@ -1,16 +1,12 @@
 "use client";
 
-import { FC, useEffect, useRef, useState } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import {
-  FaDollarSign,
   FaTag,
   FaCalendarAlt,
-  FaCube,
-  FaChartBar,
   FaStar,
   FaCheckCircle,
   FaArchive,
-  FaUserCircle,
   FaEdit,
   FaTrash,
   FaTimesCircle,
@@ -20,7 +16,9 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 // import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Pagination, { PaginationType } from "@/components/pagination/Pagination";
+import Pagination, {
+  type PaginationType,
+} from "@/components/pagination/Pagination";
 import toast from "react-hot-toast";
 import api from "@/app/lib/utilities/api";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
@@ -29,7 +27,7 @@ import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashbo
 import { lang } from "@/app/lib/utilities/lang";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import Link from "next/link";
-import { Event, ProductType } from "@/app/lib/types/products.types";
+import type { Event, ProductType } from "@/app/lib/types/products.types";
 import { TfiReload } from "react-icons/tfi";
 import { HiFilter } from "react-icons/hi";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
@@ -334,8 +332,8 @@ const ProductList: FC<ProductListProps> = ({
               ? DateTime.fromJSDate(new Date(product.discountExpire))
               : null;
             const daysToExpire = discountExpireDate?.diffNow("days").days ?? 0;
-            const formattedExpireDate =
-              discountExpireDate?.toFormat("MMM dd, yyyy") || "N/A";
+            // const formattedExpireDate =
+            //   discountExpireDate?.toFormat("MMM dd, yyyy") || "N/A";
 
             return (
               <div

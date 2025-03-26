@@ -1,9 +1,9 @@
 import { Schema, model, models, Document, Model, Types } from "mongoose";
-import { IProduct } from "./Product.model";
-import { IUser } from "./User.model";
+// import type { IProduct } from "./Product.model";
+import type { IUser } from "./User.model";
 import {
-  IOrderItem,
-  IShippingInfo,
+  type IOrderItem,
+  type IShippingInfo,
   OrderStatus,
   PaymentsMethod,
 } from "@/app/lib/types/orders.types";

@@ -3,7 +3,7 @@ import Sidebar from "@/components/(admin)/dashboard/dashboardSideBar";
 import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 
-import { FC } from "react";
+import type { FC } from "react";
 export const metadata: Metadata = {
   title: dashboardTranslate.layout.metadata[lang].title,
   description: dashboardTranslate.layout.metadata[lang].description,

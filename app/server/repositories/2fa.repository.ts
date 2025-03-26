@@ -1,15 +1,16 @@
 // Ithis.model.repository.ts
 
-import { ClientSession, FilterQuery, Model, UpdateQuery } from "mongoose";
+import type { ClientSession, FilterQuery, Model, UpdateQuery } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
-import { AuditLog, ITwoFactorAuth } from "../models/2fa.model";
+import type { AuditLog, ITwoFactorAuth } from "../models/2fa.model";
 
 export class TwoFactorRepository extends BaseRepository<ITwoFactorAuth> {
   constructor(model: Model<ITwoFactorAuth>) {
     super(model);
   }
-  async create(
-    dto: Partial<ITwoFactorAuth>,
+  override async create(
+    dto: Omit<ITwoFactorAuth, "_id" | "createdAt" | "updatedAt">,
+    // dto: Partial<ITwoFactorAuth>,
     session?: ClientSession
   ): Promise<ITwoFactorAuth> {
     const [TwoFactor] = await this.model.create([dto], {
@@ -17,7 +18,7 @@ export class TwoFactorRepository extends BaseRepository<ITwoFactorAuth> {
     });
     return TwoFactor;
   }
-  async update(
+  override async update(
     id: string,
     data: Partial<ITwoFactorAuth>,
     session?: ClientSession
@@ -49,10 +50,11 @@ export class TwoFactorRepository extends BaseRepository<ITwoFactorAuth> {
 
   async findOneAndUpdate(
     filter: FilterQuery<ITwoFactorAuth>,
-    update: UpdateQuery<ITwoFactorAuth>
+    update: UpdateQuery<ITwoFactorAuth>,
+    session?: ClientSession
   ) {
     return await this.model
-      .findOneAndUpdate(filter, update, { new: true })
+      .findOneAndUpdate(filter, update, { new: true, session })
       .lean();
   }
 

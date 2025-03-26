@@ -16,7 +16,7 @@
 
 */
 
-import {
+import type {
   Query,
   FilterQuery,
   Model,
@@ -25,7 +25,7 @@ import {
   SortOrder,
   PopulateOptions,
 } from "mongoose";
-import {
+import type {
   PaginationMeta,
   QueryBuilderConfig,
   QueryBuilderResult,
@@ -116,14 +116,14 @@ export class QueryBuilder<T extends Document> {
     return value;
   }
 
-  private buildOperatorFilter(field: string, value: any): Record<string, any> {
-    const operatorMatch = field.match(/(\w+)\[(\w+)\]/);
-    if (operatorMatch) {
-      const [, baseField, operator] = operatorMatch;
-      return { [`$${operator}`]: value };
-    }
-    return value;
-  }
+  // private buildOperatorFilter(field: string, value: any): Record<string, any> {
+  //   const operatorMatch = field.match(/(\w+)\[(\w+)\]/);
+  //   if (operatorMatch) {
+  //     const [, baseField, operator] = operatorMatch;
+  //     return { [`$${operator}`]: value };
+  //   }
+  //   return value;
+  // }
 
   private buildFilter(): this {
     const filter: Record<string, any> = {};
@@ -352,7 +352,7 @@ export class QueryBuilder<T extends Document> {
 
 class QueryBuilderError extends Error {
   constructor(
-    public message: string,
+    public override message: string,
     public originalError: unknown,
     public context?: Record<string, any>
   ) {

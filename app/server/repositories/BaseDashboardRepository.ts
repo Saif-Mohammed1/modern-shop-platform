@@ -2,7 +2,7 @@
 // import { SecurityDashboardData } from "@/app/lib/types/security.types";
 // import { Types } from "mongoose";
 
-import { DashboardData } from "@/app/lib/types/dashboard.types";
+import type { DashboardData } from "@/app/lib/types/dashboard.types";
 
 export interface BaseDashboardRepository {
   getUserAnalytics(): Promise<DashboardData["users"]>;

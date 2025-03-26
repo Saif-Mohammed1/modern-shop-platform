@@ -2,10 +2,10 @@ import AppError from "@/app/lib/utilities/appError";
 import { userControllerTranslate } from "@/public/locales/server/userControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { generateVerificationToken } from "@/app/lib/utilities/user.utilty";
-import { DeviceInfo } from "@/app/lib/types/session.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
 import { UserRepository } from "../repositories/user.repository";
 import { SecurityAlertType } from "@/app/server/services/email.service";
-import {
+import type {
   CreateUserByAdminDTO,
   UpdateUserByAdminDTO,
   UserChangePasswordDTO,
@@ -15,24 +15,24 @@ import { cookies } from "next/headers";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import {
   SecurityAuditAction,
-  AuditLogDetails,
+  type AuditLogDetails,
 } from "@/app/lib/types/audit.types";
-import UserModel, { IUser } from "../models/User.model";
+import UserModel, { type IUser } from "../models/User.model";
 import {
-  accountAction,
-  UserAuthType,
+  type accountAction,
+  type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
 import { SessionService } from "./session.service";
 import { TokensService } from "./tokens.service";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
-import { ISession } from "../models/Session.model";
-import {
+import type { ISession } from "../models/Session.model";
+import type {
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
-import { ClientSession } from "mongoose";
+import type { ClientSession } from "mongoose";
 import { emailService } from ".";
 export class UserService {
   constructor(

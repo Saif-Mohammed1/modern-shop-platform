@@ -1,10 +1,10 @@
-// import { CartItemsType } from "@/app/lib/types/cart.types";
+// import {type CartItemsType }  from "@/app/lib/types/cart.types";
 // import AppError from "@/app/lib/utilities/appError";
 // import mongoose from "mongoose";
 // import Stripe from "stripe";
 // import ProductModel from "../models/Product.model";
 // import OrderModel from "../models/Order.model";
-// import { IUser } from "../models/User.model";
+// import type{ IUser }  from "../models/User.model";
 // import { redis } from "@/app/lib/utilities/Redis";
 // import { AuditAction } from "@/app/lib/types/audit.types";
 // import { OrderStatus } from "@/app/lib/types/orders.types";

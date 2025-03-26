@@ -1,8 +1,8 @@
 import AppError from "@/app/lib/utilities/appError";
 import { AddressRepository } from "../repositories/address.repository";
-import AddressModel, { IAddress } from "../models/Address.model";
-import { CreateAddressDtoType } from "../dtos/address.dto";
-import { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import AddressModel, { type IAddress } from "../models/Address.model";
+import type { CreateAddressDtoType } from "../dtos/address.dto";
+import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
 import { AddressTranslate } from "@/public/locales/server/Address.Translate";
 import { lang } from "@/app/lib/utilities/lang";
 

@@ -1,16 +1,18 @@
 "use client";
-import { FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
 import Link from "next/link";
-import { FiEdit, FiTrash2, FiEye, FiSearch, FiCalendar } from "react-icons/fi";
+import { FiTrash2, FiEye, FiCalendar } from "react-icons/fi";
 import {
   ordersTranslate,
   StatusColors,
 } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
-import Pagination, { PaginationType } from "@/components/pagination/Pagination";
+import Pagination, {
+  type PaginationType,
+} from "@/components/pagination/Pagination";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
-import { OrderType } from "@/app/lib/types/orders.types";
+import { type OrderType } from "@/app/lib/types/orders.types";
 // import StatusBadge from "@/components/ui/StatusBadge";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -23,7 +25,7 @@ import SearchBar from "@/components/ui/SearchBar";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { HiFilter } from "react-icons/hi";
 import MobileFilter from "@/components/ui/MobileFilter";
-import { RelativeTime } from "@/app/(auth)/(admin)/dashboard/users/[id]/userMangement";
+// import { RelativeTime } from "@/app/(auth)/(admin)/dashboard/users/[id]/userMangement";
 import { DateTime } from "luxon";
 
 type StatusOption = {
@@ -112,7 +114,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
     "endDate",
     parseAsString.withDefault("").withOptions({ shallow: false })
   );
-  const [currentPage, setCurrentPage] = useQueryState(
+  const [_currentPage, setCurrentPage] = useQueryState(
     "page",
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );

@@ -1,25 +1,25 @@
 import { BaseRepository } from "./BaseRepository";
-import { ClientSession, Model } from "mongoose";
+import { type ClientSession, Model } from "mongoose";
 import crypto from "crypto";
-import { DeviceInfo } from "@/app/lib/types/session.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
 import {
   SecurityAuditAction,
-  AuditLogDetails,
+  type AuditLogDetails,
 } from "@/app/lib/types/audit.types";
 import { TokensService } from "../services/tokens.service";
-import { IUser } from "../models/User.model";
-import {
+import type { IUser } from "../models/User.model";
+import type {
   CreateUserByAdminDTO,
   UpdateUserByAdminDTO,
   UserCreateDTO,
 } from "../dtos/user.dto";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import {
+import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
-import { accountAction } from "@/app/lib/types/users.types";
+import type { accountAction } from "@/app/lib/types/users.types";
 import { SecurityAlertType } from "@/app/server/services/email.service";
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
@@ -48,7 +48,7 @@ export class UserRepository extends BaseRepository<IUser> {
     return this.model.findOne({ email }).select("+password +security");
   }
 
-  async update(
+  override async update(
     id: string,
     updates: Partial<IUser>,
     session?: ClientSession
@@ -102,7 +102,7 @@ export class UserRepository extends BaseRepository<IUser> {
       { session }
     );
   }
-  async delete(id: string, session?: ClientSession): Promise<boolean> {
+  override async delete(id: string, session?: ClientSession): Promise<boolean> {
     const result = await this.model.deleteOne({ _id: id }, { session });
     return result.deletedCount === 1;
   }

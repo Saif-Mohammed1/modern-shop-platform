@@ -2,36 +2,40 @@ import AppError from "@/app/lib/utilities/appError";
 import { lang } from "@/app/lib/utilities/lang";
 import { redis } from "@/app/lib/utilities/Redis";
 import { stripeControllerTranslate } from "@/public/locales/server/stripeControllerTranslate";
-import mongoose, { MongooseError } from "mongoose";
+import mongoose from "mongoose";
 import Stripe from "stripe";
-import UserModel, { IUser } from "../models/User.model";
-import { ShippingInfoDto } from "../dtos/stripe.dto";
+import UserModel, { type IUser } from "../models/User.model";
+import type { ShippingInfoDto } from "../dtos/stripe.dto";
 import crypto from "crypto";
 import { CartService } from "./cart.service";
-import ProductModel, { IProduct } from "../models/Product.model";
+import ProductModel, { type IProduct } from "../models/Product.model";
 import { ProductService } from "./product.service";
 import {
   AuditAction,
   AuditSource,
   EntityType,
 } from "@/app/lib/types/audit.types";
-import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
-import { v4 as uuidv4 } from "uuid";
+
 import { setTimeout } from "timers/promises";
 import OrderModel from "../models/Order.model";
 import {
-  IOrderItem,
+  type IOrderItem,
   OrderStatus,
   PaymentsMethod,
 } from "@/app/lib/types/orders.types";
-import { CartItemsType } from "@/app/lib/types/cart.types";
+import type { CartItemsType } from "@/app/lib/types/cart.types";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import AuditLogModel from "../models/audit-log.model";
-import { UserCurrency } from "@/app/lib/types/users.types";
+import {
+  UserCurrency,
+  UserRole,
+  UserStatus,
+} from "@/app/lib/types/users.types";
 import { Types } from "mongoose";
 import { MongoBulkWriteError } from "mongodb";
-import { LogsTypeDto } from "../dtos/logs.dto";
+import type { LogsTypeDto } from "../dtos/logs.dto";
 import { emailService } from ".";
+import type { AdminInventoryNotification } from "./email.service";
 // stripe.service.ts
 
 export interface FailedOrderData {
@@ -115,6 +119,7 @@ export class StripeService {
           validProducts.map((p) => ({
             _id: p.product._id,
             quantity: p.quantity,
+            name: p.product.name,
           })),
           user,
           logs,
@@ -363,7 +368,7 @@ export class StripeService {
       );
 
       // Create order document
-      const order = await this.createOrderFromSession(
+      await this.createOrderFromSession(
         session,
         user,
         shippingInfo,
@@ -598,7 +603,11 @@ export class StripeService {
   //   }
   // }
   private async reserveInventoryWithRetry(
-    products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+    products: Array<{
+      _id: mongoose.Types.ObjectId;
+      quantity: number;
+      name: string;
+    }>,
     user: IUser,
     logs: LogsTypeDto,
     session: mongoose.ClientSession,
@@ -739,38 +748,138 @@ export class StripeService {
       },
     ]);
   }
+  // private async reserveInventory(
+  //   products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+  //   user: IUser,
+  //   logs: LogsTypeDto,
+  //   session: mongoose.ClientSession
+  // ): Promise<void> {
+  //   // Aggregate quantities for duplicate products
+  //   const productMap = new Map<string, number>();
+
+  //   products.forEach(({ _id, quantity }) => {
+  //     const productId = _id.toString();
+  //     productMap.set(productId, (productMap.get(productId) || 0) + quantity);
+  //   });
+
+  //   // Create consolidated bulk operations
+  //   const bulkOps = Array.from(productMap.entries()).map(([_id, quantity]) => ({
+  //     updateOne: {
+  //       filter: {
+  //         _id: new mongoose.Types.ObjectId(_id),
+  //         $expr: {
+  //           $gte: [{ $subtract: ["$stock", "$reserved"] }, quantity],
+  //         },
+  //       },
+  //       update: {
+  //         $inc: { reserved: quantity },
+  //         $set: {
+  //           lastModifiedBy: user._id,
+  //           modifiedAt: new Date(),
+  //         },
+  //       },
+  //     },
+  //   }));
+
+  //   try {
+  //     const result = await ProductModel.bulkWrite(bulkOps, {
+  //       session,
+  //       ordered: true, // Process in sequence
+  //       writeConcern: { w: "majority" },
+  //     });
+
+  //     // Handle partial failures for ordered operations
+  //     if (result.modifiedCount !== bulkOps.length) {
+  //       const successfulIds = new Set(
+  //         Object.values(result.upsertedIds).map((id) => id.toString()) || []
+  //       );
+
+  //       const failedProducts = bulkOps
+  //         .filter(
+  //           (op) => !successfulIds.has(op.updateOne.filter._id.toString())
+  //         )
+  //         .map((op) => ({
+  //           _id: op.updateOne.filter._id,
+  //           quantity: productMap.get(op.updateOne.filter._id.toString())!,
+  //         }));
+
+  //       if (failedProducts.length > 0) {
+  //         await this.handlePartialReservationFailure(
+  //           user,
+  //           failedProducts,
+  //           logs
+  //         );
+  //         throw new AppError(
+  //           `Partial reservation failed for ${failedProducts.length} products`,
+  //           409
+  //         );
+  //       }
+  //     }
+  //   } catch (error) {
+  //     if (error instanceof MongoBulkWriteError) {
+  //       const failedIds = (
+  //         Array.isArray(error.writeErrors)
+  //           ? error.writeErrors
+  //           : [error.writeErrors]
+  //       ).map((e) => e.op.updateOne.filter._id.toString());
+  //       const failedProducts = failedIds.map((id) => ({
+  //         _id: assignAsObjectId(id),
+  //         quantity: productMap.get(id)!,
+  //       }));
+
+  //       await this.handlePartialReservationFailure(user, failedProducts, logs);
+  //     }
+  //     throw error;
+  //   }
+  // }
+  // 1. Modify the productMap to track names
   private async reserveInventory(
-    products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+    products: Array<{
+      _id: mongoose.Types.ObjectId;
+      quantity: number;
+      name: string;
+    }>,
     user: IUser,
     logs: LogsTypeDto,
     session: mongoose.ClientSession
   ): Promise<void> {
-    // Aggregate quantities for duplicate products
-    const productMap = new Map<string, number>();
+    // Track both quantity and product name
+    const productMap = new Map<
+      string,
+      { totalQuantity: number; name: string }
+    >();
 
-    products.forEach(({ _id, quantity }) => {
+    products.forEach(({ _id, quantity, name }) => {
       const productId = _id.toString();
-      productMap.set(productId, (productMap.get(productId) || 0) + quantity);
+      const existing = productMap.get(productId);
+
+      if (existing) {
+        existing.totalQuantity += quantity;
+      } else {
+        productMap.set(productId, { totalQuantity: quantity, name });
+      }
     });
 
-    // Create consolidated bulk operations
-    const bulkOps = Array.from(productMap.entries()).map(([_id, quantity]) => ({
-      updateOne: {
-        filter: {
-          _id: new mongoose.Types.ObjectId(_id),
-          $expr: {
-            $gte: [{ $subtract: ["$stock", "$reserved"] }, quantity],
+    // Create bulk operations with aggregated quantities
+    const bulkOps = Array.from(productMap.entries()).map(
+      ([productId, { totalQuantity }]) => ({
+        updateOne: {
+          filter: {
+            _id: new mongoose.Types.ObjectId(productId),
+            $expr: {
+              $gte: [{ $subtract: ["$stock", "$reserved"] }, totalQuantity],
+            },
+          },
+          update: {
+            $inc: { reserved: totalQuantity },
+            $set: {
+              lastModifiedBy: user._id,
+              modifiedAt: new Date(),
+            },
           },
         },
-        update: {
-          $inc: { reserved: quantity },
-          $set: {
-            lastModifiedBy: user._id,
-            modifiedAt: new Date(),
-          },
-        },
-      },
-    }));
+      })
+    );
 
     try {
       const result = await ProductModel.bulkWrite(bulkOps, {
@@ -789,10 +898,14 @@ export class StripeService {
           .filter(
             (op) => !successfulIds.has(op.updateOne.filter._id.toString())
           )
-          .map((op) => ({
-            _id: op.updateOne.filter._id,
-            quantity: productMap.get(op.updateOne.filter._id.toString())!,
-          }));
+          .map((op) => {
+            const productId = op.updateOne.filter._id.toString();
+            return {
+              _id: op.updateOne.filter._id,
+              quantity: productMap.get(productId)!.totalQuantity,
+              name: productMap.get(productId)!.name,
+            };
+          });
 
         if (failedProducts.length > 0) {
           await this.handlePartialReservationFailure(
@@ -815,7 +928,8 @@ export class StripeService {
         ).map((e) => e.op.updateOne.filter._id.toString());
         const failedProducts = failedIds.map((id) => ({
           _id: assignAsObjectId(id),
-          quantity: productMap.get(id)!,
+          quantity: productMap.get(id)!.totalQuantity,
+          name: productMap.get(id)!.name,
         }));
 
         await this.handlePartialReservationFailure(user, failedProducts, logs);
@@ -825,7 +939,11 @@ export class StripeService {
   }
   private async handlePartialReservationFailure(
     user: IUser,
-    failedProducts: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
+    failedProducts: Array<{
+      _id: mongoose.Types.ObjectId;
+      quantity: number;
+      name: string;
+    }>,
     logs: LogsTypeDto
   ): Promise<void> {
     // 1. Log audit entry
@@ -838,6 +956,7 @@ export class StripeService {
         field: "reserved",
         productId: p._id,
         quantity: p.quantity,
+        productName: p.name,
         changeType: "MODIFY",
       })),
       logs.ipAddress,
@@ -845,15 +964,26 @@ export class StripeService {
     );
 
     // 2. Notify admins
-    const adminNotification = {
+    // Get admins with proper typing and security
+    const admins = await UserModel.find({
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+    })
+      .select("email")
+      .lean();
+
+    const notification: AdminInventoryNotification = {
       type: "INVENTORY_RESERVATION_PARTIAL",
       userId: user._id.toString(),
       failedProducts: failedProducts.map((p) => ({
         productId: p._id.toString(),
+        productName: p.name, // Add product name from your Product model
         quantity: p.quantity,
       })),
       timestamp: new Date(),
     };
+
+    await emailService.sendAdminNotification(admins, notification);
   }
   private parseShippingInfo(shippingInfo: string): ShippingInfoDto {
     try {
@@ -978,7 +1108,7 @@ export class StripeService {
         });
         continue;
       }
-      const availableStock = product.stock - product.reserved;
+      const availableStock = product.stock - (product.reserved ?? 0);
       if (availableStock < item.quantity) {
         results.invalidProducts.push({
           name: item.name,
@@ -1039,23 +1169,23 @@ export class StripeService {
     };
   }
 
-  private async handleInvalidCartItems(
-    userId: string,
-    invalidProductIds: string[]
-  ) {
-    // 1. Remove invalid items from cart
-    await this.userCartService.deleteManyByProductId(userId, invalidProductIds);
+  // private async _handleInvalidCartItems(
+  //   userId: string,
+  //   invalidProductIds: string[]
+  // ) {
+  //   // 1. Remove invalid items from cart
+  //   await this.userCartService.deleteManyByProductId(userId, invalidProductIds);
 
-    // 2. Cache invalidation
-    const cartKey = `cart:${userId}`;
-    await redis.del(cartKey);
+  //   // 2. Cache invalidation
+  //   const cartKey = `cart:${userId}`;
+  //   await redis.del(cartKey);
 
-    // 3. Notify user
-    // await NotificationService.sendCartUpdateNotification(
-    //   userId,
-    //   invalidProductIds
-    // );
-  }
+  //   // 3. Notify user
+  //   // await NotificationService.sendCartUpdateNotification(
+  //   //   userId,
+  //   //   invalidProductIds
+  //   // );
+  // }
   private normalizeShippingInfo(
     shippingInfo: ShippingInfoDto
   ): ShippingInfoDto {

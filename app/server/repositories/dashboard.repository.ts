@@ -1,7 +1,7 @@
 // src/repositories/impl/dashboard.repo.ts
 import { DateTime } from "luxon";
 import { Model, Types } from "mongoose";
-import { BaseDashboardRepository } from "./BaseDashboardRepository";
+import type { BaseDashboardRepository } from "./BaseDashboardRepository";
 import UserModel from "../models/User.model";
 import OrderModel from "../models/Order.model";
 import ProductModel from "../models/Product.model";
@@ -2634,27 +2634,27 @@ export class DashboardRepository implements BaseDashboardRepository {
   // ): number {
   //   return statusCounts.reduce((sum, { count }) => sum + count, 0);
   // }
-  private statusCounts(
-    statusCounts: Array<{ _id: string; count: number }>
-  ): Record<string, number> {
-    return {
-      ...statusCounts.reduce(
-        (
-          acc: Record<string, number>,
-          { _id, count }: { _id: string; count: number }
-        ) => ({ ...acc, [_id]: count }),
-        {}
-      ),
-      total: statusCounts.reduce((sum, { count }) => sum + count, 0),
-    };
-  }
+  // private statusCounts(
+  //   statusCounts: Array<{ _id: string; count: number }>
+  // ): Record<string, number> {
+  //   return {
+  //     ...statusCounts.reduce(
+  //       (
+  //         acc: Record<string, number>,
+  //         { _id, count }: { _id: string; count: number }
+  //       ) => ({ ...acc, [_id]: count }),
+  //       {}
+  //     ),
+  //     total: statusCounts.reduce((sum, { count }) => sum + count, 0),
+  //   };
+  // }
 
-  private getStatusCount(
-    statusCounts: Array<{ _id: string; count: number }>,
-    status: string
-  ): number {
-    return statusCounts.find((s) => s._id === status)?.count || 0;
-  }
+  // private getStatusCount(
+  //   statusCounts: Array<{ _id: string; count: number }>,
+  //   status: string
+  // ): number {
+  //   return statusCounts.find((s) => s._id === status)?.count || 0;
+  // }
 
   private mapToObject(
     items: Array<{ _id: string; count: number }>

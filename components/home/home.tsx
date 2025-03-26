@@ -4,7 +4,7 @@ import Slider from "./slider/slider";
 
 import RelatedProducts from "@/components/ui/relatedProducts";
 import { lang } from "../../app/lib/utilities/lang";
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 type HomeComponentProps = {
   productData: {
     topOfferProducts: ProductType[];

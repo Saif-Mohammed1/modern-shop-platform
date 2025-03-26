@@ -29,8 +29,8 @@ const handleZodValidationError = (err: z.ZodError): AppError => {
 
   // Process validation errors
   const errors = err.issues.map((issue) => {
-    const path = issue.path.join(".");
-    const errorCode = issue.code;
+    // const path = issue.path.join(".");
+    // const errorCode = issue.code;
 
     return issue.message;
   });

@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import Spinner from "../spinner/spinner";

@@ -4,17 +4,19 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
-import Pagination, { PaginationType } from "@/components/pagination/Pagination";
+import Pagination, {
+  type PaginationType,
+} from "@/components/pagination/Pagination";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import {
-  UserAuthType,
+  type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
 import SearchBar from "@/components/ui/SearchBar";
-import { Event } from "@/app/lib/types/products.types";
+import type { Event } from "@/app/lib/types/products.types";
 import Select from "@/components/ui/Select";
 import { FiCheckSquare, FiEdit, FiTrash2, FiUser } from "react-icons/fi";
 import { statusStyles } from "@/app/lib/utilities/status-style";
@@ -22,7 +24,6 @@ import { HiFilter } from "react-icons/hi";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import MobileFilter from "@/components/ui/MobileFilter";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-import Button from "@/components/ui/Button";
 
 type Props = {
   users: UserAuthType[];

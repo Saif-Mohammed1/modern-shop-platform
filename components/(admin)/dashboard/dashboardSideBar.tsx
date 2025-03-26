@@ -8,7 +8,7 @@ import { signOut } from "next-auth/react";
 // components/Sidebar.js
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 // import { useState } from "react";
 // import { useRouter } from "next/navigation";

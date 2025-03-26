@@ -3,7 +3,7 @@ import sessionController from "@/app/server/controllers/session.controller";
 import { connectDB } from "@/app/server/db/db";
 import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
 
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 export const DELETE = async (
   req: NextRequest,
   props: { params: Promise<{ id: string }> }

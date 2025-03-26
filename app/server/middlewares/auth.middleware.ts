@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 
 import { UserService } from "../services/user.service";
-import { IUser } from "../models/User.model";
+import type { IUser } from "../models/User.model";
 import AppError from "@/app/lib/utilities/appError";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";

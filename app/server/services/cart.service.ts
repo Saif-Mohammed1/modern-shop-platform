@@ -4,8 +4,8 @@ import { CartRepository } from "../repositories/cart.repository";
 import { ProductService } from "./product.service";
 import { CartTranslate } from "@/public/locales/server/Cart.Translate";
 import { lang } from "@/app/lib/utilities/lang";
-import { localCartDto } from "../dtos/cart.dto";
-import { ClientSession } from "mongoose";
+import type { localCartDto } from "../dtos/cart.dto";
+import type { ClientSession } from "mongoose";
 
 export class CartService {
   constructor(

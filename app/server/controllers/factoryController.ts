@@ -2,7 +2,7 @@ import APIFeatures from "@/app/lib/utilities/APIFeatures";
 import AppError from "@/app/lib/utilities/appError";
 import { Document, Model } from "mongoose";
 import type { NextRequest } from "next/server";
-import { UserAuthType } from "@/app/lib/types/users.types";
+import type { UserAuthType } from "@/app/lib/types/users.types";
 import { factoryControllerTranslate } from "../../../public/locales/server/factoryControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 // import { uploadImage } from "@/components/util/cloudinary";
@@ -258,7 +258,7 @@ export const getAll = async <T extends BaseDocument>(
 
     let doc = await features.query.lean();
 
-    const allData = doc;
+    // const allData = doc;
     const limit = features.limit ?? 15;
     const pageCount = Math.ceil(doc.length / limit);
 

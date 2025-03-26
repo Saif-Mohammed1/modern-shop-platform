@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Document, Model, Schema, model, models } from "mongoose";
-import User, { IUser } from "./User.model";
+import type { IUser } from "./User.model";
 
 type status = "received" | "read" | "responded";
 export interface IContactUsSchema extends Document {

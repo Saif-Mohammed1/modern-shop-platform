@@ -6,8 +6,8 @@ import AccountNavList from "./account-navList";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 import { lang } from "../../app/lib/utilities/lang";
 import { useUser } from "../providers/context/user/user.context";
-import { FC, useState } from "react";
-import { CartItemsType } from "@/app/lib/types/cart.types";
+import { type FC, useState } from "react";
+import { type CartItemsType } from "@/app/lib/types/cart.types";
 type Props = {
   cartItems: CartItemsType[];
   toggleCart: () => void;

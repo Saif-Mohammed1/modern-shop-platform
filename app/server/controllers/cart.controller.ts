@@ -117,7 +117,7 @@ class CartController {
   }
   async response(data: unknown, status = 200) {
     // const isObject = typeof data === "object";
-    const isArray = Array.isArray(data);
+    // const isArray = Array.isArray(data);
 
     return NextResponse.json(
       {

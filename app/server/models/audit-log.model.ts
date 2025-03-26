@@ -1,7 +1,7 @@
 // audit-log.model.ts
 import { Document, Schema, model, models, Types } from "mongoose";
-import { IUser } from "./User.model";
-import { IProduct } from "./Product.model";
+import type { IUser } from "./User.model";
+// import type { IProduct } from "./Product.model";
 import { Model } from "mongoose";
 import {
   AuditAction,

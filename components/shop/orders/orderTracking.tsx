@@ -1,4 +1,4 @@
-import { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
+import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
 import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Link from "next/link";

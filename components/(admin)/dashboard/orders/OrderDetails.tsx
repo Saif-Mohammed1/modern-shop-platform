@@ -156,7 +156,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
+import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
 import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
 import StatusBadge from "@/components/ui/StatusBadge";

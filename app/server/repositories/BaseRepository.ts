@@ -1,12 +1,16 @@
-import { ClientSession } from "mongoose";
-import { Model, Document, FilterQuery } from "mongoose";
+import type { ClientSession } from "mongoose";
+import { Model, Document, type FilterQuery } from "mongoose";
 
 // type id = Schema.Types.ObjectId;
 export interface Repository<T> {
   find(filter?: FilterQuery<T>): Promise<T[]>;
   findById(id: string, session?: ClientSession | null): Promise<T | null>;
-  create(data: Omit<T, "_id">): Promise<T>;
-  update(id: string, data: Partial<T>): Promise<T | null>;
+  create(data: Omit<T, "_id">, session?: ClientSession): Promise<T>;
+  update(
+    id: string,
+    data: Partial<T>,
+    session?: ClientSession
+  ): Promise<T | null>;
   delete(id: string): Promise<boolean>;
 }
 
@@ -26,15 +30,20 @@ export abstract class BaseRepository<T extends Document>
     return this.model.findById(id).session(session);
   }
 
-  async create(data: T): Promise<T> {
-    return await this.model.create(data);
+  async create(data: T | Omit<T, "_id">, session?: ClientSession): Promise<T> {
+    const [docs] = await this.model.create([data], { session });
+    return docs;
   }
   // async create(data: Omit<T, "id">): Promise<T> {
   //   return await this.model.create(data);
   // }
 
-  async update(id: string, data: Partial<T>): Promise<T | null> {
-    return await this.model.findByIdAndUpdate(id, data, { new: true });
+  async update(
+    id: string,
+    data: Partial<T>,
+    session?: ClientSession
+  ): Promise<T | null> {
+    return await this.model.findByIdAndUpdate(id, data, { new: true, session });
   }
 
   async delete(id: string): Promise<boolean> {

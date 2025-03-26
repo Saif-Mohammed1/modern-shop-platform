@@ -3,7 +3,7 @@ import StarRatings from "react-star-ratings";
 
 import Image from "next/image";
 import Link from "next/link";
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 const RelatedProducts = ({
   relatedProducts,
 }: {

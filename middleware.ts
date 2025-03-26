@@ -24,7 +24,7 @@ const PROTECTED_ROUTES = [
 ];
 
 const DEFAULT_LANGUAGE = "uk";
-const CUSTOM_ERROR_PATH = "/custom-error/429";
+// const CUSTOM_ERROR_PATH = "/custom-error/429";
 const AUTH_PATH = "/auth";
 const DASHBOARD_PATH = "/dashboard";
 const NOT_FOUND_PATH = "/not-found";

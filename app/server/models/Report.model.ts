@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Document, Model, Query, Schema, model, models } from "mongoose";
-import User, { IUser } from "./User.model";
-import Product, { IProduct } from "./Product.model";
+import { type IUser } from "./User.model";
+import { type IProduct } from "./Product.model";
 
 export interface IReportSchema extends Document {
   _id: Schema.Types.ObjectId;

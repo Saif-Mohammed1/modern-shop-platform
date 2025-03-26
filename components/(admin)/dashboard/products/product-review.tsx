@@ -1,11 +1,11 @@
 // product-review.tsx
 import { useFormContext } from "react-hook-form";
-import { FaCheckCircle, FaInfoCircle } from "react-icons/fa";
+import { FaInfoCircle } from "react-icons/fa";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Image from "next/image";
-import { PreviewFile } from "./addProduct";
-import { OldImage } from "@/app/lib/types/products.types";
+import type { PreviewFile } from "./addProduct";
+import type { OldImage } from "@/app/lib/types/products.types";
 
 export default function ProductReview({
   editMode = false,

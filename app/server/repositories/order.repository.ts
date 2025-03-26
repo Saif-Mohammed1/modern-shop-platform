@@ -1,13 +1,13 @@
 // src/repositories/order.repository.ts
-import { Model, ClientSession } from "mongoose";
-import {
+import { Model, type ClientSession } from "mongoose";
+import type {
   CreateOrderDto,
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../dtos/order.dto";
-import { IOrder } from "../models/Order.model";
+import type { IOrder } from "../models/Order.model";
 import { BaseRepository } from "./BaseRepository";
-import {
+import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
@@ -19,14 +19,17 @@ export class OrderRepository extends BaseRepository<IOrder> {
   constructor(model: Model<IOrder>) {
     super(model);
   }
-  async create(dto: CreateOrderDto, session?: ClientSession): Promise<IOrder> {
+  override async create(
+    dto: CreateOrderDto,
+    session?: ClientSession
+  ): Promise<IOrder> {
     const [order] = await this.model.create([dto], {
       session,
     });
     return order;
   }
 
-  async findById(id: string): Promise<IOrder | null> {
+  override async findById(id: string): Promise<IOrder | null> {
     return await this.model
       .findById(id)
       .populate("userId", "name email")
@@ -47,7 +50,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
       .populate("userId", "name email")
       .exec();
   }
-  async update(
+  override async update(
     id: string,
     dto: UpdateOrderDto,
     session?: ClientSession
@@ -72,7 +75,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
       //   maxLimit: 100,
     };
 
-     const searchParams = new URLSearchParams({
+    const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
       userId,
       // ...(options?.page && { page: options.page.toString() }),

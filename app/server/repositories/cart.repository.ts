@@ -1,11 +1,11 @@
-import { ClientSession } from "mongoose";
+import type { ClientSession } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
-import { CartItemsType } from "@/app/lib/types/cart.types";
+import type { CartItemsType } from "@/app/lib/types/cart.types";
 import { Model } from "mongoose";
-import { ICart } from "../models/Cart.model";
-import { IProduct } from "../models/Product.model";
+import type { ICart } from "../models/Cart.model";
+import type { IProduct } from "../models/Product.model";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { localCartDto } from "../dtos/cart.dto";
+import type { localCartDto } from "../dtos/cart.dto";
 // Repository Service Pattern
 export class CartRepository extends BaseRepository<ICart> {
   constructor(model: Model<ICart>) {

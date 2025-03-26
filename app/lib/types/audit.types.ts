@@ -1,4 +1,4 @@
-import { DeviceInfo } from "./session.types";
+import type { DeviceInfo } from "./session.types";
 export enum SecurityAuditAction {
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
   LOGIN_FAILURE = "LOGIN_FAILURE",

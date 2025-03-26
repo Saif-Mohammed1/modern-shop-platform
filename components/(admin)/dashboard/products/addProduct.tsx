@@ -11,7 +11,7 @@ import ProductPricing from "./product-pricing";
 import ProductInventory from "./product-inventory";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import toast from "react-hot-toast";
 import api from "@/app/lib/utilities/api";
 export type PreviewFile = string;

@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Document, Model, Query, Schema, model, models } from "mongoose";
-import User, { IUser } from "./User.model";
+import User, { type IUser } from "./User.model";
 
 export interface IRefundSchema extends Document {
   _id: Schema.Types.ObjectId;

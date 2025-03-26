@@ -1,5 +1,5 @@
 // components/ProductCard.js
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { useCartItems } from "@/components/providers/context/cart/cart.context";
@@ -7,11 +7,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Image from "next/image";
 import toast from "react-hot-toast";
-import {
-  AiOutlineHeart,
-  AiFillHeart,
-  AiOutlineShoppingCart,
-} from "react-icons/ai"; // Import cart icon
+import { AiFillHeart, AiOutlineShoppingCart } from "react-icons/ai"; // Import cart icon
 import api from "@/app/lib/utilities/api";
 import { useRouter } from "next/navigation";
 

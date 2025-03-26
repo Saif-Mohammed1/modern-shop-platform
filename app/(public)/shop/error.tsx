@@ -1,13 +1,13 @@
 "use client";
 
 import ErrorHandler from "@/components/Error/errorHandler";
-import { FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 
 type ErrorProps = {
   error: {
-    message: string,
-  },
-  reset: () => void,
+    message: string;
+  };
+  reset: () => void;
 };
 
 const Error: FC<ErrorProps> = ({ error, reset }) => {

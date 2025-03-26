@@ -1,7 +1,7 @@
 // src/app/lib/features/2fa/crypto.service.ts
 import crypto from "crypto";
 import { SECURITY_CONFIG } from "@/app/lib/config/security.config";
-import { EncryptedData, SecurityMetadata } from "../models/2fa.model";
+import type { EncryptedData, SecurityMetadata } from "../models/2fa.model";
 
 export class CryptoService {
   createDeviceHash(metadata: SecurityMetadata): string {

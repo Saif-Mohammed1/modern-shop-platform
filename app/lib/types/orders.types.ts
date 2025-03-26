@@ -1,5 +1,5 @@
-import { IProduct } from "../../server/models/Product.model";
-import { UserAuthType } from "./users.types";
+import type { IProduct } from "../../server/models/Product.model";
+import type { UserAuthType } from "./users.types";
 // import Address from "./address.model";
 // export type status = "pending" | "completed" | "refunded" | "processing" | "cancelled";
 export interface IShippingInfo {

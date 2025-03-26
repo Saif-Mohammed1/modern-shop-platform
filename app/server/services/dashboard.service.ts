@@ -1,5 +1,5 @@
 // src/services/dashboard.service.ts
-import { DashboardData } from "@/app/lib/types/dashboard.types";
+import type { DashboardData } from "@/app/lib/types/dashboard.types";
 import { DashboardRepository } from "../repositories/dashboard.repository";
 
 export class DashboardService {
@@ -27,47 +27,47 @@ export class DashboardService {
     };
   }
 
-  private combineUserInterest(
-    cartProducts: Array<{ productId: any; count: number }>,
-    wishlistProducts: Array<{ productId: any; count: number }>
-  ): Array<{ productId: string; count: number }> {
-    const combined = new Map<string, number>();
+  // private combineUserInterest(
+  //   cartProducts: Array<{ productId: any; count: number }>,
+  //   wishlistProducts: Array<{ productId: any; count: number }>
+  // ): Array<{ productId: string; count: number }> {
+  //   const combined = new Map<string, number>();
 
-    const addToMap = (items: Array<{ productId: any; count: number }>) => {
-      items.forEach(({ productId, count }) => {
-        const id = productId.toString();
-        combined.set(id, (combined.get(id) || 0) + count);
-      });
-    };
+  //   const addToMap = (items: Array<{ productId: any; count: number }>) => {
+  //     items.forEach(({ productId, count }) => {
+  //       const id = productId.toString();
+  //       combined.set(id, (combined.get(id) || 0) + count);
+  //     });
+  //   };
 
-    addToMap(cartProducts);
-    addToMap(wishlistProducts);
+  //   addToMap(cartProducts);
+  //   addToMap(wishlistProducts);
 
-    return Array.from(combined.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([productId, count]) => ({ productId, count }));
-  }
+  //   return Array.from(combined.entries())
+  //     .sort((a, b) => b[1] - a[1])
+  //     .slice(0, 10)
+  //     .map(([productId, count]) => ({ productId, count }));
+  // }
 
-  private generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
-  }
+  // private generateSlug(name: string): string {
+  //   return name
+  //     .toLowerCase()
+  //     .replace(/\s+/g, "-")
+  //     .replace(/[^a-z0-9-]/g, "");
+  // }
 
-  private calculateGrowth(current: number, previous: number): number {
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return this.roundPercentage(((current - previous) / previous) * 100);
-  }
+  // private calculateGrowth(current: number, previous: number): number {
+  //   if (previous === 0) return current > 0 ? 100 : 0;
+  //   return this.roundPercentage(((current - previous) / previous) * 100);
+  // }
 
-  private roundCurrency(value: number): number {
-    return Number(value.toFixed(2));
-  }
+  // private roundCurrency(value: number): number {
+  //   return Number(value.toFixed(2));
+  // }
 
-  private roundPercentage(value: number): number {
-    return Number(value.toFixed(1));
-  }
+  // private roundPercentage(value: number): number {
+  //   return Number(value.toFixed(1));
+  // }
 }
 // export class DashboardService2 {
 //   constructor(private readonly repo: DashboardRepository) {}

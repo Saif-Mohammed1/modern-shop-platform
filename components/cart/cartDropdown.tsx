@@ -9,7 +9,7 @@ import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDrop
 import { lang } from "../../app/lib/utilities/lang";
 import { FiX } from "react-icons/fi";
 import { useUser } from "../providers/context/user/user.context";
-import { CartItemsType } from "@/app/lib/types/cart.types";
+import { type CartItemsType } from "@/app/lib/types/cart.types";
 
 type CartDropdownProps = {
   setIsCartOpen: (value: boolean) => void;
@@ -81,24 +81,24 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
     }
     router.push("/checkout");
   };
-  const quantityUpdate = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    item: CartItemsType
-  ) => {
-    const value = e.target.value;
-    if (value === "") return;
+  // const quantityUpdate = (
+  //   e: React.ChangeEvent<HTMLInputElement>,
+  //   item: CartItemsType
+  // ) => {
+  //   const value = e.target.value;
+  //   if (value === "") return;
 
-    const quantity = Math.max(1, Number(value));
+  //   const quantity = Math.max(1, Number(value));
 
-    if (quantity > item.stock) {
-      toast.error(
-        cartDropdownTranslate[lang].functions.quantityUpdate.notEnoughStock
-      );
-      return;
-    }
+  //   if (quantity > item.stock) {
+  //     toast.error(
+  //       cartDropdownTranslate[lang].functions.quantityUpdate.notEnoughStock
+  //     );
+  //     return;
+  //   }
 
-    addToCartItems(item, quantity);
-  };
+  //   addToCartItems(item, quantity);
+  // };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -1,11 +1,11 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import Spinner from "../spinner/spinner";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import api from "../../app/lib/utilities/api";
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 import { lang } from "../../app/lib/utilities/lang";
@@ -18,8 +18,8 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl");
+  // const params = useSearchParams();
+  // const callbackUrl = params.get("callbackUrl");
   const router = useRouter();
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();

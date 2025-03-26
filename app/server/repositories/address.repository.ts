@@ -1,24 +1,24 @@
 // address.repository.ts
 
-import {
+import type {
   QueryBuilderResult,
   QueryOptionConfig,
   QueryBuilderConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { ClientSession, Model } from "mongoose";
+import { type ClientSession, Model } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
-import { IAddress } from "../models/Address.model";
+import type { IAddress } from "../models/Address.model";
 import {
-  CreateAddressDtoType,
-  UpdateAddressDtoType,
+  type CreateAddressDtoType,
+  // UpdateAddressDtoType,
 } from "../dtos/address.dto";
 
 export class AddressRepository extends BaseRepository<IAddress> {
   constructor(model: Model<IAddress>) {
     super(model);
   }
-  async create(
+  override async create(
     dto: CreateAddressDtoType,
     session?: ClientSession
   ): Promise<IAddress> {
@@ -27,7 +27,7 @@ export class AddressRepository extends BaseRepository<IAddress> {
     });
     return address;
   }
-  async update(
+  override async update(
     id: string,
     data: Partial<IAddress>,
     session?: ClientSession
@@ -58,7 +58,7 @@ export class AddressRepository extends BaseRepository<IAddress> {
       //   maxLimit: 100,
     };
 
-     const searchParams = new URLSearchParams({
+    const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
       userId,
       // ...(options?.page && { page: options.page.toString() }),

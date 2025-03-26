@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { HiFilter, HiX } from "react-icons/hi";
+import { HiFilter } from "react-icons/hi";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
-import Pagination, { PaginationType } from "@/components/pagination/Pagination";
+import Pagination, {
+  type PaginationType,
+} from "@/components/pagination/Pagination";
 import ProductCard from "@/components/products/product-card/productCard";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";

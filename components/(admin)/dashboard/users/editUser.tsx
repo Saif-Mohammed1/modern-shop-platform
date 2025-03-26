@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import {
-  UserAuthType,
+  type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
@@ -16,7 +16,7 @@ import {
   FiTrash2,
   FiKey,
   FiShield,
-  FiActivity,
+  // FiActivity,
 } from "react-icons/fi";
 import { SecurityActionsModal } from "./SecurityActionsModal";
 import AuditLogTable from "./AuditLogTable";

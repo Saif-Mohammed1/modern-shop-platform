@@ -1,7 +1,7 @@
-import { DeviceInfo } from "@/app/lib/types/session.types";
-import { ISession } from "../models/Session.model";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
+import type { ISession } from "../models/Session.model";
 import { BaseRepository } from "./BaseRepository";
-import { ClientSession, Model } from "mongoose";
+import { type ClientSession, Model } from "mongoose";
 
 interface CreateSessionDTO {
   userId: string;
@@ -22,7 +22,7 @@ export class SessionRepository extends BaseRepository<ISession> {
     return await this.model.create(dto);
   }
 
-  async findById(id: string): Promise<ISession | null> {
+  override async findById(id: string): Promise<ISession | null> {
     return this.model.findById(id).lean();
   }
   async findByFingerprint(

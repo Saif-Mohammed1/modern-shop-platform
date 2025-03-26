@@ -1,4 +1,4 @@
-// import { FC, useState } from "react";
+// import {type FC, useState } from "react";
 // interface BackupCodeInputProps {
 //   onVerify: (code: string) => void;
 //   isLoading: boolean;
@@ -62,7 +62,7 @@
 //   );
 // };
 // export default BackupCodeInput;
-import { FC, useState, useCallback, useRef } from "react";
+import { type FC, useState, useCallback, useRef } from "react";
 
 interface BackupCodeInputProps {
   onVerify: (codes: string[]) => void;

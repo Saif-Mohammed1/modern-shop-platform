@@ -1,24 +1,24 @@
-import {
+import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
-import { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
-import ProductModel, { IProduct } from "../models/Product.model";
+import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
+import ProductModel, { type IProduct } from "../models/Product.model";
 import { ProductRepository } from "../repositories/product.repository";
 import AppError from "@/app/lib/utilities/appError";
 import { productControllerTranslate } from "@/public/locales/server/productControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { destroyImage, uploadImage } from "@/app/lib/utilities/cloudinary";
-import AuditLogModel, { IAuditLog } from "../models/audit-log.model";
-import { ClientSession, Types } from "mongoose";
+import AuditLogModel, { type IAuditLog } from "../models/audit-log.model";
+import { type ClientSession, Types } from "mongoose";
 import {
   AuditAction,
   AuditSource,
   EntityType,
 } from "@/app/lib/types/audit.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { LogsTypeDto } from "../dtos/logs.dto";
+import type { LogsTypeDto } from "../dtos/logs.dto";
 
 export class ProductService {
   constructor(

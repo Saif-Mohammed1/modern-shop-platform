@@ -1,4 +1,4 @@
-import { UserAuthType } from "@/app/lib/types/users.types";
+import type { UserAuthType } from "@/app/lib/types/users.types";
 import "next-auth";
 import "next-auth/jwt";
 // declare module "next-auth" {

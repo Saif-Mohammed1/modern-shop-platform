@@ -2,11 +2,11 @@
 import { createContext, useState, use, useEffect } from "react";
 import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { useUser } from "../user/user.context";
-import { WishlistType } from "@/app/lib/types/wishList.types";
+import type { WishlistType } from "@/app/lib/types/wishList.types";
 
 type wishlistContextType = {
   wishlist: WishlistType[];

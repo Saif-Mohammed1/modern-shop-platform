@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";

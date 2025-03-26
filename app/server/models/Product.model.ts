@@ -1,6 +1,6 @@
 import { Schema, model, models, Document, Model, Types } from "mongoose";
-import ReviewModel, { IReview } from "./Review.model";
-import { IUser } from "./User.model";
+// import ReviewModel, { type IReview } from "./Review.model";
+import type { IUser } from "./User.model";
 export interface IProduct extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -198,6 +198,7 @@ ProductSchema.virtual("reviews", {
   ref: "Review",
   localField: "_id",
   foreignField: "productId",
+
   // options: { sort: { createdAt: -1 }, limit: 10 },
 });
 ProductSchema.pre("save", function (next) {

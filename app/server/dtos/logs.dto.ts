@@ -1,7 +1,7 @@
 import { AuditSource } from "@/app/lib/types/audit.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { ProductTranslate } from "@/public/locales/server/Product.Translate";
-import { IpVersion } from "zod";
+import type { IpVersion } from "zod";
 import { z } from "zod";
 
 export class LogsValidation {

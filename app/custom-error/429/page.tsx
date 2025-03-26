@@ -25,7 +25,7 @@
 // app/errors/429/TooManyRequests.tsx
 import { tooManyRequestsTranslate } from "@/public/locales/client/(public)/tooManyRequestsTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { cookies, headers } from "next/headers";
 import Link from "next/link";
 // import { useTranslations } from 'next-intl';

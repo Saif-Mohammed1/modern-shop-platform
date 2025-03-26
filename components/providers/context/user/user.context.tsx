@@ -2,7 +2,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { createContext, use, useEffect, useState } from "react";
 import tokenManager from "@/app/lib/utilities/TokenManager";
-import { UserAuthType } from "@/app/lib/types/users.types";
+import type { UserAuthType } from "@/app/lib/types/users.types";
 
 type User = UserAuthType | null;
 type UserContextType = {

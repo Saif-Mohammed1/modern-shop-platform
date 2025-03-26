@@ -2,12 +2,12 @@ import { Document, Model, Schema, models, model, Types } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { DeviceInfo, GeoLocation } from "@/app/lib/types/session.types";
+import type { DeviceInfo, GeoLocation } from "@/app/lib/types/session.types";
 import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import AppError from "@/app/lib/utilities/appError";
 import { SecurityAlertType } from "@/app/server/services/email.service";
 import {
-  accountAction,
+  type accountAction,
   AuthMethod,
   UserCurrency,
   UserRole,

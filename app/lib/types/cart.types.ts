@@ -1,5 +1,5 @@
-import { ProductType } from "./products.types";
-import { UserAuthType } from "./users.types";
+import type { ProductType } from "./products.types";
+import type { UserAuthType } from "./users.types";
 
 export type UserInCart = Partial<UserAuthType> | undefined;
 // Alias the picked fields from ProductType

@@ -14,7 +14,7 @@ import {
   FaTicketAlt,
 } from "react-icons/fa";
 import { lang } from "@/app/lib/utilities/lang";
-import { Event } from "@/app/lib/types/products.types";
+import type { Event } from "@/app/lib/types/products.types";
 import { RiShieldUserLine } from "react-icons/ri";
 
 const AccountMenuV2 = () => {

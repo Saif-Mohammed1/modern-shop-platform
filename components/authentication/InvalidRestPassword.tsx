@@ -1,4 +1,4 @@
-// import { FC } from "react";
+// import type{ FC } from "react";
 // import { lang } from "@/app/lib/utilities/lang";
 // import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
 
@@ -47,7 +47,7 @@
 // export default InvalidRestPassword;
 import { lang } from "@/app/lib/utilities/lang";
 import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
-import { FC } from "react";
+import type { FC } from "react";
 import { FaExclamationTriangle } from "react-icons/fa";
 
 type InvalidResetPasswordProps = {

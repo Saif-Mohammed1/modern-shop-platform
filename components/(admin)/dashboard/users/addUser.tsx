@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/utilities/api";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";

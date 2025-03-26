@@ -8,7 +8,7 @@ import { headers } from "next/headers";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
-import { ProductsSearchParams } from "@/app/lib/types/products.types";
+import type { ProductsSearchParams } from "@/app/lib/types/products.types";
 export const metadata: Metadata = {
   title: productsTranslate.metadata[lang].title,
   description: productsTranslate.metadata[lang].description,

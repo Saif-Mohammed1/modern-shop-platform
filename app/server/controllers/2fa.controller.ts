@@ -10,7 +10,7 @@ import {
   generateDeviceFingerprint,
   getDeviceFingerprint,
 } from "@/app/lib/utilities/DeviceFingerprint.utility";
-import { SecurityMetadata } from "../models/2fa.model";
+import type { SecurityMetadata } from "../models/2fa.model";
 import { cookies } from "next/headers";
 import { UserValidation } from "../dtos/user.dto";
 import { ipAddress } from "@vercel/functions";
@@ -189,24 +189,24 @@ class TwoFactorController {
     );
   }
 
-  private errorResponse(error: unknown) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.errors },
-        { status: 400 }
-      );
-    }
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: error.statusCode }
-      );
-    }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  // private errorResponse(error: unknown) {
+  //   if (error instanceof z.ZodError) {
+  //     return NextResponse.json(
+  //       { success: false, error: error.errors },
+  //       { status: 400 }
+  //     );
+  //   }
+  //   if (error instanceof AppError) {
+  //     return NextResponse.json(
+  //       { success: false, error: error.message },
+  //       { status: error.statusCode }
+  //     );
+  //   }
+  //   return NextResponse.json(
+  //     { success: false, error: "Internal server error" },
+  //     { status: 500 }
+  //   );
+  // }
 
   private getAuthenticatedUserId(req: NextRequest) {
     const userId = req.user?._id.toString();

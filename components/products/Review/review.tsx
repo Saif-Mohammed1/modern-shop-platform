@@ -6,11 +6,11 @@ import { motion } from "framer-motion";
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
 import api from "@/app/lib/utilities/api";
-import CustomButton from "@/components/button/button";
+// import CustomButton from "@/components/button/button";
 import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { UserAuthType } from "@/app/lib/types/users.types";
-import { ReviewsType } from "@/app/lib/types/reviews.types";
+import type { UserAuthType } from "@/app/lib/types/users.types";
+import type { ReviewsType } from "@/app/lib/types/reviews.types";
 
 const CreateReview = dynamic(
   () => import("./createReview")

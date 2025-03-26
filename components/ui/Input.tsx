@@ -1,25 +1,11 @@
 import { forwardRef } from "react";
-import { UseFormRegisterReturn } from "react-hook-form";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 type InputProps = {
   label?: React.ReactNode;
   icon?: React.ReactNode;
-  // value: string;
-  // onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // placeholder?: string;
-  // type?: string;
-  // className?: string;
-  // name?: string;
-  // required?: boolean;
-  // disabled?: boolean;
-  // autoComplete?: string;
+
   error?: string | string[]; // Add error prop
-  // register?: {
-  //   name: string;
-  //   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  //   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  //   ref?: React.Ref<HTMLInputElement>;
-  // }; // Add register prop
   register?: UseFormRegisterReturn<string>; // Add proper type
 } & React.InputHTMLAttributes<HTMLInputElement>;
 

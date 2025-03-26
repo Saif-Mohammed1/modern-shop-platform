@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import { useUser } from "../user/user.context";
-import {
+import type {
   CartContextType,
   CartItemsType,
   ProductCartPick,
@@ -80,7 +80,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         }
         return pre.filter((item) => item._id !== product._id);
       });
-      const data = await removeFromCart(product, user);
+      await removeFromCart(product, user);
       // setCartItems(data);
     } catch (error) {
       const originalCart = await getCartItems(user);

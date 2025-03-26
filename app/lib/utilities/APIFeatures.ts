@@ -1,4 +1,4 @@
-import { Query, FilterQuery } from "mongoose";
+import type { Query, FilterQuery } from "mongoose";
 
 class APIFeatures<
   T extends {

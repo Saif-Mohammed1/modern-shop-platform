@@ -4,8 +4,10 @@
 import WishListCard from "./wishListCard";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { WishlistType } from "@/app/lib/types/wishList.types";
-import Pagination, { PaginationType } from "@/components/pagination/Pagination";
+import type { WishlistType } from "@/app/lib/types/wishList.types";
+import Pagination, {
+  type PaginationType,
+} from "@/components/pagination/Pagination";
 import { parseAsInteger, useQueryState } from "nuqs";
 type WishlistPageProps = {
   wishlistProduct: WishlistType[];
@@ -13,7 +15,7 @@ type WishlistPageProps = {
   pagination: PaginationType;
 };
 const WishlistPage = ({ wishlistProduct, pagination }: WishlistPageProps) => {
-  const [currentPage, setCurrentPage] = useQueryState(
+  const [_currentPage, setCurrentPage] = useQueryState(
     "page",
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );

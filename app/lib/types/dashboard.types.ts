@@ -1,5 +1,4 @@
-import { IOrder } from "@/app/server/models/Order.model";
-import { IRefundSchema } from "@/app/server/models/Refund.model";
+import type { IOrder } from "@/app/server/models/Order.model";
 interface UserAnalytics {
   totalUsers: number;
   activeUsers: number;

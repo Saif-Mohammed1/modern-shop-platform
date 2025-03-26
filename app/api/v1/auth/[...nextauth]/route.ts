@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/app/server/db/db";
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth, { type AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies, headers } from "next/headers";
 import AppError from "@/app/lib/utilities/appError";

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import StarRatings from "react-star-ratings";
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "./styles.css";
 import "swiper/css";

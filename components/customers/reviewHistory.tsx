@@ -5,7 +5,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import api from "../../app/lib/utilities/api";
 import CustomButton from "../button/button";
 import Link from "next/link";
-import { ReviewsType } from "@/app/lib/types/reviews.types";
+import type { ReviewsType } from "@/app/lib/types/reviews.types";
 
 const ReviewHistory = ({
   reviewsList,

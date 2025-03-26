@@ -1,7 +1,7 @@
 import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Link from "next/link";
-import { OrderType } from "@/app/lib/types/orders.types";
+import type { OrderType } from "@/app/lib/types/orders.types";
 
 const OrderHistory = ({ ordersList }: { ordersList: OrderType[] }) => {
   return (

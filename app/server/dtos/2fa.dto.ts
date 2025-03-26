@@ -3,7 +3,7 @@ import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import { lang } from "@/app/lib/utilities/lang";
 import { TwoFactorTranslate } from "@/public/locales/server/TwoFactor.Translate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
-import { z, IpVersion } from "zod";
+import { z, type IpVersion } from "zod";
 
 export class TwoFactorValidation {
   private static allowedEmailDomains = [

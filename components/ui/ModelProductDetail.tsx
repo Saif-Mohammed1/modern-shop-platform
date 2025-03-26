@@ -1,10 +1,10 @@
 "use client";
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import Image from "next/image";
-import { redirect, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { useCartItems } from "../providers/context/cart/cart.context";
 import { useWishlist } from "../providers/context/wishlist/wishlist.context";

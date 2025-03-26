@@ -3,12 +3,12 @@ import { useFormContext } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { FaImage, FaTrash } from "react-icons/fa";
 import Image from "next/image";
-import { PreviewFile } from "./addProduct";
+import type { PreviewFile } from "./addProduct";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import toast from "react-hot-toast";
 import api from "@/app/lib/utilities/api";
-import { OldImage } from "@/app/lib/types/products.types";
+import type { OldImage } from "@/app/lib/types/products.types";
 // type OldImage = {
 //   link: string;
 //   public_id: string;

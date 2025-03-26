@@ -1,20 +1,20 @@
 // wishlist.repository.ts
 
-import {
+import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { ClientSession, Model } from "mongoose";
+import { type ClientSession, Model } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
-import { IWishlist } from "../models/Wishlist.model";
+import type { IWishlist } from "../models/Wishlist.model";
 
 export class WishlistRepository extends BaseRepository<IWishlist> {
   constructor(model: Model<IWishlist>) {
     super(model);
   }
-  async create(
+  override async create(
     dto: Partial<IWishlist>,
     session?: ClientSession
   ): Promise<IWishlist> {

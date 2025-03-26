@@ -1,6 +1,6 @@
 import { Document, Model, Query, Schema, model, models } from "mongoose";
-import Product, { IProduct } from "./Product.model";
-import UserModel, { IUser } from "./User.model";
+import Product, { type IProduct } from "./Product.model";
+import { type IUser } from "./User.model";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
 export interface IReview extends Document {

@@ -1,6 +1,6 @@
 import { emailUpdatedStatusTranslate } from "@/public/locales/client/(public)/emailUpdatedStatusTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { FC } from "react";
+import type { FC } from "react";
 import "./emailUpdatedStatus.css";
 
 type Props = {

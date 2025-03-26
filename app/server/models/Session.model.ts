@@ -1,4 +1,4 @@
-import { DeviceInfo } from "@/app/lib/types/session.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
 import { Schema, model, models, Document, Model, Types } from "mongoose";
 
 export interface ISession extends Document {

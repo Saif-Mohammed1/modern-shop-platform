@@ -1,4 +1,4 @@
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 import { useCartItems } from "@/components/providers/context/cart/cart.context";
 import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
@@ -6,7 +6,6 @@ import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaShareAlt } from "react-icons/fa";

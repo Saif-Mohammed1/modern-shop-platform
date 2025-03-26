@@ -1,5 +1,5 @@
 import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
-import { FC } from "react";
+import type { FC } from "react";
 import { lang } from "@/app/lib/utilities/lang";
 type ErrorHandlerProps = {
   message?: string;

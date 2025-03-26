@@ -1,9 +1,8 @@
 import { OrderStatus } from "@/app/lib/types/orders.types";
 import { faker } from "@faker-js/faker";
-import { assignAsObjectId } from "./assignAsObjectId";
 import { NextRequest } from "next/server";
 import productController from "@/app/server/controllers/product.controller";
-import { IUser } from "@/app/server/models/User.model";
+import type { IUser } from "@/app/server/models/User.model";
 import authController from "@/app/server/controllers/auth.controller";
 import addressController from "@/app/server/controllers/address.controller";
 import reviewController from "@/app/server/controllers/review.controller";
@@ -13,13 +12,13 @@ import stripeController from "@/app/server/controllers/stripe.controller";
 import puppeteer from "puppeteer";
 
 // create a random user
-interface IUserInput {
-  name: string;
-  email: string;
-  password: string;
-  //   passwordConfirm: string | undefined;
-  emailVerify: boolean;
-}
+// interface IUserInput {
+//   name: string;
+//   email: string;
+//   password: string;
+//   //   passwordConfirm: string | undefined;
+//   emailVerify: boolean;
+// }
 
 export const createRandomUsers = async (count: number) => {
   const req = [];
@@ -90,37 +89,37 @@ export const loginRandomUsers = async (count: number, usersId: any[]) => {
   }
   await Promise.all(req);
 };
-interface IProductInput {
-  name: string;
-  category: string;
-  price: number;
-  discount?: number;
-  discountExpire?: Date;
-  images: { link: string; public_id: string }[];
-  userId: string | null;
-  description: string;
-  stock: number;
-  ratingsAverage: number;
-  ratingsQuantity: number;
-  active: boolean;
-  slug: string;
-  reserved: number;
-  lastReserved?: Date;
-  sold: number;
+// interface IProductInput {
+//   name: string;
+//   category: string;
+//   price: number;
+//   discount?: number;
+//   discountExpire?: Date;
+//   images: { link: string; public_id: string }[];
+//   userId: string | null;
+//   description: string;
+//   stock: number;
+//   ratingsAverage: number;
+//   ratingsQuantity: number;
+//   active: boolean;
+//   slug: string;
+//   reserved: number;
+//   lastReserved?: Date;
+//   sold: number;
 
-  sku: string;
-  attributes: Record<string, any>;
-  shippingInfo: {
-    weight: number;
-    dimensions: {
-      length: number;
-      width: number;
-      height: number;
-    };
-  };
+//   sku: string;
+//   attributes: Record<string, any>;
+//   shippingInfo: {
+//     weight: number;
+//     dimensions: {
+//       length: number;
+//       width: number;
+//       height: number;
+//     };
+//   };
 
-  //   createdAt: Date;
-}
+//   //   createdAt: Date;
+// }
 export const createRandomProducts = async (count: number, userId: any[]) => {
   const req = [];
   for (let i = 0; i < count; i++) {

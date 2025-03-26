@@ -1,4 +1,4 @@
-import { Event } from "@/app/lib/types/products.types";
+import type { Event } from "@/app/lib/types/products.types";
 
 type SelectProps = {
   options: Array<{ value: string; label: string }>;

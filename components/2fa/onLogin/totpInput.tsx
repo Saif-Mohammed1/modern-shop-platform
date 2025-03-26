@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from "react";
+import { type FC, useRef, useState } from "react";
 interface TotpInputProps {
   onVerify: (code: string) => void;
   isLoading: boolean;

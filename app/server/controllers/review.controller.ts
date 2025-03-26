@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { ReviewService } from "../services/review.service";
-import { IUser } from "../models/User.model";
+import type { IUser } from "../models/User.model";
 import { ReviewValidation } from "../dtos/reviews.dto";
 import AppError from "@/app/lib/utilities/appError";
 import { ReviewTranslate } from "@/public/locales/server/Review.Translate";

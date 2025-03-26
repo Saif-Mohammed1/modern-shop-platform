@@ -1,7 +1,7 @@
 // components/ProductVersionHistory.tsx
 "use client";
 
-import { FC } from "react";
+import type { FC } from "react";
 import {
   Table,
   TableHeader,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 
 import Button from "../ui/Button";
-import Pagination, { PaginationType } from "../pagination/Pagination";
+import Pagination, { type PaginationType } from "../pagination/Pagination";
 import { parseAsInteger, useQueryState } from "nuqs";
 import ConfirmModal from "../ui/ConfirmModal";
 import api from "@/app/lib/utilities/api";
@@ -39,7 +39,7 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
   pagination,
   versions,
 }) => {
-  const [currentPage, setCurrentPage] = useQueryState(
+  const [_currentPage, setCurrentPage] = useQueryState(
     "page",
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );

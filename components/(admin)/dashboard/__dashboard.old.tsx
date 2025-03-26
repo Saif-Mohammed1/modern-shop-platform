@@ -6,6 +6,7 @@ import {
   FiDollarSign,
   FiPackage,
   FiAlertCircle,
+  FiShoppingCart,
   FiRefreshCw,
   FiChevronRight,
   FiChevronLeft,
@@ -66,55 +67,79 @@ const AdminDashboard = ({
 };
 
 const BasicView = ({ data }: { data: DashboardData }) => {
-  const paymentDistribution = data.orders.paymentMethods.reduce(
-    (acc, method) => ({ ...acc, [method.method]: method.usageCount }),
-    {}
+  const categoryDistribution = data.products.categories.reduce(
+    (acc, category) => {
+      acc[category.name] = category.sales;
+      return acc;
+    },
+    {} as Record<string, number>
   );
-
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
           icon={<FiUsers className="h-6 w-6" />}
-          title="Active Users"
-          value={data.users.activeUsers}
+          title="Total Users"
+          value={data.users.totalUsers}
           growth={parseFloat(
             data.users.weeklyGrowth[0]?.growthPercentage || "0"
           )}
         />
         <MetricCard
+          icon={<FiDollarSign className="h-6 w-6" />}
+          title="Total Revenue"
+          value={data.orders.summary.totalRevenue}
+          isCurrency
+          growth={data.orders.weeklyGrowth[0]?.revenueGrowth}
+        />
+        <MetricCard
           icon={<FiPackage className="h-6 w-6" />}
-          title="Low Stock"
+          title="Low Stock Items"
           value={data.products.inventory.lowStock}
           isAlert
         />
         <MetricCard
-          icon={<FiDollarSign className="h-6 w-6" />}
-          title="Net Revenue"
-          value={data.orders.financialHealth.netRevenue}
-          isCurrency
-        />
-        <MetricCard
-          icon={<FiShield className="h-6 w-6" />}
-          title="2FA Adoption"
-          value={data.users.security.twoFactorAdoption}
-          unit="%"
+          icon={<FiAlertCircle className="h-6 w-6" />}
+          title="Pending Reports"
+          value={data.reports.total}
         />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <ChartCard title="Revenue Trends">
           <RevenueTrendChart weeklyGrowth={data.orders.weeklyGrowth} />
         </ChartCard>
-        <ChartCard title="Payment Methods">
-          <CategoryChart distribution={paymentDistribution} />
+        <ChartCard title="Sales Distribution">
+          <CategoryChart distribution={categoryDistribution} />
         </ChartCard>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentOrders orders={data.orders.recentOrders} />
+        <RecentActivities
+          title="Recent Orders"
+          data={data.orders.recentOrders.map((order) => ({
+            ...order,
+            _id: order._id.toString(),
+            type: "order",
+            amount: order.total,
+          }))}
+          icon={<FiShoppingCart className="w-5 h-5" />}
+        />
         <SecurityOverview security={data.users.security} />
       </div>
+
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <ChartCard title="Revenue Trends">
+        <RevenueTrendChart weeklyGrowth={data.orders.weeklyGrowth} />
+      </ChartCard>
+      <ChartCard title="Top Categories">
+        <CategorySalesChart categories={data.products.categories} />
+      </ChartCard>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <RecentOrders orders={data.orders.recentOrders} />
+      <SecurityOverview security={data.users.security} />
+    </div> */}
     </>
   );
 };
@@ -128,27 +153,29 @@ const AdvancedView = ({ data }: { data: DashboardData }) => (
         value={data.users.geographicalInsights.totalCities}
       />
       <MetricCard
-        icon={<FiRefreshCw className="h-6 w-6" />}
-        title="Refund Rate"
-        value={data.refunds.approvalRate}
+        icon={<FiShield className="h-6 w-6" />}
+        title="2FA Enabled"
+        value={data.users.security.twoFactorAdoption}
         unit="%"
       />
       <MetricCard
+        icon={<FiShoppingCart className="h-6 w-6" />}
+        title="Avg Order Value"
+        value={data.orders.summary.avgOrderValue}
+        isCurrency
+      />
+      <MetricCard
         icon={<FiPieChart className="h-6 w-6" />}
-        title="Product Ratings"
-        value={data.products.engagement.avgRating}
-        unit="/5"
+        title="Repeat Customers"
+        value={data.orders.customerBehavior.repeatRate}
+        unit="%"
       />
       <MetricCard
         icon={<FiMapPin className="h-6 w-6" />}
-        title="Order Cities"
-        value={data.orders.topLocations.length}
-      />
-      <MetricCard
-        icon={<FiBarChart2 className="h-6 w-6" />}
-        title="Avg LTV"
-        value={data.orders.customerBehavior.avgLTV}
-        isCurrency
+        title="Top Country"
+        value={
+          data.users.geographicalInsights.topLocations[0]?.country || "N/A"
+        }
       />
     </div>
 
@@ -158,92 +185,22 @@ const AdvancedView = ({ data }: { data: DashboardData }) => (
           devices={data.users.geographicalInsights.deviceDistribution}
         />
       </ChartCard>
-      <ChartCard title="Category Sales">
-        <CategorySalesChart categories={data.products.categories} />
-      </ChartCard>
       <ChartCard title="Inventory Value">
         <InventoryValueChart inventory={data.products.inventory} />
       </ChartCard>
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <TopProductsTable products={data.orders.topProducts} />
-      <div className="space-y-6">
-        <UserActivityAnalysis userInterest={data.userInterestProducts} />
+      <ChartCard title="User Locations">
         <GeographicalMap
           locations={data.users.geographicalInsights.topLocations}
         />
-      </div>
+      </ChartCard>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <TopProductsTable products={data.orders.topProducts} />
+      <UserActivityAnalysis userInterest={data.userInterestProducts} />
     </div>
   </>
 );
-
-// Enhanced EarningsChart component
-// const EarningsChart: FC<{
-//   data: Record<string, number>;
-//   type?: "bar" | "pie";
-// }> = ({ data, type = "bar" }) => {
-//   const options: ApexOptions = {
-//     chart: { type },
-//     colors: ["#4F46E5", "#10B981", "#F59E0B"],
-//     ...(type === "bar" && {
-//       xaxis: { categories: Object.keys(data) },
-//       yaxis: {
-//         labels: { formatter: (val: number) => `$${val.toLocaleString()}` },
-//       },
-//     }),
-//   };
-
-//   return (
-//     <Chart
-//       options={options}
-//       series={Object.values(data)}
-//       type={type}
-//       height={350}
-//     />
-//   );
-// };
-// Add ProgressBar component
-// const ProgressBar: FC<{ value: number; max: number }> = ({ value, max }) => (
-//   <div className="w-full bg-gray-600 rounded-full h-2">
-//     <div
-//       className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
-//       style={{ width: `${(value / max) * 100}%` }}
-//     />
-//   </div>
-// );
-// New User Interest Component
-// const UserInterestAnalysis: FC<{
-//   cart: DashboardData["userInterestProducts"]["categoryAnalysis"]["cart"];
-//   wishlist: DashboardData["userInterestProducts"]["categoryAnalysis"]["wishlist"];
-// }> = ({ cart, wishlist }) => (
-//   <div className="grid grid-cols-2 gap-4">
-//     <div className="space-y-4">
-//       <h3 className="font-semibold">Cart Analysis</h3>
-//       {cart.map((category) => (
-//         <div key={category.category} className="bg-gray-700 p-3 rounded-lg">
-//           <p>{category.category}</p>
-//           <ProgressBar
-//             value={category.totalItems}
-//             max={cart.reduce((acc, curr) => acc + curr.totalItems, 0)}
-//           />
-//         </div>
-//       ))}
-//     </div>
-//     <div className="space-y-4">
-//       <h3 className="font-semibold">Wishlist Analysis</h3>
-//       {wishlist.map((category) => (
-//         <div key={category.category} className="bg-gray-700 p-3 rounded-lg">
-//           <p>{category.category}</p>
-//           <ProgressBar
-//             value={category.totalItems}
-//             max={wishlist.reduce((acc, curr) => acc + curr.totalItems, 0)}
-//           />
-//         </div>
-//       ))}
-//     </div>
-//   </div>
-// );
 
 // Updated MetricCard with unit support
 interface MetricCardProps {
@@ -348,6 +305,56 @@ const ChartCard: FC<ChartCardProps> = ({
   </div>
 );
 
+// interface EarningsChartProps {
+//   data: { current: number; trend: number; daily: number };
+// }
+
+// const EarningsChart: FC<EarningsChartProps> = ({ data }) => {
+//   const options: ApexOptions = {
+//     chart: {
+//       type: "bar",
+//       height: 350,
+//       foreColor: "#fff",
+//       toolbar: { show: false },
+//       animations: { enabled: true },
+//     },
+//     plotOptions: {
+//       bar: {
+//         borderRadius: 8,
+//         columnWidth: "40%",
+//         distributed: true,
+//       },
+//     },
+//     xaxis: {
+//       categories: ["Current", "Last Week", "Today"],
+//       labels: { style: { fontSize: "14px" } },
+//     },
+//     yaxis: {
+//       labels: {
+//         formatter: (val: number) => `$${val.toFixed(2)}`,
+//         style: { fontSize: "14px" },
+//       },
+//     },
+//     colors: ["#4F46E5", "#6366F1", "#818CF8"],
+//     tooltip: {
+//       theme: "dark",
+//       x: { show: false },
+//       marker: { show: false },
+//     },
+//     dataLabels: { enabled: false },
+//     grid: { borderColor: "#374151" },
+//   };
+
+//   const series = [
+//     {
+//       name: "Earnings",
+//       data: [data.current, data.trend, data.daily],
+//     },
+//   ];
+
+//   return <Chart options={options} series={series} type="bar" height={350} />;
+// };
+
 interface CategoryChartProps {
   distribution: Record<string, number>;
 }
@@ -389,110 +396,110 @@ const CategoryChart: FC<CategoryChartProps> = ({ distribution }) => {
   return <Chart options={options} series={series} type="donut" height={350} />;
 };
 
-// interface ActivityItem {
-//   _id: string;
-//   amount?: number;
-//   totalPrice?: number;
-//   status: string;
-//   createdAt: Date;
-//   type?: "refund" | "order" | "report";
-// }
+interface ActivityItem {
+  _id: string;
+  amount?: number;
+  totalPrice?: number;
+  status: string;
+  createdAt: Date;
+  type?: "refund" | "order" | "report";
+}
 
-// interface RecentActivitiesProps {
-//   title: string;
-//   data: ActivityItem[];
-//   icon: React.JSX.Element;
-//   loading?: boolean;
-//   error?: string;
-//   onRetry?: () => void;
-// }
+interface RecentActivitiesProps {
+  title: string;
+  data: ActivityItem[];
+  icon: React.JSX.Element;
+  loading?: boolean;
+  error?: string;
+  onRetry?: () => void;
+}
 
-// const RecentActivities: FC<RecentActivitiesProps> = ({
-//   title,
-//   data,
-//   icon,
-//   loading = false,
-//   error,
-//   onRetry,
-// }) => (
-//   <div className="bg-gray-800 p-6 rounded-xl">
-//     <div className="flex items-center justify-between mb-4">
-//       <h3 className="text-lg font-semibold">{title}</h3>
-//       {icon}
-//     </div>
+const RecentActivities: FC<RecentActivitiesProps> = ({
+  title,
+  data,
+  icon,
+  loading = false,
+  error,
+  onRetry,
+}) => (
+  <div className="bg-gray-800 p-6 rounded-xl">
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-lg font-semibold">{title}</h3>
+      {icon}
+    </div>
 
-//     {error ? (
-//       <div className="text-center py-4">
-//         <p className="text-red-400 mb-2">Error loading activities</p>
-//         {onRetry && (
-//           <button
-//             onClick={onRetry}
-//             className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300"
-//           >
-//             <FiRefreshCw className="w-4 h-4" />
-//             Try Again
-//           </button>
-//         )}
-//       </div>
-//     ) : loading ? (
-//       <div className="space-y-4">
-//         {[...Array(3)].map((_, i) => (
-//           <div key={i} className="h-16 bg-gray-700 rounded-lg animate-pulse" />
-//         ))}
-//       </div>
-//     ) : data.length === 0 ? (
-//       <div className="text-center py-4">
-//         <p className="text-gray-400">No recent activities</p>
-//         <p className="text-sm text-gray-500 mt-1">Check back later</p>
-//       </div>
-//     ) : (
-//       <div className="space-y-4">
-//         {data.map((activity) => (
-//           <div
-//             key={activity._id}
-//             className="flex items-center justify-between bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors"
-//           >
-//             <div>
-//               <p className="font-medium">#{activity._id.slice(-4)}</p>
-//               <p className="text-sm text-gray-400">
-//                 {new Date(activity.createdAt).toLocaleDateString("en-US", {
-//                   month: "short",
-//                   day: "numeric",
-//                   hour: "2-digit",
-//                   minute: "2-digit",
-//                 })}
-//               </p>
-//             </div>
-//             <div className="text-right">
-//               {(activity.amount || activity.totalPrice) && (
-//                 <p
-//                   className={`font-semibold ${
-//                     activity.type === "refund"
-//                       ? "text-red-400"
-//                       : "text-green-400"
-//                   }`}
-//                 >
-//                   {activity.type === "refund" ? "-" : "+"}$
-//                   {(activity.amount || activity.totalPrice)?.toFixed(2)}
-//                 </p>
-//               )}
-//               <p className="text-sm text-gray-400 capitalize">
-//                 {activity.status}
-//               </p>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     )}
+    {error ? (
+      <div className="text-center py-4">
+        <p className="text-red-400 mb-2">Error loading activities</p>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300"
+          >
+            <FiRefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
+        )}
+      </div>
+    ) : loading ? (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-16 bg-gray-700 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    ) : data.length === 0 ? (
+      <div className="text-center py-4">
+        <p className="text-gray-400">No recent activities</p>
+        <p className="text-sm text-gray-500 mt-1">Check back later</p>
+      </div>
+    ) : (
+      <div className="space-y-4">
+        {data.map((activity) => (
+          <div
+            key={activity._id}
+            className="flex items-center justify-between bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            <div>
+              <p className="font-medium">#{activity._id.slice(-4)}</p>
+              <p className="text-sm text-gray-400">
+                {new Date(activity.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+            <div className="text-right">
+              {(activity.amount || activity.totalPrice) && (
+                <p
+                  className={`font-semibold ${
+                    activity.type === "refund"
+                      ? "text-red-400"
+                      : "text-green-400"
+                  }`}
+                >
+                  {activity.type === "refund" ? "-" : "+"}$
+                  {(activity.amount || activity.totalPrice)?.toFixed(2)}
+                </p>
+              )}
+              <p className="text-sm text-gray-400 capitalize">
+                {activity.status}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
 
-//     {data.length > 0 && (
-//       <button className="w-full mt-4 text-indigo-400 hover:text-indigo-300 text-sm flex items-center justify-center gap-2">
-//         View All Activities
-//         <FiChevronRight className="w-4 h-4" />
-//       </button>
-//     )}
-//   </div>
-// );
+    {data.length > 0 && (
+      <button className="w-full mt-4 text-indigo-400 hover:text-indigo-300 text-sm flex items-center justify-center gap-2">
+        View All Activities
+        <FiChevronRight className="w-4 h-4" />
+      </button>
+    )}
+  </div>
+);
 // Revenue Trend Chart Component
 const RevenueTrendChart: FC<{
   weeklyGrowth: DashboardData["orders"]["weeklyGrowth"];
@@ -522,52 +529,52 @@ const RevenueTrendChart: FC<{
 };
 
 // Category Sales Chart Component
-const CategorySalesChart: FC<{
-  categories: DashboardData["products"]["categories"];
-}> = ({ categories }) => {
-  const options: ApexOptions = {
-    chart: { type: "donut" },
-    labels: categories.map((c) => c.name),
-    colors: ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"],
-    legend: { position: "bottom" },
-  };
+// const CategorySalesChart: FC<{
+//   categories: DashboardData["products"]["categories"];
+// }> = ({ categories }) => {
+//   const options: ApexOptions = {
+//     chart: { type: "donut" },
+//     labels: categories.map((c) => c.name),
+//     colors: ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"],
+//     legend: { position: "bottom" },
+//   };
 
-  return (
-    <Chart
-      options={options}
-      series={categories.map((c) => c.sales)}
-      type="donut"
-      height={350}
-    />
-  );
-};
+//   return (
+//     <Chart
+//       options={options}
+//       series={categories.map((c) => c.sales)}
+//       type="donut"
+//       height={350}
+//     />
+//   );
+// };
 
 // Recent Orders Component
-const RecentOrders: FC<{ orders: DashboardData["orders"]["recentOrders"] }> = ({
-  orders,
-}) => (
-  <ChartCard title="Recent Orders">
-    <div className="space-y-4">
-      {orders.slice(0, 5).map((order) => (
-        <div
-          key={String(order._id)}
-          className="flex justify-between items-center bg-gray-700 p-3 rounded-lg"
-        >
-          <div>
-            <p className="font-medium">Order #{String(order._id).slice(-6)}</p>
-            <p className="text-sm text-gray-400">
-              {new Date(order.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="font-semibold">${order.total.toLocaleString()}</p>
-            <p className="text-sm text-gray-400 capitalize">{order.status}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </ChartCard>
-);
+// const RecentOrders: FC<{ orders: DashboardData["orders"]["recentOrders"] }> = ({
+//   orders,
+// }) => (
+//   <ChartCard title="Recent Orders">
+//     <div className="space-y-4">
+//       {orders.slice(0, 5).map((order) => (
+//         <div
+//           key={String(order._id)}
+//           className="flex justify-between items-center bg-gray-700 p-3 rounded-lg"
+//         >
+//           <div>
+//             <p className="font-medium">Order #{String(order._id).slice(-6)}</p>
+//             <p className="text-sm text-gray-400">
+//               {new Date(order.createdAt).toLocaleDateString()}
+//             </p>
+//           </div>
+//           <div className="text-right">
+//             <p className="font-semibold">${order.total.toLocaleString()}</p>
+//             <p className="text-sm text-gray-400 capitalize">{order.status}</p>
+//           </div>
+//         </div>
+//       ))}
+//     </div>
+//   </ChartCard>
+// );
 
 // Security Overview Component
 const SecurityOverview: FC<{

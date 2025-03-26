@@ -1,21 +1,21 @@
-import { ClientSession, FilterQuery, QueryOptions } from "mongoose";
+import type { ClientSession } from "mongoose";
 import { BaseRepository } from "./BaseRepository";
 import { Model } from "mongoose";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import {
+import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { IReview } from "../models/Review.model";
-import { createReviewDto } from "../dtos/reviews.dto";
+import type { IReview } from "../models/Review.model";
+import type { createReviewDto } from "../dtos/reviews.dto";
 
 export class ReviewRepository extends BaseRepository<IReview> {
   constructor(model: Model<IReview>) {
     super(model);
   }
-  async create(
+  override async create(
     data: createReviewDto,
     session?: ClientSession
   ): Promise<IReview> {
@@ -23,7 +23,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
     return review;
   }
 
-  async findById(id: IReview["_id"]): Promise<IReview | null> {
+  override async findById(id: IReview["_id"]): Promise<IReview | null> {
     return this.model.findById(id).lean();
   }
 
@@ -37,7 +37,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
       //   maxLimit: 100,
     };
 
-     const searchParams = new URLSearchParams({
+    const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
       productId,
       // ...(options?.page && { page: options.page.toString() }),
@@ -63,7 +63,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
   ): Promise<IReview | null> {
     return this.model.findOne({ productId, userId }).lean();
   }
-  async update(
+  override async update(
     id: IReview["_id"],
     input: Partial<IReview>,
     session?: ClientSession
@@ -189,7 +189,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
       //   maxLimit: 100,
     };
 
-     const searchParams = new URLSearchParams({
+    const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
       userId,
       // ...(options?.page && { page: options.page.toString() }),

@@ -1,5 +1,5 @@
 import { Document, Model, model, models, Schema } from "mongoose";
-import { IUser } from "./User.model";
+import type { IUser } from "./User.model";
 // Enhanced Type Definitions
 export interface SecurityMetadata {
   ipAddress: string;
@@ -25,7 +25,7 @@ export interface ITwoFactorAuth extends Document {
   userId: IUser["_id"];
   encryptedSecret: EncryptedData;
   backupCodes: string[]; // Hashed codes
-  recoveryAttempts: number;
+  recoveryAttempts?: number;
   lastUsed?: Date;
   auditLogs: AuditLog[];
 

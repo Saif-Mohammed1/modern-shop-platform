@@ -1,6 +1,6 @@
 "use server";
 
-import { ProductType } from "@/app/lib/types/products.types";
+import type { ProductType } from "@/app/lib/types/products.types";
 //fetch prodect using server side rendering
 
 export interface ProductParams {
