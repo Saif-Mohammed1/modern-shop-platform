@@ -17,6 +17,7 @@ import { useEffect, useRef } from "react";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 import { lang } from "../../app/lib/utilities/lang";
 import type { UserAuthType } from "@/app/lib/types/users.types";
+import CustomLink from "../ui/CustomLink";
 type AccountNavListProps = {
   user: UserAuthType | null;
   setAccountMenuOpen: (open: boolean) => void;
@@ -89,13 +90,23 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
       )}
       {!user && (
         <>
-          <Link href="/auth/">
+          <CustomLink href="/auth/" className="hidden md:block">
             <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
               <VscSignIn className="mr-2" />{" "}
               {navBarTranslate[lang].accountNavList.content.accountMenu.signIn}
             </span>
-          </Link>
-          <Link href="/auth/register">
+          </CustomLink>
+          <CustomLink
+            href="/auth/"
+            intercept={false}
+            className="block md:hidden"
+          >
+            <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
+              <VscSignIn className="mr-2" />{" "}
+              {navBarTranslate[lang].accountNavList.content.accountMenu.signIn}
+            </span>
+          </CustomLink>
+          <CustomLink href="/auth/register" className="hidden md:block">
             <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
               <VscSignOut className="mr-2" />
               {
@@ -103,7 +114,20 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
                   .createAccount
               }
             </span>
-          </Link>
+          </CustomLink>
+          <CustomLink
+            href="/auth/register"
+            intercept={false}
+            className="block md:hidden"
+          >
+            <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
+              <VscSignOut className="mr-2" />
+              {
+                navBarTranslate[lang].accountNavList.content.accountMenu
+                  .createAccount
+              }
+            </span>
+          </CustomLink>
         </>
       )}
       <Link href="/shop">
