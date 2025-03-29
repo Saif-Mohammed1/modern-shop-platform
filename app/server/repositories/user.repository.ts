@@ -652,7 +652,7 @@ export class UserRepository extends BaseRepository<IUser> {
   }
   async findAllUsers(
     options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IUser> | []> {
+  ): Promise<QueryBuilderResult<IUser>> {
     const queryConfig: QueryBuilderConfig<IUser> = {
       allowedFilters: ["name", "email", "role", "status", "createdAt"],
       searchFields: ["name", "email"],
