@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaShareAlt } from "react-icons/fa";
 import StarRatings from "react-star-ratings";
+import { FaArrowRightLong } from "react-icons/fa6";
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { addToCartItems } = useCartItems();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -125,11 +126,28 @@ const ProductCard = ({ product }: { product: ProductType }) => {
             <span className="text-gray-700 font-medium">${product.price}</span>
           )}
         </div>
-        <button
+        {/* <button
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
           onClick={handelAddToCart}
         >
           {shopPageTranslate[lang].content.addToCart}
+        </button> */}
+        <button
+          onClick={handelAddToCart}
+          // className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+          className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
+          aria-label="Add to cart"
+        >
+          <p className="text-xl flex gap-2">
+            {/* 
+                      make animation to move right and back 
+                       */}
+            {/* <span className="mx-1 "> */}
+            {/* {shopPageTranslate[lang].modelProductDetails.confirm} */}
+            <FaArrowRightLong className="animate-bounce mt-1" />
+            🛒
+            {/* </span> */}
+          </p>
         </button>
       </div>
 

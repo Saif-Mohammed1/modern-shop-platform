@@ -260,7 +260,7 @@ const ProductDetail = ({
               <div className="flex items-center border rounded-lg">
                 <button
                   onClick={() => handleQuantityChange(quantity - 1)}
-                  className="px-4 py-2 hover:bg-gray-100"
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   disabled={quantity <= 1}
                 >
                   -
@@ -277,7 +277,7 @@ const ProductDetail = ({
                 />
                 <button
                   onClick={() => handleQuantityChange(quantity + 1)}
-                  className="px-4 py-2 hover:bg-gray-100"
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   disabled={quantity >= stock}
                 >
                   +
