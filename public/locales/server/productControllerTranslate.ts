@@ -64,7 +64,9 @@ export const productControllerTranslate = {
     errors: {
       noProductHistory: "No product history found.",
       notFoundProduct: "Product not found.",
+      notFoundProducts: "There are no products.",
       noProductFoundWithId: "No product found with that ID",
+      HistoricalProductNotFound: "No historical product found.",
       requiredFields: "Please fill in all required fields.",
       noDocumentFoundWithId: "No document found with that ID",
       ImageDeletedSuccessfully: "Image deleted successfully",
@@ -135,7 +137,9 @@ export const productControllerTranslate = {
     errors: {
       noProductHistory: "Історія прод продуктом не знайдена.",
       notFoundProduct: "Продукт не знайдено.",
+      notFoundProducts: "Продуктів немає.",
       noProductFoundWithId: "Продукт з таким ідентифікатором не знайдено",
+      HistoricalProductNotFound: "Історичний продукт не знайдено.",
       requiredFields: "Будь ласка, заповніть всі обов'язкові поля.",
       noDocumentFoundWithId: "Документ з таким ідентифікатором не знайдено",
       ImageDeletedSuccessfully: "Зображення успішно видалено",

@@ -695,7 +695,7 @@ export class UserService {
   // Admin Functions
   async getAllUsers(
     options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IUser> | []> {
+  ): Promise<QueryBuilderResult<IUser>> {
     return this.repository.findAllUsers(options);
   }
 

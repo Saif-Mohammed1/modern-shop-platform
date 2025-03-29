@@ -270,20 +270,52 @@ export class ProductService {
       session.endSession();
     }
   }
-  async getProducts(options: QueryOptionConfig, isAdmin?: boolean) {
-    return this.repository.getProducts(options, isAdmin);
+  async getProducts(
+    options: QueryOptionConfig,
+    isAdmin?: boolean
+  ): Promise<QueryBuilderResult<IProduct>> {
+    const products = await this.repository.getProducts(options, isAdmin);
+    if (!products || products.docs.length === 0) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.notFoundProducts,
+        404
+      );
+    }
+    return products;
   }
   async getProductById(id: string, session?: ClientSession) {
-    return this.repository.findById(id, session);
+    const product = await this.repository.findById(id, session);
+    if (!product) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.noProductFoundWithId,
+        404
+      );
+    }
+    return product;
   }
   async getProductBySlug(
     slug: string,
     options?: { populate?: boolean; select?: string }
   ) {
-    return this.repository.getProductBySlug(slug, options);
+    const product = await this.repository.getProductBySlug(slug, options);
+    if (!product) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.noProductFoundWithId,
+        404
+      );
+    }
+    return product;
   }
   async getProductMetaDataBySlug(slug: string) {
-    return this.repository.getProductMetaDataBySlug(slug);
+    // return this.repository.getProductMetaDataBySlug(slug);
+    const product = await this.repository.getProductMetaDataBySlug(slug);
+    if (!product) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.noProductFoundWithId,
+        404
+      );
+    }
+    return product;
   }
   async getProductsCategory(): Promise<string[]> {
     return this.repository.getCategoryList();
@@ -527,7 +559,10 @@ export class ProductService {
       // Get current product first to ensure it exists
       const currentProduct = await this.repository.getProductBySlug(slug);
       if (!currentProduct) {
-        throw new AppError("Product not found", 404);
+        throw new AppError(
+          productControllerTranslate[lang].errors.noProductFoundWithId,
+          404
+        );
       }
 
       // Get historical version data using product ID
@@ -538,7 +573,10 @@ export class ProductService {
       );
 
       if (!historicalData.docs.length) {
-        throw new AppError("Historical version not found", 404);
+        throw new AppError(
+          productControllerTranslate[lang].errors.HistoricalProductNotFound,
+          404
+        );
       }
 
       // Get the reconstructed product version

@@ -54,7 +54,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
   async getProducts(
     options: QueryOptionConfig,
     isAdmin?: boolean
-  ): Promise<QueryBuilderResult<IProduct> | []> {
+  ): Promise<QueryBuilderResult<IProduct>> {
     const queryConfig: QueryBuilderConfig<IProduct> = {
       allowedFilters: [
         "name",
