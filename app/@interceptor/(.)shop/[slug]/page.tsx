@@ -11,7 +11,6 @@ type Props = {
 const page = async (props: Props) => {
   const params = await props.params;
   const { slug } = params;
-
   try {
     const { data } = await api.get("/shop/" + slug + "/metadata", {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object

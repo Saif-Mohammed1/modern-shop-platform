@@ -12,6 +12,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: rootStaticPagesTranslate[lang].layout.metadata.title,
   description: rootStaticPagesTranslate[lang].layout.metadata.description,
+  keywords: rootStaticPagesTranslate[lang].layout.metadata.keywords,
 };
 
 export default async function RootLayout({
@@ -22,7 +23,7 @@ export default async function RootLayout({
   interceptor: React.ReactNode;
 }) {
   return (
-    <html lang={lang}>
+    <html lang={lang ?? "en"}>
       <body className={`${inter.className} `}>
         <Providers>
           <main className="space-y-3 p-2 sm:p-4">

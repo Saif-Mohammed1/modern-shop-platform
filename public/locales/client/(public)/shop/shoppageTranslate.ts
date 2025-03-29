@@ -192,7 +192,7 @@ export const shopPageTranslate = {
       },
     },
     RelatedProducts: {
-      off: " ЗНИЖКА",
+      off: "-",
       discountedPrice: "Знижена ціна: ",
       title: "Схожі продукти",
       message: "Схожих продуктів не існує",
@@ -212,10 +212,10 @@ export const shopPageTranslate = {
         failed: "Не вдалося додати до кошика",
       },
       copyProductLink: {
-        pending: "Promise is pending",
-        success: "Product link copied to clipboard👌",
-        error: "Error copying product link to clipboard",
-        warn: "Clipboard API not supported in this browser.",
+        pending: "Обіцянка в процесі",
+        success: "Посилання на продукт скопійовано в буфер обміну👌",
+        error: "Помилка копіювання посилання на продукт в буфер обміну",
+        warn: "API буфера обміну не підтримується в цьому браузері.",
       },
     },
     button: {

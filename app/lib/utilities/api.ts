@@ -166,6 +166,7 @@ api.interceptors.response.use(
         // Redirect only once
         if (typeof window !== "undefined") {
           window.location.href = "/auth";
+          return;
         }
 
         return Promise.reject(

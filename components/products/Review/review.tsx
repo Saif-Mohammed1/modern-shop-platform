@@ -123,10 +123,10 @@ const ReviewSection = ({
         {moreResults.length === 0 ? (
           <div className="text-center py-12">
             <Image
-              src="/images/empty-reviews.svg"
+              src="/empty-reviews.jpg"
               width={300}
               height={200}
-              alt="No reviews"
+              alt={reviewsTranslate[lang].ReviewSection.content.noReviews}
               className="mx-auto"
             />
             <p className="text-gray-500 mt-4">

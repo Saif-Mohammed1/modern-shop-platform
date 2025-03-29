@@ -50,6 +50,7 @@ const layoutTranslate = {
       title: "My Awesome Online Shop",
       description:
         "Discover a wide range of products at great prices on My Awesome Online Shop. Shop now and enjoy a seamless shopping experience.",
+      keywords: "shop, online shop, ecommerce, store online",
     },
     fixed: {
       message:
@@ -61,6 +62,8 @@ const layoutTranslate = {
       title: "Мій крутий онлайн магазин",
       description:
         "Відкрийте широкий асортимент товарів за вигідними цінами на My Awesome Online Shop. Покупайте зараз і насолоджуйтеся безперервними покупками.",
+
+      keywords: "магазин, онлайн магазин, електронна комерція, магазин онлайн",
     },
     fixed: {
       message:

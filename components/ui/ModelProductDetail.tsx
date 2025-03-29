@@ -11,13 +11,11 @@ import { useWishlist } from "../providers/context/wishlist/wishlist.context";
 import StarRatings from "react-star-ratings";
 import { FaArrowRightLong } from "react-icons/fa6";
 import Input from "./Input";
-// import { AnimatePresence, motion } from "framer-motion";
 // import { motion, AnimatePresence } from "framer-motion";
 
 const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const router = useRouter();
-
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
   // const [isWishlisted, setIsWishlisted] = useState(false);
@@ -80,10 +78,10 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
     //     className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50"
     //   >
     <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden relative border-8 border-white">
-      {/* Close Button */}
+      {/*    Close Button */}
       <button
         onClick={() => router.back()}
-        className="absolute top-4 right-4 z-50 p-2 bg-white/80 rounded-full backdrop-blur-sm hover:bg-gray-100 transition-colors"
+        className="absolute top-4 right-4 z-50 p-2 bg-white/80 rounded-full backdrop-blur-sm hover:bg-gray-100 transition-colors cursor-pointer"
         aria-label="Close"
       >
         ✕
@@ -122,7 +120,8 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           {/* Discount Badge */}
           {product.discount > 0 && (
             <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-              {((product.discount / product.price) * 100).toFixed(0)}% OFF
+              {((product.discount / product.price) * 100).toFixed(0)}%
+              {shopPageTranslate[lang].RelatedProducts.off}
             </div>
           )}
         </div>
@@ -171,7 +170,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
             >
               -
             </button>
@@ -187,11 +186,11 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
                 );
                 setQuantity(value);
               }}
-              className="w-16 text-center border rounded"
+              className="w-16 text-center border-gray-50 rounded"
             />
             <button
               onClick={() => setQuantity(Math.min(stock, quantity + 1))}
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
             >
               +
             </button>
@@ -207,7 +206,8 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           <button
             onClick={handleAddToCart}
             // className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
-            className="p-3 rounded-lg border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600"
+            className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
+            aria-label="Add to cart"
           >
             <p className="text-xl flex gap-2">
               {/* 
@@ -222,7 +222,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           </button>
           <button
             onClick={toggleWishlistHandler}
-            className="p-3 rounded-lg border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+            className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-600 cursor-pointer"
             aria-label={
               isInWishlist(product._id)
                 ? "Remove from wishlist"
@@ -237,23 +237,32 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
         {product.discountExpire && (
           <div className="text-sm text-gray-500 text-center">
             {shopPageTranslate[lang].modelProductDetails.Offer}{" "}
-            {new Date(product.discountExpire).toLocaleDateString("en-US", {
+            {new Date(product.discountExpire).toLocaleDateString(lang, {
               day: "numeric",
               month: "long",
             })}
           </div>
         )}
+
         <button
-          onClick={() => {
-            // redirect(`/shop/${product.slug}`);
-            window.location.reload();
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors"
+          onClick={() => window.location.reload()}
+          // href={`/shop/${product.slug}`}
+          // intercept={false}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors cursor-pointer"
         >
           {shopPageTranslate[lang].modelProductDetails.getMoreDetails}
         </button>
+        {/* 
+        <CustomLink
+          href={`/shop/${product.slug}`}
+          intercept={false}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors cursor-pointer"
+        >
+          {shopPageTranslate[lang].modelProductDetails.getMoreDetails}
+        </CustomLink> */}
       </div>
     </div>
+    // </div>
     //   </motion.div>
     // </AnimatePresence>
   );
