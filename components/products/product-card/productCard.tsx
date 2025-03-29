@@ -11,9 +11,11 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaShareAlt } from "react-icons/fa";
 import StarRatings from "react-star-ratings";
 import { FaArrowRightLong } from "react-icons/fa6";
+import { useUser } from "@/components/providers/context/user/user.context";
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { addToCartItems } = useCartItems();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { user } = useUser();
 
   const toggleWishlistHandler = async () => {
     let toastLoading;
@@ -86,7 +88,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
   //   : product.price;
 
   return (
-    <div className="bg-white overflow-hidden rounded-lg shadow-md p-5 relative transition-transform transform hover:scale-105 cursor-pointer">
+    <div className="bg-white overflow-hidden rounded-lg shadow-md p-5 relative transition-transform transform hover:scale-105 duration-300">
       {product.discount > 0 && (
         <div className="absolute top-4 -left-5 text-center transform -rotate-[35deg] p-1 leading-5 custom-shadow  bg-red-500 text-white text-xs font-bold rounded-br-lg w-[40%]">
           {((product.discount / product.price) * 100).toFixed(0)}%
@@ -100,6 +102,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
             alt={product.name}
             // className="w-full h-full #h-auto object-cover rounded-lg"
             // className=" h-auto object-cover mb-4 rounded-md  max-w-[100%]"
+
             width={1000}
             height={1000}
             style={{ objectFit: "cover" }}
@@ -135,7 +138,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <button
           onClick={handelAddToCart}
           // className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
-          className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
+          className="p-2 rounded-lg hover:border-1 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
           aria-label="Add to cart"
         >
           <p className="text-xl flex gap-2">
@@ -166,15 +169,17 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           </span>
         </div>
         <div className="flex items-center gap-4">
+          {user && (
+            <button
+              className="text-red-500 text-2xl focus:outline-none cursor-pointer"
+              aria-label="Add to Wishlist"
+              onClick={toggleWishlistHandler}
+            >
+              {isInWishlist(product._id) ? <AiFillHeart /> : <AiOutlineHeart />}{" "}
+            </button>
+          )}
           <button
-            className="text-red-500 text-2xl focus:outline-none"
-            aria-label="Add to Wishlist"
-            onClick={toggleWishlistHandler}
-          >
-            {isInWishlist(product._id) ? <AiFillHeart /> : <AiOutlineHeart />}{" "}
-          </button>
-          <button
-            className="text-gray-500 hover:text-gray-600 transition-colors"
+            className="text-gray-500 hover:text-gray-600 transition-colors cursor-pointer"
             aria-label="Share Product"
             onClick={copyProductLink}
           >

@@ -204,21 +204,23 @@ const ProductDetail = ({
                 </span>
               </div>
             </div>
-            <button
-              onClick={toggleWishlistHandaler}
-              className="p-2 hover:bg-gray-100 rounded-full"
-              aria-label={
-                isInWishlist(product._id)
-                  ? "Remove from wishlist"
-                  : "Add to wishlist"
-              }
-            >
-              {isInWishlist(product._id) ? (
-                <AiFillHeart className="w-8 h-8 text-red-500" />
-              ) : (
-                <AiOutlineHeart className="w-8 h-8 text-gray-400" />
-              )}
-            </button>
+            {user && (
+              <button
+                onClick={toggleWishlistHandaler}
+                className="p-2 hover:bg-gray-100 rounded-full"
+                aria-label={
+                  isInWishlist(product._id)
+                    ? "Remove from wishlist"
+                    : "Add to wishlist"
+                }
+              >
+                {isInWishlist(product._id) ? (
+                  <AiFillHeart className="w-8 h-8 text-red-500" />
+                ) : (
+                  <AiOutlineHeart className="w-8 h-8 text-gray-400" />
+                )}
+              </button>
+            )}
           </div>
 
           <div className="space-y-4">
