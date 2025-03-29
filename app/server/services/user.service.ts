@@ -266,7 +266,7 @@ export class UserService {
   }
   // Password Management
   async findUserById(userId: string, options?: string): Promise<IUser | null> {
-    return this.repository.findUserById(userId, options);
+    return await this.repository.findUserById(userId, options);
   }
   async logOut(): Promise<{
     message: string;
@@ -352,7 +352,7 @@ export class UserService {
     return true;
   }
   async findUserByEmail(email: string): Promise<IUser | null> {
-    return this.repository.findByEmail(email);
+    return await this.repository.findByEmail(email);
   }
   async validatePasswordResetToken(
     token: string,
@@ -607,7 +607,7 @@ export class UserService {
   }
   // Account Management
   // async updateProfile(userId: string, dto: UserUpdateDTO): Promise<IUser> {
-  //   return this.repository.updateUser(userId, dto);
+  //  return await this.repository.updateUser(userId, dto);
   // }
   async requestEmailChange(
     userId: string,
@@ -696,7 +696,7 @@ export class UserService {
   async getAllUsers(
     options: QueryOptionConfig
   ): Promise<QueryBuilderResult<IUser>> {
-    return this.repository.findAllUsers(options);
+    return await this.repository.findAllUsers(options);
   }
 
   async updateUserRole(userId: string, role: UserRole): Promise<void> {
@@ -804,13 +804,13 @@ export class UserService {
     }
   }
   // async enableMFA(userId: string): Promise<{ secret: string; qrCode: string }> {
-  //   return this.repository.enableMultiFactorAuth(userId);
+  //  return await this.repository.enableMultiFactorAuth(userId);
   // }
 
   // async verifyMFA(
   //   userId: string,
   //   token: string
   // ): Promise<{ recoveryCodes: string[] }> {
-  //   return this.repository.verifyMfaSetup(userId, token);
+  //  return await this.repository.verifyMfaSetup(userId, token);
   // }
 }

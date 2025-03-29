@@ -272,6 +272,9 @@ export class QueryBuilder<T extends Document> {
     const links: Record<string, string> = {};
     const params = new URLSearchParams(this.originalParams);
 
+    if (params.has("userId")) {
+      params.delete("userId");
+    }
     if (this.page > 1) {
       params.set("page", "1");
       links.first = `?${params}`;
