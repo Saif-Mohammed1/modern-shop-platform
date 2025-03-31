@@ -1,5 +1,5 @@
 import type { DeviceInfo } from "@/app/lib/types/session.types";
-import SessionModel, {type ISession } from "../models/Session.model";
+import SessionModel, { type ISession } from "../models/Session.model";
 import { SessionRepository } from "../repositories/session.repository";
 import { TokensService } from "./tokens.service";
 // import { SecurityAuditAction } from "@/app/lib/types/audit.types";
@@ -13,7 +13,7 @@ export class SessionService {
     private readonly tokensService: TokensService = new TokensService()
   ) {}
   async getSessions(userId: string): Promise<ISession[] | null> {
-    return this.repository.getSessions(userId);
+    return await this.repository.getSessions(userId);
   }
 
   async createSession(
@@ -22,7 +22,7 @@ export class SessionService {
     hashedToken: string,
     expiresAt: Date
   ): Promise<ISession> {
-    return this.repository.createSession({
+    return await this.repository.createSession({
       userId,
       deviceInfo,
       expiresAt,
@@ -60,6 +60,6 @@ export class SessionService {
     return true;
   }
   async getUserSessions(userId: string): Promise<ISession[]> {
-    return this.repository.getUserSessions(userId);
+    return await this.repository.getUserSessions(userId);
   }
 }

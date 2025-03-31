@@ -8,6 +8,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
+import { v4 as uuidv4 } from "uuid";
 // import { rateLimitIp } from "./components/util/rateLimitIp";
 import { rateLimiter } from "./app/lib/utilities/rate-limiter";
 import { UserRole } from "./app/lib/types/users.types";
@@ -15,6 +16,7 @@ import AppError from "./app/lib/utilities/appError";
 import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
 import { lang } from "./app/lib/utilities/lang";
 import { ipAddress } from "@vercel/functions";
+// import { createRequestLogger } from "./app/lib/logger/logs";
 const PROTECTED_ROUTES = [
   "/account",
   "/checkout",
@@ -46,16 +48,20 @@ const authMiddleware = async (req: NextRequest) => {
   const isAuth = await getToken({ req });
   const isAdmin = isAuth?.user?.role === UserRole.ADMIN;
   const response = NextResponse.next();
+  const correlationId = uuidv4();
 
   try {
     // Handle security headers and client identification
 
     const clientIp =
       req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
       ipAddress(req) ||
+      req.headers.get("x-real-ip") ||
       "127.0.0.1";
     response.headers.set("x-client-ip", clientIp);
+
+    // Attach to headers
+    response.headers.set("X-Correlation-ID", correlationId);
 
     if (
       isAuth &&

@@ -307,7 +307,7 @@ export class ProductService {
     return product;
   }
   async getProductMetaDataBySlug(slug: string) {
-    // return this.repository.getProductMetaDataBySlug(slug);
+    //return await this.repository.getProductMetaDataBySlug(slug);
     const product = await this.repository.getProductMetaDataBySlug(slug);
     if (!product) {
       throw new AppError(
@@ -318,10 +318,10 @@ export class ProductService {
     return product;
   }
   async getProductsCategory(): Promise<string[]> {
-    return this.repository.getCategoryList();
+    return await this.repository.getCategoryList();
   }
   async getProductsByCategory(category: string) {
-    return this.repository.getProductsByCategory(category);
+    return await this.repository.getProductsByCategory(category);
   }
   async deleteProductImages(
     slug: string,
@@ -434,7 +434,7 @@ export class ProductService {
     }
   }
   async getTopOffersAndNewProducts() {
-    return this.repository.getTopOffersAndNewProducts();
+    return await this.repository.getTopOffersAndNewProducts();
   }
   async toggleProductActivity(
     slug: string,

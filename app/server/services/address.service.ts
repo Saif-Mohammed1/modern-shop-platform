@@ -43,7 +43,7 @@ export class AddressService {
     }
   }
   async getUserAddress(userId: string, options: QueryOptionConfig) {
-    return this.repository.getUserAddress(userId, options);
+    return await this.repository.getUserAddress(userId, options);
   }
   async deleteMyAddress(id: string, userId: string) {
     const isDeleted = await this.repository.deleteAddress(id, userId);

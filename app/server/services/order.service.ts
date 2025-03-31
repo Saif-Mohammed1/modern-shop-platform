@@ -51,10 +51,11 @@ export class OrderService {
     return order;
   }
   async getOrdersByUserId(userId: string, options: QueryOptionConfig) {
-    return this.repository.findByUser(userId, options);
+    return await this.repository.findByUser(userId, options);
   }
   async updateOrderStatus(
     orderId: string,
+
     status: UpdateOrderStatusDto["status"]
   ) {
     const order = await this.repository.updateStatus(orderId, status);
@@ -83,6 +84,6 @@ export class OrderService {
   }
 
   async deleteOrder(id: string) {
-    return this.repository.delete(id);
+    return await this.repository.delete(id);
   }
 }

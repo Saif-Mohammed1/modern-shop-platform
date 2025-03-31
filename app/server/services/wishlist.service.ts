@@ -12,7 +12,7 @@ export class WishlistService {
     )
   ) {}
   async getUserWishlists(userId: string, options: QueryOptionConfig) {
-    return this.repository.getUserWishlists(userId, options);
+    return await this.repository.getUserWishlists(userId, options);
   }
   async toggleWishlist(userId: string, productId: string) {
     try {
@@ -44,6 +44,6 @@ export class WishlistService {
   }
 
   async checkWishlist(userId: string, productId: string) {
-    return this.repository.isWishlist(userId, productId);
+    return await this.repository.isWishlist(userId, productId);
   }
 }

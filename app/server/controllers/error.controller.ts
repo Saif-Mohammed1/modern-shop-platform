@@ -1,12 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 import AppError from "@/app/lib/utilities/appError";
 import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import { z } from "zod";
-import logger, {
-  createRequestLogger,
-  logRequestError,
-} from "@/app/lib/logger/logs";
+import { logRequestError, logtail } from "@/app/lib/logger/logs";
 
 // Type definitions
 interface CastError {
@@ -29,24 +27,15 @@ interface ValidationError {
 // Utility Type Export
 
 class ErrorHandler {
-  private requestLogger: ReturnType<typeof createRequestLogger>;
-
-  constructor() {
-    this.requestLogger = createRequestLogger();
-  }
+  private correlationId!: string;
   // Main Error Handler
   main = (error: any, req: NextRequest): NextResponse => {
-    const correlationId = this.requestLogger.defaultMeta
-      .correlationId as string;
-    let err =
-      error instanceof AppError
-        ? error
-        : new AppError(
-            error.message || errorControllerTranslate[lang].errors.globalError,
+    this.correlationId = req.headers.get("X-Correlation-ID") || uuidv4();
 
-            error.statusCode || 500
-          );
+    // Convert error to AppError
+    let err = this.normalizeError(error);
 
+    // Check if the error is an instance of AppError
     if (error instanceof z.ZodError) {
       err = this.handleZodValidationError(error);
     }
@@ -54,10 +43,6 @@ class ErrorHandler {
     if (error.name === "TokenExpiredError") err = this.handleJWTExpiredError();
     // Production error processing
     if (process.env.NODE_ENV === "production") {
-      if (error instanceof z.ZodError) {
-        err = this.handleZodValidationError(error);
-      }
-
       if (error.name === "CastError") err = this.handleCastErrorDB(error);
       if (error.code === 11000) err = this.handleDuplicateFieldsDB(error);
       if (error.name === "ValidationError")
@@ -65,17 +50,16 @@ class ErrorHandler {
 
       // Log errors
       // Enhanced logging with translation context
-      logRequestError(err, req, correlationId);
+      // logRequestError(err, req, this.correlationId);
     }
 
     return process.env.NODE_ENV === "development"
       ? this.sendErrorDev(err, req)
-      : this.sendErrorProd(err);
+      : this.sendErrorProd(err, req);
   };
+
   // Zod Error Handler
   private handleZodValidationError = (err: z.ZodError): AppError => {
-    // Get metadata from the schema instance
-
     // Process validation errors
     const errors = err.issues.map((issue) => {
       // const path = issue.path.join(".");
@@ -85,6 +69,15 @@ class ErrorHandler {
     });
     return new AppError(errors.join("; "), 400);
   };
+  private normalizeError = (error: any): AppError => {
+    if (error instanceof AppError) return error; // Already an AppError instance
+    return new AppError(
+      error.message || errorControllerTranslate[lang].errors.globalError,
+
+      error.statusCode || 500
+    );
+  };
+
   // Database Error Handlers
   private handleCastErrorDB = (err: CastError): AppError => {
     const message = errorControllerTranslate[
@@ -153,7 +146,7 @@ class ErrorHandler {
     this.createAuthError("handleJWTExpiredError");
 
   // Error Response Formatters
-  createErrorResponse = (err: AppError, includeDetails: boolean) =>
+  private createErrorResponse = (err: AppError, includeDetails: boolean) =>
     NextResponse.json(
       {
         status: err.status,
@@ -172,18 +165,43 @@ class ErrorHandler {
     );
   };
 
-  private sendErrorProd = (err: AppError) => {
+  private sendErrorProd = (err: AppError, req: NextRequest) => {
     // Log operational errors for monitoring
-    if (!err.isOperational) logger.error("ERROR 💥", err);
-
+    // if (!err.isOperational) logger.error("ERROR 💥", err);
+    logRequestError(err, req, this.correlationId);
+    logtail
+      ?.flush()
+      .then(() => {
+        console.log("Logs flushed successfully.");
+      })
+      .catch((err) => {
+        console.error("Error flushing logs:", err);
+      });
+    // return NextResponse.json(
+    //   {
+    //     status: err.status,
+    //     message: err.isOperational
+    //       ? err.message
+    //       : errorControllerTranslate[lang].errors.globalError,
+    //   },
+    //   { status: err.statusCode }
+    // );
+    // Add correlation ID to client response
     return NextResponse.json(
       {
         status: err.status,
         message: err.isOperational
           ? err.message
           : errorControllerTranslate[lang].errors.globalError,
+        correlationId: this.correlationId,
       },
-      { status: err.statusCode }
+      {
+        status: err.statusCode,
+        headers: {
+          "X-Correlation-ID": this.correlationId,
+          "Content-Type": "application/problem+json", // RFC 7807 compliance
+        },
+      }
     );
   };
 }

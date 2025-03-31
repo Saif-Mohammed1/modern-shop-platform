@@ -7,8 +7,12 @@ import { LogtailTransport } from "@logtail/winston";
 import { v4 as uuidv4 } from "uuid";
 
 // Initialize Logtail
-const logtail = new Logtail(process.env.LOGTAIL_SOURCE_TOKEN!);
-
+const logtail =
+  process.env.LOGTAIL_SOURCE_TOKEN && process.env.LOGTAIL_INGESTING_HOST
+    ? new Logtail(process.env.LOGTAIL_SOURCE_TOKEN, {
+        endpoint: process.env.LOGTAIL_INGESTING_HOST,
+      })
+    : null;
 // Environment detection
 const isVercel = process.env.VERCEL === "1";
 const isProduction = process.env.NODE_ENV === "production";
@@ -35,16 +39,15 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    // Logtail transport (production only)
-    ...(isProduction ? [new LogtailTransport(logtail)] : []),
-
-    // Console transport (all environments)
+    ...(logtail && isProduction ? [new LogtailTransport(logtail)] : []),
     new winston.transports.Console({
       format: winston.format.combine(
+        winston.format.timestamp({ format: "ISO8601" }), // Add this
+        winston.format.errors({ stack: true }), // Add this
         winston.format.colorize(),
         winston.format.printf(
           ({ timestamp, level, message, correlationId, ...meta }) => {
-            return `[${timestamp}] [${correlationId}] ${level}: ${message} ${
+            return `[${timestamp}] [${correlationId || "no-id"}] ${level}: ${message} ${
               Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""
             }`;
           }
@@ -54,21 +57,21 @@ const logger = winston.createLogger({
   ],
   exceptionHandlers: [
     new winston.transports.Console(),
-    ...(isProduction ? [new LogtailTransport(logtail)] : []),
+    ...(logtail && isProduction ? [new LogtailTransport(logtail)] : []),
   ],
   rejectionHandlers: [
     new winston.transports.Console(),
-    ...(isProduction ? [new LogtailTransport(logtail)] : []),
+    ...(logtail && isProduction ? [new LogtailTransport(logtail)] : []),
   ],
 });
 
 // Add correlation ID support
-export function createRequestLogger(correlationId: string = uuidv4()) {
+function createRequestLogger(correlationId: string = uuidv4()) {
   return logger.child({ correlationId });
 }
 
 // Enhanced request error logging
-export function logRequestError(
+function logRequestError(
   err: Error & { statusCode?: number },
   req: NextRequest,
   correlationId?: string
@@ -84,21 +87,68 @@ export function logRequestError(
     path: req.nextUrl.pathname,
     clientIp,
     method: req.method,
-    error: err,
+    // error: err,
+    error: {
+      name: err.name,
+      message: err.message,
+      stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+      ...(err.statusCode && { statusCode: err.statusCode }),
+    },
     correlationId,
   };
 
   const logLevel = err.statusCode && err.statusCode >= 500 ? "error" : "warn";
-
+  // const log = (req as any).logger || logger;
+  // log.log(logLevel, err.message, meta);
   logger.log(logLevel, err.message, meta);
 }
 
 // Vercel-specific cleanup
 if (isVercel) {
   process.on("SIGTERM", async () => {
-    await logtail.flush();
+    logger.info("Received SIGTERM - flushing logs");
+    await Promise.allSettled([
+      logtail?.flush(),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]);
     process.exit(0);
   });
 }
+process.on("uncaughtException", (err) => {
+  logger.error("Uncaught Exception:", err);
+  // logtail?.error(err);
+  // Flush logs before exiting
+  if (logtail) {
+    logtail
+      .flush()
+      .then(() => {
+        logger.info("Flushed logs before exiting");
+      })
+      .catch((flushErr) => {
+        logger.error("Error flushing logs before exiting:", flushErr);
+      });
+  }
+  // Exit the process
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // logtail?.error(reason);
+  // Flush logs before exiting
+  if (logtail) {
+    logtail
+      .flush()
+      .then(() => {
+        logger.info("Flushed logs before exiting");
+      })
+      .catch((flushErr) => {
+        logger.error("Error flushing logs before exiting:", flushErr);
+      });
+  }
+  // Exit the process
+  process.exit(1);
+});
 
 export default logger;
+export { logtail, logRequestError, createRequestLogger };
