@@ -449,7 +449,7 @@ const AccountDashboard = () => {
               className={`sr-only ${session?.user?.loginNotificationSent ? "peer-checked:bg-blue-500" : ""}`}
             />
             <div
-              className={`w-11 h-6 bg-gray-300 rounded-full transition-colors duration-300 peer-checked:bg-blue-500`}
+              className={`w-11 h-6 ${session?.user?.loginNotificationSent ? "bg-blue-500" : "bg-gray-300"}  rounded-full transition-colors duration-300 peer-checked:bg-blue-500`}
             >
               <div
                 className={`dot absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${
