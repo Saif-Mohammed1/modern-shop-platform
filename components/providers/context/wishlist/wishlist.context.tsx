@@ -7,6 +7,7 @@ import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account
 import { lang } from "@/app/lib/utilities/lang";
 import { useUser } from "../user/user.context";
 import type { WishlistType } from "@/app/lib/types/wishList.types";
+import { getMyWishList } from "./wishlist.action";
 
 type wishlistContextType = {
   wishlist: WishlistType[];
@@ -26,19 +27,7 @@ export const WishlistProvider = ({
 }) => {
   const [wishlist, setWishlist] = useState<WishlistType[]>([]);
   const { user } = useUser();
-  const getMyWishList = async () => {
-    try {
-      const response = await api.get("/customers/wishlist");
-      return response.data.docs || [];
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(
-          error.message ||
-            accountWishlistTranslate[lang].wishListContext.loadWishlist.error
-        );
-      }
-    }
-  };
+
   // Load wishlist from localStorage or database
   useEffect(() => {
     const loadWishlist = async () => {
