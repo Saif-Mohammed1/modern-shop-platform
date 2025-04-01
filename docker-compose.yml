@@ -1,0 +1,25 @@
+# docker-compose file for the Next.js application with MongoDB
+services:
+  next_app:
+    depends_on:
+      mongodb:
+        condition: service_healthy # Wait for MongoDB to be healthy
+    env_file:
+      - ./config/.env
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    env_file:
+      - ./config/.env
+    healthcheck:
+      test: ["CMD-SHELL", 'mongo --quiet --eval ''db.adminCommand("ping")''']
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  mongodb_data:

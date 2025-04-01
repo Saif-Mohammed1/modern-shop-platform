@@ -1,0 +1,10 @@
+# docker-compose-dev.yml
+services:
+  next_app:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - ./app:/app:ro
+    ports:
+      - "3000:3000"

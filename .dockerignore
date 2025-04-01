@@ -1,0 +1,52 @@
+#.dockerignore
+# Ignore node_modules directory
+# next.js
+/out/
+/.next
+/node_modules
+docker-compose*
+
+# Ignore npm debug log
+npm-debug.log
+
+# Ignore Dockerfile and .dockerignore itself
+Dockerfile
+.dockerignore
+
+# Ignore any other files or directories you don't want to include in the image
+.git
+.env
+.env*
+dist
+coverage
+
+
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# config folder
+/config
+/logs
+# ignore any folder named "test" or "tests"
+**/test/
+**/tests/
+**/**test**/
+# **/**test*/
+
+certificates

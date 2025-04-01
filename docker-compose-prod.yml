@@ -1,0 +1,8 @@
+# docker-compose-prod.yml
+services:
+  next_app:
+    build:
+      context: .
+      target: prod
+    ports:
+      - "4000:4000"
