@@ -218,9 +218,9 @@ const LoginPage = () => {
             </Link>
           </div> */}
           <div className="text-center mt-4 flex flex-col justify-center">
-            <p className="text-gray-500">use these email for testing website</p>
+            <p className="text-gray-500">use this email for testing website</p>
             <p className="text-gray-500 font-bold">
-              email: moderator@example.com
+              email: moderator@gmail.com
             </p>
             <p className="text-gray-500 font-bold">
               password: Pa@password12345
