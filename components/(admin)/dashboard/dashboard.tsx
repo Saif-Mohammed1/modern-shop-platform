@@ -691,44 +691,48 @@ const UserActivityAnalysis: FC<{
   userInterest: DashboardData["userInterestProducts"];
 }> = ({ userInterest }) => (
   <ChartCard title="User Activity Analysis">
-    <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+    <div className="grid grid-cols-2 gap-4">
       <div className="bg-gray-700 p-4 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Cart Activity</h3>
-        {userInterest.categoryAnalysis.cart.map((category) => (
-          <div key={category.category} className="mb-3">
-            <div className="flex justify-between text-sm">
-              <span>{category.category}</span>
-              <span>{category.totalItems}</span>
+        <div className=" max-h-[70vh] overflow-y-auto">
+          {userInterest.categoryAnalysis.cart.map((category) => (
+            <div key={category.category} className="mb-3">
+              <div className="flex justify-between text-sm">
+                <span>{category.category}</span>
+                <span>{category.totalItems}</span>
+              </div>
+              <div className="h-1 bg-gray-600 rounded-full">
+                <div
+                  className="h-full bg-indigo-500 rounded-full"
+                  style={{
+                    width: `${(category.totalItems / userInterest.categoryAnalysis.cart.reduce((acc, curr) => acc + curr.totalItems, 0)) * 100}%`,
+                  }}
+                />
+              </div>
             </div>
-            <div className="h-1 bg-gray-600 rounded-full">
-              <div
-                className="h-full bg-indigo-500 rounded-full"
-                style={{
-                  width: `${(category.totalItems / userInterest.categoryAnalysis.cart.reduce((acc, curr) => acc + curr.totalItems, 0)) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       <div className="bg-gray-700 p-4 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Wishlist Activity</h3>
-        {userInterest.categoryAnalysis.wishlist.map((category) => (
-          <div key={category.category} className="mb-3">
-            <div className="flex justify-between text-sm">
-              <span>{category.category}</span>
-              <span>{category.totalItems}</span>
+        <div className=" max-h-[70vh] overflow-y-auto">
+          {userInterest.categoryAnalysis.wishlist.map((category) => (
+            <div key={category.category} className="mb-3">
+              <div className="flex justify-between text-sm">
+                <span>{category.category}</span>
+                <span>{category.totalItems}</span>
+              </div>
+              <div className="h-1 bg-gray-600 rounded-full">
+                <div
+                  className="h-full bg-green-500 rounded-full"
+                  style={{
+                    width: `${(category.totalItems / userInterest.categoryAnalysis.wishlist.reduce((acc, curr) => acc + curr.totalItems, 0)) * 100}%`,
+                  }}
+                />
+              </div>
             </div>
-            <div className="h-1 bg-gray-600 rounded-full">
-              <div
-                className="h-full bg-green-500 rounded-full"
-                style={{
-                  width: `${(category.totalItems / userInterest.categoryAnalysis.wishlist.reduce((acc, curr) => acc + curr.totalItems, 0)) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   </ChartCard>
