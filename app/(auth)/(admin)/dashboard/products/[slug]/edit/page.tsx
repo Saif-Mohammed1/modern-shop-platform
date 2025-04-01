@@ -19,11 +19,12 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const { slug } = params;
 
   try {
-    const {
-      data: { product },
-    } = await api.get(`/admin/dashboard/products/${slug}`, {
-      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
-    });
+    const { data: product } = await api.get(
+      `/admin/dashboard/products/${slug}`,
+      {
+        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
+      }
+    );
 
     return {
       title: `${productsTranslate.products[lang].editProduct.metadata.title} - ${product.name}`,
@@ -44,12 +45,10 @@ const page = async (props: Props) => {
   const { slug } = params;
 
   try {
-    const {
-      data: { product },
-    } = await api.get(`/admin/dashboard/products/${slug}`, {
+    const { data } = await api.get(`/admin/dashboard/products/${slug}`, {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
-    return <EditProduct defaultValues={product} />;
+    return <EditProduct defaultValues={data} />;
   } catch (error: any) {
     return <ErrorHandler message={error?.message} />;
   }

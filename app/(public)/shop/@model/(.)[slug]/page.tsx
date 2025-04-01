@@ -12,9 +12,7 @@ const page = async (props: Props) => {
   const { slug } = params;
 
   try {
-    const {
-      data: { product },
-    } = await api.get("/shop/" + slug + "/metadata");
+    const { data: product } = await api.get("/shop/" + slug + "/metadata");
     return (
       <OverlayWrapper>
         <ModelProductDetail product={product} />

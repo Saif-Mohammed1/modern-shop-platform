@@ -14,12 +14,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const { id } = params;
 
   try {
-    const {
-      data: { data: user },
-    } = await api.get(`/admin/dashboard/users/${id}`, {
+    const { data: user } = await api.get(`/admin/dashboard/users/${id}`, {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
-
     return {
       title: `${usersTranslate.users[lang].editUsers.metadata.title} - ${user.name}`,
       description: `${usersTranslate.users[lang].editUsers.metadata.description} ${user.name}. ${user.email}`,
