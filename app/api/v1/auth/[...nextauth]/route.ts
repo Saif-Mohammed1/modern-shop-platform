@@ -11,6 +11,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 import sessionController from "@/app/server/controllers/session.controller";
 import authController from "@/app/server/controllers/auth.controller";
+import ErrorHandler from "@/app/server/controllers/error.controller";
 const REFRESH_THRESHOLD = 3 * 60 * 1000; // Refresh 3 minutes before expiration
 const authOptions: AuthOptions = {
   session: {
@@ -22,6 +23,14 @@ const authOptions: AuthOptions = {
       name: "Credentials",
       credentials: {},
       async authorize(credentials) {
+        const headerStore = await headers();
+        let req;
+        // let req: NextRequest = new NextRequest(
+        //   new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth"),
+        //   {
+        //     headers: headerStore,
+        //   }
+        // );
         try {
           const { email, password, code } = credentials as {
             email: string;
@@ -29,7 +38,6 @@ const authOptions: AuthOptions = {
             code: number;
           };
           await connectDB();
-          const headerStore = await headers();
           if (!code) {
             if (!email || !password) {
               throw new AppError(
@@ -39,7 +47,7 @@ const authOptions: AuthOptions = {
                 400
               );
             }
-            const req = new NextRequest(
+            req = new NextRequest(
               new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth"),
               {
                 headers: headerStore,
@@ -66,7 +74,12 @@ const authOptions: AuthOptions = {
               );
             }
             if (!user || statusCode !== 200) {
-              return null;
+              throw new AppError(
+                authControllerTranslate[
+                  lang
+                ].functions.logIn.invalidEmailOrPassword,
+                400
+              );
             }
             if ("_id" in user) {
               return {
@@ -74,9 +87,9 @@ const authOptions: AuthOptions = {
                 id: String(user._id),
               };
             }
-            return null;
+            // return null;
           } else {
-            const req = new NextRequest(
+            req = new NextRequest(
               new URL(
                 process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/2fa/verify"
               ),
@@ -93,7 +106,10 @@ const authOptions: AuthOptions = {
             const { user } = await result.json(); // Extract JSON data
 
             if (!user) {
-              return null;
+              throw new AppError(
+                authControllerTranslate[lang].errors.notFoundUser,
+                400
+              );
             }
             return {
               ...user,
@@ -107,6 +123,11 @@ const authOptions: AuthOptions = {
             };
           }
         } catch (error) {
+          if (req instanceof NextRequest) {
+            const err = ErrorHandler(error, req);
+            const { message, statusCode } = await err.json();
+            throw new AppError(message, statusCode || 500);
+          }
           throw error;
         }
       },

@@ -11,6 +11,7 @@ import { lang } from "../../app/lib/utilities/lang";
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
 import api from "../../app/lib/utilities/api";
 import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
+import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -39,7 +40,10 @@ const LoginPage = () => {
         // callbackUrl: callbackUrl || "/",
       });
       if (result?.error) {
-        if (result.error === "Two Factor Authentication is required") {
+        if (
+          result.error ===
+          authControllerTranslate[lang].functions.logIn.twoFactorRequired
+        ) {
           setRequiredTwoFactor(true);
           // throw new Error(result.error);
           return;
@@ -54,6 +58,8 @@ const LoginPage = () => {
         toast.success(res.message);
       }
       if (callbackUrl) {
+        router.back(); // Go back to previous page (closes modal)
+
         router.push(callbackUrl);
       } else {
         router.back(); // Go back to previous page (closes modal)
@@ -190,7 +196,7 @@ const LoginPage = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
+              className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
               disabled={isLoading}
             >
               {isLoading ? <Spinner /> : loginTranslate[lang].form.login}
