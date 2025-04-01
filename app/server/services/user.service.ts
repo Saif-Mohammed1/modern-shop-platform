@@ -446,13 +446,16 @@ export class UserService {
   ): Promise<void> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
-      throw new AppError("User not found", 404);
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     if (!(await user.comparePassword(dto.currentPassword))) {
-      throw new AppError("Current password is incorrect", 401);
+      throw new AppError(
+        AuthTranslate[lang].errors.currentPasswordNotMatch,
+        400
+      );
     }
     if (await user.isPreviousPassword(dto.newPassword)) {
-      throw new AppError("Cannot reuse previous passwords", 400);
+      throw new AppError(AuthTranslate[lang].errors.isPreviousPassword, 400);
     }
     await this.repository.updatePassword(user, dto.newPassword);
   }
@@ -461,10 +464,10 @@ export class UserService {
   async sendVerificationCode(userId: string): Promise<void> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
-      throw new AppError("User not found ", 404);
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     if (user?.verification.emailVerified) {
-      throw new AppError("Email already verified", 400);
+      throw new AppError(AuthTranslate[lang].errors.emailVerified, 400);
     }
 
     user.checkRateLimit("verification");
@@ -521,17 +524,17 @@ export class UserService {
   async verifyEmail(userId: string, token: string): Promise<IUser | null> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
-      throw new AppError("Invalid token", 400);
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     user.checkRateLimit("verification");
     if (user.verification.emailVerified) {
-      throw new AppError("Email already verified", 400);
+      throw new AppError(AuthTranslate[lang].errors.emailVerified, 400);
     }
     try {
       const hashedToken = this.tokensService.hashVerificationToken(token);
       const isVerify = await this.repository.verifyUserEmail(hashedToken);
       if (!isVerify?.verification.emailVerified) {
-        throw new AppError("Invalid token", 400);
+        throw new AppError(AuthTranslate[lang].errors.invalidToken, 400);
       }
       await this.repository.clearRateLimit(user, "verification");
       return isVerify;
@@ -556,7 +559,7 @@ export class UserService {
   async validateTempToken(tempToken: string): Promise<IUser> {
     const user = await this.repository.validateTempToken(tempToken);
     if (!user) {
-      throw new AppError("Invalid token", 400);
+      throw new AppError(AuthTranslate[lang].errors.invalidToken, 400);
     }
     return user;
   }
@@ -569,7 +572,7 @@ export class UserService {
     const user = await this.repository.findByEmail(email);
 
     if (!user) {
-      throw new AppError("User not found", 404);
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
 
     if (
@@ -616,11 +619,15 @@ export class UserService {
   ): Promise<void> {
     const existingUser = await this.repository.findByEmail(newEmail);
     if (existingUser) {
-      throw new AppError("Email already in use", 409);
+      throw new AppError(
+        AuthTranslate[lang].errors.emailAlreadyInUse,
+
+        409
+      );
     }
     const user = await this.repository.findUserById(userId);
     if (!user) {
-      throw new AppError("User not found", 404);
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     const changeToken = await this.repository.generateEmailChangeToken(
       userId,
@@ -641,7 +648,7 @@ export class UserService {
   async confirmEmailChange(token: string): Promise<void> {
     const user = await this.repository.validateEmailChangeToken(token);
     if (!user) {
-      throw new AppError("Invalid token", 400);
+      throw new AppError(AuthTranslate[lang].errors.invalidToken, 400);
     }
     const session = await this.repository.startSession();
     session.startTransaction();

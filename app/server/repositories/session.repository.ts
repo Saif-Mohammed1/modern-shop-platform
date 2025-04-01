@@ -84,7 +84,9 @@ export class SessionRepository extends BaseRepository<ISession> {
   }
   async getUserSessions(userId: string): Promise<QueryBuilderResult<ISession>> {
     const queryConfig: QueryBuilderConfig<ISession> = {
-      allowedFilters: ["userId", "expiresAt"],
+      allowedFilters: ["userId", "expiresAt", "createdAt", "lastUsedAt"],
+      allowedSorts: ["createdAt", "expiresAt", "lastUsedAt"],
+      // excludeFields: ["userId"],
     };
 
     const query = new URLSearchParams();
