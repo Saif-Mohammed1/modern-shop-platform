@@ -154,7 +154,7 @@ export class UserService {
         session
       );
       await session.commitTransaction();
-      return this.finalizeLogin(user, deviceInfo);
+      return await this.finalizeLogin(user, deviceInfo);
     } catch (err) {
       await session.abortTransaction();
       throw err;
@@ -255,7 +255,7 @@ export class UserService {
 
     // await this.repository.clearRateLimit(user, "login");
     // return { user, accessToken, refreshToken };
-    return this.finalizeLogin(user, deviceInfo);
+    return await this.finalizeLogin(user, deviceInfo);
   }
   async clearRateLimit(user: IUser, action: accountAction): Promise<void> {
     await this.repository.clearRateLimit(user, action);
@@ -733,8 +733,10 @@ export class UserService {
     await this.repository.logSecurityAlert(email, type, details);
   }
   // Security Functions
-  async getActiveSessions(userId: string): Promise<ISession[]> {
-    return this.sessionService.getUserSessions(userId);
+  async getActiveSessions(
+    userId: string
+  ): Promise<QueryBuilderResult<ISession>> {
+    return await this.sessionService.getUserSessions(userId);
   }
 
   async revokeSession(userId: string): Promise<void> {

@@ -2,6 +2,11 @@ import type { DeviceInfo } from "@/app/lib/types/session.types";
 import type { ISession } from "../models/Session.model";
 import { BaseRepository } from "./BaseRepository";
 import { type ClientSession, Model } from "mongoose";
+import type {
+  QueryBuilderConfig,
+  QueryBuilderResult,
+} from "@/app/lib/types/queryBuilder.types";
+import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 
 interface CreateSessionDTO {
   userId: string;
@@ -16,14 +21,14 @@ export class SessionRepository extends BaseRepository<ISession> {
     super(model);
   }
   async getSessions(userId: string): Promise<ISession[] | null> {
-    return this.model.find({ userId }).lean();
+    return await this.model.find({ userId }).lean();
   }
   async createSession(dto: CreateSessionDTO): Promise<ISession> {
     return await this.model.create(dto);
   }
 
   override async findById(id: string): Promise<ISession | null> {
-    return this.model.findById(id).lean();
+    return await this.model.findById(id).lean();
   }
   async findByFingerprint(
     fingerprint: ISession["deviceInfo"]["fingerprint"]
@@ -77,8 +82,21 @@ export class SessionRepository extends BaseRepository<ISession> {
       $set: { lastUsedAt: new Date() },
     });
   }
-  async getUserSessions(userId: string): Promise<ISession[]> {
-    return this.model.find({ userId }).lean();
+  async getUserSessions(userId: string): Promise<QueryBuilderResult<ISession>> {
+    const queryConfig: QueryBuilderConfig<ISession> = {
+      allowedFilters: ["userId", "expiresAt"],
+    };
+
+    const query = new URLSearchParams();
+    query.set("userId", userId);
+    const queryBuilder = new QueryBuilder<ISession>(
+      this.model,
+
+      query,
+      queryConfig
+    );
+
+    return await queryBuilder.execute();
   }
   async startSession(): Promise<ClientSession> {
     return await this.model.db.startSession();

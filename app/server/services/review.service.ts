@@ -79,7 +79,7 @@ export class ReviewService {
     //     400
     //   );
     // }
-    return this.reviewRepository.create(dto);
+    return await this.reviewRepository.create(dto);
   }
 
   async updateReview(reviewId: string, dto: updateReviewDto) {
@@ -89,7 +89,7 @@ export class ReviewService {
       throw new AppError("Unauthorized to update this review", 403);
     }
 
-    return this.reviewRepository.update(reviewId, dto);
+    return await this.reviewRepository.update(reviewId, dto);
   }
 
   async deleteReview(reviewId: string, userId: string) {
@@ -103,17 +103,17 @@ export class ReviewService {
   }
 
   async getProductReviews(productId: string, options: QueryOptionConfig) {
-    return this.reviewRepository.findByProduct(productId, options);
+    return await this.reviewRepository.findByProduct(productId, options);
   }
   async getRatingDistribution(): Promise<number[]> {
-    return this.reviewRepository.getRatingDistribution();
+    return await this.reviewRepository.getRatingDistribution();
   }
   async getRatingDistributionByProductId(id: string): Promise<{
     [key: string]: number;
   }> {
-    return this.reviewRepository.getRatingDistributionByProductId(id);
+    return await this.reviewRepository.getRatingDistributionByProductId(id);
   }
   async getMyReviews(userId: string, options: QueryOptionConfig) {
-    return this.reviewRepository.getMyReviews(userId, options);
+    return await this.reviewRepository.getMyReviews(userId, options);
   }
 }
