@@ -17,7 +17,7 @@ const page = async () => {
     const { data } = await api.get("/customers/device", {
       headers: Object.fromEntries((await headers()).entries()), // convert headers to object
     });
-    return <ChangePassword devices={data} />;
+    return <ChangePassword devices={data.docs} />;
   } catch (error: any) {
     return <ErrorHandler message={error.message} />;
     // throw new AppError(error.message, error.status);

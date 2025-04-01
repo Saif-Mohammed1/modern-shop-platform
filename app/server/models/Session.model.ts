@@ -10,6 +10,8 @@ export interface ISession extends Document {
   revokedAt?: Date;
   expiresAt: Date; // Set session expiration date
   lastUsedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const SessionSchema = new Schema<ISession>(

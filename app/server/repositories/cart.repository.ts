@@ -16,7 +16,7 @@ export class CartRepository extends BaseRepository<ICart> {
    * Check if item exists in cart
    */
   async existingItem(productId: string, userId: string): Promise<ICart | null> {
-    return this.model.findOne({ productId, userId }).lean();
+    return await this.model.findOne({ productId, userId }).lean();
   }
   /**
    * Add item to user's cart

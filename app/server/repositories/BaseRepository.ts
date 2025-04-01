@@ -20,14 +20,14 @@ export abstract class BaseRepository<T extends Document>
   constructor(protected model: Model<T>) {}
 
   async find(filter: FilterQuery<T> = {}): Promise<T[]> {
-    return this.model.find(filter);
+    return await this.model.find(filter);
   }
 
   async findById(
     id: string,
     session: ClientSession | null = null
   ): Promise<T | null> {
-    return this.model.findById(id).session(session);
+    return await this.model.findById(id).session(session);
   }
 
   async create(data: T | Omit<T, "_id">, session?: ClientSession): Promise<T> {

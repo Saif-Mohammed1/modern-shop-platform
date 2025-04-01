@@ -24,7 +24,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
   }
 
   override async findById(id: IReview["_id"]): Promise<IReview | null> {
-    return this.model.findById(id).lean();
+    return await this.model.findById(id).lean();
   }
 
   async findByProduct(
@@ -61,7 +61,7 @@ export class ReviewRepository extends BaseRepository<IReview> {
     productId: IReview["productId"],
     userId: IReview["userId"]
   ): Promise<IReview | null> {
-    return this.model.findOne({ productId, userId }).lean();
+    return await this.model.findOne({ productId, userId }).lean();
   }
   override async update(
     id: IReview["_id"],

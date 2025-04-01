@@ -38,7 +38,7 @@ export class QueryBuilder<T extends Document> {
   private config: Required<QueryBuilderConfig<T>>;
   private baseQuery: Query<T[], T>;
   private originalParams: URLSearchParams;
-
+  private projection: Record<string, number> = {};
   page: number = 1;
   limit: number = 15;
   filter: FilterQuery<T> = {};
@@ -59,6 +59,7 @@ export class QueryBuilder<T extends Document> {
       allowedSorts: [], // Default empty array
       defaultSort: "-createdAt",
       fixedFilters: {},
+      excludeFields: [],
       ...config,
     };
     this.baseQuery = model.find();
@@ -188,11 +189,18 @@ export class QueryBuilder<T extends Document> {
       ...filter,
       ...(this.config.fixedFilters || {}),
     };
-    // // Apply fixed filters from config
+    // Apply fixed filters from config
     // if (this.config.fixedFilters) {
     //   this.filter = { ...this.filter, ...this.config.fixedFilters };
     // }
-    this.query = this.query.find(this.filter);
+    // Apply exclude fields
+    if (this.config.excludeFields?.length) {
+      this.config.excludeFields.forEach((field) => {
+        this.projection[field as string] = 0;
+      });
+    }
+    this.query = this.query.find(this.filter).select(this.projection);
+
     return this;
   }
 

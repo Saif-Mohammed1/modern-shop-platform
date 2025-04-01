@@ -79,41 +79,55 @@ export class ReviewService {
     //     400
     //   );
     // }
-    return this.reviewRepository.create(dto);
+    return await this.reviewRepository.create(dto);
   }
 
   async updateReview(reviewId: string, dto: updateReviewDto) {
     const review = await this.reviewRepository.findById(reviewId);
-    if (!review) throw new AppError("Review not found", 404);
+    if (!review)
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.noDocumentsFound,
+        404
+      );
     if (review.userId.toString() !== dto.userId.toString()) {
-      throw new AppError("Unauthorized to update this review", 403);
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.unauthorized.update,
+        403
+      );
     }
 
-    return this.reviewRepository.update(reviewId, dto);
+    return await this.reviewRepository.update(reviewId, dto);
   }
 
   async deleteReview(reviewId: string, userId: string) {
     const review = await this.reviewRepository.findById(reviewId);
-    if (!review) throw new AppError("Review not found", 404);
+    if (!review)
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.noDocumentsFound,
+        404
+      );
     if (review.userId.toString() !== userId.toString()) {
-      throw new AppError("Unauthorized to delete this review", 403);
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.unauthorized.delete,
+        403
+      );
     }
 
     await this.reviewRepository.delete(reviewId);
   }
 
   async getProductReviews(productId: string, options: QueryOptionConfig) {
-    return this.reviewRepository.findByProduct(productId, options);
+    return await this.reviewRepository.findByProduct(productId, options);
   }
   async getRatingDistribution(): Promise<number[]> {
-    return this.reviewRepository.getRatingDistribution();
+    return await this.reviewRepository.getRatingDistribution();
   }
   async getRatingDistributionByProductId(id: string): Promise<{
     [key: string]: number;
   }> {
-    return this.reviewRepository.getRatingDistributionByProductId(id);
+    return await this.reviewRepository.getRatingDistributionByProductId(id);
   }
   async getMyReviews(userId: string, options: QueryOptionConfig) {
-    return this.reviewRepository.getMyReviews(userId, options);
+    return await this.reviewRepository.getMyReviews(userId, options);
   }
 }

@@ -4,6 +4,7 @@ import { SessionRepository } from "../repositories/session.repository";
 import { TokensService } from "./tokens.service";
 // import { SecurityAuditAction } from "@/app/lib/types/audit.types";
 import type { ClientSession } from "mongoose";
+import type { QueryBuilderResult } from "@/app/lib/types/queryBuilder.types";
 
 export class SessionService {
   constructor(
@@ -59,7 +60,7 @@ export class SessionService {
 
     return true;
   }
-  async getUserSessions(userId: string): Promise<ISession[]> {
+  async getUserSessions(userId: string): Promise<QueryBuilderResult<ISession>> {
     return await this.repository.getUserSessions(userId);
   }
 }

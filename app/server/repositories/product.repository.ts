@@ -160,7 +160,7 @@ export class ProductRepository extends BaseRepository<IProduct> {
   }
 
   async getProductsByCategory(category: string): Promise<IProduct[]> {
-    return this.model.find({ category, active: true }).limit(10); //.lean();
+    return await this.model.find({ category, active: true }).limit(10); //.lean();
   }
 
   async startSession() {

@@ -21,6 +21,9 @@ import type {
 } from "@/app/lib/types/queryBuilder.types";
 import type { accountAction } from "@/app/lib/types/users.types";
 import { SecurityAlertType } from "@/app/server/services/email.service";
+import AppError from "@/app/lib/utilities/appError";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+import { lang } from "@/app/lib/utilities/lang";
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {
@@ -39,13 +42,13 @@ export class UserRepository extends BaseRepository<IUser> {
 
   async findUserById(id: string, options?: string): Promise<IUser | null> {
     if (!options) {
-      return this.model.findById(id).select("+security");
+      return await this.model.findById(id).select("+security");
     }
-    return this.model.findById(id).select(options);
+    return await this.model.findById(id).select(options);
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
-    return this.model.findOne({ email }).select("+password +security");
+    return await this.model.findOne({ email }).select("+password +security");
   }
 
   override async update(
@@ -253,7 +256,7 @@ export class UserRepository extends BaseRepository<IUser> {
       query.email = email;
     }
 
-    return this.model.findOne(query).select("+security");
+    return await this.model.findOne(query).select("+security");
   }
   async createAuditLog(
     userId: string,
@@ -478,21 +481,21 @@ export class UserRepository extends BaseRepository<IUser> {
     id: string,
     session?: ClientSession
   ): Promise<boolean> {
-    return this.delete(id, session);
+    return await this.delete(id, session);
   }
   async updateUserStatusByAdmin(
     userId: string,
     status: IUser["status"],
     session?: ClientSession
   ): Promise<void> {
-    return this.updateUserStatus(userId, status, session);
+    return await this.updateUserStatus(userId, status, session);
   }
   async updateUserRoleByAdmin(
     userId: string,
     role: IUser["role"],
     session?: ClientSession
   ): Promise<void> {
-    return this.updateUserRole(userId, role, session);
+    return await this.updateUserRole(userId, role, session);
   }
   async updateUserPasswordByAdmin(
     userId: string,
@@ -501,7 +504,7 @@ export class UserRepository extends BaseRepository<IUser> {
   ): Promise<void> {
     const user = await this.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     await this.updatePassword(user, password, session);
   }
@@ -517,7 +520,7 @@ export class UserRepository extends BaseRepository<IUser> {
     updates: Partial<IUser>,
     session?: ClientSession
   ): Promise<IUser | null> {
-    return this.update(userId, updates, session);
+    return await this.update(userId, updates, session);
   }
   async updateUserVerificationStatusByAdmin(
     userId: string,
@@ -601,7 +604,7 @@ export class UserRepository extends BaseRepository<IUser> {
     // email: string
   ): Promise<IUser | null> {
     const hashedToken = this.tokensService.hashEmailChangeToken(token);
-    return this.model.findOne({
+    return await this.model.findOne({
       "verification.emailChangeToken": hashedToken,
       // "verification.emailChange": email,
       "verification.emailChangeExpires": { $gt: new Date() },

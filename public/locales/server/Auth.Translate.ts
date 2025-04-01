@@ -57,6 +57,12 @@ export const AuthTranslate = {
       userNotVerified: "User not verified",
       passwordNotMatch: "Password not match",
       userAlreadyExist: "User already exist",
+      currentPasswordNotMatch: "Current password is incorrect",
+      isPreviousPassword: "Cannot reuse previous passwords",
+
+      emailVerified: "Email already verified",
+      invalidToken: "Invalid token",
+      emailAlreadyInUse: "Email already in use",
     },
   },
   uk: {
@@ -119,6 +125,14 @@ export const AuthTranslate = {
       userNotVerified: "Користувач не підтверджений",
       passwordNotMatch: "Паролі не співпадають",
       userAlreadyExist: "Користувач вже існує",
+
+      currentPasswordNotMatch: "Поточний пароль неправильний",
+
+      isPreviousPassword: "Не можна використовувати попередні паролі",
+
+      emailVerified: "Електронна пошта вже підтверджена",
+      invalidToken: "Недійсний токен",
+      emailAlreadyInUse: "Електронна адреса вже використовується",
     },
   },
 } as const;

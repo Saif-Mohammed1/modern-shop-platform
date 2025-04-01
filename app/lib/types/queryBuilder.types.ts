@@ -29,6 +29,7 @@ export interface QueryBuilderConfig<T> {
   paramAliases?: Record<string, string>;
   enableTextSearch?: boolean;
   fixedFilters?: FilterQuery<T>; // Add this line
+  excludeFields?: (keyof T)[];
 }
 
 export type Operator =
