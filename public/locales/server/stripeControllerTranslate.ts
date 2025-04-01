@@ -41,6 +41,20 @@ export const stripeControllerTranslate = {
       noUserFound: "There is no user related to that Email.",
       failedPayment: "Payment not completed.",
       InventoryError: "Inventory reservation failed",
+      maxRetry: "Max retries reached for transaction",
+      ConcurrentOrder: "Concurrent order processing",
+      InvalidMetadata: "Invalid session metadata",
+      // noUserExist:
+      //   "No user found with the provided email address. Please check the email and try again.",
+      noUserExist: "No user found",
+      acquireLock: (id: string, maxRetries: number) =>
+        `Failed to acquire lock for product ${id} after ${maxRetries} attempts`,
+      PartialReservation: (count: number) =>
+        `Partial reservation failed for ${count} products`,
+      InvalidShipping: "Invalid shipping information format",
+      InsufficientStock: (name: string, availableStock: number) =>
+        `Insufficient stock. Available: ${availableStock} items for ${name}`,
+      priceMismatch: (name: string) => `Product ${name} price mismatch`,
     },
   },
   uk: {
@@ -83,6 +97,20 @@ export const stripeControllerTranslate = {
 
       failedPayment: "Оплата не завершена.",
       InventoryError: "Не вдалося зарезервувати запаси",
+      maxRetry: "Досягнуто максимальної кількості спроб для транзакції",
+      ConcurrentOrder: "Обробка одночасного замовлення",
+      InvalidMetadata: "Недійсні метадані сеансу",
+      // noUserExist:
+      //   "Не знайдено жодного користувача з наданою адресою електронної пошти. Будь ласка, перевірте електронну пошту та спробуйте ще раз.",
+      noUserExist: "Користувача не знайдено",
+      acquireLock: (id: string, maxRetries: number) =>
+        `Не вдалося отримати блокування для продукту ${id} після ${maxRetries} спроб`,
+      PartialReservation: (count: number) =>
+        `Часткове резервування не вдалося для ${count} продуктів`,
+      InvalidShipping: "Недійсний формат інформації про доставку",
+      InsufficientStock: (name: string, availableStock: number) =>
+        `Недостатньо товару. Доступно: ${availableStock} одиниць для ${name}`,
+      priceMismatch: (name: string) => `Ціна продукту ${name} не збігається`,
     },
   },
 } as const;

@@ -43,6 +43,10 @@ export const reviewControllerTranslate = {
     errors: {
       noDocumentsFound: "No documents found ",
       noDocumentsFoundWithId: "No documents found with that id",
+      unauthorized: {
+        update: "Unauthorized to update this review",
+        delete: "Unauthorized to delete this review",
+      },
     },
   },
 
@@ -90,6 +94,11 @@ export const reviewControllerTranslate = {
     errors: {
       noDocumentsFound: "Документи не знайдені ",
       noDocumentsFoundWithId: "Документи не знайдені за цим ідентифікатором",
+
+      unauthorized: {
+        update: "Ви не маєте права оновлювати цей відгук",
+        delete: "Ви не маєте права видаляти цей відгук",
+      },
     },
   },
 } as const;

@@ -84,9 +84,16 @@ export class ReviewService {
 
   async updateReview(reviewId: string, dto: updateReviewDto) {
     const review = await this.reviewRepository.findById(reviewId);
-    if (!review) throw new AppError("Review not found", 404);
+    if (!review)
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.noDocumentsFound,
+        404
+      );
     if (review.userId.toString() !== dto.userId.toString()) {
-      throw new AppError("Unauthorized to update this review", 403);
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.unauthorized.update,
+        403
+      );
     }
 
     return await this.reviewRepository.update(reviewId, dto);
@@ -94,9 +101,16 @@ export class ReviewService {
 
   async deleteReview(reviewId: string, userId: string) {
     const review = await this.reviewRepository.findById(reviewId);
-    if (!review) throw new AppError("Review not found", 404);
+    if (!review)
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.noDocumentsFound,
+        404
+      );
     if (review.userId.toString() !== userId.toString()) {
-      throw new AppError("Unauthorized to delete this review", 403);
+      throw new AppError(
+        reviewControllerTranslate[lang].errors.unauthorized.delete,
+        403
+      );
     }
 
     await this.reviewRepository.delete(reviewId);

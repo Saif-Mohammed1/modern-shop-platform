@@ -87,7 +87,10 @@ export class StripeService {
         );
         // 1. Get and validate cart FIRST
         if (userCart.length === 0) {
-          throw new AppError("Cart is empty", 400);
+          throw new AppError(
+            stripeControllerTranslate[lang].errors.cartEmpty,
+            400
+          );
         }
         // 2. Validate cart items first
         const { validProducts, invalidProducts } =
@@ -154,7 +157,11 @@ export class StripeService {
         transaction.endSession();
       }
     }
-    throw new AppError("Max retries reached for transaction", 500);
+    throw new AppError(
+      stripeControllerTranslate[lang].errors.maxRetry,
+
+      500
+    );
   }
 
   // async createStripeSessionOld(
@@ -337,18 +344,30 @@ export class StripeService {
   ): Promise<void> {
     const lockKey = `order:${session.id}`;
     const locked = await this.acquireLock(lockKey);
-    if (!locked) throw new AppError("Concurrent order processing", 409);
+    if (!locked)
+      throw new AppError(
+        stripeControllerTranslate[lang].errors.ConcurrentOrder,
+
+        409
+      );
 
     // Validate session metadata
     if (!session.metadata?.shippingInfo || !session.metadata?.idempotencyKey) {
-      throw new AppError("Invalid session metadata", 400);
+      throw new AppError(
+        stripeControllerTranslate[lang].errors.InvalidMetadata,
+        400
+      );
     }
 
     // Retrieve user and shipping info
     const user = await UserModel.findById(session.client_reference_id).session(
       transaction
     );
-    if (!user) throw new AppError("User not found", 404);
+    if (!user)
+      throw new AppError(
+        stripeControllerTranslate[lang].errors.noUserExist,
+        404
+      );
     try {
       // Parse shipping information
       const shippingInfo = this.parseShippingInfo(
@@ -493,7 +512,13 @@ export class StripeService {
         ).session(session);
 
         if (!product)
-          throw new AppError(`Product not found: ${productMetadata.name}`, 404);
+          throw new AppError(
+            stripeControllerTranslate[lang].errors.notFoundProduct(
+              productMetadata.name
+            ),
+            404
+          );
+        // throw new AppError(`Product not found: ${productMetadata.name}`, 404);
 
         return {
           productId: product._id,
@@ -630,8 +655,7 @@ export class StripeService {
         let attempts = 0;
         while (attempts < maxRetries) {
           const acquired = await this.acquireLock(lockKey, 60); // 60 second TTL
-          if (lockKey.includes("67b5bc3c6929f25809e5c853")) {
-          }
+
           if (acquired) {
             acquiredLocks.push(lockKey);
             break;
@@ -643,7 +667,10 @@ export class StripeService {
 
           if (attempts === maxRetries) {
             throw new AppError(
-              `Failed to acquire lock for product ${sortedProducts[index]._id} after ${maxRetries} attempts`,
+              stripeControllerTranslate[lang].errors.acquireLock(
+                sortedProducts[index]._id.toString(),
+                maxRetries
+              ),
               409
             );
           }
@@ -915,7 +942,9 @@ export class StripeService {
             logs
           );
           throw new AppError(
-            `Partial reservation failed for ${failedProducts.length} products`,
+            stripeControllerTranslate[lang].errors.PartialReservation(
+              failedProducts.length
+            ),
             409
           );
         }
@@ -990,7 +1019,11 @@ export class StripeService {
     try {
       return JSON.parse(shippingInfo);
     } catch (e) {
-      throw new AppError("Invalid shipping information format", 400);
+      throw new AppError(
+        stripeControllerTranslate[lang].errors.InvalidShipping,
+
+        400
+      );
     }
   }
   private calculateFinalPrice(product: IProduct, quantity: number): number {
@@ -1105,7 +1138,10 @@ export class StripeService {
         results.invalidProducts.push({
           name: item.name,
           _id: item._id,
-          message: `Product ${item.name} is no longer available`,
+          message: stripeControllerTranslate[
+            lang
+          ].functions.createStripeProduct.productNotAvailableAnymore(item.name),
+          // message: `Product ${item.name} is no longer available`,
         });
         continue;
       }
@@ -1114,7 +1150,10 @@ export class StripeService {
         results.invalidProducts.push({
           name: item.name,
           _id: item._id,
-          message: `Insufficient stock. Available: ${availableStock} items for ${item.name}`,
+          message: stripeControllerTranslate[lang].errors.InsufficientStock(
+            item.name,
+            availableStock
+          ),
         });
         continue;
       }
@@ -1125,7 +1164,9 @@ export class StripeService {
         results.invalidProducts.push({
           name: item.name,
           _id: item._id,
-          message: `Product ${item.name} price mismatch`,
+          message: stripeControllerTranslate[lang].errors.priceMismatch(
+            item.name
+          ),
         });
         continue;
       }

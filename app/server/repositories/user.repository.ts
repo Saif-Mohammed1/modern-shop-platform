@@ -21,6 +21,9 @@ import type {
 } from "@/app/lib/types/queryBuilder.types";
 import type { accountAction } from "@/app/lib/types/users.types";
 import { SecurityAlertType } from "@/app/server/services/email.service";
+import AppError from "@/app/lib/utilities/appError";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+import { lang } from "@/app/lib/utilities/lang";
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {
@@ -501,7 +504,7 @@ export class UserRepository extends BaseRepository<IUser> {
   ): Promise<void> {
     const user = await this.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     await this.updatePassword(user, password, session);
   }
