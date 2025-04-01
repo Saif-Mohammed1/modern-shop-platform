@@ -37,7 +37,7 @@ const AdminDashboard = ({
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
             {showAdvanced ? (
               <>
@@ -663,7 +663,7 @@ const TopProductsTable: FC<{
   products: DashboardData["orders"]["topProducts"];
 }> = ({ products }) => (
   <ChartCard title="Top Selling Products">
-    <div className="overflow-x-auto">
+    <div className=" overflow-auto">
       <table className="w-full">
         <thead>
           <tr className="text-left text-gray-400 text-sm">
@@ -691,7 +691,7 @@ const UserActivityAnalysis: FC<{
   userInterest: DashboardData["userInterestProducts"];
 }> = ({ userInterest }) => (
   <ChartCard title="User Activity Analysis">
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
       <div className="bg-gray-700 p-4 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Cart Activity</h3>
         {userInterest.categoryAnalysis.cart.map((category) => (
