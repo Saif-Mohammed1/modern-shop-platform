@@ -25,23 +25,32 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+
+export interface AuditLog {
+  timestamp: Date;
+  action: SecurityAuditAction;
+  details: {
+    device: {
+      browser: string;
+      os: string;
+      device: string;
+      ip: string;
+      location: {
+        city: string;
+        country: string;
+        latitude: number;
+        longitude: number;
+        source: string;
+      };
+      fingerprint: string;
+    };
+  };
+}
+
 interface UserEditPageProps {
   user: UserAuthType & {
     security: {
-      auditLog: {
-        timestamp: Date;
-        action: SecurityAuditAction;
-        details: {
-          device: {
-            browser: string;
-            os: string;
-            device: string;
-            ip: string;
-            location: string;
-            fingerprint: string;
-          };
-        };
-      }[];
+      auditLog: AuditLog[];
     };
   };
 }
