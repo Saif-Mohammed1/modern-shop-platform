@@ -25,7 +25,7 @@ interface ILoginHistory extends DeviceInfo {
 interface IAuditLog {
   timestamp: Date;
   action: SecurityAuditAction;
-  details: string;
+  details: Object;
 }
 interface IRateLimits {
   login: {

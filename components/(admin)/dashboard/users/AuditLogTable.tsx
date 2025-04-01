@@ -11,21 +11,9 @@ import {
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import { FaFingerprint } from "react-icons/fa";
 import { FiMonitor, FiGlobe, FiMapPin } from "react-icons/fi";
+import type { AuditLog } from "./editUser";
 interface AuditLogTableProps {
-  data: Array<{
-    timestamp: Date;
-    action: string;
-    details: {
-      device: {
-        browser: string;
-        os: string;
-        device: string;
-        ip: string;
-        location: string;
-        fingerprint: string;
-      };
-    };
-  }>;
+  data: AuditLog[];
   translations: {
     timestamp: string;
     action: string;
@@ -61,31 +49,14 @@ interface AuditLogTableProps {
 // }
 // export default AuditLogTable;
 function AuditLogTable({ data, translations }: AuditLogTableProps) {
-  const formatDeviceInfo = (device: any) => (
+  const formatDeviceInfo = (
+    device: AuditLogTableProps["data"][number]["details"]["device"]
+  ) => (
     <div className="space-y-1.5 text-sm">
       <div className="flex items-center gap-2">
         <span className="font-medium">{device.browser}</span>
         <span className="text-muted-foreground">on {device.os}</span>
       </div>
-      {/* <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-        <div>
-          <span className="text-muted-foreground">Type:</span> {device.device}
-        </div>
-        <div>
-          <span className="text-muted-foreground">IP:</span>
-          <span className="font-mono text-xs">{device.ip.slice(0, 6)}...</span>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Location:</span>
-          {device.location.includes("Unknown") ? "-" : device.location}
-        </div>
-        <div>
-          <span className="text-muted-foreground">Fingerprint:</span>
-          <span className="font-mono text-xs">
-            {device.fingerprint.slice(0, 6)}...
-          </span>
-        </div>
-      </div> */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
         <div className="flex items-center gap-1">
           <FiMonitor className="text-muted-foreground" size={14} />
@@ -97,8 +68,18 @@ function AuditLogTable({ data, translations }: AuditLogTableProps) {
         </div>
         <div className="flex items-center gap-1">
           <FiMapPin className="text-muted-foreground" size={14} />
-          {device.location.includes("Unknown") ? "-" : device.location}
+          {device.location?.city.includes("Unknown")
+            ? "-"
+            : device.location?.city}
+          ,{" "}
+          {device.location?.country.includes("Unknown")
+            ? "-"
+            : device.location?.country}
         </div>
+        {/* <div className="flex items-center gap-1">
+          <FiMapPin className="text-muted-foreground" size={14} />
+          {device.location.includes("Unknown") ? "-" : device.location}
+        </div> */}
         <div className="flex items-center gap-1">
           <FaFingerprint className="text-muted-foreground" size={14} />
           <span className="font-mono text-xs">
