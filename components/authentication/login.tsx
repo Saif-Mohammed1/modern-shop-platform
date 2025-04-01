@@ -204,6 +204,28 @@ const LoginPage = () => {
               {loginTranslate[lang].form.signUp}
             </Link>
           </div>
+          <div className="text-center mt-4">
+            <p className="text-gray-500">
+              {loginTranslate[lang].functions.handleLogin.termsAgreement}
+            </p>
+          </div>
+          {/* <div className="text-center mt-4">
+            <Link
+              href="/auth/terms"
+              className="text-blue-500 hover:underline"
+            >
+              {loginTranslate[lang].form.terms}
+            </Link>
+          </div> */}
+          <div className="text-center mt-4 flex flex-col justify-center">
+            <p className="text-gray-500">use these email for testing website</p>
+            <p className="text-gray-500 font-bold">
+              email: moderator@example.com
+            </p>
+            <p className="text-gray-500 font-bold">
+              password: Pa@password12345
+            </p>
+          </div>
         </>
       )}
     </div>
