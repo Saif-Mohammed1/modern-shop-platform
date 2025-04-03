@@ -154,7 +154,8 @@ class AuthController {
         token,
         email: req.user?.email,
       });
-      await this.userService.confirmEmailChange(result.token);
+      const deviceInfo = await getDeviceFingerprint(req);
+      await this.userService.confirmEmailChange(result.token, deviceInfo);
       return NextResponse.json(
         {
           message:
@@ -173,7 +174,12 @@ class AuthController {
       }
       const body = await req.json();
       const code = UserValidation.isVerificationCodeValid(body.code);
-      await this.userService.verifyEmail(req.user?._id.toString(), code);
+      const deviceInfo = await getDeviceFingerprint(req);
+      await this.userService.verifyEmail(
+        req.user?._id.toString(),
+        code,
+        deviceInfo
+      );
       return NextResponse.json(
         {
           message: AuthTranslate[lang].auth.verifyEmail.emailVerified,
@@ -204,7 +210,11 @@ class AuthController {
       if (!req.user?._id) {
         throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
       }
-      await this.userService.sendVerificationCode(req.user?._id.toString());
+      const deviceInfo = await getDeviceFingerprint(req);
+      await this.userService.sendVerificationCode(
+        req.user?._id.toString(),
+        deviceInfo
+      );
       return NextResponse.json(
         {
           message: AuthTranslate[lang].auth.sendNewVerificationCode.success,

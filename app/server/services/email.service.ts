@@ -49,11 +49,7 @@ interface SecurityAlertEmailParams {
   timestamp?: Date;
   ipAddress?: string;
   location?: string;
-  device?: {
-    os?: string;
-    browser?: string;
-    model?: string;
-  };
+  device?: DeviceInfo;
   additionalInfo?: {
     changedSetting?: string;
     recoveryMethods?: string[];
@@ -394,7 +390,9 @@ export class EmailService {
       device,
       additionalInfo
     );
-
+    if (!device) {
+      return;
+    }
     try {
       await this.sendEmail(userEmail, {
         subject,
@@ -405,10 +403,7 @@ export class EmailService {
 
       await this.userRepo.logSecurityAlert(userEmail, type, {
         success: true,
-
-        ipAddress,
-        location,
-        ...device,
+        device: device,
       });
     } catch (error) {
       logger.error(`Failed to send ${type} alert:`, error);
@@ -421,7 +416,7 @@ export class EmailService {
     timestamp: Date,
     ipAddress?: string,
     location?: string,
-    device?: { os?: string; browser?: string; model?: string },
+    device?: DeviceInfo | null,
     additionalInfo?: any
   ) {
     const formattedTime = timestamp.toLocaleString();

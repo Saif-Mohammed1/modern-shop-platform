@@ -266,6 +266,7 @@ export class TwoFactorService {
           success: true,
           codesUsed: usedCodes,
           remainingCodes: updatedCodes.length,
+          device: deviceInfo,
         },
         session
       );
@@ -281,11 +282,7 @@ export class TwoFactorService {
           },
           timestamp: new Date(),
           ipAddress: deviceInfo.ip,
-          device: {
-            browser: deviceInfo.browser,
-            os: deviceInfo.os,
-            model: deviceInfo.model,
-          },
+          device: deviceInfo,
           location: `${deviceInfo.location.city}, ${deviceInfo.location.country}`,
         });
       }
@@ -306,6 +303,7 @@ export class TwoFactorService {
         {
           success: false,
           error: (error as any).message,
+          device: deviceInfo,
         }
       );
 

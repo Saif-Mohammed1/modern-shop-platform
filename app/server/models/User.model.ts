@@ -636,11 +636,7 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
 
       await emailService.sendSecurityAlertEmail(this.email, {
         type: SecurityAlertType.NEW_DEVICE,
-        device: {
-          model: deviceInfo.model,
-          os: deviceInfo.os,
-          browser: deviceInfo.browser,
-        },
+        device: deviceInfo,
         ipAddress: deviceInfo.ip,
         location: `${deviceInfo.location.city}, ${deviceInfo.location.country} 
           ${recentLogins[0]?.location.city}, ${recentLogins[0]?.location.country}`,

@@ -88,6 +88,6 @@ export enum EntityType {
 // audit.types.ts
 export interface AuditLogDetails {
   success: boolean;
-  device?: Partial<DeviceInfo>;
+  device: DeviceInfo;
   [key: string]: any; // Additional dynamic details
 }

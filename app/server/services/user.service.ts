@@ -310,7 +310,10 @@ export class UserService {
       session.endSession();
     }
   }
-  async forcePasswordResetByAdmin(id: string): Promise<void> {
+  async forcePasswordResetByAdmin(
+    id: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
@@ -325,7 +328,7 @@ export class UserService {
       await this.repository.createAuditLog(
         user._id.toString(),
         SecurityAuditAction.FORCE_PASSWORD_RESET,
-        { success: true },
+        { success: true, device: deviceInfo },
         session
       );
       await session.commitTransaction();
@@ -461,7 +464,10 @@ export class UserService {
   }
 
   // Email Verification
-  async sendVerificationCode(userId: string): Promise<void> {
+  async sendVerificationCode(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
@@ -472,19 +478,23 @@ export class UserService {
 
     user.checkRateLimit("verification");
     try {
-      await this.regenerateVerificationCode(user);
+      await this.regenerateVerificationCode(user, deviceInfo);
     } catch (error) {
       await this.repository.createAuditLog(
         user._id.toString(),
         SecurityAuditAction.VERIFICATION_EMAIL_FAILURE,
         {
           success: false,
+          device: deviceInfo,
         }
       );
     }
     await this.repository.incrementRateLimit(user, "verification");
   }
-  async regenerateVerificationCode(user: IUser): Promise<void> {
+  async regenerateVerificationCode(
+    user: IUser,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const verificationToken = generateVerificationToken();
     const hashedToken =
       this.tokensService.hashVerificationToken(verificationToken);
@@ -501,6 +511,7 @@ export class UserService {
         SecurityAuditAction.VERIFICATION_EMAIL_REQUEST,
         {
           success: true,
+          device: deviceInfo,
         },
         session
       );
@@ -521,7 +532,11 @@ export class UserService {
   //   emailService.sendVerification(user.email, verificationToken),
   // ]);
 
-  async verifyEmail(userId: string, token: string): Promise<IUser | null> {
+  async verifyEmail(
+    userId: string,
+    token: string,
+    deviceInfo: DeviceInfo
+  ): Promise<IUser | null> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
@@ -544,6 +559,7 @@ export class UserService {
         SecurityAuditAction.VERIFICATION_EMAIL_FAILURE,
         {
           success: false,
+          device: deviceInfo,
         }
       );
       await this.repository.incrementRateLimit(user, "verification");
@@ -645,7 +661,10 @@ export class UserService {
     await emailService.sendEmailChangeConfirmation(user.email, changeToken);
   }
 
-  async confirmEmailChange(token: string): Promise<void> {
+  async confirmEmailChange(
+    token: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const user = await this.repository.validateEmailChangeToken(token);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.invalidToken, 400);
@@ -660,6 +679,7 @@ export class UserService {
         {
           newEmail: user.verification.emailChange,
           success: true,
+          device: deviceInfo,
         },
         session
       );
@@ -671,6 +691,7 @@ export class UserService {
         {
           newEmail: user.verification.emailChange,
           success: false,
+          device: deviceInfo,
         }
       );
       await session.abortTransaction();
@@ -749,7 +770,10 @@ export class UserService {
   async revokeSession(userId: string): Promise<void> {
     await this.sessionService.revokeSession(userId);
   }
-  async revokeAllSessionsByAdmin(userId: string): Promise<void> {
+  async revokeAllSessionsByAdmin(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
@@ -759,6 +783,7 @@ export class UserService {
         SecurityAuditAction.REVOKE_ALL_SESSIONS,
         {
           success: true,
+          device: deviceInfo,
         },
         session
       );
@@ -770,7 +795,10 @@ export class UserService {
       session.endSession();
     }
   }
-  async lockUserAccount(userId: string): Promise<void> {
+  async lockUserAccountByAdmin(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
@@ -780,6 +808,7 @@ export class UserService {
         SecurityAuditAction.ACCOUNT_LOCKED,
         {
           success: true,
+          device: deviceInfo,
         },
         session
       );
@@ -791,7 +820,10 @@ export class UserService {
       session.endSession();
     }
   }
-  async unlockUserAccount(userId: string): Promise<void> {
+  async unlockUserAccountByAdmin(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
@@ -801,6 +833,7 @@ export class UserService {
         SecurityAuditAction.ACCOUNT_UNLOCKED,
         {
           success: true,
+          device: deviceInfo,
         },
         session
       );

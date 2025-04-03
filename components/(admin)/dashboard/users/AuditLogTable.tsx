@@ -11,9 +11,9 @@ import {
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 import { FaFingerprint } from "react-icons/fa";
 import { FiMonitor, FiGlobe, FiMapPin } from "react-icons/fi";
-import type { AuditLog } from "./editUser";
+import type { AuditLogDetails } from "@/app/lib/types/audit.types";
 interface AuditLogTableProps {
-  data: AuditLog[];
+  data: AuditLogDetails[];
   translations: {
     timestamp: string;
     action: string;
@@ -21,33 +21,6 @@ interface AuditLogTableProps {
   };
 }
 
-// function AuditLogTable({ data, translations }: AuditLogTableProps) {
-//   return (
-//     <Table>
-//       <TableHeader>
-//         <TableRow>
-//           <TableHead>{translations.timestamp}</TableHead>
-//           <TableHead>{translations.action}</TableHead>
-//           <TableHead>{translations.details}</TableHead>
-//         </TableRow>
-//       </TableHeader>
-//       <TableBody>
-//         {data.map((entry, index) => (
-//           <TableRow key={index}>
-//             <TableCell className="font-medium">
-//               {entry.timestamp.toLocaleString()}
-//             </TableCell>
-//             <TableCell>{entry.action}</TableCell>
-//             <TableCell className="text-muted-foreground">
-//               {JSON.stringify(entry.details)}
-//             </TableCell>
-//           </TableRow>
-//         ))}
-//       </TableBody>
-//     </Table>
-//   );
-// }
-// export default AuditLogTable;
 function AuditLogTable({ data, translations }: AuditLogTableProps) {
   const formatDeviceInfo = (
     device: AuditLogTableProps["data"][number]["details"]["device"]
@@ -103,14 +76,14 @@ function AuditLogTable({ data, translations }: AuditLogTableProps) {
         {data.map((entry, index) => (
           <TableRow key={index}>
             <TableCell className="font-medium">
-              {entry.timestamp.toLocaleString()}
-              {/* {entry.timestamp.toLocaleDateString("en-US", {
+              {/* {entry.timestamp.toLocaleString()} */}
+              {entry.timestamp.toLocaleDateString(lang, {
                 year: "numeric",
                 month: "short",
                 day: "numeric",
                 hour: "2-digit",
                 minute: "2-digit",
-              })} */}
+              })}
             </TableCell>
             <TableCell>
               <span className="capitalize">

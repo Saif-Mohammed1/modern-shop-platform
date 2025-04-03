@@ -7,6 +7,7 @@ import { lang } from "@/app/lib/utilities/lang";
 import { UserService } from "../services/user.service";
 import AppError from "@/app/lib/utilities/appError";
 import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+import { getDeviceFingerprint } from "@/app/lib/utilities/DeviceFingerprint.utility";
 
 class UserController {
   constructor(private readonly userService: UserService = new UserService()) {}
@@ -68,7 +69,8 @@ class UserController {
     if (!req.id)
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
 
-    await this.userService.revokeAllSessionsByAdmin(req.id);
+    const deviceInfo = await getDeviceFingerprint(req);
+    await this.userService.revokeAllSessionsByAdmin(req.id, deviceInfo);
     return NextResponse.json(
       { message: UserTranslate[lang].revokeAllUserSessions },
       { status: 200 }
@@ -78,7 +80,8 @@ class UserController {
     if (!req.id)
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
 
-    await this.userService.forcePasswordResetByAdmin(req.id);
+    const deviceInfo = await getDeviceFingerprint(req);
+    await this.userService.forcePasswordResetByAdmin(req.id, deviceInfo);
     return NextResponse.json(
       { message: UserTranslate[lang].forceRestPassword },
       { status: 200 }
@@ -88,7 +91,8 @@ class UserController {
     if (!req.id)
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
 
-    await this.userService.lockUserAccount(req.id);
+    const deviceInfo = await getDeviceFingerprint(req);
+    await this.userService.lockUserAccountByAdmin(req.id, deviceInfo);
     return NextResponse.json(
       { message: UserTranslate[lang].lockUserAccount },
       { status: 200 }
@@ -98,7 +102,8 @@ class UserController {
     if (!req.id)
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
 
-    await this.userService.unlockUserAccount(req.id);
+    const deviceInfo = await getDeviceFingerprint(req);
+    await this.userService.unlockUserAccountByAdmin(req.id, deviceInfo);
     return NextResponse.json(
       { message: UserTranslate[lang].unlockUserAccount },
       { status: 200 }
