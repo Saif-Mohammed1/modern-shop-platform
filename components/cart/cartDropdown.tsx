@@ -1,15 +1,18 @@
 "use client";
-import { useEffect, useRef } from "react";
+
 import Image from "next/image";
-import { useCartItems } from "../providers/context/cart/cart.context";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import imageSrc from "../../app/lib/utilities/productImageHandler";
-import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
-import { lang } from "../../app/lib/utilities/lang";
+import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import { FiX } from "react-icons/fi";
-import { useUser } from "../providers/context/user/user.context";
+
 import { type CartItemsType } from "@/app/lib/types/cart.types";
+import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
+
+import { lang } from "../../app/lib/utilities/lang";
+import imageSrc from "../../app/lib/utilities/productImageHandler";
+import { useCartItems } from "../providers/context/cart/cart.context";
+import { useUser } from "../providers/context/user/user.context";
 
 type CartDropdownProps = {
   setIsCartOpen: (value: boolean) => void;
@@ -44,7 +47,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
   const handleIncrease = (item: CartItemsType) =>
     handleCartAction(
-      () => Promise.resolve(addToCartItems(item)),
+      () => addToCartItems(item),
       cartDropdownTranslate[lang].functions.handleIncrease.addingToCart,
       cartDropdownTranslate[lang].functions.handleIncrease.success,
       cartDropdownTranslate[lang].functions.handleIncrease.error
@@ -52,7 +55,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
   const handleDecrease = (item: CartItemsType) =>
     handleCartAction(
-      () => Promise.resolve(removeCartItem(item)),
+      () => removeCartItem(item),
       cartDropdownTranslate[lang].functions.handleDecrease.removingFromCart,
       cartDropdownTranslate[lang].functions.handleDecrease.success,
       cartDropdownTranslate[lang].functions.handleDecrease.error
@@ -60,7 +63,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
   const handelClearItem = (item: CartItemsType) =>
     handleCartAction(
-      () => Promise.resolve(clearProductFromCartItem(item)),
+      () => clearProductFromCartItem(item),
       cartDropdownTranslate[lang].functions.handelClearItem.clearingProduct,
       cartDropdownTranslate[lang].functions.handelClearItem.success,
       cartDropdownTranslate[lang].functions.handelClearItem.error
@@ -127,9 +130,9 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
   };
   return (
     <>
-      <div
+      <button
         className="fixed inset-0 bg-black/50 z-40 md:hidden"
-        onClick={() => setIsCartOpen(false)}
+        onClick={() => void setIsCartOpen(false)}
       />
 
       <div
@@ -184,7 +187,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
                     <div className="flex items-center gap-2 mt-2">
                       <button
                         className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
-                        onClick={() => handleDecrease(item)}
+                        onClick={() => void handleDecrease(item)}
                       >
                         -
                       </button>
@@ -212,13 +215,13 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
                       />
                       <button
                         className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
-                        onClick={() => handleIncrease(item)}
+                        onClick={() => void handleIncrease(item)}
                       >
                         +
                       </button>
                       <button
                         className="px-2 py-1 text-red-600 hover:text-red-700 text-lg ml-auto"
-                        onClick={() => handelClearItem(item)}
+                        onClick={() => void handelClearItem(item)}
                       >
                         ×
                       </button>

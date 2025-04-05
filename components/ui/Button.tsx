@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
+import type {ReactNode} from 'react';
 
 type ButtonProps = {
-  variant?: "primary" | "secondary" | "ghost" | "destructive" | "outline"; // 🔥 Added destructive variant
-  size?: "sm" | "md" | "lg";
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline'; // 🔥 Added destructive variant
+  size?: 'sm' | 'md' | 'lg';
   icon?: ReactNode;
   danger?: boolean;
   children?: ReactNode;
@@ -10,8 +10,8 @@ type ButtonProps = {
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Button = ({
-  variant = "primary",
-  size = "md",
+  variant = 'primary',
+  size = 'md',
   icon,
   danger = false,
   loading = false,
@@ -19,15 +19,15 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const sizes = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2 text-base",
-    lg: "px-6 py-3 text-lg",
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-base',
+    lg: 'px-6 py-3 text-lg',
   };
 
   const variants = {
-    primary: `text-white ${danger ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"}`,
-    secondary: `border ${danger ? "border-red-600 text-red-600 hover:bg-red-50" : "border-indigo-600 text-indigo-600 hover:bg-indigo-50"}`,
-    ghost: `hover:bg-gray-100 ${danger ? "text-red-600" : "text-gray-700"}`,
+    primary: `text-white ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`,
+    secondary: `border ${danger ? 'border-red-600 text-red-600 hover:bg-red-50' : 'border-indigo-600 text-indigo-600 hover:bg-indigo-50'}`,
+    ghost: `hover:bg-gray-100 ${danger ? 'text-red-600' : 'text-gray-700'}`,
     destructive: `text-white bg-red-600 hover:bg-red-700 border-red-600`, // 🔥 Added destructive variant
 
     outline: `border border-gray-300 text-gray-700 hover:bg-gray-50`,
@@ -36,7 +36,7 @@ const Button = ({
   return (
     <button
       {...props}
-      className={`inline-flex justify-center items-center gap-2 rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${props.className || ""}`}
+      className={`inline-flex justify-center items-center gap-2 rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${props.className || ''}`}
     >
       {loading ? (
         <span className="animate-spin inline-block h-5 w-5 border-2 border-t-transparent border-white rounded-full"></span>

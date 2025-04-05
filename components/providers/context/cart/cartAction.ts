@@ -1,12 +1,13 @@
-import AppError from "@/app/lib/utilities/appError";
-import api from "@/app/lib/utilities/api";
-import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { UserAuthType } from "@/app/lib/types/users.types";
 import type {
   CartItemsType,
   ProductCartPick,
 } from "@/app/lib/types/cart.types";
+import type { UserAuthType } from "@/app/lib/types/users.types";
+import api from "@/app/lib/utilities/api";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
+
 type User = UserAuthType | null;
 // Add item to cart
 export const addToCart = async (
@@ -14,50 +15,46 @@ export const addToCart = async (
   user: User,
   quantity: number = 1
 ) => {
-  try {
-    if (user) {
-      // User is signed in, store cart in DB
-      const data = await saveCartToDB(product._id, quantity);
+  if (user) {
+    // User is signed in, store cart in DB
+    const data = await saveCartToDB(product._id, quantity);
 
-      return data;
-    } else {
-      // User is not signed in, store cart in localStorage
-      const StoredCart = localStorage.getItem("cart");
+    return data;
+  } else {
+    // User is not signed in, store cart in localStorage
+    const StoredCart = localStorage.getItem("cart");
 
-      const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-      const existingProduct = cart.find((item) => item._id === product._id);
+    const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
+    const existingProduct = cart.find((item) => item._id === product._id);
 
-      if (existingProduct) {
-        if (quantity > 1 && quantity > product.stock) {
-          throw new AppError(
-            cartContextTranslate[lang].functions.addToCart.outOfStock,
-            400
-          );
-        }
-        if (
-          quantity == 1 &&
-          existingProduct.quantity + quantity > product.stock
-        ) {
-          throw new AppError(
-            cartContextTranslate[lang].functions.addToCart.outOfStock,
-            400
-          );
-        }
-
-        // existingProduct.quantity += quantity;
+    if (existingProduct) {
+      if (quantity > 1 && quantity > product.stock) {
+        throw new AppError(
+          cartContextTranslate[lang].functions.addToCart.outOfStock,
+          400
+        );
       }
-      cart.push({
-        ...product,
-        quantity,
-        // user: product.user._id as string,
-      });
+      if (
+        quantity == 1 &&
+        existingProduct.quantity + quantity > product.stock
+      ) {
+        throw new AppError(
+          cartContextTranslate[lang].functions.addToCart.outOfStock,
+          400
+        );
+      }
 
-      localStorage.setItem("cart", JSON.stringify(cart));
-
-      return cart;
+      // existingProduct.quantity += quantity;
     }
-  } catch (error) {
-    throw error;
+    cart.push({
+      ...product,
+      quantity,
+      // user: product.user._id as string,
+    });
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    return cart;
   }
 };
 
@@ -68,31 +65,28 @@ export const removeFromCart = async (
   quantity: number = 1
 ) => {
   let cart: CartItemsType[];
-  try {
-    if (user) {
-      // User is signed in, remove cart item from DB
-      await removeCartItemFromDB(product);
-      const data = await getCartItems(user);
-      return data;
-    } else {
-      // User is not signed in, remove cart item from localStorage
-      const StoredCart = localStorage.getItem("cart");
 
-      cart = StoredCart ? JSON.parse(StoredCart) : [];
-      const existingProduct = cart.find((item) => item._id === product._id);
+  if (user) {
+    // User is signed in, remove cart item from DB
+    await removeCartItemFromDB(product);
+    const data = await getCartItems(user);
+    return data;
+  } else {
+    // User is not signed in, remove cart item from localStorage
+    const StoredCart = localStorage.getItem("cart");
 
-      if (existingProduct) {
-        if (existingProduct.quantity > 1) {
-          existingProduct.quantity -= quantity;
-        } else {
-          cart = cart.filter((item) => item._id !== product._id);
-        }
-        localStorage.setItem("cart", JSON.stringify(cart));
+    cart = StoredCart ? JSON.parse(StoredCart) : [];
+    const existingProduct = cart.find((item) => item._id === product._id);
+
+    if (existingProduct) {
+      if (existingProduct.quantity > 1) {
+        existingProduct.quantity -= quantity;
+      } else {
+        cart = cart.filter((item) => item._id !== product._id);
       }
-      return cart;
+      localStorage.setItem("cart", JSON.stringify(cart));
     }
-  } catch (error) {
-    throw error;
+    return cart;
   }
 };
 
@@ -119,48 +113,32 @@ export const clearItemFromCart = async (
   }
 };
 export const saveCartToDB = async (productId: string, quantity: number) => {
-  try {
-    await api.post("/customers/cart/" + productId, {
-      quantity,
-    });
+  await api.post("/customers/cart/" + productId, {
+    quantity,
+  });
 
-    // return data.data;
-  } catch (error) {
-    throw error;
-  }
+  // return data.data;
 };
 
 // Get cart items (either from DB or localStorage)
 export const getCartItems = async (user: User) => {
-  try {
-    if (user) {
-      // Fetch cart items from the database
-      const data = await fetchCartItemsFromDB();
-      return data;
-    } else {
-      // Fetch cart items from localStorage
-      const StoredCart = localStorage.getItem("cart");
+  if (user) {
+    // Fetch cart items from the database
+    const data = await fetchCartItemsFromDB();
+    return data;
+  } else {
+    // Fetch cart items from localStorage
+    const StoredCart = localStorage.getItem("cart");
 
-      const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-      return cart;
-    }
-  } catch (error) {
-    throw error;
+    const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
+    return cart;
   }
 };
 export const removeCartItemFromDB = async (product: ProductCartPick) => {
-  try {
-    await api.put(`/customers/cart/${product._id}`);
-  } catch (error) {
-    throw error;
-  }
+  await api.put(`/customers/cart/${product._id}`);
 };
 export const clearCartInDB = async (product: ProductCartPick) => {
-  try {
-    await api.delete(`/customers/cart/${product._id}`);
-  } catch (error) {
-    throw error;
-  }
+  await api.delete(`/customers/cart/${product._id}`);
 };
 export const mergeLocalCartWithDB = async () => {
   try {
@@ -183,24 +161,22 @@ export const mergeLocalCartWithDB = async () => {
     };
   } catch (error) {
     return {
-      message: cartContextTranslate[lang].cartContext.mergeLocalCart.error,
+      message:
+        (error as Error).message ||
+        cartContextTranslate[lang].cartContext.mergeLocalCart.error,
     };
   }
 };
 const fetchCartItemsFromDB = async () => {
-  try {
-    const { data } = await api.get("/customers/cart");
+  const { data } = await api.get("/customers/cart");
 
-    return data.products;
-  } catch (error) {
-    throw error;
-  }
+  return data.products;
 };
 // export const updateCartQuantity = async (
 //   productId: string,
 //   quantity: number
 // ) => {
-//   try {
+//
 //     const { data } = await api.patch(`/customers/cart/${productId}`, {
 //       quantity,
 //     });

@@ -1,27 +1,27 @@
 // address.repository.ts
+import type {Model} from 'mongoose';
+import {type ClientSession} from 'mongoose';
 
 import type {
+  QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
-  QueryBuilderConfig,
-} from "@/app/lib/types/queryBuilder.types";
-import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { type ClientSession, Model } from "mongoose";
-import { BaseRepository } from "./BaseRepository";
-import type { IAddress } from "../models/Address.model";
+} from '@/app/lib/types/queryBuilder.types';
+import {QueryBuilder} from '@/app/lib/utilities/queryBuilder';
+
 import {
   type CreateAddressDtoType,
   // UpdateAddressDtoType,
-} from "../dtos/address.dto";
+} from '../dtos/address.dto';
+import type {IAddress} from '../models/Address.model';
+
+import {BaseRepository} from './BaseRepository';
 
 export class AddressRepository extends BaseRepository<IAddress> {
   constructor(model: Model<IAddress>) {
     super(model);
   }
-  override async create(
-    dto: CreateAddressDtoType,
-    session?: ClientSession
-  ): Promise<IAddress> {
+  override async create(dto: CreateAddressDtoType, session?: ClientSession): Promise<IAddress> {
     const [address] = await this.model.create([dto], {
       session,
     });
@@ -30,30 +30,26 @@ export class AddressRepository extends BaseRepository<IAddress> {
   override async update(
     id: string,
     data: Partial<IAddress>,
-    session?: ClientSession
+    session?: ClientSession,
   ): Promise<IAddress | null> {
     const address = await this.model.findOneAndUpdate(
-      { _id: id, userId: data.userId },
-      { $set: data },
-      { new: true, session }
+      {_id: id, userId: data.userId},
+      {$set: data},
+      {new: true, session},
     );
     return address;
   }
-  async deleteAddress(
-    id: string,
-    userId: string,
-    session?: ClientSession
-  ): Promise<boolean> {
-    const result = await this.model.deleteOne({ _id: id, userId }, { session });
+  async deleteAddress(id: string, userId: string, session?: ClientSession): Promise<boolean> {
+    const result = await this.model.deleteOne({_id: id, userId}, {session});
     return result.deletedCount === 1;
   }
 
   async getUserAddress(
     userId: string,
-    options: QueryOptionConfig
+    options: QueryOptionConfig,
   ): Promise<QueryBuilderResult<IAddress>> {
     const queryConfig: QueryBuilderConfig<IAddress> = {
-      allowedFilters: ["userId", "createdAt"],
+      allowedFilters: ['userId', 'createdAt'],
       //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IAddress>,
       //   maxLimit: 100,
     };
@@ -66,14 +62,10 @@ export class AddressRepository extends BaseRepository<IAddress> {
       // ...(options?.sort && { sort: options.sort }),
     });
 
-    const queryBuilder = new QueryBuilder<IAddress>(
-      this.model,
-      searchParams,
-      queryConfig
-    );
+    const queryBuilder = new QueryBuilder<IAddress>(this.model, searchParams, queryConfig);
 
     if (options?.populate) {
-      queryBuilder.populate([{ path: "userId", select: "name email" }]);
+      queryBuilder.populate([{path: 'userId', select: 'name email'}]);
     }
 
     return await queryBuilder.execute();

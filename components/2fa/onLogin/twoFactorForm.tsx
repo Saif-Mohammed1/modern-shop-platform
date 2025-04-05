@@ -1,72 +1,57 @@
-"use client";
-import { useState } from "react";
-import BackupCodeInput from "./backupCodeInput";
-import TotpInput from "./totpInput";
+'use client';
+
+import {useState} from 'react';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {accountTwoFactorTranslate} from '@/public/locales/client/(auth)/account/twoFactorTranslate';
+
+import BackupCodeInput from './backupCodeInput';
+import TotpInput from './totpInput';
 
 interface TwoFactorFormProps {
   onVerify: (code: string) => Promise<void>;
   onBackupVerify: (codes: string[]) => Promise<void>;
-  // onResend: () => Promise<void>;
+  error: string;
+  isLoading: boolean;
   back: () => void;
 }
 
 export const TwoFactorForm = ({
   onVerify,
   onBackupVerify,
+  error,
+  isLoading,
   back,
   // onResend,
 }: TwoFactorFormProps) => {
-  const [view, setView] = useState<"totp" | "backup">("totp");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [view, setView] = useState<'totp' | 'backup'>('totp');
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-        Two-Factor Authentication
+        {accountTwoFactorTranslate[lang].TwoFactorForm.title}
       </h2>
 
-      {view === "totp" ? (
+      {view === 'totp' ? (
         <TotpInput
-          onVerify={async (code: string) => {
-            setIsLoading(true);
-            try {
-              await onVerify(code);
-            } catch (err) {
-              setError("Invalid verification code");
-            } finally {
-              setIsLoading(false);
-            }
-          }}
+          onVerify={onVerify}
           isLoading={isLoading}
           error={error}
           // onResend={onResend}
-          onSwitchToBackup={() => setView("backup")}
+          onSwitchToBackup={() => setView('backup')}
         />
       ) : (
         <BackupCodeInput
-          onVerify={async (codes: string[]) => {
-            setIsLoading(true);
-            try {
-              await onBackupVerify(codes);
-            } catch (err) {
-              setError("Invalid backup code");
-            } finally {
-              setIsLoading(false);
-            }
-          }}
+          onVerify={onBackupVerify}
           isLoading={isLoading}
           error={error}
-          onSwitchToTotp={() => setView("totp")}
+          onSwitchToTotp={() => setView('totp')}
         />
       )}
 
       <div className="mt-4 text-center">
-        <button
-          onClick={() => back()}
-          className="text-sm text-gray-600 hover:text-gray-800"
-        >
-          ← Return to login
+        <button onClick={() => back()} className="text-sm text-gray-600 hover:text-gray-800">
+          {accountTwoFactorTranslate[lang].TwoFactorForm.button.backToLogin}
         </button>
       </div>
     </div>

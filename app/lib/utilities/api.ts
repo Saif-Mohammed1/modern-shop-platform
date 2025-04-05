@@ -1,13 +1,14 @@
-import axios from "axios";
-import tokenManager from "./TokenManager";
-import AppError from "./appError";
+import axios from 'axios';
+
+import AppError from './appError';
+import tokenManager from './TokenManager';
 
 // Create an Axios instance
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_ENDPOINT,
   withCredentials: true,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     // "Cache-Control": "no-cache, no-store, must-revalidate",
     // Pragma: "no-cache",
     // Expires: "0",
@@ -136,7 +137,7 @@ api.interceptors.response.use(
        */
       const message =
         error.response?.data?.message ||
-        "There was an issue processing your request. Please try again later.";
+        'There was an issue processing your request. Please try again later.';
       const statusCode = error.response?.status || 500;
       return Promise.reject(new AppError(message, statusCode));
     }
@@ -146,7 +147,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const { data } = await api.get("/auth/refresh-token", {
+        const {data} = await api.get('/auth/refresh-token', {
           headers: originalRequest.headers,
         });
 
@@ -158,20 +159,18 @@ api.interceptors.response.use(
         refreshSubscribers = [];
 
         return api(originalRequest);
-      } catch (refreshError) {
+      } catch (_refreshError) {
         // // Clear all tokens and session data
         tokenManager.clearAccessToken();
         // tokenManager.clearRefreshToken();
 
         // Redirect only once
-        if (typeof window !== "undefined") {
-          window.location.href = "/auth";
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth';
           return;
         }
 
-        return Promise.reject(
-          new AppError("Session expired. Please login again.", 401)
-        );
+        return Promise.reject(new AppError('Session expired. Please login again.', 401));
       } finally {
         isRefreshing = false;
       }
@@ -184,7 +183,7 @@ api.interceptors.response.use(
         resolve(api(originalRequest));
       });
     });
-  }
+  },
 );
 
 export default api;

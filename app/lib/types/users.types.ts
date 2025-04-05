@@ -1,33 +1,28 @@
 export enum UserStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  SUSPENDED = "suspended",
-  DELETED = "deleted",
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
+  DELETED = 'deleted',
 }
 export enum AuthMethod {
-  EMAIL = "email",
-  GOOGLE = "google",
-  FACEBOOK = "facebook",
-  APPLE = "apple",
+  EMAIL = 'email',
+  GOOGLE = 'google',
+  FACEBOOK = 'facebook',
+  APPLE = 'apple',
 }
 export enum UserRole {
-  CUSTOMER = "customer",
-  ADMIN = "admin",
-  MODERATOR = "moderator",
+  CUSTOMER = 'customer',
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
 }
 //  enum: ["USD", "EUR", "GBP", "UAH"],
 export enum UserCurrency {
-  USD = "USD",
-  ERU = "ERU",
-  GBP = "GBP",
-  UAH = "UAH",
+  USD = 'USD',
+  ERU = 'ERU',
+  GBP = 'GBP',
+  UAH = 'UAH',
 }
-export type accountAction =
-  | "login"
-  | "passwordReset"
-  | "verification"
-  | "2fa"
-  | "backup_recovery";
+export type accountAction = 'login' | 'passwordReset' | 'verification' | '2fa' | 'backup_recovery';
 
 // export type UserAuthType = {
 //   _id: Types.ObjectId | string;

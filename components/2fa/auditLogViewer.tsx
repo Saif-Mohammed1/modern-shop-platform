@@ -1,4 +1,7 @@
-import { RiCloseCircleLine } from "react-icons/ri";
+import {RiCloseCircleLine} from 'react-icons/ri';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {accountTwoFactorTranslate} from '@/public/locales/client/(auth)/account/twoFactorTranslate';
 
 interface LogEntry {
   timestamp: Date;
@@ -8,16 +11,12 @@ interface LogEntry {
     userAgent: string;
   };
 }
-const AuditLogViewer = ({
-  logs,
-  onClose,
-}: {
-  logs: LogEntry[];
-  onClose: () => void;
-}) => (
+const AuditLogViewer = ({logs, onClose}: {logs: LogEntry[]; onClose: () => void}) => (
   <div className="space-y-6 ">
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-lg font-semibold">Security History</h2>
+      <h2 className="text-lg font-semibold">
+        {accountTwoFactorTranslate[lang].AuditLogViewer.title}
+      </h2>
       <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
         <RiCloseCircleLine className="w-5 h-5" />
       </button>
@@ -28,12 +27,9 @@ const AuditLogViewer = ({
         <div key={index} className="py-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-800">
-                {log.action.replace(/_/g, " ")}
-              </p>
+              <p className="font-medium text-gray-800">{log.action.replace(/_/g, ' ')}</p>
               <p className="text-sm text-gray-500">
-                {new Date(log.timestamp).toLocaleDateString()} •{" "}
-                {log.metadata.ipAddress}
+                {new Date(log.timestamp).toLocaleDateString()} • {log.metadata.ipAddress}
               </p>
             </div>
             <span className="text-sm text-gray-500">

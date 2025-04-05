@@ -1,12 +1,14 @@
-export const dynamic = "force-dynamic";
 // import AppError from "@/components/util/appError";
-import { headers } from "next/headers";
-import type { Metadata } from "next";
-import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import api from "@/app/lib/utilities/api";
-import Dashboard from "@/components/(admin)/dashboard/dashboard";
-import ErrorHandler from "@/components/Error/errorHandler";
+import type {Metadata} from 'next';
+import {headers} from 'next/headers';
+
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import Dashboard from '@/components/(admin)/dashboard/dashboard';
+import ErrorHandler from '@/components/Error/errorHandler';
+import {dashboardTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: dashboardTranslate.metadata[lang].title,
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
 };
 const page = async () => {
   try {
-    const { data } = await api.get("/admin/dashboard", {
+    const {data} = await api.get('/admin/dashboard', {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return <Dashboard dashboardData={data} />;

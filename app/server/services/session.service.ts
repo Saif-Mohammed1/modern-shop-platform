@@ -1,17 +1,19 @@
-import type { DeviceInfo } from "@/app/lib/types/session.types";
-import SessionModel, { type ISession } from "../models/Session.model";
-import { SessionRepository } from "../repositories/session.repository";
-import { TokensService } from "./tokens.service";
+import type {ClientSession} from 'mongoose';
+
+import type {QueryBuilderResult} from '@/app/lib/types/queryBuilder.types';
+import type {DeviceInfo} from '@/app/lib/types/session.types';
+
+import SessionModel, {type ISession} from '../models/Session.model';
+import {SessionRepository} from '../repositories/session.repository';
+
+import {TokensService} from './tokens.service';
+
 // import { SecurityAuditAction } from "@/app/lib/types/audit.types";
-import type { ClientSession } from "mongoose";
-import type { QueryBuilderResult } from "@/app/lib/types/queryBuilder.types";
 
 export class SessionService {
   constructor(
-    private readonly repository: SessionRepository = new SessionRepository(
-      SessionModel
-    ),
-    private readonly tokensService: TokensService = new TokensService()
+    private readonly repository: SessionRepository = new SessionRepository(SessionModel),
+    private readonly tokensService: TokensService = new TokensService(),
   ) {}
   async getSessions(userId: string): Promise<ISession[] | null> {
     return await this.repository.getSessions(userId);
@@ -21,7 +23,7 @@ export class SessionService {
     userId: string,
     deviceInfo: DeviceInfo,
     hashedToken: string,
-    expiresAt: Date
+    expiresAt: Date,
   ): Promise<ISession> {
     return await this.repository.createSession({
       userId,
@@ -33,23 +35,17 @@ export class SessionService {
   }
 
   async revokeSession(sessionId: string): Promise<void> {
-    this.repository.revokeSession(sessionId);
+    await this.repository.revokeSession(sessionId);
   }
 
   async revokeAllSessions(userId: string): Promise<void> {
     await this.repository.revokeAllSessions(userId);
     await this.tokensService.clearRefreshTokenCookies();
   }
-  async revokeAllSessionsByAdmin(
-    userId: string,
-    session?: ClientSession
-  ): Promise<void> {
+  async revokeAllSessionsByAdmin(userId: string, session?: ClientSession): Promise<void> {
     await this.repository.revokeAllSessions(userId, session);
   }
-  async validateRefreshToken(
-    userId: string,
-    rawToken: string
-  ): Promise<boolean> {
+  async validateRefreshToken(userId: string, rawToken: string): Promise<boolean> {
     const tokenHash = this.tokensService.hashRefreshToken(rawToken);
     const token = await this.repository.findActiveToken(userId, tokenHash);
 

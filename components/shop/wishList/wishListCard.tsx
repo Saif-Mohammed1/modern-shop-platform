@@ -1,15 +1,18 @@
 // components/ProductCard.js
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { AiFillHeart, AiOutlineShoppingCart } from "react-icons/ai";
+
+// Import cart icon
+
 import type { ProductType } from "@/app/lib/types/products.types";
-import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
-import Image from "next/image";
-import toast from "react-hot-toast";
-import { AiFillHeart, AiOutlineShoppingCart } from "react-icons/ai"; // Import cart icon
-import api from "@/app/lib/utilities/api";
-import { useRouter } from "next/navigation";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 const WishListCard = ({ product }: { product: ProductType }) => {
   // const { toggleWishlist, isInWishlist } = useWishlist();
@@ -82,12 +85,12 @@ const WishListCard = ({ product }: { product: ProductType }) => {
         {" "}
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
-          onClick={handelAddToCart}
+          onClick={() => void handelAddToCart()}
         >
           <AiOutlineShoppingCart className="text-xl" /> {/* Cart Icon */}
         </button>
         <button
-          onClick={handleWishlistClick}
+          onClick={() => void handleWishlistClick()}
           // className="mt-2 flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg"
         >
           <AiFillHeart className="text-red-500 mr-2 text-3xl" />

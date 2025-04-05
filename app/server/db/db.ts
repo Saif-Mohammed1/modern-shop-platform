@@ -39,7 +39,6 @@ const getDB = () => {
 
 export { connectDB, disconnectDB, getDB };
 */
-
 /**
  *   pre code connection  typeScript version
  
@@ -87,7 +86,48 @@ export { connectDB, disconnectDB, getDB };
 /**
  *  update pre code connection second typeScript version
  * */
-import mongoose, { Connection } from "mongoose";
+import type { Connection } from "mongoose";
+import mongoose from "mongoose";
+
+/** 
+ * pre code connection first javaScript version
+
+
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) {
+    return;
+  }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = true;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const disconnectDB = async () => {
+  if (!isConnected) {
+    return;
+  }
+  try {
+    await mongoose.disconnect();
+    isConnected = false;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getDB = () => {
+  if (!isConnected) {
+    throw new Error("No active connection to MongoDB");
+  }
+  return mongoose.connection;
+};
+
+export { connectDB, disconnectDB, getDB };
+*/
 
 if (process.env.NODE_ENV === "development") mongoose.set("debug", true);
 

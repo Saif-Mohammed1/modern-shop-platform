@@ -1,54 +1,46 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { stripe, StripeService } from "../services/stripe.service";
-import { StripeValidation } from "../dtos/stripe.dto";
-import AppError from "@/app/lib/utilities/appError";
-import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
-import { lang } from "@/app/lib/utilities/lang";
-import { LogsValidation } from "../dtos/logs.dto";
-import { ipAddress } from "@vercel/functions";
+import {ipAddress} from '@vercel/functions';
+import {type NextRequest, NextResponse} from 'next/server';
+
+import AppError from '@/app/lib/utilities/appError';
+import {lang} from '@/app/lib/utilities/lang';
+import {AuthTranslate} from '@/public/locales/server/Auth.Translate';
+
+import {LogsValidation} from '../dtos/logs.dto';
+import {StripeValidation} from '../dtos/stripe.dto';
+import {StripeService, stripe} from '../services/stripe.service';
 
 class StripeController {
-  constructor(
-    private readonly stripeService: StripeService = new StripeService()
-  ) {}
+  constructor(private readonly stripeService: StripeService = new StripeService()) {}
   async createStripeSession(req: NextRequest) {
     if (!req.user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     const ip =
-      req.headers.get("x-client-ip") ||
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
+      req.headers.get('x-client-ip') ||
+      req.headers.get('x-forwarded-for') ||
+      req.headers.get('x-real-ip') ||
       ipAddress(req) ||
-      "Unknown IP";
+      'Unknown IP';
 
-    const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
+    const userAgent = req.headers.get('user-agent') ?? 'Unknown User Agent';
     const logs = LogsValidation.validateLogs({
       ipAddress: ip,
       userAgent,
     });
     const body = await req.json();
     const result = StripeValidation.validateShippingInfo(body.shippingInfo);
-    const session = await this.stripeService.createStripeSession(
-      req.user,
-      result,
-      logs
-    );
-    return NextResponse.json(session, { status: 200 });
+    const session = await this.stripeService.createStripeSession(req.user, result, logs);
+    return NextResponse.json(session, {status: 200});
   }
   async handleWebhookEvent(req: NextRequest) {
     const payload = await req.text();
-    const signature = req.headers.get("stripe-signature")!;
+    const signature = req.headers.get('stripe-signature')!;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-    const event = stripe.webhooks.constructEvent(
-      payload,
-      signature,
-      webhookSecret
-    );
+    const event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
     await this.stripeService.handleWebhookEvent(event);
 
-    return NextResponse.json({ received: true });
+    return NextResponse.json({received: true});
   }
   // async createStripeCheckoutSession(req: NextRequest) {
   //   {

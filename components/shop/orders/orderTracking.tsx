@@ -1,25 +1,18 @@
-import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
-import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import Link from "next/link";
-import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
-import FetchMoreOrders from "./fetchMoreOrders";
+import Link from 'next/link';
 
-const UserOrderTracking = ({
-  orders,
-  hasNextPage,
-}: {
-  orders: OrderType[];
-  hasNextPage: boolean;
-}) => {
+import type {OrderStatus} from '@/app/lib/types/orders.types';
+import {type OrderType} from '@/app/lib/types/orders.types';
+import {formatCurrency} from '@/app/lib/utilities/formatCurrency';
+import {lang} from '@/app/lib/utilities/lang';
+import {accountOrdersTranslate} from '@/public/locales/client/(auth)/account/ordersTranslate';
+
+import FetchMoreOrders from './fetchMoreOrders';
+
+const UserOrderTracking = ({orders, hasNextPage}: {orders: OrderType[]; hasNextPage: boolean}) => {
   const t = accountOrdersTranslate[lang].orderTracking;
 
   if (orders.length === 0) {
-    return (
-      <p className="text-center mt-6">
-        {accountOrdersTranslate[lang].noOrdersFound}
-      </p>
-    );
+    return <p className="text-center mt-6">{accountOrdersTranslate[lang].noOrdersFound}</p>;
   }
 
   return (
@@ -45,7 +38,7 @@ const OrderCard = ({
   t,
 }: {
   order: OrderType;
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"];
+  t: (typeof accountOrdersTranslate)[typeof lang]['orderTracking'];
 }) => (
   <div className="border p-6 rounded shadow-lg bg-white">
     <h2 className="text-2xl font-bold mb-4">
@@ -53,10 +46,7 @@ const OrderCard = ({
     </h2>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <ShippingInfo
-        shippingAddress={order.shippingAddress}
-        t={t.shippingInfo}
-      />
+      <ShippingInfo shippingAddress={order.shippingAddress} t={t.shippingInfo} />
       <ItemsList items={order.items} t={t.items} />
     </div>
 
@@ -70,8 +60,8 @@ const ShippingInfo = ({
   shippingAddress,
   t,
 }: {
-  shippingAddress: OrderType["shippingAddress"];
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["shippingInfo"];
+  shippingAddress: OrderType['shippingAddress'];
+  t: (typeof accountOrdersTranslate)[typeof lang]['orderTracking']['shippingInfo'];
 }) => (
   <div>
     <h3 className="text-xl font-semibold mb-2">{t.title}</h3>
@@ -93,8 +83,8 @@ const ItemsList = ({
   items,
   t,
 }: {
-  items: OrderType["items"];
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["items"];
+  items: OrderType['items'];
+  t: (typeof accountOrdersTranslate)[typeof lang]['orderTracking']['items'];
 }) => (
   <div>
     <h3 className="text-xl font-semibold mb-2">{t.title}</h3>
@@ -110,8 +100,8 @@ const OrderItem = ({
   item,
   t,
 }: {
-  item: OrderType["items"][number];
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["items"];
+  item: OrderType['items'][number];
+  t: (typeof accountOrdersTranslate)[typeof lang]['orderTracking']['items'];
 }) => (
   <li className="border-b pb-4 mb-4 last:border-b-0 last:mb-0">
     <ItemDetail label={t.name} value={item.name} />
@@ -119,21 +109,13 @@ const OrderItem = ({
     <ItemDetail label={t.price} value={formatCurrency(item.price)} />
     <ItemDetail
       label={t.discount}
-      value={
-        item.discount > 0 ? formatCurrency(item.discount) : t.existDiscount
-      }
+      value={item.discount > 0 ? formatCurrency(item.discount) : t.existDiscount}
     />
     <ItemDetail label={t.finalPrice} value={formatCurrency(item.finalPrice)} />
   </li>
 );
 
-const ItemDetail = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) => (
+const ItemDetail = ({label, value}: {label: string; value: string | number}) => (
   <p>
     <span className="font-bold">{label}:</span> {value}
   </p>
@@ -146,7 +128,7 @@ const OrderStatusSection = ({
 }: {
   status: OrderStatus;
   order: OrderType;
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["orderStatus"];
+  t: (typeof accountOrdersTranslate)[typeof lang]['orderTracking']['orderStatus'];
 }) => (
   <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
     <div className="w-full sm:w-1/2">
@@ -157,10 +139,7 @@ const OrderStatusSection = ({
       <h3 className="text-xl font-semibold mb-2">{t.totalPrice}</h3>
       <span className="block">{formatCurrency(totalPrice)}</span>
     </div> */}
-    <OrderSummary
-      order={order}
-      t={accountOrdersTranslate[lang]["orderCompleted"]["summery"]}
-    />
+    <OrderSummary order={order} t={accountOrdersTranslate[lang]['orderCompleted']['summery']} />
   </div>
 );
 
@@ -169,7 +148,7 @@ const InvoiceSection = ({
   t,
 }: {
   invoiceLink: string;
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["invoice"];
+  t: (typeof accountOrdersTranslate)[typeof lang]['orderTracking']['invoice'];
 }) => (
   <div className="mt-6">
     <h3 className="text-xl font-semibold mb-2">{t.title}</h3>
@@ -189,21 +168,18 @@ const OrderSummary = ({
   t,
 }: {
   order: OrderType;
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderCompleted"]["summery"];
+  t: (typeof accountOrdersTranslate)[typeof lang]['orderCompleted']['summery'];
 }) => (
   <div className="border-t border-gray-200 pt-4">
     <p className="text-lg mb-4">
-      {t.subtotal}:{" "}
-      <span className="font-semibold">{formatCurrency(order.subtotal)}</span>
+      {t.subtotal}: <span className="font-semibold">{formatCurrency(order.subtotal)}</span>
     </p>
 
     <p className="text-lg mb-4 border-b border-gray-200 pb-4">
-      {t.tax}:{" "}
-      <span className="font-semibold">{formatCurrency(order.tax)}</span>
+      {t.tax}: <span className="font-semibold">{formatCurrency(order.tax)}</span>
     </p>
     <p className="text-lg mb-4 border-b border-gray-200 pb-4">
-      {t.totalAmount}:{" "}
-      <span className="font-semibold">{formatCurrency(order.total)}</span>
+      {t.totalAmount}: <span className="font-semibold">{formatCurrency(order.total)}</span>
     </p>
   </div>
 );

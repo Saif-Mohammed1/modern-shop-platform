@@ -1,12 +1,14 @@
-"use client";
-import Link from "next/link";
-import { useCartItems } from "../providers/context/cart/cart.context";
-import CartDropdown from "../cart/cartDropdown";
-import AccountDropdown from "./ accountDropdown";
+'use client';
+
+import Link from 'next/link';
+
+import CartDropdown from '../cart/cartDropdown';
+import {useCartItems} from '../providers/context/cart/cart.context';
+
+import AccountDropdown from './ accountDropdown';
 
 const NavBar = () => {
-  const { isCartOpen, toggleCartStatus, setIsCartOpen, cartItems } =
-    useCartItems(); // get the cartItemsCount from context
+  const {isCartOpen, toggleCartStatus, setIsCartOpen, cartItems} = useCartItems(); // get the cartItemsCount from context
 
   const toggleCart = () => {
     toggleCartStatus();
@@ -21,9 +23,7 @@ const NavBar = () => {
       {/* Account Dropdown */}
       <AccountDropdown cartItems={cartItems} toggleCart={toggleCart} />
       {/* Cart Dropdown */}
-      {isCartOpen && (
-        <CartDropdown cartItems={cartItems} setIsCartOpen={setIsCartOpen} />
-      )}
+      {isCartOpen ? <CartDropdown cartItems={cartItems} setIsCartOpen={setIsCartOpen} /> : null}
     </nav>
   );
 };

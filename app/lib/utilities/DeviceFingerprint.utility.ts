@@ -1,39 +1,40 @@
-import { type NextRequest } from "next/server";
+import crypto from 'crypto';
 
-import DeviceDetector from "device-detector-js"; // 725.2K (gzipped: 168.3K)
-import crypto from "crypto";
-import type { DeviceInfo, GeoLocation } from "../types/session.types";
-import { TokensService } from "@/app/server/services/tokens.service";
-import { ipAddress } from "@vercel/functions";
-import logger from "../logger/logs";
+import {ipAddress} from '@vercel/functions';
+import DeviceDetector from 'device-detector-js';
+// 725.2K (gzipped: 168.3K)
+import {type NextRequest} from 'next/server';
+
+import {TokensService} from '@/app/server/services/tokens.service';
+
+import logger from '../logger/logs';
+import type {DeviceInfo, GeoLocation} from '../types/session.types';
+
 const tokensService = new TokensService();
-export const getDeviceFingerprint = async (
-  req: NextRequest
-): Promise<DeviceInfo> => {
-  const userAgent = req.headers.get("user-agent") || "";
+export const getDeviceFingerprint = async (req: NextRequest): Promise<DeviceInfo> => {
+  const userAgent = req.headers.get('user-agent') || '';
   const deviceDetector = new DeviceDetector();
   const result = deviceDetector.parse(userAgent);
   const clientIp =
-    req.headers.get("x-client-ip") ||
-    req.headers.get("x-forwarded-for") ||
-    req.headers.get("x-real-ip") ||
+    req.headers.get('x-client-ip') ||
+    req.headers.get('x-forwarded-for') ||
+    req.headers.get('x-real-ip') ||
     ipAddress(req) ||
-    "Unknown IP";
+    'Unknown IP';
 
   const hashedIp = tokensService.hashIpAddress(clientIp);
   const deviceFingerprint = generateDeviceFingerprint({
     userAgent,
     ip: clientIp,
-    os: result.os?.name || "Unknown OS",
-    browser: result.client?.name || "Unknown Browser",
-    device: result.device?.type || "Desktop",
+    os: result.os?.name || 'Unknown OS',
+    browser: result.client?.name || 'Unknown Browser',
+    device: result.device?.type || 'Desktop',
   });
-  const { city, country, latitude, longitude } =
-    await getLocationFromIp(clientIp);
+  const {city, country, latitude, longitude} = await getLocationFromIp(clientIp);
   return {
-    os: result.os?.name || "Unknown OS",
-    browser: result.client?.name || "Unknown Browser",
-    device: result.device?.type || "Desktop",
+    os: result.os?.name || 'Unknown OS',
+    browser: result.client?.name || 'Unknown Browser',
+    device: result.device?.type || 'Desktop',
     brand: result.device?.brand || undefined,
     model: result.device?.model || undefined,
     isBot: !!result.bot,
@@ -44,15 +45,13 @@ export const getDeviceFingerprint = async (
       country,
       latitude,
       longitude,
-      source: "ip",
+      source: 'ip',
     },
   };
 };
 
-export const generateDeviceFingerprint = (
-  data: Record<string, string>
-): string => {
-  return crypto.createHash("sha256").update(JSON.stringify(data)).digest("hex");
+export const generateDeviceFingerprint = (data: Record<string, string>): string => {
+  return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
 };
 
 // export const getLocationFromIp = async (ip: string): Promise<string> => {
@@ -77,9 +76,7 @@ export const generateDeviceFingerprint = (
 //     return "Unknown Location";
 //   }
 // };
-export const getLocationFromIp = async (
-  ip: string
-): Promise<Omit<GeoLocation, "source">> => {
+export const getLocationFromIp = async (ip: string): Promise<Omit<GeoLocation, 'source'>> => {
   const apis = [
     `http://ip-api.com/json/${ip}`, // Unlimited for non-commercial use
     `https://ipwhois.app/json/${ip}`, // 10,000 requests/month
@@ -88,33 +85,26 @@ export const getLocationFromIp = async (
     `https://api.ipbase.com/v1/json/${ip}`, // May require key
   ];
 
-  const fetchLocation = async (
-    index: number
-  ): Promise<Omit<GeoLocation, "source">> => {
+  const fetchLocation = async (index: number): Promise<Omit<GeoLocation, 'source'>> => {
     if (index >= apis.length)
       return {
-        city: "Unknown City",
-        country: "Unknown Country",
+        city: 'Unknown City',
+        country: 'Unknown Country',
         latitude: 0,
         longitude: 0,
       };
 
     try {
       const response = await fetch(apis[index]);
-      if (!response.ok) throw new Error("API request failed");
+      if (!response.ok) throw new Error('API request failed');
 
       const data = await response.json();
-      const city = data.city || data.location?.city || "Unknown City";
+      const city = data.city || data.location?.city || 'Unknown City';
       const country =
-        data.country_name ||
-        data.country ||
-        data.location?.country ||
-        "Unknown Country";
+        data.country_name || data.country || data.location?.country || 'Unknown Country';
 
-      const latitude =
-        data.lat || data.latitude || data.loc?.split(",")[0] || 0;
-      const longitude =
-        data.lon || data.longitude || data.loc?.split(",")[1] || 0;
+      const latitude = data.lat || data.latitude || data.loc?.split(',')[0] || 0;
+      const longitude = data.lon || data.longitude || data.loc?.split(',')[1] || 0;
       return {
         city,
         country,

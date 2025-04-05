@@ -1,9 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
-import AppError from "@/app/lib/utilities/appError";
-import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { z } from "zod";
-import { logRequestError } from "@/app/lib/logger/logs";
+import {type NextRequest, NextResponse} from 'next/server';
+import {z} from 'zod';
+
+import {logRequestError} from '@/app/lib/logger/logs';
+import AppError from '@/app/lib/utilities/appError';
+import {lang} from '@/app/lib/utilities/lang';
+
+import {errorControllerTranslate} from '../../../public/locales/server/errorControllerTranslate';
 
 // Type definitions
 interface CastError {
@@ -17,10 +19,7 @@ interface DuplicateFieldsError {
 
 interface ValidationError {
   _message: string;
-  errors: Record<
-    string,
-    { properties: { type: string; path: string; value: any } }
-  >;
+  errors: Record<string, {properties: {type: string; path: string; value: any}}>;
 }
 
 // Zod Error Handler
@@ -34,23 +33,20 @@ const handleZodValidationError = (err: z.ZodError): AppError => {
 
     return issue.message;
   });
-  return new AppError(errors.join("; "), 400);
+  return new AppError(errors.join('; '), 400);
 };
 // Database Error Handlers
 const handleCastErrorDB = (err: CastError): AppError => {
   const message = errorControllerTranslate[lang].controllers.handleCastErrorDB(
     err.path,
-    err.value
+    err.value,
   ).message;
   return new AppError(message, 400);
 };
 
 const handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
-  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || "unknown value";
-  const message =
-    errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(
-      value
-    ).message;
+  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || 'unknown value';
+  const message = errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(value).message;
   return new AppError(message, 400);
 };
 
@@ -68,7 +64,7 @@ const handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
 //   return new AppError(errors.join("; "), 400);
 // };
 const handleValidationErrorDB = (err: ValidationError) => {
-  const schemaName = err._message.split(" ")[0].toLowerCase() ?? " ";
+  const schemaName = err._message.split(' ')[0].toLowerCase() ?? ' ';
   const errors = Object.values(err.errors).map((el: any) => {
     const type = el.properties.type; //u need to check this if exist in error object
     const path = el.properties.path;
@@ -78,7 +74,7 @@ const handleValidationErrorDB = (err: ValidationError) => {
       errorControllerTranslate[lang].controllers.handleValidationErrorDB as any
     )[schemaName];
 
-    let message = "An error occurred";
+    let message = 'An error occurred';
 
     if (schemaErrors && schemaErrors[path] && schemaErrors[path][type]) {
       message = schemaErrors[path][type];
@@ -87,20 +83,16 @@ const handleValidationErrorDB = (err: ValidationError) => {
     return message;
   });
 
-  return new AppError(errors.join(","), 400);
+  return new AppError(errors.join(','), 400);
 };
 // JWT Handlers
 const createAuthError = (
   // translationKey: keyof (typeof errorControllerTranslate)[typeof lang]["controllers"]
-  translationKey: "handleJWTError" | "handleJWTExpiredError"
-) =>
-  new AppError(
-    errorControllerTranslate[lang].controllers[translationKey].message,
-    401
-  );
+  translationKey: 'handleJWTError' | 'handleJWTExpiredError',
+) => new AppError(errorControllerTranslate[lang].controllers[translationKey].message, 401);
 
-const handleJWTError = () => createAuthError("handleJWTError");
-const handleJWTExpiredError = () => createAuthError("handleJWTExpiredError");
+const handleJWTError = () => createAuthError('handleJWTError');
+const handleJWTExpiredError = () => createAuthError('handleJWTExpiredError');
 
 // Error Response Formatters
 const createErrorResponse = (err: AppError, includeDetails: boolean) =>
@@ -108,29 +100,27 @@ const createErrorResponse = (err: AppError, includeDetails: boolean) =>
     {
       status: err.status,
       message: err.message,
-      ...(includeDetails && { stack: err.stack }),
+      ...(includeDetails && {stack: err.stack}),
     },
-    { status: err.statusCode }
+    {status: err.statusCode},
   );
 
 // Environment-specific Handlers
 const sendErrorDev = (err: AppError, req: NextRequest) => {
-  if (err.name === "ZodError") return createErrorResponse(err, true);
-  return createErrorResponse(err, req.nextUrl.pathname.startsWith("/api/"));
+  if (err.name === 'ZodError') return createErrorResponse(err, true);
+  return createErrorResponse(err, req.nextUrl.pathname.startsWith('/api/'));
 };
 
 const sendErrorProd = (err: AppError) => {
   // Log operational errors for monitoring
-  if (!err.isOperational) console.error("ERROR 💥", err);
+  if (!err.isOperational) console.error('ERROR 💥', err);
 
   return NextResponse.json(
     {
       status: err.status,
-      message: err.isOperational
-        ? err.message
-        : errorControllerTranslate[lang].errors.globalError,
+      message: err.isOperational ? err.message : errorControllerTranslate[lang].errors.globalError,
     },
-    { status: err.statusCode }
+    {status: err.statusCode},
   );
 };
 
@@ -142,23 +132,23 @@ const ErrorHandler = (error: any, req: NextRequest): NextResponse => {
       : new AppError(
           error.message || errorControllerTranslate[lang].errors.globalError,
 
-          error.statusCode || 500
+          error.statusCode || 500,
         );
 
   if (error instanceof z.ZodError) {
     err = handleZodValidationError(error);
   }
-  if (error.name === "JsonWebTokenError") err = handleJWTError();
-  if (error.name === "TokenExpiredError") err = handleJWTExpiredError();
+  if (error.name === 'JsonWebTokenError') err = handleJWTError();
+  if (error.name === 'TokenExpiredError') err = handleJWTExpiredError();
   // Production error processing
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === 'production') {
     if (error instanceof z.ZodError) {
       err = handleZodValidationError(error);
     }
 
-    if (error.name === "CastError") err = handleCastErrorDB(error);
+    if (error.name === 'CastError') err = handleCastErrorDB(error);
     if (error.code === 11000) err = handleDuplicateFieldsDB(error);
-    if (error.name === "ValidationError") err = handleValidationErrorDB(error);
+    if (error.name === 'ValidationError') err = handleValidationErrorDB(error);
     // if (error.name === "JsonWebTokenError") err = handleJWTError();
     // if (error.name === "TokenExpiredError") err = handleJWTExpiredError();
     // Log errors
@@ -166,9 +156,7 @@ const ErrorHandler = (error: any, req: NextRequest): NextResponse => {
     logRequestError(err, req);
   }
 
-  return process.env.NODE_ENV === "development"
-    ? sendErrorDev(err, req)
-    : sendErrorProd(err);
+  return process.env.NODE_ENV === 'development' ? sendErrorDev(err, req) : sendErrorProd(err);
 };
 
 // Utility Type Export

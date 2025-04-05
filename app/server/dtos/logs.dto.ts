@@ -1,8 +1,9 @@
-import { AuditSource } from "@/app/lib/types/audit.types";
-import { lang } from "@/app/lib/utilities/lang";
-import { ProductTranslate } from "@/public/locales/server/Product.Translate";
-import type { IpVersion } from "zod";
-import { z } from "zod";
+import type {IpVersion} from 'zod';
+import {z} from 'zod';
+
+import {AuditSource} from '@/app/lib/types/audit.types';
+import {lang} from '@/app/lib/utilities/lang';
+import {ProductTranslate} from '@/public/locales/server/Product.Translate';
 
 export class LogsValidation {
   static LogsSchema = z.object({
@@ -11,7 +12,7 @@ export class LogsValidation {
         required_error: ProductTranslate[lang].dto.ipAddress.required,
       })
       .ip({
-        version: "v4" as IpVersion,
+        version: 'v4' as IpVersion,
         message: ProductTranslate[lang].dto.ipAddress.invalid,
       }),
     userAgent: z

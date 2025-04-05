@@ -1,16 +1,19 @@
-import AppError from "@/app/lib/utilities/appError";
-import CartModel from "../models/Cart.model";
-import { CartRepository } from "../repositories/cart.repository";
-import { ProductService } from "./product.service";
-import { CartTranslate } from "@/public/locales/server/Cart.Translate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { localCartDto } from "../dtos/cart.dto";
-import type { ClientSession } from "mongoose";
+import type {ClientSession} from 'mongoose';
+
+import AppError from '@/app/lib/utilities/appError';
+import {lang} from '@/app/lib/utilities/lang';
+import {CartTranslate} from '@/public/locales/server/Cart.Translate';
+
+import type {localCartDto} from '../dtos/cart.dto';
+import CartModel from '../models/Cart.model';
+import {CartRepository} from '../repositories/cart.repository';
+
+import {ProductService} from './product.service';
 
 export class CartService {
   constructor(
     private readonly repository: CartRepository = new CartRepository(CartModel),
-    private readonly productService: ProductService = new ProductService()
+    private readonly productService: ProductService = new ProductService(),
   ) {}
 
   async getMyCart(userId: string) {
@@ -26,10 +29,7 @@ export class CartService {
       return await this.repository.addToCart(userId, productId);
     }
     if (existingProduct.stock < quantity) {
-      throw new AppError(
-        CartTranslate[lang].errors.insufficientStock(existingProduct.name),
-        400
-      );
+      throw new AppError(CartTranslate[lang].errors.insufficientStock(existingProduct.name), 400);
     }
     return await this.repository.increaseQuantity(userId, productId, quantity);
   }
@@ -80,7 +80,7 @@ export class CartService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
   async deleteManyByProductId(userId: string, productId: string[]) {

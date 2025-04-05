@@ -1,14 +1,16 @@
-import AppError from "@/app/lib/utilities/appError";
-import Stripe from "stripe";
-import Product from "../models/Product.model";
-import Order from "../models/Order.model";
-// import { sendEmailWithInvoice } from "@/app/lib/utilities/email";
 import { headers } from "next/headers";
-import User from "../models/User.model";
 import type { NextRequest } from "next/server";
-import { stripeControllerTranslate } from "../../../public/locales/server/stripeControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import Stripe from "stripe";
+
 import type { ProductType } from "@/app/lib/types/products.types";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+
+import { stripeControllerTranslate } from "../../../public/locales/server/stripeControllerTranslate";
+import Order from "../models/Order.model";
+import Product from "../models/Product.model";
+import User from "../models/User.model";
+
 // import type { UserAuthType } from "@/app/lib/types/users.types";
 const stripe = new Stripe(process.env.STRIPE_SECRET as string); // Replace `process.env.STRIPE_SECRET_KEY` with your actual secret key
 const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
@@ -18,201 +20,190 @@ type ItemType = {
 const taxRateCache = new Map<string, Stripe.TaxRate>();
 
 export const createStripeProduct = async (req: NextRequest) => {
-  try {
-    const { products, shippingInfo } = await req.json();
-    if (!shippingInfo) {
-      throw new AppError(
-        stripeControllerTranslate[
-          lang
-        ].functions.createStripeProduct.shippingInfo.noShippingInfo,
-        400
-      );
-    }
-    if (products.length === 0) {
-      throw new AppError(
-        stripeControllerTranslate[
-          lang
-        ].functions.createStripeProduct.products.noProducts,
-        400
-      );
-    }
-    const countryCode =
-      shippingInfo.country.toUpperCase() || "Ukraine".toUpperCase();
-
-    let taxRate = taxRateCache.get(countryCode);
-
-    // Assuming 'products' is an array of product objects from the request body
-    // Optionally, create a new tax rate or use an existing tax rate ID
-    if (!taxRate) {
-      taxRate = await stripe.taxRates.create({
-        display_name: "Standard Tax",
-        description: feePercentage + "% Sales Tax",
-        jurisdiction: countryCode,
-
-        percentage: feePercentage,
-        inclusive: false, // false means the tax is added on top of the pricing
-      });
-      taxRateCache.set(countryCode, taxRate);
-    }
-    // const shippingRates = {
-    //   USA: 500, // $5.00 in cents
-    //   Egypt: 1500, // $15.00 in cents
-    //   India: 1300, // $13.00 in cents
-    //   Brazil: 1200, // $12.00 in cents
-    //   UK: 700, // $7.00 in cents
-    //   Germany: 800, // $8.00 in cents
-    //   Australia: 1500, // $15.00 in cents
-    //   Japan: 1000, // $10.00 in cents
-    //   Canada: 500, // $5.00 in cents
-    //   "South Africa": 1400, // $14.00 in cents
-    //   default: 1000, // $10.00 in cents if country is not listed
-    // };
-
-    // Get the country specific shipping rate, or the default rate if country is not listed
-    // const shippingCost =
-    //   shippingRates[shippingInfo.country] || shippingRates["default"];
-
-    const lineItemsPromises = products.map(async (item: ItemType) => {
-      let product = await Product.findById(item._id);
-      if (!product) {
-        throw new AppError(
-          stripeControllerTranslate[
-            lang
-          ].functions.createStripeProduct.productNotAvailableAnymore(item.name),
-          // `Product ${item.name} is not available anymore please remove it from your cart for success payment `,
-          400
-        );
-      }
-      if (product.stock < item.quantity) {
-        throw new AppError(
-          stripeControllerTranslate[
-            lang
-          ].functions.createStripeProduct.insufficientStock(item.name),
-          400
-        );
-      }
-
-      if (product) {
-        const unitAmount = Math.round(
-          (product.discount &&
-          product.discountExpire &&
-          product.discountExpire > new Date()
-            ? product.price - product.discount
-            : product.price) * 100
-        ); // Convert dollars to cents
-        const id = product?._id.toString();
-        const images = item.images.length > 0 ? [item.images[0].link] : [];
-        return {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              images,
-              metadata: { _id: id },
-            },
-            unit_amount: unitAmount,
-          },
-          quantity: item.quantity,
-          tax_rates: [taxRate.id], // Attach the tax rate to each line item
-        };
-      }
-    });
-    const lineItems = await Promise.all(lineItemsPromises);
-    // lineItems.push({
-    //   price_data: {
-    //     currency: "usd",
-    //     product_data: {
-    //       name: `Shipping to ${shippingInfo.country}`,
-    //       metadata: {
-    //         description: `Shipping costs for ${shippingInfo.country}`,
-    //       },
-    //     },
-    //     unit_amount: shippingCost,
-    //   },
-    //   quantity: 1,
-    // });
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"], //, "alipay", "ideal", "sepa_debit", "paypal"],
-      customer_email: req.user?.email,
-      client_reference_id: req.user?._id.toString(), // This ensures receipt emails are set up
-      line_items: lineItems.filter(Boolean),
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/account/orders/success`, //?session_id={CHECKOUT_SESSION_ID},
-      cancel_url: `${req.headers.get("origin")}/account/orders/cancel`,
-      payment_intent_data: {
-        receipt_email: req.user?.email,
-        shipping: {
-          name: req.user?.name ?? "Unknown",
-          address: {
-            line1: shippingInfo.street,
-            city: shippingInfo.city,
-            state: shippingInfo.state,
-            postal_code: shippingInfo.postalCode,
-            country: shippingInfo.country,
-          },
-        },
-      },
-
-      metadata: {
-        // shipping_info: `Shipping cost: $${(shippingCost / 100).toFixed(2)} to ${
-        //   shippingInfo.country
-        // }`,
-        shippingInfo: JSON.stringify(shippingInfo),
-      },
-      invoice_creation: {
-        enabled: true,
-        invoice_data: {
-          custom_fields: [
-            {
-              name: stripeControllerTranslate[lang].functions.invoiceDetails
-                .custom_fields.name,
-              value:
-                stripeControllerTranslate[lang].functions.invoiceDetails
-                  .custom_fields.value,
-            },
-          ],
-          description:
-            stripeControllerTranslate[lang].functions.invoiceDetails
-              .description,
-          footer:
-            stripeControllerTranslate[lang].functions.invoiceDetails.footer +
-            process.env.COMPANY_MAIL,
-          // You can add other fields as needed
-        },
-      },
-    });
-    return {
-      sessionId: session.id,
-      url: session.url,
-      statusCode: 200,
-    };
-  } catch (error) {
-    throw error; // throw new AppError("Error creating products", 500);
+  const { products, shippingInfo } = await req.json();
+  if (!shippingInfo) {
+    throw new AppError(
+      stripeControllerTranslate[
+        lang
+      ].functions.createStripeProduct.shippingInfo.noShippingInfo,
+      400
+    );
   }
+  if (products.length === 0) {
+    throw new AppError(
+      stripeControllerTranslate[
+        lang
+      ].functions.createStripeProduct.products.noProducts,
+      400
+    );
+  }
+  const countryCode =
+    shippingInfo.country.toUpperCase() || "Ukraine".toUpperCase();
+
+  let taxRate = taxRateCache.get(countryCode);
+
+  // Assuming 'products' is an array of product objects from the request body
+  // Optionally, create a new tax rate or use an existing tax rate ID
+  if (!taxRate) {
+    taxRate = await stripe.taxRates.create({
+      display_name: "Standard Tax",
+      description: feePercentage + "% Sales Tax",
+      jurisdiction: countryCode,
+
+      percentage: feePercentage,
+      inclusive: false, // false means the tax is added on top of the pricing
+    });
+    taxRateCache.set(countryCode, taxRate);
+  }
+  // const shippingRates = {
+  //   USA: 500, // $5.00 in cents
+  //   Egypt: 1500, // $15.00 in cents
+  //   India: 1300, // $13.00 in cents
+  //   Brazil: 1200, // $12.00 in cents
+  //   UK: 700, // $7.00 in cents
+  //   Germany: 800, // $8.00 in cents
+  //   Australia: 1500, // $15.00 in cents
+  //   Japan: 1000, // $10.00 in cents
+  //   Canada: 500, // $5.00 in cents
+  //   "South Africa": 1400, // $14.00 in cents
+  //   default: 1000, // $10.00 in cents if country is not listed
+  // };
+
+  // Get the country specific shipping rate, or the default rate if country is not listed
+  // const shippingCost =
+  //   shippingRates[shippingInfo.country] || shippingRates["default"];
+
+  const lineItemsPromises = products.map(async (item: ItemType) => {
+    let product = await Product.findById(item._id);
+    if (!product) {
+      throw new AppError(
+        stripeControllerTranslate[
+          lang
+        ].functions.createStripeProduct.productNotAvailableAnymore(item.name),
+        // `Product ${item.name} is not available anymore please remove it from your cart for success payment `,
+        400
+      );
+    }
+    if (product.stock < item.quantity) {
+      throw new AppError(
+        stripeControllerTranslate[
+          lang
+        ].functions.createStripeProduct.insufficientStock(item.name),
+        400
+      );
+    }
+
+    if (product) {
+      const unitAmount = Math.round(
+        (product.discount &&
+        product.discountExpire &&
+        product.discountExpire > new Date()
+          ? product.price - product.discount
+          : product.price) * 100
+      ); // Convert dollars to cents
+      const id = product?._id.toString();
+      const images = item.images.length > 0 ? [item.images[0].link] : [];
+      return {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: product.name,
+            images,
+            metadata: { _id: id },
+          },
+          unit_amount: unitAmount,
+        },
+        quantity: item.quantity,
+        tax_rates: [taxRate.id], // Attach the tax rate to each line item
+      };
+    }
+    return null;
+  });
+  const lineItems = await Promise.all(lineItemsPromises);
+  // lineItems.push({
+  //   price_data: {
+  //     currency: "usd",
+  //     product_data: {
+  //       name: `Shipping to ${shippingInfo.country}`,
+  //       metadata: {
+  //         description: `Shipping costs for ${shippingInfo.country}`,
+  //       },
+  //     },
+  //     unit_amount: shippingCost,
+  //   },
+  //   quantity: 1,
+  // });
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"], //, "alipay", "ideal", "sepa_debit", "paypal"],
+    customer_email: req.user?.email,
+    client_reference_id: req.user?._id.toString(), // This ensures receipt emails are set up
+    line_items: lineItems.filter(Boolean),
+    mode: "payment",
+    success_url: `${req.headers.get("origin")}/account/orders/success`, //?session_id={CHECKOUT_SESSION_ID},
+    cancel_url: `${req.headers.get("origin")}/account/orders/cancel`,
+    payment_intent_data: {
+      receipt_email: req.user?.email,
+      shipping: {
+        name: req.user?.name ?? "Unknown",
+        address: {
+          line1: shippingInfo.street,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          postal_code: shippingInfo.postalCode,
+          country: shippingInfo.country,
+        },
+      },
+    },
+
+    metadata: {
+      // shipping_info: `Shipping cost: $${(shippingCost / 100).toFixed(2)} to ${
+      //   shippingInfo.country
+      // }`,
+      shippingInfo: JSON.stringify(shippingInfo),
+    },
+    invoice_creation: {
+      enabled: true,
+      invoice_data: {
+        custom_fields: [
+          {
+            name: stripeControllerTranslate[lang].functions.invoiceDetails
+              .custom_fields.name,
+            value:
+              stripeControllerTranslate[lang].functions.invoiceDetails
+                .custom_fields.value,
+          },
+        ],
+        description:
+          stripeControllerTranslate[lang].functions.invoiceDetails.description,
+        footer:
+          stripeControllerTranslate[lang].functions.invoiceDetails.footer +
+          process.env.COMPANY_MAIL,
+        // You can add other fields as needed
+      },
+    },
+  });
+  return {
+    sessionId: session.id,
+    url: session.url,
+    statusCode: 200,
+  };
 };
 
 export const handleStripeWebhook = async (req: NextRequest) => {
   // const sig = req.headers["stripe-signature"];
   let event;
 
-  try {
-    const signature = (await headers()).get("stripe-signature");
-    if (!signature) {
-      throw Error;
-    }
-    const text = await req.text();
-
-    event = stripe.webhooks.constructEvent(
-      text, // Ensure you have access to the raw body in your request
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET as string
-    );
-  } catch (err) {
-    throw new AppError(
-      stripeControllerTranslate[lang].functions.handleStripeWebhook.error,
-      400
-    );
+  const signature = (await headers()).get("stripe-signature");
+  if (!signature) {
+    throw Error;
   }
+  const text = await req.text();
+
+  event = stripe.webhooks.constructEvent(
+    text, // Ensure you have access to the raw body in your request
+    signature,
+    process.env.STRIPE_WEBHOOK_SECRET as string
+  );
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
@@ -227,126 +218,110 @@ export const handleStripeWebhook = async (req: NextRequest) => {
 };
 
 const captureSuccessPayment = async (sessionId: string) => {
-  let order;
-  try {
-    const session = await stripe.checkout.sessions.retrieve(
-      sessionId
-      //    {
-      //   expand: ["line_items"],
-      // }
-    );
-
-    if (session.payment_status === "paid") {
-      const lineItems = await stripe.checkout.sessions.listLineItems(
-        session.id,
-        {
-          expand: ["data.price.product"],
-        }
-      );
-
-      const user = await User.findById(session.client_reference_id);
-
-      if (!user) {
-        throw new AppError(
-          stripeControllerTranslate[lang].errors.noUserFound,
-          400
-        );
-      }
-
-      const invoiceDe = await stripe.invoices.retrieve(
-        session.invoice as string
-      );
-      // const existingInvoice = await Order.findOne({
-      //   invoiceId: invoiceDe.number,
-      //   user: user._id,
-      // });
-
-      // const productsId = [];
-      const items = [];
-      // if (!existingInvoice) {
-      for (const item of lineItems.data) {
-        const productId = (item?.price?.product as Stripe.Product).metadata._id; // Assuming you stored _id in metadata
-        const quantity = item.quantity ?? 1;
-        const product = await Product.findById(productId);
-
-        if (product) {
-          const discountExpire =
-            product.discountExpire && product.discountExpire < new Date()
-              ? null
-              : product.discountExpire;
-
-          const discount =
-            product.discount && discountExpire ? product.discount : 0;
-          product.stock -= quantity;
-          // productsId.push(productId);
-
-          items.push({
-            _id: product._id,
-            name: product.name,
-            quantity: quantity,
-            price: product.price,
-            discount,
-            finalPrice: discount
-              ? product.price - (product.discount ?? 0)
-              : product.price,
-            discountExpire,
-          });
-          await product.save();
-        }
-      }
-      const totalPrice = items.reduce(
-        (total, item) => total + item.finalPrice * (item.quantity ?? 1),
-        0
-      );
-
-      const feeDecimal = feePercentage / 100;
-
-      const fee = totalPrice * feeDecimal;
-      const finalTotalPrice = totalPrice + fee;
-      const existingShippingInfo = session?.metadata?.shippingInfo ?? null;
-      const shippingInfo = existingShippingInfo
-        ? JSON.parse(existingShippingInfo)
-        : {
-            street: "",
-            city: "",
-            state: "",
-            postalCode: "",
-            phone: "",
-            country: "",
-          };
-
-      order = await Order.create({
-        user: user?._id,
-        invoiceId: invoiceDe.number,
-        invoiceLink: invoiceDe.hosted_invoice_url,
-        // amount: session.amount_total / 100,
-        totalPrice: finalTotalPrice,
-        items,
-        shippingInfo: {
-          street: shippingInfo.street,
-          city: shippingInfo.city,
-          state: shippingInfo.state,
-          postalCode: shippingInfo.postalCode,
-          phone: shippingInfo.phone,
-          country: shippingInfo.country,
-        },
-      });
-      // user.twoFactorEnabled = false;
-      // await sendEmailWithInvoice(user, invoiceDe.hosted_invoice_url as string);
-      return { session, statusCode: 200 };
-    }
-    // } else {
-    throw new AppError(
-      stripeControllerTranslate[lang].errors.failedPayment,
-      400
-    );
+  const session = await stripe.checkout.sessions.retrieve(
+    sessionId
+    //    {
+    //   expand: ["line_items"],
     // }
-  } catch (error) {
-    if (order) {
-      await Order.findByIdAndDelete(order._id);
+  );
+
+  if (session.payment_status === "paid") {
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+      expand: ["data.price.product"],
+    });
+
+    const user = await User.findById(session.client_reference_id);
+
+    if (!user) {
+      throw new AppError(
+        stripeControllerTranslate[lang].errors.noUserFound,
+        400
+      );
     }
-    throw error;
+
+    const invoiceDe = await stripe.invoices.retrieve(session.invoice as string);
+    // const existingInvoice = await Order.findOne({
+    //   invoiceId: invoiceDe.number,
+    //   user: user._id,
+    // });
+
+    // const productsId = [];
+    const items = [];
+    // if (!existingInvoice) {
+    for (const item of lineItems.data) {
+      const productId = (item?.price?.product as Stripe.Product).metadata._id; // Assuming you stored _id in metadata
+      const quantity = item.quantity ?? 1;
+      const product = await Product.findById(productId);
+
+      if (product) {
+        const discountExpire =
+          product.discountExpire && product.discountExpire < new Date()
+            ? null
+            : product.discountExpire;
+
+        const discount =
+          product.discount && discountExpire ? product.discount : 0;
+        product.stock -= quantity;
+        // productsId.push(productId);
+
+        items.push({
+          _id: product._id,
+          name: product.name,
+          quantity: quantity,
+          price: product.price,
+          discount,
+          finalPrice: discount
+            ? product.price - (product.discount ?? 0)
+            : product.price,
+          discountExpire,
+        });
+        await product.save();
+      }
+    }
+    const totalPrice = items.reduce(
+      (total, item) => total + item.finalPrice * (item.quantity ?? 1),
+      0
+    );
+
+    const feeDecimal = feePercentage / 100;
+
+    const fee = totalPrice * feeDecimal;
+    const finalTotalPrice = totalPrice + fee;
+    const existingShippingInfo = session?.metadata?.shippingInfo ?? null;
+    const shippingInfo = existingShippingInfo
+      ? JSON.parse(existingShippingInfo)
+      : {
+          street: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          phone: "",
+          country: "",
+        };
+
+    await Order.create({
+      user: user?._id,
+      invoiceId: invoiceDe.number,
+      invoiceLink: invoiceDe.hosted_invoice_url,
+      // amount: session.amount_total / 100,
+      totalPrice: finalTotalPrice,
+      items,
+      shippingInfo: {
+        street: shippingInfo.street,
+        city: shippingInfo.city,
+        state: shippingInfo.state,
+        postalCode: shippingInfo.postalCode,
+        phone: shippingInfo.phone,
+        country: shippingInfo.country,
+      },
+    });
+    // user.twoFactorEnabled = false;
+    // await sendEmailWithInvoice(user, invoiceDe.hosted_invoice_url as string);
+    return { session, statusCode: 200 };
   }
+  // } else {
+  throw new AppError(stripeControllerTranslate[lang].errors.failedPayment, 400);
+  // }
 };
 
 // class StripeService {
@@ -377,7 +352,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //     const session = await mongoose.startSession();
 //     session.startTransaction();
 
-//     try {
+//
 //       const { products, shippingInfo } = await req.json();
 //       if (!shippingInfo?.country || !products?.length)
 //         throw new AppError("Invalid input", 400);
@@ -451,7 +426,8 @@ const captureSuccessPayment = async (sessionId: string) => {
 //       logger.error("Checkout session failed", error);
 //       throw new AppError("Payment processing failed", 500);
 //     } finally {
-//       session.endSession();
+//             await session.endSession();
+
 //     }
 //   }
 
@@ -459,7 +435,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //     const sig = headers().get("stripe-signature")!;
 //     const rawBody = await req.text();
 
-//     try {
+//
 //       const event = this.stripe.webhooks.constructEvent(
 //         rawBody,
 //         sig,
@@ -481,7 +457,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //     const dbSession = await mongoose.startSession();
 //     dbSession.startTransaction();
 
-//     try {
+//
 //       const user = await User.findById(session.client_reference_id).session(
 //         dbSession
 //       );
@@ -577,7 +553,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //     user: UserAuthType,
 //     invoiceUrl: string
 //   ) {
-//     try {
+//
 //       await sendEmailWithInvoice(user, invoiceUrl);
 //     } catch (emailError) {
 //       logger.error("Failed to send invoice email", emailError);
@@ -597,7 +573,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //   ): Promise<{ sessionId: string; url: string }> {
 //     const transaction = await mongoose.startSession();
 //     transaction.startTransaction();
-//     try {
+//
 //       const userCart = await this.userCartService.getMyCart(
 //         user._id.toString(),
 //         transaction
@@ -754,7 +730,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //     }
 //   }
 //   async stripeWebhook(signature: string, rawBody: string) {
-//     try {
+//
 //       const event = stripe.webhooks.constructEvent(
 //         rawBody,
 //         signature,
@@ -784,7 +760,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //   async handleCheckoutSuccess(session: Stripe.Checkout.Session) {
 //     const transaction = await mongoose.startSession();
 //     transaction.startTransaction();
-//     try {
+//
 //       const
 // session = await stripe.checkout.sessions.retrieve(sessionId);
 // const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -1020,7 +996,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //     const products = await redis.get(reservationKey);
 //     if (!products) return;
 
-//     try {
+//
 //       const parsedProducts = JSON.parse(products);
 //       await ProductModel.bulkWrite(
 //         parsedProducts.map((p: any) => ({
@@ -1051,7 +1027,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //         const reservation = await redis.get(key);
 //         if (!reservation) continue;
 
-//         try {
+//
 //           const { sessionId, expiresAt } = JSON.parse(reservation);
 //           if (Date.now() > expiresAt) {
 //             await this.releaseExpiredReservation(key, sessionId);
@@ -1072,7 +1048,7 @@ const captureSuccessPayment = async (sessionId: string) => {
 //   const transaction = await mongoose.startSession();
 //   transaction.startTransaction();
 
-//   try {
+//
 //     const BASE_URL = new URL(process.env.NEXTAUTH_URL!);
 
 //     // 1. Get and validate cart FIRST

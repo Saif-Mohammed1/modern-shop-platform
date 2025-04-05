@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from "cloudinary";
+import {v2 as cloudinary} from 'cloudinary';
 
 // Configure Cloudinary with your credentials
 cloudinary.config({
@@ -9,25 +9,14 @@ cloudinary.config({
 
 // Your uploadImage function
 export const uploadImage = async (image: string, folder: string) => {
-  try {
-    const url = await cloudinary.uploader.upload(image, {
-      folder: folder, // Specify the folder where you want to upload the image
-    });
+  const url = await cloudinary.uploader.upload(image, {
+    folder: folder, // Specify the folder where you want to upload the image
+  });
 
-    return url;
-  } catch (error) {
-    throw error;
-  }
+  return url;
 };
 export const destroyImage = async (public_id: string) => {
-  try {
-    // const url =
-    await cloudinary.uploader.destroy(public_id, {
-      // folder: folder, // Specify the folder where you want to upload the image
-    });
-
-    // return url;
-  } catch (error) {
-    throw error;
-  }
+  await cloudinary.uploader.destroy(public_id, {
+    // folder: folder, // Specify the folder where you want to upload the image
+  });
 };

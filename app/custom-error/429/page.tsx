@@ -1,7 +1,6 @@
 // // pages/429.tsx
 // import { NextPage } from "next";
 // import { cookies } from "next/headers";
-
 // const TooManyRequests: NextPage = () => {
 //   const RetryAfter = cookies().get("Retry-After")?.value;
 //   return (
@@ -20,16 +19,16 @@
 //     </div>
 //   );
 // };
-
 // export default TooManyRequests;
 // app/errors/429/TooManyRequests.tsx
-import { tooManyRequestsTranslate } from "@/public/locales/client/(public)/tooManyRequestsTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { NextPage } from "next";
-import { cookies, headers } from "next/headers";
-import Link from "next/link";
+import type {NextPage} from 'next';
+import {cookies, headers} from 'next/headers';
+import Link from 'next/link';
 // import { useTranslations } from 'next-intl';
-import { RiTimerFlashLine } from "react-icons/ri";
+import {RiTimerFlashLine} from 'react-icons/ri';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {tooManyRequestsTranslate} from '@/public/locales/client/(public)/tooManyRequestsTranslate';
 
 export const metadata = {
   title: tooManyRequestsTranslate[lang].metadata.title,
@@ -38,8 +37,8 @@ export const metadata = {
 };
 
 const TooManyRequests: NextPage = async () => {
-  const retryAfter = (await cookies()).get("Retry-After")?.value;
-  const pathname = (await headers()).get("x-pathname") || "/";
+  const retryAfter = (await cookies()).get('Retry-After')?.value;
+  const pathname = (await headers()).get('x-pathname') || '/';
   const formattedTime = retryAfter
     ? new Date(Date.now() + Number(retryAfter) * 1000).toLocaleTimeString()
     : null;
@@ -56,28 +55,21 @@ const TooManyRequests: NextPage = async () => {
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
               429 {tooManyRequestsTranslate[lang].title}
             </h1>
-            <p className="text-lg text-gray-600">
-              {tooManyRequestsTranslate[lang].description}
-            </p>
+            <p className="text-lg text-gray-600">{tooManyRequestsTranslate[lang].description}</p>
           </header>
 
           <div className="w-full space-y-4">
-            {formattedTime && (
-              <div className="bg-blue-50 p-4 rounded-lg">
+            {formattedTime ? <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="text-sm font-medium text-blue-800">
-                  {tooManyRequestsTranslate[lang].retrySuggestion.replace(
-                    "{time}",
-                    formattedTime
-                  )}
+                  {tooManyRequestsTranslate[lang].retrySuggestion.replace('{time}', formattedTime)}
                 </p>
                 <div className="mt-2 h-2 bg-blue-200 rounded-full">
                   <div
                     className="h-full bg-blue-600 rounded-full transition-all duration-1000"
-                    style={{ width: `${(1 / Number(retryAfter)) * 100}%` }}
+                    style={{width: `${(1 / Number(retryAfter)) * 100}%`}}
                   />
                 </div>
-              </div>
-            )}
+              </div> : null}
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -100,12 +92,9 @@ const TooManyRequests: NextPage = async () => {
           <footer className="pt-6 border-t border-gray-200 w-full">
             <p className="text-sm text-gray-500">
               {tooManyRequestsTranslate[lang].contactSupport(
-                <a
-                  href="mailto:support@company.com"
-                  className="text-blue-600 hover:underline"
-                >
+                <a href="mailto:support@company.com" className="text-blue-600 hover:underline">
                   {process.env.COMPANY_MAIL}
-                </a>
+                </a>,
               )}
             </p>
           </footer>

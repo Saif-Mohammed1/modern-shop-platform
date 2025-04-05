@@ -1,20 +1,24 @@
-import { Document, Model, Schema, models, model, Types } from "mongoose";
-import validator from "validator";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-import type { DeviceInfo, GeoLocation } from "@/app/lib/types/session.types";
-import { SecurityAuditAction } from "@/app/lib/types/audit.types";
-import AppError from "@/app/lib/utilities/appError";
-import { SecurityAlertType } from "@/app/server/services/email.service";
+import crypto from 'crypto';
+
+import bcrypt from 'bcryptjs';
+import type {Document, Model, Types} from 'mongoose';
+import {Schema, model, models} from 'mongoose';
+import validator from 'validator';
+
+import {SecurityAuditAction} from '@/app/lib/types/audit.types';
+import type {DeviceInfo, GeoLocation} from '@/app/lib/types/session.types';
 import {
-  type accountAction,
   AuthMethod,
   UserCurrency,
   UserRole,
   UserStatus,
-} from "@/app/lib/types/users.types";
-import { TokensService } from "@/app/server/services/tokens.service";
-import { obfuscateEmail } from "@/app/lib/utilities/helpers";
+  type accountAction,
+} from '@/app/lib/types/users.types';
+import AppError from '@/app/lib/utilities/appError';
+import {obfuscateEmail} from '@/app/lib/utilities/helpers';
+import {SecurityAlertType} from '@/app/server/services/email.service';
+import {TokensService} from '@/app/server/services/tokens.service';
+
 // import { emailService } from "../services";
 interface ILoginHistory extends DeviceInfo {
   timestamp: Date;
@@ -28,27 +32,27 @@ interface IAuditLog {
   details: Object;
 }
 interface IRateLimits {
-  login: {
+  'login': {
     attempts: number;
     lastAttempt: Date;
     lockUntil: Date;
   };
-  passwordReset: {
+  'passwordReset': {
     attempts: number;
     lastAttempt: Date;
     lockUntil: Date;
   };
-  verification: {
+  'verification': {
     attempts: number;
     lastAttempt: Date;
     lockUntil: Date;
   };
-  "2fa": {
+  '2fa': {
     attempts: number;
     lastAttempt: Date;
     lockUntil: Date;
   };
-  backup_recovery: {
+  'backup_recovery': {
     attempts: number;
     lastAttempt: Date;
     lockUntil: Date;
@@ -113,11 +117,7 @@ export interface IUser extends Document {
   createPasswordResetToken(): string;
   generateTwoFactorSecret(): void;
   isAccountLocked(action: accountAction): boolean;
-  trackLoginAttempt(
-    ipAddress: string,
-    userAgent: string,
-    success: boolean
-  ): void;
+  trackLoginAttempt(ipAddress: string, userAgent: string, success: boolean): void;
 
   // Statics
   checkRateLimit(action: accountAction): void;
@@ -131,37 +131,35 @@ const UserSchema = new Schema<IUser>(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, 'Name is required'],
       trim: true,
-      maxlength: [50, "Name cannot exceed 50 characters"],
+      maxlength: [50, 'Name cannot exceed 50 characters'],
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: [true, 'Email is required'],
       trim: true,
       lowercase: true,
-      validate: [validator.isEmail, "Please provide a valid email"],
+      validate: [validator.isEmail, 'Please provide a valid email'],
     },
     phone: {
       type: String,
       validate: {
         validator: (v: string) => validator.isMobilePhone(v),
-        message: "Please provide a valid phone number",
+        message: 'Please provide a valid phone number',
       },
     },
     password: {
       type: String,
       select: false,
-      required: [true, "Password is required"],
-      minlength: [10, "Password must be at least 10 characters"],
-      maxlength: [40, "Password cannot exceed 40 characters"],
+      required: [true, 'Password is required'],
+      minlength: [10, 'Password must be at least 10 characters'],
+      maxlength: [40, 'Password cannot exceed 40 characters'],
       validate: {
         validator: (v: string) =>
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/.test(
-            v
-          ),
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/.test(v),
         message:
-          "Password must contain at least one uppercase, one lowercase, one number, and one special character",
+          'Password must contain at least one uppercase, one lowercase, one number, and one special character',
       },
     },
 
@@ -184,8 +182,8 @@ const UserSchema = new Schema<IUser>(
     preferences: {
       language: {
         type: String,
-        default: "uk",
-        enum: ["en", "es", "fr", "de", "uk"],
+        default: 'uk',
+        enum: ['en', 'es', 'fr', 'de', 'uk'],
       },
       currency: {
         type: String,
@@ -203,75 +201,75 @@ const UserSchema = new Schema<IUser>(
     },
 
     security: {
-      twoFactorSecret: { type: String, select: false },
+      twoFactorSecret: {type: String, select: false},
       twoFactorSecretExpiry: Date,
-      twoFactorEnabled: { type: Boolean, default: false },
+      twoFactorEnabled: {type: Boolean, default: false},
       rateLimits: {
-        login: {
-          attempts: { type: Number, default: 0 },
+        'login': {
+          attempts: {type: Number, default: 0},
           lastAttempt: Date,
           lockUntil: Date,
         },
-        passwordReset: {
-          attempts: { type: Number, default: 0 },
+        'passwordReset': {
+          attempts: {type: Number, default: 0},
           lastAttempt: Date,
           lockUntil: Date,
         },
-        verification: {
-          attempts: { type: Number, default: 0 },
+        'verification': {
+          attempts: {type: Number, default: 0},
           lastAttempt: Date,
           lockUntil: Date,
         },
-        "2fa": {
-          attempts: { type: Number, default: 0 },
+        '2fa': {
+          attempts: {type: Number, default: 0},
           lastAttempt: Date,
           lockUntil: Date,
         },
-        backup_recovery: {
-          attempts: { type: Number, default: 0 },
+        'backup_recovery': {
+          attempts: {type: Number, default: 0},
           lastAttempt: Date,
           lockUntil: Date,
         },
       },
       behavioralFlags: {
-        suspiciousDeviceChange: { type: Boolean, default: false },
-        impossibleTravel: { type: Boolean, default: false },
-        requestVelocity: { type: Number, default: 0 },
+        suspiciousDeviceChange: {type: Boolean, default: false},
+        impossibleTravel: {type: Boolean, default: false},
+        requestVelocity: {type: Number, default: 0},
       },
       lastLogin: Date,
       auditLog: [
         {
-          timestamp: { type: Date, default: Date.now },
+          timestamp: {type: Date, default: Date.now},
 
           action: {
             type: String,
             enum: Object.values(SecurityAuditAction),
             required: true,
           },
-          details: { type: Object, required: true },
+          details: {type: Object, required: true},
 
           _id: false,
         },
       ],
       loginHistory: [
         {
-          os: { type: String, required: true },
-          browser: { type: String, required: true },
-          device: { type: String, required: true },
-          brand: { type: String },
-          model: { type: String },
-          isBot: { type: Boolean, required: true },
-          ip: { type: String, required: true },
+          os: {type: String, required: true},
+          browser: {type: String, required: true},
+          device: {type: String, required: true},
+          brand: {type: String},
+          model: {type: String},
+          isBot: {type: Boolean, required: true},
+          ip: {type: String, required: true},
           location: {
-            city: { type: String, required: true },
-            country: { type: String, required: true },
-            latitude: { type: Number, required: true },
-            longitude: { type: Number, required: true },
-            source: { type: String, required: true },
+            city: {type: String, required: true},
+            country: {type: String, required: true},
+            latitude: {type: Number, required: true},
+            longitude: {type: Number, required: true},
+            source: {type: String, required: true},
           },
-          fingerprint: { type: String, required: true },
-          timestamp: { type: Date, default: Date.now },
-          success: { type: Boolean, required: true },
+          fingerprint: {type: String, required: true},
+          timestamp: {type: Date, default: Date.now},
+          success: {type: Boolean, required: true},
           _id: false,
         },
       ],
@@ -316,55 +314,52 @@ const UserSchema = new Schema<IUser>(
         delete ret.verification?.emailChangeToken;
         delete ret.verification?.verificationToken;
 
-        ["createdAt", "updatedAt"].forEach((field) => {
+        ['createdAt', 'updatedAt'].forEach((field) => {
           if (ret[field]) {
-            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+            ret[field] = new Date(ret[field]).toISOString().split('T')[0];
           }
         });
         return ret;
       },
     },
-  }
+  },
 );
 
 // Plugins
 // UserSchema.plugin(auditPlugin);
 
 // Indexes
-UserSchema.index(
-  { email: 1 },
-  { unique: true, collation: { locale: "en", strength: 2 } }
-); // Add this during collection setup
-UserSchema.index({ "security.auditLog.timestamp": 1 });
-UserSchema.index({ "security.lastLogin": -1 });
-UserSchema.index({ "security.loginHistory.ip": 1 });
-UserSchema.index({ "security.loginHistory.fingerprint": 1 });
-UserSchema.index({ "verification.emailVerified": 1 });
+UserSchema.index({email: 1}, {unique: true, collation: {locale: 'en', strength: 2}}); // Add this during collection setup
+UserSchema.index({'security.auditLog.timestamp': 1});
+UserSchema.index({'security.lastLogin': -1});
+UserSchema.index({'security.loginHistory.ip': 1});
+UserSchema.index({'security.loginHistory.fingerprint': 1});
+UserSchema.index({'verification.emailVerified': 1});
 UserSchema.index({
-  "security.rateLimits.login.lockUntil": 1,
-  "security.rateLimits.passwordReset.lockUntil": 1,
-  "security.rateLimits.verification.lockUntil": 1,
-  "security.rateLimits.2fa.lockUntil": 1,
-  "security.rateLimits.backup_recovery.lockUntil": 1,
+  'security.rateLimits.login.lockUntil': 1,
+  'security.rateLimits.passwordReset.lockUntil': 1,
+  'security.rateLimits.verification.lockUntil': 1,
+  'security.rateLimits.2fa.lockUntil': 1,
+  'security.rateLimits.backup_recovery.lockUntil': 1,
 });
 
 UserSchema.index({
-  "security.behavioralFlags.suspiciousDeviceChange": 1,
-  "security.behavioralFlags.impossibleTravel": 1,
+  'security.behavioralFlags.suspiciousDeviceChange': 1,
+  'security.behavioralFlags.impossibleTravel': 1,
 });
-UserSchema.index({ "security.loginHistory.location.city": 1 });
-UserSchema.index({ "security.loginHistory.location.country": 1 });
-UserSchema.index({ "security.loginHistory.timestamp": 1 });
+UserSchema.index({'security.loginHistory.location.city': 1});
+UserSchema.index({'security.loginHistory.location.country': 1});
+UserSchema.index({'security.loginHistory.timestamp': 1});
 // Middleware
 
-UserSchema.pre<IUser>("save", async function (next) {
-  if (this.isModified("password")) {
+UserSchema.pre<IUser>('save', async function (next) {
+  if (this.isModified('password')) {
     try {
       if (!this.isNew) {
         // Fetch the existing document to get the old hashed password
         const existingUser = await (this.constructor as Model<IUser>)
           .findById(this.id)
-          .select("+password");
+          .select('+password');
         if (existingUser) {
           // Push the old hashed password into the history
           this.security.previousPasswords.push(existingUser.password);
@@ -379,15 +374,13 @@ UserSchema.pre<IUser>("save", async function (next) {
       this.password = await bcrypt.hash(this.password, 12);
 
       // Set password change timestamp
-      this.security.passwordChangedAt = this.isNew
-        ? undefined
-        : new Date(Date.now() - 1000);
+      this.security.passwordChangedAt = this.isNew ? undefined : new Date(Date.now() - 1000);
     } catch (error) {
       return next(error as Error);
     }
   }
 
-  if (this.isModified("email")) {
+  if (this.isModified('email')) {
     this.verification.emailVerified = false;
   }
 
@@ -395,22 +388,17 @@ UserSchema.pre<IUser>("save", async function (next) {
 });
 
 // enhancement for
-UserSchema.pre<IUser>("save", async function (next) {
-  if (this.isModified("security.rateLimits")) {
+UserSchema.pre<IUser>('save', async function (next) {
+  if (this.isModified('security.rateLimits')) {
     const loginLimits = this.security.rateLimits.login;
 
     // 1. Calculate request velocity (failed attempts only)
-    this.security.behavioralFlags.requestVelocity =
-      this.security.loginHistory.filter(
-        (entry) =>
-          !entry.success && Date.now() - entry.timestamp.getTime() < 3600000
-      ).length;
+    this.security.behavioralFlags.requestVelocity = this.security.loginHistory.filter(
+      (entry) => !entry.success && Date.now() - entry.timestamp.getTime() < 3600000,
+    ).length;
 
     // 2. Automatic lockout escalation
-    if (
-      loginLimits.attempts >= 5 ||
-      this.security.behavioralFlags.requestVelocity > 10
-    ) {
+    if (loginLimits.attempts >= 5 || this.security.behavioralFlags.requestVelocity > 10) {
       loginLimits.lockUntil = new Date(Date.now() + 24 * 3600000); // 24h lock
       this.security.auditLog.push({
         timestamp: new Date(),
@@ -421,7 +409,7 @@ UserSchema.pre<IUser>("save", async function (next) {
 
     // 3. Suspicious activity notifications
     if (this.security.behavioralFlags.requestVelocity > 5) {
-      const { emailService } = await import("../services");
+      const {emailService} = await import('../services');
 
       await emailService.sendSecurityAlertEmail(this.email, {
         type: SecurityAlertType.SUSPICIOUS_ACTIVITY,
@@ -432,7 +420,7 @@ UserSchema.pre<IUser>("save", async function (next) {
         location: this.security.loginHistory
           .map((entry) => `${entry.location.city}, ${entry.location.country}`)
           .filter((location) => location)
-          .join("; "), // Combine locations into a single string
+          .join('; '), // Combine locations into a single string
       });
     }
   }
@@ -447,7 +435,7 @@ UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
     loginHistory:
       securityData.loginHistory?.map((entry: any) => ({
         ...entry,
-        timestamp: entry?.timestamp.toISOString().split("T")[0],
+        timestamp: entry?.timestamp.toISOString().split('T')[0],
         ip: tokensService.hashIpAddress(entry.ip),
         fingerprint: tokensService.hashFingerprint(entry.fingerprint),
       })) || [],
@@ -455,7 +443,7 @@ UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
     auditLog:
       securityData.auditLog?.map((entry: any) => ({
         ...entry,
-        timestamp: entry?.timestamp.toISOString().split("T")[0],
+        timestamp: entry?.timestamp.toISOString().split('T')[0],
 
         details: {
           ...entry.details,
@@ -466,9 +454,7 @@ UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
                   ? tokensService.hashIpAddress(entry.details.device.ip)
                   : null,
                 fingerprint: entry.details.device.fingerprint
-                  ? tokensService.hashFingerprint(
-                      entry.details.device.fingerprint
-                    )
+                  ? tokensService.hashFingerprint(entry.details.device.fingerprint)
                   : null,
               }
             : null,
@@ -477,25 +463,21 @@ UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
 
     rateLimits: securityData.rateLimits
       ? Object.fromEntries(
-          Object.entries(securityData.rateLimits).map(
-            ([key, val]: [string, any]) => [
-              key,
-              {
-                locked: !!val.lockUntil && new Date(val.lockUntil) > new Date(),
-                lastAttempt: val.lastAttempt
-                  ? val.lastAttempt.toISOString().split("T")[0]
-                  : null,
-                attempts: val.attempts,
-              },
-            ]
-          )
+          Object.entries(securityData.rateLimits).map(([key, val]: [string, any]) => [
+            key,
+            {
+              locked: !!val.lockUntil && new Date(val.lockUntil) > new Date(),
+              lastAttempt: val.lastAttempt ? val.lastAttempt.toISOString().split('T')[0] : null,
+              attempts: val.attempts,
+            },
+          ]),
         )
       : {},
   };
 };
 
 UserSchema.methods.filterForRole = function (
-  currentUserRole: UserRole = UserRole.CUSTOMER
+  currentUserRole: UserRole = UserRole.CUSTOMER,
 ): object {
   const userObject = this.toJSON();
   // Remove universally sensitive fields for all roles
@@ -515,14 +497,13 @@ UserSchema.methods.filterForRole = function (
   if ([UserRole.ADMIN, UserRole.MODERATOR].includes(currentUserRole)) {
     // Add to filterForRole() for admins
 
-    userObject.lastLogin = userObject.lastLogin?.toISOString().split("T")[0]; // Truncate timestamp
+    userObject.lastLogin = userObject.lastLogin?.toISOString().split('T')[0]; // Truncate timestamp
     // Anonymize security data for admin view
     if (userObject.security) {
-      userObject.security.passwordChangedAt =
-        userObject.security.passwordChangedAt?.toISOString().split("T")[0];
-      userObject.security.lastLogin = userObject.security.lastLogin
+      userObject.security.passwordChangedAt = userObject.security.passwordChangedAt
         ?.toISOString()
-        .split("T")[0];
+        .split('T')[0];
+      userObject.security.lastLogin = userObject.security.lastLogin?.toISOString().split('T')[0];
 
       userObject.security = this.anonymizeSecurityData(userObject.security);
     }
@@ -548,7 +529,7 @@ UserSchema.methods.filterForRole = function (
 
 // Enhanced Methods
 UserSchema.methods.checkRateLimit = function (
-  action: "login" | "passwordReset" | "verification" | "2fa" | "backup_recovery"
+  action: 'login' | 'passwordReset' | 'verification' | '2fa' | 'backup_recovery',
 ) {
   const now = new Date();
   const rateLimit = this.security.rateLimits[action];
@@ -556,26 +537,20 @@ UserSchema.methods.checkRateLimit = function (
   // Check if still in lock period
   if (rateLimit.lockUntil && rateLimit.lockUntil > now) {
     const minutesLeft = Math.ceil(
-      (rateLimit.lockUntil.getTime() - now.getTime()) / 60000 // ms to minutes
+      (rateLimit.lockUntil.getTime() - now.getTime()) / 60000, // ms to minutes
     );
-    throw new AppError(
-      `Too many attempts. Try again in ${minutesLeft} minutes`,
-      429
-    );
+    throw new AppError(`Too many attempts. Try again in ${minutesLeft} minutes`, 429);
   }
 
   // Reset counter if window expired
-  if (
-    rateLimit.lastAttempt &&
-    now.getTime() - rateLimit.lastAttempt.getTime() > 15 * 60 * 1000
-  ) {
+  if (rateLimit.lastAttempt && now.getTime() - rateLimit.lastAttempt.getTime() > 15 * 60 * 1000) {
     // 15m window
     rateLimit.attempts = 0;
   }
 };
 
 UserSchema.methods.incrementRateLimit = async function (
-  action: "login" | "passwordReset" | "verification" | "2fa" | "backup_recovery"
+  action: 'login' | 'passwordReset' | 'verification' | '2fa' | 'backup_recovery',
 ) {
   const rateLimit = this.security.rateLimits[action];
   rateLimit.attempts = (rateLimit.attempts || 0) + 1;
@@ -603,9 +578,7 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
     });
 
     const minDistance = Math.min(...distances);
-    const maxSpeed =
-      minDistance /
-      ((Date.now() - recentLogins[0].timestamp.getTime()) / 3600000);
+    const maxSpeed = minDistance / ((Date.now() - recentLogins[0].timestamp.getTime()) / 3600000);
 
     if (maxSpeed > IMPOSSIBLE_TRAVEL_THRESHOLD) {
       this.security.behavioralFlags.impossibleTravel = true;
@@ -621,10 +594,9 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
   const knownDevices = new Set(
     this.security.loginHistory
       .filter(
-        (login: ILoginHistory) =>
-          login.timestamp.getTime() > Date.now() - NEW_DEVICE_GRACE_PERIOD
+        (login: ILoginHistory) => login.timestamp.getTime() > Date.now() - NEW_DEVICE_GRACE_PERIOD,
       )
-      .map((login: ILoginHistory) => login.fingerprint)
+      .map((login: ILoginHistory) => login.fingerprint),
   );
 
   if (!knownDevices.has(deviceInfo.fingerprint)) {
@@ -632,7 +604,7 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
 
     // Send security alert only for truly new devices
     if (!this.loginNotificationSent) {
-      const { emailService } = await import("../services");
+      const {emailService} = await import('../services');
 
       await emailService.sendSecurityAlertEmail(this.email, {
         type: SecurityAlertType.NEW_DEVICE,
@@ -658,20 +630,20 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
   const recentAttempts = this.security.loginHistory.filter(
     (login: ILoginHistory) =>
       Date.now() - login.timestamp.getTime() < 3600000 && // 1 hour
-      !login.success
+      !login.success,
   );
 
   if (recentAttempts.length > 5) {
     this.security.behavioralFlags.requestVelocity = recentAttempts.length;
     this.security.rateLimits.login.lockUntil = new Date(Date.now() + 3600000); // 1 hour
-    const { emailService } = await import("../services");
+    const {emailService} = await import('../services');
 
     await emailService.sendSecurityAlertEmail(this.email, {
       type: SecurityAlertType.SUSPICIOUS_ACTIVITY,
       additionalInfo: {
         attempts: recentAttempts.length,
         locations: Array.from(
-          new Set(recentAttempts.map((a: ILoginHistory) => a.location.country))
+          new Set(recentAttempts.map((a: ILoginHistory) => a.location.country)),
         ),
       },
     });
@@ -706,15 +678,13 @@ function calculateDistance(loc1: GeoLocation, loc2: GeoLocation): number {
 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-UserSchema.methods.comparePassword = async function (
-  candidatePassword: string
-): Promise<boolean> {
+UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   if (!this.password) return false;
 
   return bcrypt.compare(candidatePassword, this.password);
 };
 UserSchema.methods.isPreviousPassword = async function (
-  candidatePassword: string
+  candidatePassword: string,
 ): Promise<boolean> {
   // Compare against all hashed versions in history
   for (const oldPassword of this.security.previousPasswords) {
@@ -725,11 +695,8 @@ UserSchema.methods.isPreviousPassword = async function (
   return false;
 };
 UserSchema.methods.createPasswordResetToken = function (): string {
-  const resetToken = crypto.randomBytes(32).toString("hex");
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
   this.verification.verificationToken = hashedToken;
   this.verification.verificationExpires = new Date(Date.now() + 10 * 60 * 1000);
@@ -738,13 +705,13 @@ UserSchema.methods.createPasswordResetToken = function (): string {
 };
 
 UserSchema.methods.generateTwoFactorSecret = function (): void {
-  const secret = crypto.randomBytes(32).toString("base64");
+  const secret = crypto.randomBytes(32).toString('base64');
   this.security.twoFactorSecret = secret;
   this.security.twoFactorEnabled = true;
 };
 
 UserSchema.methods.isAccountLocked = function (
-  action: "login" | "passwordReset" | "verification" | "2fa" | "backup_recovery"
+  action: 'login' | 'passwordReset' | 'verification' | '2fa' | 'backup_recovery',
 ): boolean {
   return !!(
     this.security.rateLimits[action]?.lockUntil &&
@@ -752,6 +719,6 @@ UserSchema.methods.isAccountLocked = function (
   );
 };
 
-const UserModel: Model<IUser> = models.User || model<IUser>("User", UserSchema);
+const UserModel: Model<IUser> = models.User || model<IUser>('User', UserSchema);
 
 export default UserModel;

@@ -1,6 +1,9 @@
-import { Schema, model, models, Document, Model, Types } from "mongoose";
+import type {Document, Model, Types} from 'mongoose';
+import {Schema, model, models} from 'mongoose';
+
 // import ReviewModel, { type IReview } from "./Review.model";
-import type { IUser } from "./User.model";
+import type {IUser} from './User.model';
+
 export interface IProduct extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -8,8 +11,8 @@ export interface IProduct extends Document {
   price: number;
   discount: number;
   discountExpire?: Date;
-  images: { link: string; public_id: string }[];
-  userId: IUser["_id"];
+  images: {link: string; public_id: string}[];
+  userId: IUser['_id'];
   description: string;
   stock: number;
   ratingsAverage: number;
@@ -60,13 +63,13 @@ const ProductSchema = new Schema<IProduct>(
       default: 0,
       validate: {
         validator: function (discount: number) {
-          const price = this.get("price") as number;
+          const price = this.get('price') as number;
           // Check if the discount is less than the price
           return discount < price;
         },
 
-        message: "{VALUE} must be less than the price",
-        type: "discountValidation", // Custom error type
+        message: '{VALUE} must be less than the price',
+        type: 'discountValidation', // Custom error type
       },
       set: (v: number) => Number(v.toFixed(2)), // Round to 2 decimal places
       min: 0,
@@ -78,14 +81,14 @@ const ProductSchema = new Schema<IProduct>(
     },
     images: [
       {
-        link: { type: String, required: true },
-        public_id: { type: String, required: true },
+        link: {type: String, required: true},
+        public_id: {type: String, required: true},
         _id: false,
       },
     ],
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
       index: true,
     },
@@ -143,14 +146,14 @@ const ProductSchema = new Schema<IProduct>(
       of: Schema.Types.Mixed,
     },
     shippingInfo: {
-      weight: { type: Number, min: 0 },
+      weight: {type: Number, min: 0},
       dimensions: {
-        length: { type: Number, min: 0 },
-        width: { type: Number, min: 0 },
-        height: { type: Number, min: 0 },
+        length: {type: Number, min: 0},
+        width: {type: Number, min: 0},
+        height: {type: Number, min: 0},
       },
     },
-    lastModifiedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    lastModifiedBy: {type: Schema.Types.ObjectId, ref: 'User'},
   },
 
   {
@@ -161,53 +164,47 @@ const ProductSchema = new Schema<IProduct>(
       transform: function (_, ret) {
         // ret.id = ret._id;
         // delete ret._id;
-        ["createdAt", "updatedAt", "discountExpire", "lastReserved"].forEach(
-          (field) => {
-            if (ret[field]) {
-              ret[field] = new Date(ret[field]).toISOString().split("T")[0];
-            }
+        ['createdAt', 'updatedAt', 'discountExpire', 'lastReserved'].forEach((field) => {
+          if (ret[field]) {
+            ret[field] = new Date(ret[field]).toISOString().split('T')[0];
           }
-        );
+        });
         delete ret.__v;
         return ret;
       },
     },
-    toObject: { virtuals: true },
+    toObject: {virtuals: true},
     versionKey: false,
-  }
+  },
 );
 
 // Indexes
-ProductSchema.index({ createdAt: -1 });
-ProductSchema.index({ category: 1, price: 1, ratingsAverage: -1 });
+ProductSchema.index({createdAt: -1});
+ProductSchema.index({category: 1, price: 1, ratingsAverage: -1});
 ProductSchema.index({
   sold: 1,
   stock: 1,
   reserved: 1,
 });
-ProductSchema.index(
-  { name: "text", description: "text" },
-  { weights: { name: 3, description: 1 } }
-);
+ProductSchema.index({name: 'text', description: 'text'}, {weights: {name: 3, description: 1}});
 // Virtuals
-ProductSchema.virtual("discountedPrice").get(function () {
+ProductSchema.virtual('discountedPrice').get(function () {
   return this.price * (1 - this.discount / 100);
 });
 
-ProductSchema.virtual("reviews", {
-  ref: "Review",
-  localField: "_id",
-  foreignField: "productId",
+ProductSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'productId',
 
   // options: { sort: { createdAt: -1 }, limit: 10 },
 });
-ProductSchema.pre("save", function (next) {
-  if (this.isModified("name") || this.isNew) {
-    this.slug = this.name.toLowerCase().trim().split(" ").join("-");
+ProductSchema.pre('save', function (next) {
+  if (this.isModified('name') || this.isNew) {
+    this.slug = this.name.toLowerCase().trim().split(' ').join('-');
   }
 
   next();
 });
-const ProductModel: Model<IProduct> =
-  models.Product || model<IProduct>("Product", ProductSchema);
+const ProductModel: Model<IProduct> = models.Product || model<IProduct>('Product', ProductSchema);
 export default ProductModel;

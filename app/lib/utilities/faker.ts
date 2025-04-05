@@ -1,15 +1,16 @@
-import { OrderStatus } from "@/app/lib/types/orders.types";
 import { faker } from "@faker-js/faker";
 import { NextRequest } from "next/server";
-import productController from "@/app/server/controllers/product.controller";
-import type { IUser } from "@/app/server/models/User.model";
-import authController from "@/app/server/controllers/auth.controller";
-import addressController from "@/app/server/controllers/address.controller";
-import reviewController from "@/app/server/controllers/review.controller";
-import cartController from "@/app/server/controllers/cart.controller";
-import wishlistController from "@/app/server/controllers/wishlist.controller";
-import stripeController from "@/app/server/controllers/stripe.controller";
 import puppeteer from "puppeteer";
+
+import { OrderStatus } from "@/app/lib/types/orders.types";
+import addressController from "@/app/server/controllers/address.controller";
+import authController from "@/app/server/controllers/auth.controller";
+import cartController from "@/app/server/controllers/cart.controller";
+import productController from "@/app/server/controllers/product.controller";
+import reviewController from "@/app/server/controllers/review.controller";
+import stripeController from "@/app/server/controllers/stripe.controller";
+import wishlistController from "@/app/server/controllers/wishlist.controller";
+import type { IUser } from "@/app/server/models/User.model";
 
 // create a random user
 // interface IUserInput {
@@ -696,9 +697,8 @@ export const createRandomStripeSession = async (
 
   // return await Promise.all(req);
   const responses = await Promise.all(req);
-  responses.forEach(async (res) => {
+  for (const res of responses) {
     const response = await res.json();
-    // console.log(`Response ${index + 1}:`, response);
     try {
       // 2. Automate checkout
       const success = await automateStripeCheckout(response.url);
@@ -720,7 +720,7 @@ export const createRandomStripeSession = async (
         error: error.message,
       });
     }
-  });
+  }
   return responses;
 };
 

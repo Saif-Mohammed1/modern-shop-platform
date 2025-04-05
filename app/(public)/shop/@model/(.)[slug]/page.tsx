@@ -1,7 +1,8 @@
-import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/utilities/api";
-import OverlayWrapper from "@/components/ui/OverlayWrapper";
-import ModelProductDetail from "@/components/ui/ModelProductDetail";
+import api from '@/app/lib/utilities/api';
+import ErrorHandler from '@/components/Error/errorHandler';
+import ModelProductDetail from '@/components/ui/ModelProductDetail';
+import OverlayWrapper from '@/components/ui/OverlayWrapper';
+
 type Props = {
   params: Promise<{
     slug: string;
@@ -9,10 +10,10 @@ type Props = {
 };
 const page = async (props: Props) => {
   const params = await props.params;
-  const { slug } = params;
+  const {slug} = params;
 
   try {
-    const { data: product } = await api.get("/shop/" + slug + "/metadata");
+    const {data: product} = await api.get('/shop/' + slug + '/metadata');
     return (
       <OverlayWrapper>
         <ModelProductDetail product={product} />

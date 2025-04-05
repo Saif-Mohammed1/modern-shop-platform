@@ -1,12 +1,16 @@
 "use client";
-import { createContext, useState, use, useEffect } from "react";
-import api from "@/app/lib/utilities/api";
+
+import { createContext, use, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+
 import type { ProductType } from "@/app/lib/types/products.types";
-import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { useUser } from "../user/user.context";
 import type { WishlistType } from "@/app/lib/types/wishList.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
+
+import { useUser } from "../user/user.context";
+
 import { getMyWishList } from "./wishlist.action";
 
 type wishlistContextType = {
@@ -49,7 +53,9 @@ export const WishlistProvider = ({
         }
       }
     };
-    loadWishlist();
+    void (async () => {
+      await loadWishlist();
+    })();
   }, [user]);
 
   // Save wishlist to localStorage if user does not exist

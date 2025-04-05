@@ -1,9 +1,11 @@
 // components/FormControls.tsx
-"use client";
+'use client';
 
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import Button from "@/components/ui/Button";
+import {lang} from '@/app/lib/utilities/lang';
+import Button from '@/components/ui/Button';
+import {productsTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/productTranslate';
+
+// components/FormControls.tsx
 
 interface FormControlsProps {
   step: number;
@@ -25,26 +27,14 @@ export default function FormControls({
       {/* Left side controls */}
       <div className="flex gap-4">
         {step > 1 && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onPrev}
-            className="flex-1"
-          >
+          <Button type="button" variant="outline" onClick={onPrev} className="flex-1">
             {productsTranslate.products[lang].addProduct.form.button.previous}
           </Button>
         )}
 
-        {editMode && onDelete && step === 1 && (
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={onDelete}
-            className="flex-1"
-          >
+        {editMode && onDelete && step === 1 ? <Button type="button" variant="destructive" onClick={onDelete} className="flex-1">
             Delete Product
-          </Button>
-        )}
+          </Button> : null}
       </div>
 
       {/* Right side controls */}
@@ -59,22 +49,16 @@ export default function FormControls({
               }}
               className="flex-1"
             >
-              {
-                productsTranslate.products[lang].addProduct.form.button
-                  .saveDraft
-              }
+              {productsTranslate.products[lang].addProduct.form.button.saveDraft}
             </Button>
             <Button type="submit" className="flex-1">
               {productsTranslate.products[lang].addProduct.form.button.next}
             </Button>
           </>
         ) : (
-          <Button
-            type="submit"
-            className="flex-1 bg-green-600 hover:bg-green-700"
-          >
+          <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
             {editMode
-              ? "Update Product"
+              ? 'Update Product'
               : productsTranslate.products[lang].addProduct.form.button.submit}
           </Button>
         )}

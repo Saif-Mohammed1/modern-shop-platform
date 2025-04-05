@@ -1,5 +1,5 @@
-import type { ReviewsType } from "./reviews.types";
-import type { UserAuthType } from "./users.types";
+import type {ReviewsType} from './reviews.types';
+import type {UserAuthType} from './users.types';
 
 export type ProductsSearchParams = {
   category?: string;

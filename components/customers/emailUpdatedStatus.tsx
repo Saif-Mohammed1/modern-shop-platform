@@ -1,37 +1,35 @@
-import { emailUpdatedStatusTranslate } from "@/public/locales/client/(public)/emailUpdatedStatusTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { FC } from "react";
-import "./emailUpdatedStatus.css";
+import type {FC} from 'react';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {emailUpdatedStatusTranslate} from '@/public/locales/client/(public)/emailUpdatedStatusTranslate';
+
+import './emailUpdatedStatus.css';
 
 type Props = {
   error?: string;
   message?: string;
 };
 
-const ConfirmEmailChange: FC<Props> = ({ error, message }) => {
-  const isSuccess = message?.includes("successfully");
-  const isWarning = message?.includes("check your email"); // For pending confirmation messages
+const ConfirmEmailChange: FC<Props> = ({error, message}) => {
+  const isSuccess = message?.includes('successfully');
+  const isWarning = message?.includes('check your email'); // For pending confirmation messages
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
       <div
         className={`max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transition-all duration-300 ease-out ${
-          error || isWarning ? "animate-float" : ""
+          error || isWarning ? 'animate-float' : ''
         }`}
       >
         <div
           className={`p-8 space-y-6 ${
-            error ? "bg-red-50" : isSuccess ? "bg-green-50" : "bg-blue-50"
+            error ? 'bg-red-50' : isSuccess ? 'bg-green-50' : 'bg-blue-50'
           }`}
         >
           <div className="flex items-center justify-center">
             <div
               className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center ${
-                error
-                  ? "bg-red-100"
-                  : isSuccess
-                    ? "bg-green-100"
-                    : "bg-blue-100"
+                error ? 'bg-red-100' : isSuccess ? 'bg-green-100' : 'bg-blue-100'
               }`}
             >
               {error ? (
@@ -83,11 +81,7 @@ const ConfirmEmailChange: FC<Props> = ({ error, message }) => {
           <div className="text-center space-y-2">
             <h2
               className={`text-xl font-semibold ${
-                error
-                  ? "text-red-800"
-                  : isSuccess
-                    ? "text-green-800"
-                    : "text-blue-800"
+                error ? 'text-red-800' : isSuccess ? 'text-green-800' : 'text-blue-800'
               }`}
             >
               {error
@@ -99,11 +93,7 @@ const ConfirmEmailChange: FC<Props> = ({ error, message }) => {
 
             <p
               className={`text-sm ${
-                error
-                  ? "text-red-700"
-                  : isSuccess
-                    ? "text-green-700"
-                    : "text-blue-700"
+                error ? 'text-red-700' : isSuccess ? 'text-green-700' : 'text-blue-700'
               }`}
             >
               {error || message}

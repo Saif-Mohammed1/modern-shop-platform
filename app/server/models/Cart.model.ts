@@ -1,12 +1,14 @@
 // @ts-ignore
-import { Document, Model, model, models, Schema } from "mongoose";
-import type { IUser } from "./User.model";
-import type { IProduct } from "./Product.model";
+import type {Document, Model} from 'mongoose';
+import {Schema, model, models} from 'mongoose';
+
+import type {IProduct} from './Product.model';
+import type {IUser} from './User.model';
 
 // Interface for Cart document
 export interface ICart extends Document {
-  userId: IUser["_id"];
-  productId: IProduct["_id"];
+  userId: IUser['_id'];
+  productId: IProduct['_id'];
   quantity: number;
   createdAt: Date;
   updatedAt: Date;
@@ -17,13 +19,13 @@ const CartSchema = new Schema<ICart>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
       index: true,
     },
     productId: {
       type: Schema.Types.ObjectId,
-      ref: "Product",
+      ref: 'Product',
       required: true,
       index: true,
     },
@@ -42,30 +44,30 @@ const CartSchema = new Schema<ICart>(
     toJSON: {
       virtuals: true,
       transform: function (_, ret) {
-        ["createdAt", "updatedAt", "expiresAt"].forEach((field) => {
+        ['createdAt', 'updatedAt', 'expiresAt'].forEach((field) => {
           if (ret[field]) {
-            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+            ret[field] = new Date(ret[field]).toISOString().split('T')[0];
           }
         });
         return ret;
       },
     },
-    toObject: { virtuals: true },
-  }
+    toObject: {virtuals: true},
+  },
 );
 
 // Compound index to prevent duplicate items in cart
-CartSchema.index({ userId: 1, productId: 1 }, { unique: true });
-CartSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-CartSchema.set("toJSON", { versionKey: false });
+CartSchema.index({userId: 1, productId: 1}, {unique: true});
+CartSchema.index({expiresAt: 1}, {expireAfterSeconds: 0});
+CartSchema.set('toJSON', {versionKey: false});
 
-CartSchema.virtual("purchasedAt", {
+CartSchema.virtual('purchasedAt', {
   type: Date,
-  ref: "Order",
-  localField: "productId",
-  foreignField: "items.productId",
+  ref: 'Order',
+  localField: 'productId',
+  foreignField: 'items.productId',
 });
 
-const CartModel: Model<ICart> = models.Cart || model<ICart>("Cart", CartSchema);
+const CartModel: Model<ICart> = models.Cart || model<ICart>('Cart', CartSchema);
 
 export default CartModel;

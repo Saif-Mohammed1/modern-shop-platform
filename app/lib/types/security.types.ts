@@ -25,8 +25,8 @@ export type SecurityDashboardData = {
     verificationLockouts: number;
   };
   trends: {
-    loginAttempts: Array<{ date: string; attempts: number }>;
-    securityEvents: Array<{ date: string; count: number }>;
+    loginAttempts: Array<{date: string; attempts: number}>;
+    securityEvents: Array<{date: string; count: number}>;
   };
   recentEvents: Array<{
     timestamp: Date;

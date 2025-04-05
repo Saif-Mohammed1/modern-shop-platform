@@ -1,16 +1,21 @@
 "use client";
-import type { ProductType } from "@/app/lib/types/products.types";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { FaArrowRightLong } from "react-icons/fa6";
+import StarRatings from "react-star-ratings";
+
+import type { ProductType } from "@/app/lib/types/products.types";
+import { lang } from "@/app/lib/utilities/lang";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
 import { useCartItems } from "../providers/context/cart/cart.context";
 import { useWishlist } from "../providers/context/wishlist/wishlist.context";
-import StarRatings from "react-star-ratings";
-import { FaArrowRightLong } from "react-icons/fa6";
+
 import Input from "./Input";
+
 // import { motion, AnimatePresence } from "framer-motion";
 
 const ModelProductDetail = ({ product }: { product: ProductType }) => {
@@ -204,7 +209,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
         "
         >
           <button
-            onClick={handleAddToCart}
+            onClick={() => void handleAddToCart()}
             // className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
             className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
             aria-label="Add to cart"
@@ -221,7 +226,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             </p>
           </button>
           <button
-            onClick={toggleWishlistHandler}
+            onClick={() => void toggleWishlistHandler()}
             className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-600 cursor-pointer"
             aria-label={
               isInWishlist(product._id)
@@ -234,7 +239,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             </span>
           </button>
         </div>
-        {product.discountExpire && (
+        {product.discountExpire ? (
           <div className="text-sm text-gray-500 text-center">
             {shopPageTranslate[lang].modelProductDetails.Offer}{" "}
             {new Date(product.discountExpire).toLocaleDateString(lang, {
@@ -242,7 +247,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
               month: "long",
             })}
           </div>
-        )}
+        ) : null}
 
         <button
           onClick={() => window.location.reload()}

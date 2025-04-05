@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import {Suspense} from 'react';
 
 const Loading = () => (
   <div className="flex justify-center items-center h-screen">
@@ -6,7 +6,7 @@ const Loading = () => (
   </div>
 );
 
-const ComponentLoading = ({ children }: { children: React.ReactNode }) => {
+const ComponentLoading = ({children}: {children: React.ReactNode}) => {
   return <Suspense fallback={<Loading />}>{children}</Suspense>;
 };
 

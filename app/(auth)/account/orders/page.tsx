@@ -1,13 +1,15 @@
+import type { Metadata } from "next";
+import { headers } from "next/headers";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import ErrorHandler from "@/components/Error/errorHandler";
+import UserOrderTracking from "@/components/shop/orders/orderTracking";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
+
 // import OrderHistory from "@/components/shop/orders/orderHistory";
 export const dynamic = "force-dynamic";
-import UserOrderTracking from "@/components/shop/orders/orderTracking";
-import api from "@/app/lib/utilities/api";
-// import AppError from "@/components/util/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
-import type { Metadata } from "next";
-import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+
 export const metadata: Metadata = {
   title: accountOrdersTranslate[lang].metadata.title,
   description: accountOrdersTranslate[lang].metadata.description,
@@ -44,9 +46,9 @@ const page = async (props: Props) => {
           <UserOrderTracking orders={orders} hasNextPage={data.meta.hasNext} />
         ) : (
           // <h1 className="text-3xl font-semibold mb-6 text-center">
-          (<h1 className="empty">
+          <h1 className="empty">
             {accountOrdersTranslate[lang].noOrdersFound}
-          </h1>)
+          </h1>
         )}
       </div>
     );

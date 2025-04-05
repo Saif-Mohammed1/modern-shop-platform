@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
+import {useRouter} from 'next/navigation';
 
-const OverlayWrapper = ({ children }: { children: React.ReactNode }) => {
+const OverlayWrapper = ({children}: {children: React.ReactNode}) => {
   const router = useRouter();
   const goBack = () => {
     // window.history.back();

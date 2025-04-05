@@ -1,11 +1,12 @@
-import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
-import ResetPasswordPage from "@/components/authentication/resetPassword";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type {Metadata} from 'next';
+import {notFound} from 'next/navigation';
+
 // import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/utilities/api";
-import InvalidRestPassword from "@/components/authentication/InvalidRestPassword";
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import InvalidRestPassword from '@/components/authentication/InvalidRestPassword';
+import ResetPasswordPage from '@/components/authentication/resetPassword';
+import {resetPasswordTranslate} from '@/public/locales/client/(public)/auth/resetPasswordTranslate';
 
 export const metadata: Metadata = {
   title: resetPasswordTranslate[lang].metadata.title,
@@ -17,7 +18,7 @@ type SearchParams = {
   email: string;
   error: string;
 };
-const page = async (props: { searchParams: Promise<SearchParams> }) => {
+const page = async (props: {searchParams: Promise<SearchParams>}) => {
   const searchParams = await props.searchParams;
   const token = searchParams.token || undefined;
   const email = searchParams.email || undefined;

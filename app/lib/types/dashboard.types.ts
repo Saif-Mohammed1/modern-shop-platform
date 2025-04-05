@@ -1,4 +1,5 @@
-import type { IOrder } from "@/app/server/models/Order.model";
+import type {IOrder} from '@/app/server/models/Order.model';
+
 interface UserAnalytics {
   totalUsers: number;
   activeUsers: number;
@@ -61,7 +62,7 @@ interface UserAnalytics {
       passwordResetAttempts: number;
     };
 
-    trends: [{ date: string; attempts: number; successRate: string }];
+    trends: [{date: string; attempts: number; successRate: string}];
   };
   deviceDiversity: {
     totalDevices: number;
@@ -108,7 +109,7 @@ interface ProductAnalytics {
   recentChanges: {
     _id: string;
     name: string;
-    type: "New Product" | "Updated Product";
+    type: 'New Product' | 'Updated Product';
     modifiedBy: string;
   }[];
   shipping: {
@@ -171,7 +172,7 @@ interface OrderAnalytics {
     }>;
   };
   fulfillment: {
-    statusDistribution: Record<string, { count: number; avgHours: number }>;
+    statusDistribution: Record<string, {count: number; avgHours: number}>;
     slaCompliance: number;
   };
   paymentMethods: Array<{
@@ -215,7 +216,7 @@ interface ReportAnalytics {
     reporter: string;
     createdAt: Date;
   }>;
-  dailyTrend: Array<{ date: string; reports: number }>;
+  dailyTrend: Array<{date: string; reports: number}>;
   weeklyTrends: Array<{
     label: string;
     resolutionGrowth: string;

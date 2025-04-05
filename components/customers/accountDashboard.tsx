@@ -1,17 +1,21 @@
-"use client";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
-import api from "../../app/lib/utilities/api";
-import type { Event } from "@/app/lib/types/products.types";
-import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-type EditableFields = "name" | "email" | "phone";
+'use client';
+
+import {useSession} from 'next-auth/react';
+import {useState} from 'react';
+import toast from 'react-hot-toast';
+
+import type {Event} from '@/app/lib/types/products.types';
+import {lang} from '@/app/lib/utilities/lang';
+import {accountDashboardTranslate} from '@/public/locales/client/(auth)/account/dashboardTranslate';
+
+import api from '../../app/lib/utilities/api';
+
+type EditableFields = 'name' | 'email' | 'phone';
 type FormDataType = {
   name: string;
   phone: string;
 };
-type Field = "name" | "phone";
+type Field = 'name' | 'phone';
 type UserDataType = {
   name: string;
   email: string;
@@ -19,7 +23,7 @@ type UserDataType = {
   emailVerify: boolean;
 };
 const AccountDashboard = () => {
-  const { data: session, update } = useSession();
+  const {data: session, update} = useSession();
   //   const { user } = use(UserContext); // Assuming these methods exist in your UserContext
 
   const [isEditing, setIsEditing] = useState<{
@@ -31,9 +35,9 @@ const AccountDashboard = () => {
   });
 
   const [userData, setUserData] = useState<UserDataType>({
-    name: session?.user?.name ?? "",
-    email: session?.user?.email ?? "",
-    phone: session?.user?.phone ?? "",
+    name: session?.user?.name ?? '',
+    email: session?.user?.email ?? '',
+    phone: session?.user?.phone ?? '',
     emailVerify: session?.user?.verification.emailVerified ?? false,
   });
 
@@ -41,8 +45,8 @@ const AccountDashboard = () => {
     name: userData.name,
     phone: userData.phone,
   });
-  const [changeEmail, setChangeEmail] = useState("");
-  const [verificationToken, setVerificationToken] = useState("");
+  const [changeEmail, setChangeEmail] = useState('');
+  const [verificationToken, setVerificationToken] = useState('');
   const [showTokenField, setShowTokenField] = useState(false);
   const [changesApplied, setChangesApplied] = useState(false);
 
@@ -82,10 +86,8 @@ const AccountDashboard = () => {
       });
 
       try {
-        toast.loading(
-          accountDashboardTranslate[lang].functions.handleApplyChanges.loading
-        );
-        await api.put("/customers/update-data", updatedData);
+        toast.loading(accountDashboardTranslate[lang].functions.handleApplyChanges.loading);
+        await api.put('/customers/update-data', updatedData);
 
         await update({
           ...session,
@@ -95,15 +97,12 @@ const AccountDashboard = () => {
           },
         });
 
-        toast.success(
-          accountDashboardTranslate[lang].functions.handleApplyChanges.success
-        );
+        toast.success(accountDashboardTranslate[lang].functions.handleApplyChanges.success);
         setChangesApplied(false); // Reset after applying changes
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(
-            error?.message ||
-              accountDashboardTranslate[lang].functions.handleApplyChanges.error
+            error?.message || accountDashboardTranslate[lang].functions.handleApplyChanges.error,
           );
         } else {
           {
@@ -119,9 +118,9 @@ const AccountDashboard = () => {
     let loadingToast;
     try {
       loadingToast = toast.loading(
-        accountDashboardTranslate[lang].functions.handleApplyChanges.loading
+        accountDashboardTranslate[lang].functions.handleApplyChanges.loading,
       );
-      await api.patch("/customers/update-data", {
+      await api.patch('/customers/update-data', {
         loginNotificationSent: !session?.user?.loginNotificationSent,
       });
       await update({
@@ -131,14 +130,11 @@ const AccountDashboard = () => {
           loginNotificationSent: !session?.user?.loginNotificationSent,
         },
       });
-      toast.success(
-        accountDashboardTranslate[lang].functions.handleApplyChanges.success
-      );
+      toast.success(accountDashboardTranslate[lang].functions.handleApplyChanges.success);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(
-          error?.message ||
-            accountDashboardTranslate[lang].functions.handleApplyChanges.error
+          error?.message || accountDashboardTranslate[lang].functions.handleApplyChanges.error,
         );
       } else {
         {
@@ -154,21 +150,16 @@ const AccountDashboard = () => {
     let loadingToast;
     try {
       loadingToast = toast.loading(
-        accountDashboardTranslate[lang].functions.handleSendVerificationLink
-          .loading
+        accountDashboardTranslate[lang].functions.handleSendVerificationLink.loading,
       );
-      await api.get("/customers/update-data/verify-email");
-      toast.success(
-        accountDashboardTranslate[lang].functions.handleSendVerificationLink
-          .success
-      );
+      await api.get('/customers/update-data/verify-email');
+      toast.success(accountDashboardTranslate[lang].functions.handleSendVerificationLink.success);
       setShowTokenField(true);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(
           error?.message ||
-            accountDashboardTranslate[lang].functions.handleSendVerificationLink
-              .error
+            accountDashboardTranslate[lang].functions.handleSendVerificationLink.error,
         );
       } else {
         {
@@ -184,15 +175,13 @@ const AccountDashboard = () => {
     let loadingToast;
     try {
       loadingToast = toast.loading(
-        accountDashboardTranslate[lang].functions.handleVerifyToken.loading
+        accountDashboardTranslate[lang].functions.handleVerifyToken.loading,
       );
-      await api.put("/customers/update-data/verify-email", {
+      await api.put('/customers/update-data/verify-email', {
         verificationCode: verificationToken,
       });
 
-      toast.success(
-        accountDashboardTranslate[lang].functions.handleVerifyToken.success
-      );
+      toast.success(accountDashboardTranslate[lang].functions.handleVerifyToken.success);
 
       await update({
         ...session,
@@ -208,8 +197,7 @@ const AccountDashboard = () => {
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(
-          error?.message ||
-            accountDashboardTranslate[lang].functions.handleVerifyToken.error
+          error?.message || accountDashboardTranslate[lang].functions.handleVerifyToken.error,
         );
       } else {
         {
@@ -224,9 +212,9 @@ const AccountDashboard = () => {
     let loadingToast;
     try {
       loadingToast = toast.loading(
-        accountDashboardTranslate[lang].functions.handleEmailChange.loading
+        accountDashboardTranslate[lang].functions.handleEmailChange.loading,
       );
-      await api.post("/customers/update-data/change-email", {
+      await api.post('/customers/update-data/change-email', {
         newEmail: changeEmail,
       });
       setUserData((prevState) => ({
@@ -237,15 +225,12 @@ const AccountDashboard = () => {
         ...prevState,
         email: false,
       }));
-      toast.success(
-        accountDashboardTranslate[lang].functions.handleEmailChange.success
-      );
-      setChangeEmail("");
+      toast.success(accountDashboardTranslate[lang].functions.handleEmailChange.success);
+      setChangeEmail('');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(
-          error?.message ||
-            accountDashboardTranslate[lang].functions.handleEmailChange.error
+          error?.message || accountDashboardTranslate[lang].functions.handleEmailChange.error,
         );
       } else {
         {
@@ -259,9 +244,7 @@ const AccountDashboard = () => {
 
   return (
     <div className="w-full max-w-3xl /mx-auto bg-white p-8 shadow-lg rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">
-        {accountDashboardTranslate[lang].title}
-      </h1>
+      <h1 className="text-2xl font-bold mb-6">{accountDashboardTranslate[lang].title}</h1>
 
       {/* Name Field */}
       <div className="mb-6">
@@ -271,7 +254,7 @@ const AccountDashboard = () => {
         <div className="flex items-center justify-between">
           <span>{userData.name}</span>
           <button
-            onClick={() => handleEditClick("name")}
+            onClick={() => handleEditClick('name')}
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
             {isEditing.name
@@ -279,26 +262,22 @@ const AccountDashboard = () => {
               : accountDashboardTranslate[lang].button.isEdit.edit}
           </button>
         </div>
-        {isEditing.name && (
-          <div className="mt-2">
+        {isEditing.name ? <div className="mt-2">
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder={
-                accountDashboardTranslate[lang].form.name.placeholder
-              }
+              placeholder={accountDashboardTranslate[lang].form.name.placeholder}
               className="border rounded px-3 py-2 w-full mt-1"
             />
             <button
-              onClick={() => handleSave("name")}
+              onClick={() => handleSave('name')}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               {accountDashboardTranslate[lang].button.save}
             </button>
-          </div>
-        )}
+          </div> : null}
       </div>
 
       {/* Email Field */}
@@ -308,7 +287,7 @@ const AccountDashboard = () => {
         </label>
         <div className="flex items-center justify-between">
           <span>
-            {userData.email}{" "}
+            {userData.email}{' '}
             {userData.emailVerify ? (
               <span className="text-green-500">
                 {accountDashboardTranslate[lang].form.email.verified}
@@ -320,7 +299,7 @@ const AccountDashboard = () => {
             )}
           </span>
           <button
-            onClick={() => handleEditClick("email")}
+            onClick={() => handleEditClick('email')}
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
             {isEditing.email
@@ -328,59 +307,48 @@ const AccountDashboard = () => {
               : accountDashboardTranslate[lang].button.isEdit.edit}
           </button>
         </div>
-        {isEditing.email && (
-          <div className="mt-2">
+        {isEditing.email ? <div className="mt-2">
             <input
               type="email"
               name="email"
               value={changeEmail}
               onChange={(e) => setChangeEmail(e.target.value)}
-              placeholder={
-                accountDashboardTranslate[lang].form.email.placeholder
-              }
+              placeholder={accountDashboardTranslate[lang].form.email.placeholder}
               className="border rounded px-3 py-2 w-full mt-1"
             />
             <button
-              onClick={handleEmailChange}
+              onClick={() => void handleEmailChange}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               {accountDashboardTranslate[lang].button.update}
             </button>
-          </div>
-        )}
+          </div> : null}
         {!userData.emailVerify && (
           <div className="mt-4">
             <button
-              onClick={handleSendVerificationLink}
+              onClick={() => void handleSendVerificationLink}
               className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
             >
               {accountDashboardTranslate[lang].button.sendVerificationLink}
             </button>
           </div>
         )}
-        {showTokenField && (
-          <div className="mt-4">
-            <label>
-              {accountDashboardTranslate[lang].form.verificationToken.label}:
-            </label>
+        {showTokenField ? <div className="mt-4">
+            <label>{accountDashboardTranslate[lang].form.verificationToken.label}:</label>
             <input
               type="text"
               value={verificationToken}
               onChange={(e) => setVerificationToken(e.target.value)}
-              placeholder={
-                accountDashboardTranslate[lang].form.verificationToken
-                  .placeholder
-              }
+              placeholder={accountDashboardTranslate[lang].form.verificationToken.placeholder}
               className="border rounded px-3 py-2 w-full mt-1"
             />
             <button
-              onClick={handleVerifyToken}
+              onClick={() => void handleVerifyToken}
               className="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
             >
               {accountDashboardTranslate[lang].button.verifyEmail}
             </button>
-          </div>
-        )}
+          </div> : null}
       </div>
 
       {/* Mobile Field */}
@@ -389,9 +357,9 @@ const AccountDashboard = () => {
           {accountDashboardTranslate[lang].form.phone.label}:
         </label>
         <div className="flex items-center justify-between">
-          <span>{userData.phone || "*********"}</span>
+          <span>{userData.phone || '*********'}</span>
           <button
-            onClick={() => handleEditClick("phone")}
+            onClick={() => handleEditClick('phone')}
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
             {isEditing.phone
@@ -399,8 +367,7 @@ const AccountDashboard = () => {
               : accountDashboardTranslate[lang].button.isEdit.edit}
           </button>
         </div>
-        {isEditing.phone && (
-          <div className="mt-2">
+        {isEditing.phone ? <div className="mt-2">
             {/* <input
               type="text"
               name="phone"
@@ -416,20 +383,17 @@ const AccountDashboard = () => {
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              placeholder={
-                accountDashboardTranslate[lang].form.phone.placeholder
-              }
+              placeholder={accountDashboardTranslate[lang].form.phone.placeholder}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               pattern="[0-9]{10}"
             />
             <button
-              onClick={() => handleSave("phone")}
+              onClick={() => handleSave('phone')}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               {accountDashboardTranslate[lang].button.save}
             </button>
-          </div>
-        )}
+          </div> : null}
       </div>
       <div className="mt-6 space-y-4">
         <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
@@ -445,15 +409,15 @@ const AccountDashboard = () => {
             <input
               type="checkbox"
               checked={session?.user?.loginNotificationSent}
-              onChange={handleNotificationToggle}
-              className={`sr-only ${session?.user?.loginNotificationSent ? "peer-checked:bg-blue-500" : ""}`}
+              onChange={() => void handleNotificationToggle}
+              className={`sr-only ${session?.user?.loginNotificationSent ? 'peer-checked:bg-blue-500' : ''}`}
             />
             <div
-              className={`w-11 h-6 ${session?.user?.loginNotificationSent ? "bg-blue-500" : "bg-gray-300"}  rounded-full transition-colors duration-300 peer-checked:bg-blue-500`}
+              className={`w-11 h-6 ${session?.user?.loginNotificationSent ? 'bg-blue-500' : 'bg-gray-300'}  rounded-full transition-colors duration-300 peer-checked:bg-blue-500`}
             >
               <div
                 className={`dot absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${
-                  session?.user?.loginNotificationSent ? "translate-x-5" : ""
+                  session?.user?.loginNotificationSent ? 'translate-x-5' : ''
                 }`}
               />
             </div>
@@ -461,9 +425,9 @@ const AccountDashboard = () => {
         </div>
       </div>
       <button
-        onClick={handleApplyChanges}
+        onClick={() => void handleApplyChanges}
         className={`mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${
-          !changesApplied ? "opacity-50 cursor-not-allowed" : ""
+          !changesApplied ? 'opacity-50 cursor-not-allowed' : ''
         }`}
         disabled={!changesApplied}
       >

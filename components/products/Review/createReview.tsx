@@ -1,14 +1,15 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import StarRatings from "react-star-ratings";
-import { motion, AnimatePresence } from "framer-motion";
-import api from "@/app/lib/utilities/api";
-import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import { FiEdit3, FiX } from "react-icons/fi";
+import StarRatings from "react-star-ratings";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 
 type CreateReviewProps = {
   reviewsLength: number;
@@ -91,7 +92,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
   return (
     <div className="w-full">
       <button
-        onClick={checkOrder}
+        onClick={() => void checkOrder()}
         disabled={isLoading || isOpen}
         className={`w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg
           shadow-lg hover:shadow-xl transition-all duration-300 font-medium flex items-center justify-center
@@ -106,7 +107,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -202,7 +203,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
                 </div>
 
                 <button
-                  onClick={handleSubmit}
+                  onClick={() => void handleSubmit()}
                   disabled={
                     isLoading || rating === 0 || comment.trim().length === 0
                   }
@@ -219,7 +220,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
               </div>
             </motion.div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );

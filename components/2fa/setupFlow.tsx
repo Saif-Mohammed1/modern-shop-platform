@@ -1,26 +1,24 @@
-import Image from "next/image";
-import { useState } from "react";
-import { RiCloseCircleLine } from "react-icons/ri";
+import Image from 'next/image';
+import {useState} from 'react';
+import {RiCloseCircleLine} from 'react-icons/ri';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {accountTwoFactorTranslate} from '@/public/locales/client/(auth)/account/twoFactorTranslate';
 
 interface SetupFlowProps {
-  setupData: { qrCode: string; manualEntryCode: string; backupCodes: string[] };
+  setupData: {qrCode: string; manualEntryCode: string; backupCodes: string[]};
   onVerify: (token: string) => Promise<void>;
   onBack: () => void;
   loading: boolean;
 }
 
-const SetupFlow = ({
-  setupData,
-  onVerify,
-  onBack,
-  loading,
-}: SetupFlowProps) => {
-  const [token, setToken] = useState("");
+const SetupFlow = ({setupData, onVerify, onBack, loading}: SetupFlowProps) => {
+  const [token, setToken] = useState('');
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Set Up Authenticator App</h2>
+        <h2 className="text-lg font-semibold">{accountTwoFactorTranslate[lang].SetupFlow.title}</h2>
         <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
           <RiCloseCircleLine className="w-5 h-5" />
         </button>
@@ -39,7 +37,7 @@ const SetupFlow = ({
             />
           </div>
           <p className="text-sm text-gray-600 text-center">
-            Scan this QR code with your authenticator app
+            {accountTwoFactorTranslate[lang].SetupFlow.description}
           </p>
         </div>
 
@@ -47,7 +45,7 @@ const SetupFlow = ({
         <div className="space-y-4">
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium text-gray-700 mb-2">
-              Manual Entry
+              {accountTwoFactorTranslate[lang].SetupFlow.manualEntryLabel}
             </p>
             <input
               type="text"
@@ -59,23 +57,23 @@ const SetupFlow = ({
 
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Enter the 6-digit code from your authenticator app
+              {accountTwoFactorTranslate[lang].SetupFlow.codeDigitEnter}
             </p>
             <input
               type="text"
               placeholder="123456"
               value={token}
-              onChange={(e) =>
-                setToken(e.target.value.replace(/\D/g, "").slice(0, 6))
-              }
+              onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
               className="w-full p-2.5 border rounded-lg text-center font-medium text-lg"
             />
             <button
-              onClick={() => onVerify(token)}
+              onClick={() => void onVerify(token)}
               disabled={token.length !== 6 || loading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg disabled:opacity-50"
             >
-              {loading ? "Verifying..." : "Confirm & Enable"}
+              {loading
+                ? accountTwoFactorTranslate[lang].SetupFlow.loading
+                : accountTwoFactorTranslate[lang].SetupFlow.label}
             </button>
           </div>
         </div>

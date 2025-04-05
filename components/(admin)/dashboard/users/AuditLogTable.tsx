@@ -1,17 +1,13 @@
-"use client";
-import { lang } from "@/app/lib/utilities/lang";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
-import { FaFingerprint } from "react-icons/fa";
-import { FiMonitor, FiGlobe, FiMapPin } from "react-icons/fi";
-import type { AuditLogDetails } from "@/app/lib/types/audit.types";
+'use client';
+
+import {FaFingerprint} from 'react-icons/fa';
+import {FiGlobe, FiMapPin, FiMonitor} from 'react-icons/fi';
+
+import type {AuditLogDetails} from '@/app/lib/types/audit.types';
+import {lang} from '@/app/lib/utilities/lang';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
+import {usersTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate';
+
 interface AuditLogTableProps {
   data: AuditLogDetails[];
   translations: {
@@ -21,10 +17,8 @@ interface AuditLogTableProps {
   };
 }
 
-function AuditLogTable({ data, translations }: AuditLogTableProps) {
-  const formatDeviceInfo = (
-    device: AuditLogTableProps["data"][number]["details"]["device"]
-  ) => (
+function AuditLogTable({data, translations}: AuditLogTableProps) {
+  const formatDeviceInfo = (device: AuditLogTableProps['data'][number]['details']['device']) => (
     <div className="space-y-1.5 text-sm">
       <div className="flex items-center gap-2">
         <span className="font-medium">{device.browser}</span>
@@ -41,13 +35,8 @@ function AuditLogTable({ data, translations }: AuditLogTableProps) {
         </div>
         <div className="flex items-center gap-1">
           <FiMapPin className="text-muted-foreground" size={14} />
-          {device.location?.city.includes("Unknown")
-            ? "-"
-            : device.location?.city}
-          ,{" "}
-          {device.location?.country.includes("Unknown")
-            ? "-"
-            : device.location?.country}
+          {device.location?.city.includes('Unknown') ? '-' : device.location?.city},{' '}
+          {device.location?.country.includes('Unknown') ? '-' : device.location?.country}
         </div>
         {/* <div className="flex items-center gap-1">
           <FiMapPin className="text-muted-foreground" size={14} />
@@ -55,9 +44,7 @@ function AuditLogTable({ data, translations }: AuditLogTableProps) {
         </div> */}
         <div className="flex items-center gap-1">
           <FaFingerprint className="text-muted-foreground" size={14} />
-          <span className="font-mono text-xs">
-            {device.fingerprint.slice(0, 6)}...
-          </span>
+          <span className="font-mono text-xs">{device.fingerprint.slice(0, 6)}...</span>
         </div>
       </div>
     </div>
@@ -75,20 +62,9 @@ function AuditLogTable({ data, translations }: AuditLogTableProps) {
       <TableBody>
         {data.map((entry, index) => (
           <TableRow key={index}>
-            <TableCell className="font-medium">
-              {/* {entry.timestamp.toLocaleString()} */}
-              {entry.timestamp.toLocaleDateString(lang, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </TableCell>
+            <TableCell className="font-medium">{entry.timestamp.toLocaleString()}</TableCell>
             <TableCell>
-              <span className="capitalize">
-                {entry.action.toLowerCase().replace(/_/g, " ")}
-              </span>
+              <span className="capitalize">{entry.action.toLowerCase().replace(/_/g, ' ')}</span>
             </TableCell>
             <TableCell className="overflow-y-auto max-h-[60vh]">
               {entry.details.device

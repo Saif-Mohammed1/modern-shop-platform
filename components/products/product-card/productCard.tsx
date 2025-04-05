@@ -1,17 +1,19 @@
-import type { ProductType } from "@/app/lib/types/products.types";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
-import { lang } from "@/app/lib/utilities/lang";
-import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaShareAlt } from "react-icons/fa";
-import StarRatings from "react-star-ratings";
 import { FaArrowRightLong } from "react-icons/fa6";
+import StarRatings from "react-star-ratings";
+
+import type { ProductType } from "@/app/lib/types/products.types";
+import { lang } from "@/app/lib/utilities/lang";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
 import { useUser } from "@/components/providers/context/user/user.context";
+import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { addToCartItems } = useCartItems();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -62,7 +64,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
     const productLink = `${window.location.origin}/shop/${product.slug}`;
 
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(productLink);
+      await navigator.clipboard.writeText(productLink);
 
       toast.success(
         shopPageTranslate[lang].productCard.copyProductLink.success
@@ -131,12 +133,12 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         </div>
         {/* <button
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
-          onClick={handelAddToCart}
+          onClick={() => void handelAddToCart()}
         >
           {shopPageTranslate[lang].content.addToCart}
         </button> */}
         <button
-          onClick={handelAddToCart}
+          onClick={() => void handelAddToCart()}
           // className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
           className="p-2 rounded-lg hover:border-1 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
           aria-label="Add to cart"
@@ -169,19 +171,23 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          {user && (
+          {user ? (
             <button
               className="text-red-500 text-2xl focus:outline-none cursor-pointer"
               aria-label="Add to Wishlist"
-              onClick={toggleWishlistHandler}
+              onClick={() => void toggleWishlistHandler()}
             >
-              {isInWishlist(product._id) ? <AiFillHeart /> : <AiOutlineHeart />}{" "}
+              {isInWishlist(product._id) ? (
+                <AiFillHeart />
+              ) : (
+                <AiOutlineHeart />
+              )}{" "}
             </button>
-          )}
+          ) : null}
           <button
             className="text-gray-500 hover:text-gray-600 transition-colors cursor-pointer"
             aria-label="Share Product"
-            onClick={copyProductLink}
+            onClick={() => void copyProductLink()}
           >
             <FaShareAlt size={20} />
           </button>

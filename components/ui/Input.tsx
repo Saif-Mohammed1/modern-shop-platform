@@ -1,5 +1,5 @@
-import { forwardRef } from "react";
-import type { UseFormRegisterReturn } from "react-hook-form";
+import {forwardRef} from 'react';
+import type {UseFormRegisterReturn} from 'react-hook-form';
 
 type InputProps = {
   label?: React.ReactNode;
@@ -60,26 +60,19 @@ type InputProps = {
 // };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, icon, className = "", name, error, register, ...props }, ref) => {
+  ({label, icon, className = '', name, error, register, ...props}, ref) => {
     const inputName = name || register?.name; // Get name from props or register
     const errorMessages = Array.isArray(error) ? error : [error];
 
     return (
       <div className={className}>
-        {label && (
-          <label
-            htmlFor={inputName}
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        {label ? <label htmlFor={inputName} className="block text-sm font-medium text-gray-700 mb-1">
             {label}
-          </label>
-        )}
+          </label> : null}
         <div className="relative">
-          {icon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          {icon ? <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               {icon}
-            </div>
-          )}
+            </div> : null}
           <input
             {...register}
             {...props}
@@ -87,22 +80,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             name={inputName} // Ensure name is set correctly
             aria-invalid={!!error}
-            className={`block w-full ${icon ? "pl-10" : "pl-3"} pr-3 py-2 border ${
-              error ? "border-red-500" : "border-gray-300"
+            className={`block w-full ${icon ? 'pl-10' : 'pl-3'} pr-3 py-2 border ${
+              error ? 'border-red-500' : 'border-gray-300'
             } rounded-md shadow-sm focus:outline-none focus:ring-2 ${
-              error ? "focus:ring-red-500" : "focus:ring-indigo-500"
+              error ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
             }`}
           />
         </div>
-        {error && (
-          <div id={`${name}-error`} className="mt-1 text-sm text-red-600">
+        {error ? <div id={`${name}-error`} className="mt-1 text-sm text-red-600">
             {errorMessages.filter(Boolean).map((message, index) => (
               <p key={index}>{message}</p>
             ))}
-          </div>
-        )}
+          </div> : null}
       </div>
     );
-  }
+  },
 );
 export default Input;

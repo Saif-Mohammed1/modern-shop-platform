@@ -1,20 +1,22 @@
-import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
-import EditUser from "@/components/(admin)/dashboard/users/editUser";
-import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/utilities/api";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Metadata } from "next";
-import { headers } from "next/headers";
+import type {Metadata} from 'next';
+import {headers} from 'next/headers';
+
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import EditUser from '@/components/(admin)/dashboard/users/editUser';
+import ErrorHandler from '@/components/Error/errorHandler';
+import {usersTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate';
+
 type Props = {
-  params: Promise<{ id: string }>;
+  params: Promise<{id: string}>;
 };
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
 
   try {
-    const { data: user } = await api.get(`/admin/dashboard/users/${id}`, {
+    const {data: user} = await api.get(`/admin/dashboard/users/${id}`, {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return {
@@ -22,7 +24,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description: `${usersTranslate.users[lang].editUsers.metadata.description} ${user.name}. ${user.email}`,
       keywords: `${usersTranslate.users[lang].editUsers.metadata.keywords} ${user.name}, ${user.email}`,
     };
-  } catch (error) {
+  } catch (_) {
     return {
       title: usersTranslate.users[lang].editUsers.metadata.title,
       description: usersTranslate.users[lang].editUsers.metadata.description,
@@ -33,10 +35,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 const page = async (props: Props) => {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
 
   try {
-    const { data } = await api.get(`/admin/dashboard/users/${id}`, {
+    const {data} = await api.get(`/admin/dashboard/users/${id}`, {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return <EditUser user={data} />;

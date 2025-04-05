@@ -9,14 +9,14 @@ services:
   mongodb:
     image: mongo
     ports:
-      - "27017:27017"
+      - '27017:27017'
     restart: always
     volumes:
       - mongodb_data:/data/db
     env_file:
       - ./config/.env
     healthcheck:
-      test: ["CMD-SHELL", 'mongo --quiet --eval ''db.adminCommand("ping")''']
+      test: ['CMD-SHELL', 'mongo --quiet --eval ''db.adminCommand("ping")''']
       interval: 10s
       timeout: 10s
       retries: 5

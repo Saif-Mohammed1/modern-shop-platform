@@ -1,17 +1,21 @@
 "use client";
+
+import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { signOut } from "next-auth/react";
-import DeviceInfoSection from "./deviceInfoSection";
-import api from "../../app/lib/utilities/api";
-import { deleteCookies } from "../../app/lib/utilities/cookies";
-import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
-import { lang } from "../../app/lib/utilities/lang";
+
 import {
   RefreshTokenStatus,
   type sessionInfo,
 } from "@/app/lib/types/session.types";
+import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
+
+import api from "../../app/lib/utilities/api";
+import { deleteCookies } from "../../app/lib/utilities/cookies";
+import { lang } from "../../app/lib/utilities/lang";
+
+import DeviceInfoSection from "./deviceInfoSection";
 
 const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
   const [devicesList, setDevicesList] = useState(devices || []);
@@ -171,7 +175,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
               : accountSettingsTranslate[lang].button.change}
           </button>
         </div>
-        {isEditing && (
+        {isEditing ? (
           <div className="mt-2">
             <div className="flex relative items-center">
               <input
@@ -184,12 +188,12 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="border rounded px-3 py-2 w-full mt-1"
               />
-              <span
-                onClick={() => setShowPassword(!showPassword)}
+              <button
+                onClick={() => void setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer"
               >
                 {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-              </span>
+              </button>
             </div>
             <div className="flex relative items-center">
               <input
@@ -202,12 +206,12 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="border rounded px-3 py-2 w-full mt-1"
               />
-              <span
-                onClick={() => setShowNewPassword(!showNewPassword)}
+              <button
+                onClick={() => void setShowNewPassword(!showNewPassword)}
                 className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer"
               >
                 {showNewPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-              </span>
+              </button>
             </div>
             <div className="flex relative items-center">
               <input
@@ -221,21 +225,23 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="border rounded px-3 py-2 w-full mt-1"
               />
-              <span
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              <button
+                onClick={() =>
+                  void setShowConfirmPassword(!showConfirmPassword)
+                }
                 className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer"
               >
                 {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-              </span>
+              </button>
             </div>
             <button
-              onClick={handlePasswordUpdate}
+              onClick={() => void handlePasswordUpdate}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               {accountSettingsTranslate[lang].button.update}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Delete Account Button */}
@@ -247,7 +253,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       </button>
 
       {/* Delete Account Confirmation Modal */}
-      {showDeleteModal && (
+      {showDeleteModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
             <h2 className="text-xl font-bold text-red-600 mb-4">
@@ -264,7 +270,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
                 {accountSettingsTranslate[lang].showDeleteModal.cancel}
               </button>
               <button
-                onClick={handleDeleteAccount}
+                onClick={() => void handleDeleteAccount}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               >
                 {accountSettingsTranslate[lang].showDeleteModal.delete}
@@ -272,7 +278,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Devices Section */}
       <div className="space-y-4 mt-4 ">
@@ -295,7 +301,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
           )}
         </div>
         <button
-          onClick={handleSignoutAll}
+          onClick={() => void handleSignoutAll}
           className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
         >
           {accountSettingsTranslate[lang].devices.button.signoutAll}

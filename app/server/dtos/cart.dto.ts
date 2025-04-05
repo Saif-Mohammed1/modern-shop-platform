@@ -1,7 +1,8 @@
-import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { lang } from "@/app/lib/utilities/lang";
-import { CartTranslate } from "@/public/locales/server/Cart.Translate";
-import { z } from "zod";
+import {z} from 'zod';
+
+import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import {lang} from '@/app/lib/utilities/lang';
+import {CartTranslate} from '@/public/locales/server/Cart.Translate';
 
 export class CartValidation {
   static cartSchema = z.object({
@@ -38,7 +39,7 @@ export class CartValidation {
           message: CartTranslate[lang].dto.quantity.min,
         })
         .default(1),
-    })
+    }),
   );
   static validateLocalCart(data: any) {
     return this.localCartSchema.parse(data);

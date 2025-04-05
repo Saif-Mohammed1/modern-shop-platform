@@ -1,23 +1,28 @@
 // components/ProductVersionHistory.tsx
 "use client";
 
+import { useRouter } from "next/navigation";
+import { parseAsInteger, useQueryState } from "nuqs";
 import type { FC } from "react";
+import toast from "react-hot-toast";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import {
   Table,
-  TableHeader,
   TableBody,
-  TableRow,
-  TableHead,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import { ProductTranslate } from "@/public/locales/client/(public)/ProductTranslate";
 
-import Button from "../ui/Button";
 import Pagination, { type PaginationType } from "../pagination/Pagination";
-import { parseAsInteger, useQueryState } from "nuqs";
+import Button from "../ui/Button";
 import ConfirmModal from "../ui/ConfirmModal";
-import api from "@/app/lib/utilities/api";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+
+// components/ProductVersionHistory.tsx
 
 interface ProductVersion {
   versionId: string;
@@ -45,21 +50,26 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
   );
   const router = useRouter();
   const onPaginationChange = (page: number) => {
-    setCurrentPage(page);
+    void setCurrentPage(page);
   };
   const handleRestore = async (versionId: string) => {
     let loading;
     try {
-      loading = toast.loading("Restoring version...");
+      loading = toast.loading(
+        ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.loading
+      );
       await api.post(`/admin/dashboard/products/${slug}/restore`, {
         versionId,
       });
-      toast.success("Version restored successfully.");
+      toast.success(
+        ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.success
+      );
       // Reload the page
       router.refresh();
     } catch (err: any) {
       toast.error(
-        err?.message || "Failed to restore version. Please try again later."
+        err?.message ||
+          ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.error
       );
     } finally {
       toast.dismiss(loading);
@@ -70,14 +80,14 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
       <Table>
         <TableHeader className="bg-muted/50">
           <TableRow>
-            <TableHead>Version ID</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Product Name</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Discount</TableHead>
-            <TableHead>Stock</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.head}</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.date}</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.productName}</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.price}</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.discount}</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.stock}</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.description}</TableHead>
+            <TableHead>{ProductTranslate[lang].Tables.actions}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -92,27 +102,33 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
                 <TableCell>
                   {new Date(version.timestamp).toLocaleDateString()}
                 </TableCell>
-                <TableCell>{version.name ?? "no value"}</TableCell>
                 <TableCell>
-                  {version.price ? "$" + version.price.toFixed(2) : "no value"}
+                  {version.name ?? ProductTranslate[lang].Tables.noValue}
+                </TableCell>
+                <TableCell>
+                  {version.price
+                    ? "$" + version.price.toFixed(2)
+                    : ProductTranslate[lang].Tables.noValue}
                 </TableCell>
                 {/* Add Discount and Description cells */}
                 <TableCell>
                   {version.discount
                     ? "$" + version.discount.toFixed(2)
-                    : "no value"}
+                    : ProductTranslate[lang].Tables.noValue}
                 </TableCell>
-                <TableCell>{version.stock ?? "no value"}</TableCell>
+                <TableCell>
+                  {version.stock ?? ProductTranslate[lang].Tables.noValue}
+                </TableCell>
                 <TableCell className="max-w-[200px] truncate">
-                  {version.description ?? "no value"}
+                  {version.description ?? ProductTranslate[lang].Tables.noValue}
                 </TableCell>
                 <TableCell>
                   <ConfirmModal
-                    title="Are you sure you want to restore this version? Current data will be replaced."
-                    onConfirm={() => handleRestore(version.versionId)}
+                    title={ProductTranslate[lang].confirmModal.title}
+                    onConfirm={() => void handleRestore(version.versionId)}
                   >
                     <Button variant="outline" size="sm">
-                      Restore
+                      {ProductTranslate[lang].Button.restore}
                     </Button>
                   </ConfirmModal>
                 </TableCell>
@@ -121,7 +137,7 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
           ) : (
             <TableRow>
               <TableCell colSpan={8} className="text-center">
-                No versions found
+                {ProductTranslate[lang].Tables.noVersion}
               </TableCell>
             </TableRow>
           )}

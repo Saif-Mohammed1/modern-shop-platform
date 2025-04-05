@@ -3,13 +3,13 @@ export const contactUsControllerTranslate = {
     model: {
       schema: {
         user: {
-          required: "Contact must belong to a user.",
+          required: 'Contact must belong to a user.',
         },
         subject: {
-          required: "Subject is required",
+          required: 'Subject is required',
         },
         message: {
-          required: "Message is required",
+          required: 'Message is required',
         },
       },
     },
@@ -18,7 +18,7 @@ export const contactUsControllerTranslate = {
     model: {
       schema: {
         user: {
-          required: "Контакт повинен належати користувачеві.",
+          required: 'Контакт повинен належати користувачеві.',
         },
         subject: {
           required: "Тема обов'язкова",

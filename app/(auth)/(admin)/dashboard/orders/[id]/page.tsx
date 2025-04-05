@@ -1,11 +1,12 @@
+import type { Metadata } from "next";
+import { headers } from "next/headers";
+
 import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
-import type { Metadata } from "next";
-import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
 import { lang } from "@/app/lib/utilities/lang";
 import AdminOrderDetails from "@/components/(admin)/dashboard/orders/OrderDetails";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -24,7 +25,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description: ordersTranslate.orders[lang].details.metadata.description,
       keywords: ordersTranslate.orders[lang].details.metadata.keywords,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       title: ordersTranslate.orders[lang].details.metadata.title,
       description: ordersTranslate.orders[lang].details.metadata.description,

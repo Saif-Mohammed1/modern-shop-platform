@@ -4,31 +4,32 @@
 //       headers: newHeaders,
 //     },
 //   });
+import {ipAddress} from '@vercel/functions';
+import {type NextRequest, NextResponse} from 'next/server';
+import {getToken} from 'next-auth/jwt';
+import {withAuth} from 'next-auth/middleware';
+import {v4 as uuidv4} from 'uuid';
 
-import { NextResponse, type NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { withAuth } from "next-auth/middleware";
-import { v4 as uuidv4 } from "uuid";
+import {UserRole} from './app/lib/types/users.types';
+import AppError from './app/lib/utilities/appError';
+import {lang} from './app/lib/utilities/lang';
 // import { rateLimitIp } from "./components/util/rateLimitIp";
-import { rateLimiter } from "./app/lib/utilities/rate-limiter";
-import { UserRole } from "./app/lib/types/users.types";
-import AppError from "./app/lib/utilities/appError";
-import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
-import { lang } from "./app/lib/utilities/lang";
-import { ipAddress } from "@vercel/functions";
+import {rateLimiter} from './app/lib/utilities/rate-limiter';
+import {tooManyRequestsTranslate} from './public/locales/client/(public)/tooManyRequestsTranslate';
+
 // import { createRequestLogger } from "./app/lib/logger/logs";
 const PROTECTED_ROUTES = [
-  "/account",
-  "/checkout",
-  "/confirm-email-change",
+  '/account',
+  '/checkout',
+  '/confirm-email-change',
   // "/verify-email",
 ];
 
-const DEFAULT_LANGUAGE = "uk";
+const DEFAULT_LANGUAGE = 'uk';
 // const CUSTOM_ERROR_PATH = "/custom-error/429";
-const AUTH_PATH = "/auth";
-const DASHBOARD_PATH = "/dashboard";
-const NOT_FOUND_PATH = "/not-found";
+const AUTH_PATH = '/auth';
+const DASHBOARD_PATH = '/dashboard';
+const NOT_FOUND_PATH = '/not-found';
 
 export const config = {
   matcher: [
@@ -39,13 +40,13 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      */
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 };
 
 const authMiddleware = async (req: NextRequest) => {
   const pathname = req.nextUrl.pathname;
-  const isAuth = await getToken({ req });
+  const isAuth = await getToken({req});
   const isAdmin = isAuth?.user?.role === UserRole.ADMIN;
   const response = NextResponse.next();
   const correlationId = uuidv4();
@@ -54,37 +55,34 @@ const authMiddleware = async (req: NextRequest) => {
     // Handle security headers and client identification
 
     const clientIp =
-      req.headers.get("x-forwarded-for") ||
+      req.headers.get('x-forwarded-for') ||
       ipAddress(req) ||
-      req.headers.get("x-real-ip") ||
-      "127.0.0.1";
-    response.headers.set("x-client-ip", clientIp);
+      req.headers.get('x-real-ip') ||
+      '127.0.0.1';
+    response.headers.set('x-client-ip', clientIp);
 
     // Attach to headers
-    response.headers.set("X-Correlation-ID", correlationId);
+    response.headers.set('X-Correlation-ID', correlationId);
 
     if (
       isAuth &&
-      !pathname.startsWith("/api") &&
-      !pathname.startsWith("/verify-email") &&
+      !pathname.startsWith('/api') &&
+      !pathname.startsWith('/verify-email') &&
       !isAuth.user.verification?.emailVerified
     ) {
-      return NextResponse.redirect(new URL("/verify-email", req.url));
+      return NextResponse.redirect(new URL('/verify-email', req.url));
     }
     // Handle rate limiting for API routes
-    if (pathname.startsWith("/api")) {
+    if (pathname.startsWith('/api')) {
       // const { failed } = rateLimitIp(clientIp);
 
       const limit = await rateLimiter.limit(clientIp);
 
       if (!limit.allowed) {
-        response.headers.set("X-RateLimit-Limit", limit.limit.toString());
-        response.headers.set(
-          "X-RateLimit-Remaining",
-          limit.remaining.toString()
-        );
-        response.headers.set("X-RateLimit-Reset", limit.reset.toString());
-        response.headers.set("Retry-After", limit.retryAfter.toString());
+        response.headers.set('X-RateLimit-Limit', limit.limit.toString());
+        response.headers.set('X-RateLimit-Remaining', limit.remaining.toString());
+        response.headers.set('X-RateLimit-Reset', limit.reset.toString());
+        response.headers.set('Retry-After', limit.retryAfter.toString());
         //  return res.status(429).json({
         //    error: `Too many requests. Retry after ${limit.retryAfter} seconds`,
         //  });
@@ -95,49 +93,47 @@ const authMiddleware = async (req: NextRequest) => {
 
       // Apply rate limit headers to all responses
 
-      response.headers.set("X-RateLimit-Limit", limit.limit.toString());
-      response.headers.set("X-RateLimit-Remaining", limit.remaining.toString());
-      response.headers.set("X-RateLimit-Reset", limit.reset.toString());
+      response.headers.set('X-RateLimit-Limit', limit.limit.toString());
+      response.headers.set('X-RateLimit-Remaining', limit.remaining.toString());
+      response.headers.set('X-RateLimit-Reset', limit.reset.toString());
     }
 
     // Handle cookie management
-    const refreshToken = req.cookies.get("refreshAccessToken")?.value;
-    const langCookie = req.cookies.get("lang");
+    const refreshToken = req.cookies.get('refreshAccessToken')?.value;
+    const langCookie = req.cookies.get('lang');
 
     // Remove invalid refresh token
     if (!isAuth && refreshToken) {
-      response.cookies.delete("refreshAccessToken");
-      req.cookies.delete("refreshAccessToken");
+      response.cookies.delete('refreshAccessToken');
+      req.cookies.delete('refreshAccessToken');
     }
 
     // Set default language if missing
     if (!langCookie) {
-      response.cookies.set("lang", DEFAULT_LANGUAGE, {
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+      response.cookies.set('lang', DEFAULT_LANGUAGE, {
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
         maxAge: 60 * 60 * 24 * 365, // 1 year
       });
     }
     // Add this before your existing protected route logic
-    if (pathname === "/verify-email") {
+    if (pathname === '/verify-email') {
       if (!isAuth) {
         return NextResponse.redirect(new URL(AUTH_PATH, req.url));
       }
       if (isAuth.user?.verification?.emailVerified) {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(new URL('/', req.url));
       }
       return NextResponse.next();
     }
     // Handle route protection logic
-    const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-      pathname.startsWith(route)
-    );
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 
     if (isAuth) {
       // Redirect authenticated users away from auth pages
       if (pathname.startsWith(AUTH_PATH)) {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(new URL('/', req.url));
       }
 
       // Admin dashboard protection
@@ -156,18 +152,16 @@ const authMiddleware = async (req: NextRequest) => {
 
     return response;
   } catch (error) {
-    console.error("Middleware error:", error);
+    console.error('Middleware error:', error);
     return NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url));
   }
 };
 
 export default withAuth(authMiddleware, {
   callbacks: {
-    authorized: ({ token, req }) => {
-      const { pathname } = req.nextUrl;
-      const needsAuth = PROTECTED_ROUTES.some((route) =>
-        pathname.startsWith(route)
-      );
+    authorized: ({token, req}) => {
+      const {pathname} = req.nextUrl;
+      const needsAuth = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
       /**
        * Only protect the /account route, all other routes are public
        *
@@ -181,7 +175,7 @@ export default withAuth(authMiddleware, {
     },
   },
   pages: {
-    newUser: "/auth/register",
+    newUser: '/auth/register',
     // signIn: AUTH_PATH,
   },
 });

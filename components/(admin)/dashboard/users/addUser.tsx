@@ -1,31 +1,32 @@
-"use client";
-import { type FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
-import api from "@/app/lib/utilities/api";
-import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
-import { z } from "zod";
-import validator from "validator";
+'use client';
+
+import {useRouter} from 'next/navigation';
+import {type FormEvent, useState} from 'react';
+import toast from 'react-hot-toast';
 import {
-  FiUser,
-  FiMail,
-  FiLock,
-  FiPhone,
-  FiGlobe,
-  FiDollarSign,
   FiCheckSquare,
-} from "react-icons/fi";
-import { AuthMethod, UserRole, UserStatus } from "@/app/lib/types/users.types";
-import toast from "react-hot-toast";
-import Button from "@/components/ui/Button";
+  FiDollarSign,
+  FiGlobe,
+  FiLock,
+  FiMail,
+  FiPhone,
+  FiUser,
+} from 'react-icons/fi';
+import validator from 'validator';
+import {z} from 'zod';
+
+import {AuthMethod, UserRole, UserStatus} from '@/app/lib/types/users.types';
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
+import {usersTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate';
 
 const userSchema = z.object({
   name: z
     .string({
-      required_error:
-        usersTranslate.users[lang].addUsers.form.error.nameRequired,
+      required_error: usersTranslate.users[lang].addUsers.form.error.nameRequired,
     })
     .min(8, usersTranslate.users[lang].addUsers.form.error.nameTooSmall)
     .max(50, usersTranslate.users[lang].addUsers.form.error.nameTooLong),
@@ -37,30 +38,27 @@ const userSchema = z.object({
     .string()
     .refine(
       (val) => !val || validator.isMobilePhone(val),
-      usersTranslate.users[lang].addUsers.form.error.invalidPhone
+      usersTranslate.users[lang].addUsers.form.error.invalidPhone,
     )
     .optional(),
   password: z
     .string()
     .refine(
       (val) => val.length >= 10 && val.length <= 40,
-      usersTranslate.users[lang].addUsers.form.error.passwordLength
+      usersTranslate.users[lang].addUsers.form.error.passwordLength,
     )
     .refine(
       (val) => /[A-Z]/.test(val),
-      usersTranslate.users[lang].addUsers.form.error.passwordUppercase
+      usersTranslate.users[lang].addUsers.form.error.passwordUppercase,
     )
     .refine(
       (val) => /[a-z]/.test(val),
-      usersTranslate.users[lang].addUsers.form.error.passwordLowercase
+      usersTranslate.users[lang].addUsers.form.error.passwordLowercase,
     )
-    .refine(
-      (val) => /\d/.test(val),
-      usersTranslate.users[lang].addUsers.form.error.passwordNumber
-    )
+    .refine((val) => /\d/.test(val), usersTranslate.users[lang].addUsers.form.error.passwordNumber)
     .refine(
       (val) => /[@$!%*?&]/.test(val),
-      usersTranslate.users[lang].addUsers.form.error.passwordSpecial
+      usersTranslate.users[lang].addUsers.form.error.passwordSpecial,
     ),
   role: z.nativeEnum(UserRole),
   status: z.nativeEnum(UserStatus),
@@ -68,8 +66,8 @@ const userSchema = z.object({
     .array(z.nativeEnum(AuthMethod))
     .min(1, usersTranslate.users[lang].addUsers.form.error.authMethodRequired),
   preferences: z.object({
-    language: z.enum(["en", "uk"]), // "es", "fr", "de",
-    currency: z.enum(["USD", "EUR", "GBP", "UAH"]),
+    language: z.enum(['en', 'uk']), // "es", "fr", "de",
+    currency: z.enum(['USD', 'EUR', 'GBP', 'UAH']),
     marketingOptIn: z.boolean(),
   }),
 });
@@ -81,24 +79,24 @@ const AddUser = () => {
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<UserFormValues>({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
     role: UserRole.CUSTOMER,
     status: UserStatus.ACTIVE,
     authMethods: [AuthMethod.EMAIL],
     preferences: {
-      language: "uk",
-      currency: "UAH",
+      language: 'uk',
+      currency: 'UAH',
       marketingOptIn: false,
     },
   });
 
   const handleInputChange = (name: string, value: any) => {
     setFormData((prev) => {
-      if (name.startsWith("preferences.")) {
-        const prefField = name.split(".")[1] as keyof typeof prev.preferences;
+      if (name.startsWith('preferences.')) {
+        const prefField = name.split('.')[1] as keyof typeof prev.preferences;
         return {
           ...prev,
           preferences: {
@@ -107,7 +105,7 @@ const AddUser = () => {
           },
         };
       }
-      return { ...prev, [name]: value };
+      return {...prev, [name]: value};
     });
   };
 
@@ -117,18 +115,19 @@ const AddUser = () => {
     try {
       const validationResult = userSchema.safeParse(formData);
       if (!validationResult.success) {
-        const errors = validationResult.error.errors.reduce<
-          Record<string, string[]>
-        >((acc, err) => {
-          const fieldName = err.path[0];
-          if (fieldName) {
-            if (!acc[fieldName]) {
-              acc[fieldName] = [];
+        const errors = validationResult.error.errors.reduce<Record<string, string[]>>(
+          (acc, err) => {
+            const fieldName = err.path[0];
+            if (fieldName) {
+              if (!acc[fieldName]) {
+                acc[fieldName] = [];
+              }
+              acc[fieldName].push(err.message);
             }
-            acc[fieldName].push(err.message);
-          }
-          return acc;
-        }, {});
+            return acc;
+          },
+          {},
+        );
 
         setErrors(errors);
         return;
@@ -136,16 +135,14 @@ const AddUser = () => {
         // Handle valid form submission
         setErrors({});
       }
-      if (formData.phone === "") {
+      if (formData.phone === '') {
         delete formData.phone;
       }
-      const response = await api.post("/admin/dashboard/users", formData);
+      const response = await api.post('/admin/dashboard/users', formData);
 
       if (response.data.error) throw new Error(response.data.error);
 
-      toast.success(
-        usersTranslate.users[lang].addUsers.function.handleSubmit.success
-      );
+      toast.success(usersTranslate.users[lang].addUsers.function.handleSubmit.success);
       router.push(`/dashboard/users?email=${formData.email}`);
     } catch (error: any) {
       toast.error(error?.message || usersTranslate.users[lang].error.global);
@@ -156,21 +153,17 @@ const AddUser = () => {
 
   return (
     <div className="container mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">
-        {usersTranslate.users[lang].addUsers.title}
-      </h1>
+      <h1 className="text-2xl font-bold mb-6">{usersTranslate.users[lang].addUsers.title}</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
           {/* Name Field */}
           <Input
             icon={<FiUser />}
             name="name"
             value={formData.name}
-            placeholder={
-              usersTranslate.users[lang].addUsers.form.name.placeholder
-            }
-            onChange={(e) => handleInputChange("name", e.target.value)}
+            placeholder={usersTranslate.users[lang].addUsers.form.name.placeholder}
+            onChange={(e) => handleInputChange('name', e.target.value)}
             required
             error={errors.name}
           />
@@ -181,10 +174,8 @@ const AddUser = () => {
             type="email"
             name="email"
             value={formData.email}
-            placeholder={
-              usersTranslate.users[lang].addUsers.form.email.placeholder
-            }
-            onChange={(e) => handleInputChange("email", e.target.value)}
+            placeholder={usersTranslate.users[lang].addUsers.form.email.placeholder}
+            onChange={(e) => handleInputChange('email', e.target.value)}
             required
             error={errors.email}
           />
@@ -195,10 +186,8 @@ const AddUser = () => {
             type="password"
             name="password"
             value={formData.password}
-            placeholder={
-              usersTranslate.users[lang].addUsers.form.password.placeholder
-            }
-            onChange={(e) => handleInputChange("password", e.target.value)}
+            placeholder={usersTranslate.users[lang].addUsers.form.password.placeholder}
+            onChange={(e) => handleInputChange('password', e.target.value)}
             required
             error={errors.password}
           />
@@ -208,11 +197,9 @@ const AddUser = () => {
             icon={<FiPhone />}
             type="tel"
             name="phone"
-            value={formData.phone ?? ""}
-            placeholder={
-              usersTranslate.users[lang].addUsers.form.phone.placeholder
-            }
-            onChange={(e) => handleInputChange("phone", e.target.value)}
+            value={formData.phone ?? ''}
+            placeholder={usersTranslate.users[lang].addUsers.form.phone.placeholder}
+            onChange={(e) => handleInputChange('phone', e.target.value)}
             error={errors.name}
           />
 
@@ -223,7 +210,7 @@ const AddUser = () => {
               label: usersTranslate.users[lang].addUsers.form.roles[role],
             }))}
             value={formData.role}
-            onChange={(e) => handleInputChange("role", e.target.value)}
+            onChange={(e) => handleInputChange('role', e.target.value)}
             placeholder={usersTranslate.users[lang].addUsers.form.role.label}
             icon={<FiUser />}
           />
@@ -235,7 +222,7 @@ const AddUser = () => {
               label: usersTranslate.users[lang].addUsers.form.statuses[status],
             }))}
             value={formData.status}
-            onChange={(e) => handleInputChange("status", e.target.value)}
+            onChange={(e) => handleInputChange('status', e.target.value)}
             placeholder={usersTranslate.users[lang].addUsers.form.status.label}
             icon={<FiCheckSquare />}
           />
@@ -255,7 +242,7 @@ const AddUser = () => {
                       const methods = e.target.checked
                         ? [...formData.authMethods, method]
                         : formData.authMethods.filter((m) => m !== method);
-                      handleInputChange("authMethods", methods);
+                      handleInputChange('authMethods', methods);
                     }}
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                   />
@@ -273,42 +260,24 @@ const AddUser = () => {
 
             <div className="grid gap-4 md:grid-cols-2">
               <Select
-                options={(
-                  ["en", "uk"] as Array<keyof typeof usersTranslate.users>
-                ).map((lg) => ({
+                options={(['en', 'uk'] as Array<keyof typeof usersTranslate.users>).map((lg) => ({
                   value: lg,
-                  label:
-                    usersTranslate.users[lg].addUsers.form.preferences
-                      .languages[lg],
+                  label: usersTranslate.users[lg].addUsers.form.preferences.languages[lg],
                 }))}
                 value={formData.preferences.language}
-                onChange={(e) =>
-                  handleInputChange("preferences.language", e.target.value)
-                }
-                placeholder={
-                  usersTranslate.users[lang].addUsers.form.preferences
-                    .languageLabel
-                }
+                onChange={(e) => handleInputChange('preferences.language', e.target.value)}
+                placeholder={usersTranslate.users[lang].addUsers.form.preferences.languageLabel}
                 icon={<FiGlobe />}
               />
 
               <Select
-                options={(["USD", "EUR", "GBP", "UAH"] as const).map(
-                  (currency) => ({
-                    value: currency,
-                    label:
-                      usersTranslate.users[lang].addUsers.form.preferences
-                        .currencies[currency],
-                  })
-                )}
+                options={(['USD', 'EUR', 'GBP', 'UAH'] as const).map((currency) => ({
+                  value: currency,
+                  label: usersTranslate.users[lang].addUsers.form.preferences.currencies[currency],
+                }))}
                 value={formData.preferences.currency}
-                onChange={(e) =>
-                  handleInputChange("preferences.currency", e.target.value)
-                }
-                placeholder={
-                  usersTranslate.users[lang].addUsers.form.preferences
-                    .currencyLabel
-                }
+                onChange={(e) => handleInputChange('preferences.currency', e.target.value)}
+                placeholder={usersTranslate.users[lang].addUsers.form.preferences.currencyLabel}
                 icon={<FiDollarSign />}
               />
 
@@ -317,17 +286,11 @@ const AddUser = () => {
                   type="checkbox"
                   checked={formData.preferences.marketingOptIn}
                   onChange={(e) =>
-                    handleInputChange(
-                      "preferences.marketingOptIn",
-                      e.target.checked
-                    )
+                    handleInputChange('preferences.marketingOptIn', e.target.checked)
                   }
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                 />
-                {
-                  usersTranslate.users[lang].addUsers.form.preferences
-                    .marketingLabel
-                }
+                {usersTranslate.users[lang].addUsers.form.preferences.marketingLabel}
               </label>
             </div>
           </div>

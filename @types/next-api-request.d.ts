@@ -1,8 +1,7 @@
 // import type{ IUser }  from "@/app/_server/models/user.model";
+import type {IUser} from '@/app/server/models/User.model';
 
-import type { IUser } from "@/app/server/models/User.model";
-
-declare module "next/server" {
+declare module 'next/server' {
   interface NextRequest {
     // user?: UserAuthType; // Adding `user` to NextApiRequest
     user?: IUser; // Adding `user` to NextApiRequest

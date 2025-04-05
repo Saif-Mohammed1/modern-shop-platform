@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import type { Event } from "@/app/lib/types/products.types";
-import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { type ChangeEvent, type FormEvent, useState } from "react";
+import {type ChangeEvent, type FormEvent, useState} from 'react';
+
+import type {Event} from '@/app/lib/types/products.types';
+import {lang} from '@/app/lib/utilities/lang';
+import {accountOrdersTranslate} from '@/public/locales/client/(auth)/account/ordersTranslate';
 
 const OrderCancellation = () => {
-  const [reason, setReason] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [reason, setReason] = useState('');
+  const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const handleReasonChange = (e: Event) => setReason(e.target.value);
-  const handleFeedbackChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
-    setFeedback(e.target.value);
+  const handleFeedbackChange = (e: ChangeEvent<HTMLTextAreaElement>) => setFeedback(e.target.value);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -56,53 +56,32 @@ const OrderCancellation = () => {
               required
             >
               <option value="" disabled>
-                {
-                  accountOrdersTranslate[lang].orderCancellation.form.select
-                    .placeholder
-                }
+                {accountOrdersTranslate[lang].orderCancellation.form.select.placeholder}
               </option>
               <option value="found_cheaper">
-                {
-                  accountOrdersTranslate[lang].orderCancellation.form.select
-                    .options.found_cheaper
-                }
+                {accountOrdersTranslate[lang].orderCancellation.form.select.options.found_cheaper}
               </option>
               <option value="changed_mind">
-                {
-                  accountOrdersTranslate[lang].orderCancellation.form.select
-                    .options.changed_mind
-                }
+                {accountOrdersTranslate[lang].orderCancellation.form.select.options.changed_mind}
               </option>
               <option value="late_delivery">
-                {
-                  accountOrdersTranslate[lang].orderCancellation.form.select
-                    .options.late_delivery
-                }
+                {accountOrdersTranslate[lang].orderCancellation.form.select.options.late_delivery}
               </option>
               <option value="other">
-                {
-                  accountOrdersTranslate[lang].orderCancellation.form.select
-                    .options.other
-                }
+                {accountOrdersTranslate[lang].orderCancellation.form.select.options.other}
               </option>
             </select>
           </div>
 
           <div className="mb-6">
             <label className="block text-gray-600 mb-2" htmlFor="feedback">
-              {
-                accountOrdersTranslate[lang].orderCancellation.form.feedback
-                  .label
-              }
+              {accountOrdersTranslate[lang].orderCancellation.form.feedback.label}
             </label>
             <textarea
               id="feedback"
               value={feedback}
               onChange={handleFeedbackChange}
-              placeholder={
-                accountOrdersTranslate[lang].orderCancellation.form.feedback
-                  .placeholder
-              }
+              placeholder={accountOrdersTranslate[lang].orderCancellation.form.feedback.placeholder}
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></textarea>
           </div>

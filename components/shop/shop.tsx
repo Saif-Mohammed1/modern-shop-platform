@@ -1,17 +1,20 @@
 "use client";
+
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { useEffect, useRef, useState } from "react";
 import { HiFilter } from "react-icons/hi";
-import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+
+import type { Event, ProductType } from "@/app/lib/types/products.types";
+import { lang } from "@/app/lib/utilities/lang";
 import Pagination, {
   type PaginationType,
 } from "@/components/pagination/Pagination";
 import ProductCard from "@/components/products/product-card/productCard";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Event, ProductType } from "@/app/lib/types/products.types";
-import SearchBar from "../ui/SearchBar";
+
 import Filters from "../ui/Filters";
 import MobileFilter from "../ui/MobileFilter";
+import SearchBar from "../ui/SearchBar";
 
 type ShopProps = {
   products: ProductType[];
@@ -62,26 +65,26 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
   const productsContainerRef = useRef<HTMLDivElement>(null);
   const handleCategoryFilterChange = (e: Event) => {
     const value = e.target.value;
-    setCategoryFilter(value);
+    void setCategoryFilter(value);
   };
 
   const handlePriceFilterChange = (e: Event) => {
     const value = e.target.value;
-    setPriceFilter(value);
+    void setPriceFilter(value);
   };
 
   const handleRatingFilterChange = (e: Event) => {
     const value = e.target.value.toLowerCase();
-    setRatingFilter(value);
+    void setRatingFilter(value);
   };
 
   const handleSearch = (e: Event) => {
     const value = e.target.value;
-    setSearchQuery(value);
+    void setSearchQuery(value);
   };
 
   const onPaginationChange = (page: number) => {
-    setCurrentPage(page);
+    void setCurrentPage(page);
   };
   useEffect(() => {
     if (productsContainerRef.current) {
@@ -128,7 +131,7 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
       </div>
 
       {/* Mobile Filters Overlay */}
-      {isMobileFiltersOpen && (
+      {isMobileFiltersOpen ? (
         <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
           {/* // <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
         //   <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto">
@@ -164,7 +167,7 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
           {/* </div>
         </div> */}
         </MobileFilter>
-      )}
+      ) : null}
 
       {/* Products Grid */}
       <div

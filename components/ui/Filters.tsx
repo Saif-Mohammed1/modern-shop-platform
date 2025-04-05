@@ -1,8 +1,11 @@
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import type { FC } from "react";
-import { lang } from "../../app/lib/utilities/lang";
-import type { Event } from "@/app/lib/types/products.types";
-import Select from "./Select";
+import type {FC} from 'react';
+
+import type {Event} from '@/app/lib/types/products.types';
+import {shopPageTranslate} from '@/public/locales/client/(public)/shop/shoppageTranslate';
+
+import {lang} from '../../app/lib/utilities/lang';
+
+import Select from './Select';
 
 type FiltersProps = {
   categories: string[];
@@ -35,23 +38,18 @@ const Filters: FC<FiltersProps> = ({
   handleRatingFilterChange,
   isMobile = false,
 }) => (
-  <div
-    className={`flex ${isMobile ? "flex-col" : "items-center"} gap-4 w-full`}
-  >
+  <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-4 w-full`}>
     <Select
       id="categoryFilter"
-      label={
-        shopPageTranslate[lang].shopPage.content.select.categoryFilter.label
-      }
+      label={shopPageTranslate[lang].shopPage.content.select.categoryFilter.label}
       value={categoryFilter}
       onChange={handleCategoryFilterChange}
       options={[
         {
-          value: "",
-          label:
-            shopPageTranslate[lang].shopPage.content.select.categoryFilter.all,
+          value: '',
+          label: shopPageTranslate[lang].shopPage.content.select.categoryFilter.all,
         },
-        ...categories.map((category) => ({ value: category, label: category })),
+        ...categories.map((category) => ({value: category, label: category})),
       ]}
       isMobile={isMobile}
     />
@@ -63,21 +61,16 @@ const Filters: FC<FiltersProps> = ({
       onChange={handlePriceFilterChange}
       options={[
         {
-          value: "",
-          label:
-            shopPageTranslate[lang].shopPage.content.select.priceFilter.all,
+          value: '',
+          label: shopPageTranslate[lang].shopPage.content.select.priceFilter.all,
         },
         {
-          value: "price",
-          label:
-            shopPageTranslate[lang].shopPage.content.select.priceFilter
-              .lowestPrice,
+          value: 'price',
+          label: shopPageTranslate[lang].shopPage.content.select.priceFilter.lowestPrice,
         },
         {
-          value: "-price",
-          label:
-            shopPageTranslate[lang].shopPage.content.select.priceFilter
-              .highestPrice,
+          value: '-price',
+          label: shopPageTranslate[lang].shopPage.content.select.priceFilter.highestPrice,
         },
       ]}
       isMobile={isMobile}
@@ -90,14 +83,13 @@ const Filters: FC<FiltersProps> = ({
       onChange={handleRatingFilterChange}
       options={[
         {
-          value: "",
-          label:
-            shopPageTranslate[lang].shopPage.content.select.ratingFilter.all,
+          value: '',
+          label: shopPageTranslate[lang].shopPage.content.select.ratingFilter.all,
         },
-        { value: "4", label: "★★★★☆ & up" },
-        { value: "3", label: "★★★☆☆ & up" },
-        { value: "2", label: "★★☆☆☆ & up" },
-        { value: "1", label: "★☆☆☆☆ & up" },
+        {value: '4', label: '★★★★☆ & up'},
+        {value: '3', label: '★★★☆☆ & up'},
+        {value: '2', label: '★★☆☆☆ & up'},
+        {value: '1', label: '★☆☆☆☆ & up'},
       ]}
       isMobile={isMobile}
     />

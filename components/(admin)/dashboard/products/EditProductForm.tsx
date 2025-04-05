@@ -1,31 +1,33 @@
 // components/products/EditProductForm.tsx
-"use client";
+'use client';
 
-import type { ProductType } from "@/app/lib/types/products.types";
-import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import FormProgress from "./form-progress";
-import ProductDetails from "./product-details";
-import ProductPricing from "./product-pricing";
-import ProductShipping from "./product-shipping";
-import ProductInventory from "./product-inventory";
-import ProductImages from "./product-images";
-import ProductReview from "./product-review";
-import FormControls from "./FormControls";
-import api from "@/app/lib/utilities/api";
-import toast from "react-hot-toast";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { useRouter } from "next/navigation";
+import {useRouter} from 'next/navigation';
+import {useState} from 'react';
+import {FormProvider, useForm} from 'react-hook-form';
+import toast from 'react-hot-toast';
+
+import type {ProductType} from '@/app/lib/types/products.types';
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import {productsTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/productTranslate';
+
+import FormProgress from './form-progress';
+import FormControls from './FormControls';
+import ProductDetails from './product-details';
+import ProductImages from './product-images';
+import ProductInventory from './product-inventory';
+import ProductPricing from './product-pricing';
+import ProductReview from './product-review';
+import ProductShipping from './product-shipping';
+
+// components/products/EditProductForm.tsx
 
 interface EditProductFormProps {
   defaultValues: ProductType;
 }
 
-export default function EditProductForm({
-  defaultValues,
-}: EditProductFormProps) {
-  const methods = useForm<ProductType>({ defaultValues });
+export default function EditProductForm({defaultValues}: EditProductFormProps) {
+  const methods = useForm<ProductType>({defaultValues});
   const [step, setStep] = useState(1);
   const totalSteps = 6;
   const router = useRouter();
@@ -33,24 +35,18 @@ export default function EditProductForm({
     let toastLoading;
     if (step === totalSteps) {
       if (data.images) {
-        data.images = data.images.filter((img) => !(typeof img === "object"));
+        data.images = data.images.filter((img) => !(typeof img === 'object'));
       }
       try {
         toastLoading = toast.loading(
-          productsTranslate.products[lang].editProduct.form.productSubmit
-            .loading
+          productsTranslate.products[lang].editProduct.form.productSubmit.loading,
         );
         await api.put(`/admin/dashboard/products/${defaultValues.slug}`, data);
-        toast.success(
-          productsTranslate.products[lang].editProduct.form.productSubmit
-            .success
-        );
-        router.push("/dashboard/products?search=" + defaultValues.name);
+        toast.success(productsTranslate.products[lang].editProduct.form.productSubmit.success);
+        router.push('/dashboard/products?search=' + defaultValues.name);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          toast.error(
-            error?.message || productsTranslate.products[lang].error.general
-          );
+          toast.error(error?.message || productsTranslate.products[lang].error.general);
         } else {
           toast.error(productsTranslate.products[lang].error.general);
         }
@@ -65,15 +61,8 @@ export default function EditProductForm({
   return (
     <div className="max-w-4xl mx-auto p-6">
       <FormProvider {...methods}>
-        <FormProgress
-          currentStep={step}
-          totalSteps={totalSteps}
-          title="Edit Product"
-        />
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-xl shadow-lg p-6"
-        >
+        <FormProgress currentStep={step} totalSteps={totalSteps} title="Edit Product" />
+        <form onSubmit={() => void handleSubmit} className="bg-white rounded-xl shadow-lg p-6">
           {step === 1 && <ProductDetails editMode />}
           {step === 2 && <ProductPricing editMode />}
           {step === 3 && <ProductShipping editMode />}
@@ -88,7 +77,7 @@ export default function EditProductForm({
             totalSteps={totalSteps}
             onPrev={() => setStep((prev) => Math.max(prev - 1, 1))}
           />
-        </form>{" "}
+        </form>{' '}
       </FormProvider>
     </div>
   );

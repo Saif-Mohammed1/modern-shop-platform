@@ -1,12 +1,14 @@
 // components/OrderStatus.js
-import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import Link from "next/link";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import Link from 'next/link';
+import {FaCheckCircle, FaTimesCircle} from 'react-icons/fa';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {accountOrdersTranslate} from '@/public/locales/client/(auth)/account/ordersTranslate';
+
 type OrderStatusProps = {
   isSuccess?: boolean;
 };
-const OrderStatus = ({ isSuccess }: OrderStatusProps) => {
+const OrderStatus = ({isSuccess}: OrderStatusProps) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-8">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md text-center">

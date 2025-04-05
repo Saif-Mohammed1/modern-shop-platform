@@ -1,26 +1,29 @@
 "use client";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
-import RelatedProducts from "@/components/ui/relatedProducts";
-import ReviewSection from "@/components/products/Review/review";
+
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import {
-  AiOutlineHeart,
   AiFillHeart,
+  AiOutlineHeart,
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import StarRatings from "react-star-ratings";
+
 import type { ProductType } from "@/app/lib/types/products.types";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 // import type { ReviewsType } from "@/app/lib/types/reviews.types";
-import { useUser } from "@/components/providers/context/user/user.context";
 import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import ReviewSection from "@/components/products/Review/review";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { useUser } from "@/components/providers/context/user/user.context";
+import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
 import ComponentLoading from "@/components/spinner/componentLoading";
 import Input from "@/components/ui/Input";
+import RelatedProducts from "@/components/ui/relatedProducts";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
 
@@ -108,12 +111,19 @@ const ProductDetail = ({
         );
 
         setRelatedProducts(data.products.docs);
-      } catch (error) {
+      } catch (_error) {
         setRelatedProducts([]);
         // console.error(error);
       }
     };
-    getrelatedProducts();
+    // Immediately invoke and handle promise properly
+    void (async () => {
+      try {
+        await getrelatedProducts();
+      } catch (error) {
+        console.error("Error fetching related products:", error);
+      }
+    })();
   }, [product.category]);
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -204,9 +214,9 @@ const ProductDetail = ({
                 </span>
               </div>
             </div>
-            {user && (
+            {user ? (
               <button
-                onClick={toggleWishlistHandaler}
+                onClick={() => void toggleWishlistHandaler()}
                 className="p-2 hover:bg-gray-100 rounded-full"
                 aria-label={
                   isInWishlist(product._id)
@@ -220,7 +230,7 @@ const ProductDetail = ({
                   <AiOutlineHeart className="w-8 h-8 text-gray-400" />
                 )}
               </button>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-4">
@@ -242,9 +252,7 @@ const ProductDetail = ({
 
             <div className="flex items-center space-x-2">
               <span
-                className={`text-sm font-medium ${
-                  stock > 0 ? "text-green-600" : "text-red-600"
-                }`}
+                className={`text-sm font-medium ${stock > 0 ? "text-green-600" : "text-red-600"}`}
               >
                 {stock > 0
                   ? `${shopPageTranslate[lang].content.inStock}`
@@ -287,7 +295,7 @@ const ProductDetail = ({
               </div>
 
               <button
-                onClick={handleAddToCart}
+                onClick={() => void handleAddToCart()}
                 disabled={stock === 0}
                 className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${
                   stock === 0
@@ -302,7 +310,7 @@ const ProductDetail = ({
               </button>
             </div>
 
-            {product.discountExpire && (
+            {product.discountExpire ? (
               <div className="bg-yellow-50 p-3 rounded-lg">
                 <p className="text-sm text-yellow-700">
                   {shopPageTranslate[lang].content.discountExpires}{" "}
@@ -314,7 +322,7 @@ const ProductDetail = ({
                   {/* {formatDateTime(product.discountExpire)} */}
                 </p>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Product Specifications */}
@@ -323,13 +331,14 @@ const ProductDetail = ({
               {shopPageTranslate[lang].content.specifications}
             </h3>
             <dl className="grid grid-cols-2 gap-4">
-              {product.attributes &&
-                Object.entries(product.attributes).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <dt className="text-gray-600 capitalize">{key}</dt>
-                    <dd className="text-gray-900 font-medium">{value}</dd>
-                  </div>
-                ))}
+              {product.attributes
+                ? Object.entries(product.attributes).map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <dt className="text-gray-600 capitalize">{key}</dt>
+                      <dd className="text-gray-900 font-medium">{value}</dd>
+                    </div>
+                  ))
+                : null}
               <div className="flex justify-between">
                 <dt className="text-gray-600">
                   {shopPageTranslate[lang].content.category}

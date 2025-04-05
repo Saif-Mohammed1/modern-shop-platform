@@ -1,21 +1,19 @@
 // src/services/dashboard.service.ts
-import type { DashboardData } from "@/app/lib/types/dashboard.types";
-import { DashboardRepository } from "../repositories/dashboard.repository";
+import type {DashboardData} from '@/app/lib/types/dashboard.types';
+
+import {DashboardRepository} from '../repositories/dashboard.repository';
 
 export class DashboardService {
-  constructor(
-    private readonly repo: DashboardRepository = new DashboardRepository()
-  ) {}
+  constructor(private readonly repo: DashboardRepository = new DashboardRepository()) {}
   async getMainDashboard(): Promise<DashboardData> {
-    const [users, orders, products, reports, refunds, userInterestProducts] =
-      await Promise.all([
-        this.repo.getUserAnalytics(),
-        this.repo.getOrderAnalytics(),
-        this.repo.getProductAnalytics(),
-        this.repo.getReportAnalytics(),
-        this.repo.getRefundAnalytics(),
-        this.repo.getUserInterestAnalytics(),
-      ]);
+    const [users, orders, products, reports, refunds, userInterestProducts] = await Promise.all([
+      this.repo.getUserAnalytics(),
+      this.repo.getOrderAnalytics(),
+      this.repo.getProductAnalytics(),
+      this.repo.getReportAnalytics(),
+      this.repo.getRefundAnalytics(),
+      this.repo.getUserInterestAnalytics(),
+    ]);
 
     return {
       users,

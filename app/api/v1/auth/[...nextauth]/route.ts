@@ -1,26 +1,27 @@
-import { NextRequest } from "next/server";
-import { connectDB } from "@/app/server/db/db";
-import NextAuth, { type AuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { cookies, headers } from "next/headers";
-import AppError from "@/app/lib/utilities/appError";
-import twoFactorController from "@/app/server/controllers/2fa.controller";
-import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import {cookies, headers} from 'next/headers';
+import {NextRequest} from 'next/server';
+import NextAuth, {type AuthOptions} from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
-import tokenManager from "@/app/lib/utilities/TokenManager";
-import sessionController from "@/app/server/controllers/session.controller";
-import authController from "@/app/server/controllers/auth.controller";
-import ErrorHandler from "@/app/server/controllers/error.controller";
+import AppError from '@/app/lib/utilities/appError';
+import {lang} from '@/app/lib/utilities/lang';
+import tokenManager from '@/app/lib/utilities/TokenManager';
+import twoFactorController from '@/app/server/controllers/2fa.controller';
+import authController from '@/app/server/controllers/auth.controller';
+import ErrorHandler from '@/app/server/controllers/error.controller';
+import sessionController from '@/app/server/controllers/session.controller';
+import {connectDB} from '@/app/server/db/db';
+import {authControllerTranslate} from '@/public/locales/server/authControllerTranslate';
+
 const REFRESH_THRESHOLD = 3 * 60 * 1000; // Refresh 3 minutes before expiration
 const authOptions: AuthOptions = {
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: Number(process.env.NEXTAUTH_SESSION_MAX_AGE || 7) * 60 * 60 * 24, // 7 days
   },
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {},
       async authorize(credentials) {
         const headerStore = await headers();
@@ -32,7 +33,7 @@ const authOptions: AuthOptions = {
         //   }
         // );
         try {
-          const { email, password, code } = credentials as {
+          const {email, password, code} = credentials as {
             email: string;
             password: string;
             code: number;
@@ -41,47 +42,37 @@ const authOptions: AuthOptions = {
           if (!code) {
             if (!email || !password) {
               throw new AppError(
-                authControllerTranslate[
-                  lang
-                ].functions.logIn.invalidEmailOrPassword,
-                400
+                authControllerTranslate[lang].functions.logIn.invalidEmailOrPassword,
+                400,
               );
             }
-            req = new NextRequest(
-              new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth"),
-              {
-                headers: headerStore,
-                method: "POST",
-                body: JSON.stringify({
-                  email: email,
-                  password: password,
-                }),
-              }
-            );
+            req = new NextRequest(new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + '/auth'), {
+              headers: headerStore,
+              method: 'POST',
+              body: JSON.stringify({
+                email: email,
+                password: password,
+              }),
+            });
 
             const result = await authController.login(req);
             const statusCode = result.status;
-            const { user } = await result.json(); // Extract JSON data
+            const {user} = await result.json(); // Extract JSON data
             // Use a type guard to check if `user` has `requires2FA`
 
-            if (
-              statusCode === 202 ||
-              ("requires2FA" in user && user.requires2FA)
-            ) {
+            if (statusCode === 202 || ('requires2FA' in user && user.requires2FA)) {
               throw new AppError(
                 authControllerTranslate[lang].functions.logIn.twoFactorRequired,
-                401
+                401,
               );
             }
             if (!user || statusCode !== 200) {
               throw new AppError(
-                authControllerTranslate[
-                  lang
-                ].functions.logIn.invalidEmailOrPassword,
-                400
+                authControllerTranslate[lang].functions.logIn.invalidEmailOrPassword,
+                400,
               );
             }
-            if ("_id" in user) {
+            if ('_id' in user) {
               return {
                 ...user,
                 id: String(user._id),
@@ -90,26 +81,21 @@ const authOptions: AuthOptions = {
             // return null;
           } else {
             req = new NextRequest(
-              new URL(
-                process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/2fa/verify"
-              ),
+              new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + '/auth/2fa/verify'),
               {
                 headers: headerStore,
-                method: "PUT",
+                method: 'PUT',
                 body: JSON.stringify({
                   code: code,
                   email,
                 }),
-              }
+              },
             );
             const result = await twoFactorController.verify2FALogin(req);
-            const { user } = await result.json(); // Extract JSON data
+            const {user} = await result.json(); // Extract JSON data
 
             if (!user) {
-              throw new AppError(
-                authControllerTranslate[lang].errors.notFoundUser,
-                400
-              );
+              throw new AppError(authControllerTranslate[lang].errors.notFoundUser, 400);
             }
             return {
               ...user,
@@ -117,15 +103,13 @@ const authOptions: AuthOptions = {
               accessToken: user.accessToken,
               accessTokenExpires:
                 Date.now() +
-                Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
-                  60 *
-                  1000,
+                Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60 * 1000,
             };
           }
         } catch (error) {
           if (req instanceof NextRequest) {
             const err = ErrorHandler(error, req);
-            const { message, statusCode } = await err.json();
+            const {message, statusCode} = await err.json();
             throw new AppError(message, statusCode || 500);
           }
           throw error;
@@ -134,7 +118,7 @@ const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({token, user, trigger, session}) {
       // Initial login
       if (user) {
         // token.user = user as UserAuthType;
@@ -151,7 +135,7 @@ const authOptions: AuthOptions = {
       }
 
       // Session update
-      if (trigger === "update") {
+      if (trigger === 'update') {
         // token.user = session.user;
         // token.accessToken = session.accessToken;
         // token.accessTokenExpires = session.;
@@ -175,8 +159,8 @@ const authOptions: AuthOptions = {
         if (remainingTime < REFRESH_THRESHOLD) {
           try {
             return await refreshAccessTokenHandler(token);
-          } catch (error) {
-            return { ...token, error: "RefreshAccessTokenError" };
+          } catch (_error) {
+            return {...token, error: 'RefreshAccessTokenError'};
           }
         }
       }
@@ -185,10 +169,9 @@ const authOptions: AuthOptions = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({session, token}) {
       if (token.error) {
-        session.error =
-          typeof token.error === "string" ? token.error : String(token.error);
+        session.error = typeof token.error === 'string' ? token.error : String(token.error);
       }
       if (token) {
         session.user = token.user;
@@ -198,8 +181,8 @@ const authOptions: AuthOptions = {
   },
 
   pages: {
-    signIn: "/auth",
-    newUser: "/auth/register",
+    signIn: '/auth',
+    newUser: '/auth/register',
 
     // error: "/auth/error",
   },
@@ -210,14 +193,14 @@ async function refreshAccessTokenHandler(token: any) {
   try {
     const headerStore = await headers();
     const req = new NextRequest(
-      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/refresh-token"),
+      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + '/auth/refresh-token'),
       {
         headers: headerStore,
-        method: "GET",
-      }
+        method: 'GET',
+      },
     );
     const result = await sessionController.refreshAccessToken(req);
-    const { accessToken } = await result.json();
+    const {accessToken} = await result.json();
     tokenManager.setAccessToken(accessToken);
     return {
       ...token,
@@ -225,17 +208,12 @@ async function refreshAccessTokenHandler(token: any) {
         ...token.user,
         accessToken,
         accessTokenExpires:
-          Date.now() +
-          Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
-            60 *
-            1000, // 15 minutes
+          Date.now() + Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60 * 1000, // 15 minutes
       },
-      exp: Math.floor(
-        Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60
-      ), // Set JWT expiration
+      exp: Math.floor(Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60), // Set JWT expiration
     };
   } catch (error) {
-    (await cookies()).delete("refreshAccessToken");
+    (await cookies()).delete('refreshAccessToken');
     // return {
     //   ...token,
     //   error: "RefreshAccessTokenError",
@@ -244,4 +222,4 @@ async function refreshAccessTokenHandler(token: any) {
   }
 }
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+export {handler as GET, handler as POST};

@@ -1,6 +1,10 @@
-import { useState } from "react";
-import { RiCloseCircleLine } from "react-icons/ri";
-import BackupCodesDisplay from "./backupCodesDisplay";
+import {useState} from 'react';
+import {RiCloseCircleLine} from 'react-icons/ri';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {accountTwoFactorTranslate} from '@/public/locales/client/(auth)/account/twoFactorTranslate';
+
+import BackupCodesDisplay from './backupCodesDisplay';
 
 const RecoveryManagement = ({
   onRegenerate,
@@ -16,7 +20,9 @@ const RecoveryManagement = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Recovery Codes</h2>
+        <h2 className="text-lg font-semibold">
+          {accountTwoFactorTranslate[lang].RecoveryManagement.title}
+        </h2>
         <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
           <RiCloseCircleLine className="w-5 h-5" />
         </button>
@@ -24,8 +30,7 @@ const RecoveryManagement = ({
 
       <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
         <p className="text-sm text-yellow-700">
-          Generating new backup codes will invalidate all previous codes. Make
-          sure to save the new codes in a secure location.
+          {accountTwoFactorTranslate[lang].RecoveryManagement.description}
         </p>
       </div>
 
@@ -34,30 +39,27 @@ const RecoveryManagement = ({
           onClick={() => setConfirm(true)}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg"
         >
-          Generate New Codes
+          {accountTwoFactorTranslate[lang].RecoveryManagement.generateText}
         </button>
       ) : generatedCodes.length ? (
-        <BackupCodesDisplay
-          codes={generatedCodes}
-          onComplete={() => setConfirm(false)}
-        />
+        <BackupCodesDisplay codes={generatedCodes} onComplete={() => setConfirm(false)} />
       ) : (
         <div className="space-y-4">
           <p className="text-gray-600">
-            Are you sure you want to generate new recovery codes?
+            {accountTwoFactorTranslate[lang].RecoveryManagement.confirmMessage}
           </p>
           <div className="flex gap-3">
             <button
-              onClick={onRegenerate}
+              onClick={() => void onRegenerate()}
               className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg"
             >
-              Confirm Regenerate
+              {accountTwoFactorTranslate[lang].RecoveryManagement.confirmText}
             </button>
             <button
               onClick={() => setConfirm(false)}
               className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg"
             >
-              Cancel
+              {accountTwoFactorTranslate[lang].RecoveryManagement.cancelText}
             </button>
           </div>
         </div>

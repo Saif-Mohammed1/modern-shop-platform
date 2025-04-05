@@ -1,18 +1,20 @@
-import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/server/db/db";
-import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
-import { UserRole } from "@/app/lib/types/users.types";
-import ErrorHandler from "@/app/server/controllers/error.controller";
-import userController from "@/app/server/controllers/user.controller";
+import {type NextRequest} from 'next/server';
+
+import {UserRole} from '@/app/lib/types/users.types';
+import ErrorHandler from '@/app/server/controllers/error.controller';
+import userController from '@/app/server/controllers/user.controller';
+import {connectDB} from '@/app/server/db/db';
+import {AuthMiddleware} from '@/app/server/middlewares/auth.middleware';
+
 //  /admin/dashboard/users/[id]
 export const GET = async (
   req: NextRequest,
   props: {
-    params: Promise<{ id: string }>;
-  }
+    params: Promise<{id: string}>;
+  },
 ) => {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
   try {
     await connectDB();
     await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
@@ -51,11 +53,11 @@ export const GET = async (
 export const PATCH = async (
   req: NextRequest,
   props: {
-    params: Promise<{ id: string }>;
-  }
+    params: Promise<{id: string}>;
+  },
 ) => {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
   try {
     await connectDB();
     await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);
@@ -75,11 +77,11 @@ export const PATCH = async (
 export const DELETE = async (
   req: NextRequest,
   props: {
-    params: Promise<{ id: string }>;
-  }
+    params: Promise<{id: string}>;
+  },
 ) => {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
   try {
     await connectDB();
     await AuthMiddleware.requireAuth([UserRole.ADMIN])(req);

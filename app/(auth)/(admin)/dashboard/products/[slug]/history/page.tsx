@@ -1,8 +1,10 @@
-import api from "@/app/lib/utilities/api";
-import AppError from "@/app/lib/utilities/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import ProductVersionHistory from "@/components/products/ProductVersionHistory";
-import { headers } from "next/headers";
+import {headers} from 'next/headers';
+
+import api from '@/app/lib/utilities/api';
+import AppError from '@/app/lib/utilities/appError';
+import ErrorHandler from '@/components/Error/errorHandler';
+import ProductVersionHistory from '@/components/products/ProductVersionHistory';
+
 type SearchParams = {
   sort?: string;
   page?: string;
@@ -14,36 +16,33 @@ const queryParams = async (slug: string, searchParams: SearchParams) => {
   const url = new URLSearchParams();
 
   if (searchParams.sort !== undefined) {
-    url.append("sort", searchParams.sort);
+    url.append('sort', searchParams.sort);
   }
 
   if (searchParams.page !== undefined) {
-    url.append("page", searchParams.page);
+    url.append('page', searchParams.page);
   }
   if (searchParams.limit !== undefined) {
-    url.append("limit", searchParams.limit);
+    url.append('limit', searchParams.limit);
   }
   if (searchParams.actor !== undefined) {
-    url.append("actor", searchParams.actor);
+    url.append('actor', searchParams.actor);
   }
   if (searchParams.action !== undefined) {
-    url.append("action", searchParams.action);
+    url.append('action', searchParams.action);
   }
 
   const queryString = url.toString();
   try {
     const {
       data: {
-        product: { docs, meta, links },
+        product: {docs, meta, links},
       },
     } = await api.get(
-      "/admin/dashboard/products/" +
-        slug +
-        "/history" +
-        (queryString ? `?${queryString}` : ""),
+      '/admin/dashboard/products/' + slug + '/history' + (queryString ? `?${queryString}` : ''),
       {
         headers: Object.fromEntries((await headers()).entries()), // convert headers to object
-      }
+      },
     );
     return {
       docs,
@@ -56,18 +55,16 @@ const queryParams = async (slug: string, searchParams: SearchParams) => {
     throw new AppError(error.message, error.status);
   }
 };
-const page = async (
-  props: {
-    params: Promise<{ slug: string }>;
-    searchParams: Promise<SearchParams>;
-  }
-) => {
+const page = async (props: {
+  params: Promise<{slug: string}>;
+  searchParams: Promise<SearchParams>;
+}) => {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const { slug } = params;
+  const {slug} = params;
 
   try {
-    const { docs, pagination } = await queryParams(slug, searchParams);
+    const {docs, pagination} = await queryParams(slug, searchParams);
 
     return (
       <ProductVersionHistory
@@ -81,7 +78,7 @@ const page = async (
               hasNext: false,
               hasPrev: false,
             },
-            links: { previous: "", next: "" },
+            links: {previous: '', next: ''},
           }
         }
         slug={slug}

@@ -1,6 +1,7 @@
-import { useState } from "react";
-import Button from "./Button";
 import { Dialog, DialogTitle } from "@headlessui/react";
+import { useState } from "react";
+
+import Button from "./Button";
 
 type ConfirmModalProps = {
   title: string;
@@ -13,7 +14,13 @@ const ConfirmModal = ({ title, children, onConfirm }: ConfirmModalProps) => {
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)}>{children}</div>
+      <button
+        type="button"
+        onClick={() => void setIsOpen(true)}
+        className="focus:outline-none"
+      >
+        {children}
+      </button>
 
       <Dialog
         open={isOpen}
@@ -24,12 +31,14 @@ const ConfirmModal = ({ title, children, onConfirm }: ConfirmModalProps) => {
           {/* <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />  */}
 
           {/* Custom Overlay (since Dialog.Overlay was removed) */}
-          {isOpen && (
-            <div
+          {isOpen ? (
+            <button
+              type="button"
+              aria-label="Close"
               className="fixed inset-0 bg-black opacity-30"
               onClick={() => setIsOpen(false)}
             />
-          )}
+          ) : null}
           <div className="relative bg-white rounded-lg p-6 mx-4 max-w-sm">
             <DialogTitle className="text-lg font-medium mb-4">
               {title}

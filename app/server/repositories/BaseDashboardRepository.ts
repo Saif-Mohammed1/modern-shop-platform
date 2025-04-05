@@ -1,16 +1,15 @@
 // src/repositories/dashboard.repo.ts
 // import { SecurityDashboardData } from "@/app/lib/types/security.types";
 // import { Types } from "mongoose";
-
-import type { DashboardData } from "@/app/lib/types/dashboard.types";
+import type {DashboardData} from '@/app/lib/types/dashboard.types';
 
 export interface BaseDashboardRepository {
-  getUserAnalytics(): Promise<DashboardData["users"]>;
-  getProductAnalytics(): Promise<DashboardData["products"]>;
-  getOrderAnalytics(): Promise<DashboardData["orders"]>;
-  getReportAnalytics(): Promise<DashboardData["reports"]>;
-  getRefundAnalytics(): Promise<DashboardData["refunds"]>;
-  getUserInterestAnalytics(): Promise<DashboardData["userInterestProducts"]>;
+  getUserAnalytics(): Promise<DashboardData['users']>;
+  getProductAnalytics(): Promise<DashboardData['products']>;
+  getOrderAnalytics(): Promise<DashboardData['orders']>;
+  getReportAnalytics(): Promise<DashboardData['reports']>;
+  getRefundAnalytics(): Promise<DashboardData['refunds']>;
+  getUserInterestAnalytics(): Promise<DashboardData['userInterestProducts']>;
 
   // getRecentActivities(): Promise<{
   //   recentOrders: any[];

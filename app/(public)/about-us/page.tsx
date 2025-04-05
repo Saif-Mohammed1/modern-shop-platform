@@ -1,6 +1,7 @@
-import { aboutUsTranslate } from "@/public/locales/client/(public)/aboutUsTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Metadata } from "next";
+import type {Metadata} from 'next';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {aboutUsTranslate} from '@/public/locales/client/(public)/aboutUsTranslate';
 
 export const metadata: Metadata = {
   title: aboutUsTranslate[lang].metadata.title,

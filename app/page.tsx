@@ -1,10 +1,13 @@
-import ErrorHandler from "@/components/Error/errorHandler";
-import HomeComponent from "@/components/home/home";
-import api from "@/app/lib/utilities/api";
-import type { Metadata } from "next";
-import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { headers } from "next/headers";
+import type {Metadata} from 'next';
+import {headers} from 'next/headers';
+
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import ErrorHandler from '@/components/Error/errorHandler';
+import HomeComponent from '@/components/home/home';
+
+import {rootStaticPagesTranslate} from '../public/locales/client/(public)/rootStaticPagesTranslate';
+
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 export const metadata: Metadata = {
   title: rootStaticPagesTranslate[lang].home.metadata.title,
@@ -15,7 +18,7 @@ export default async function Home() {
   try {
     const headersStore = await headers();
     const headersObj = Object.fromEntries(headersStore.entries());
-    const { data } = await api.get("/shop/home", {
+    const {data} = await api.get('/shop/home', {
       headers: headersObj,
     });
 

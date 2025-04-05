@@ -1,18 +1,20 @@
 // src/repositories/impl/dashboard.repo.ts
-import { DateTime } from "luxon";
-import { Model, Types } from "mongoose";
-import type { BaseDashboardRepository } from "./BaseDashboardRepository";
-import UserModel from "../models/User.model";
-import OrderModel from "../models/Order.model";
-import ProductModel from "../models/Product.model";
+import {DateTime} from 'luxon';
+import type {Model, Types} from 'mongoose';
 
-import CartModel from "../models/Cart.model";
-import WishlistModel from "../models/Wishlist.model";
 // import { SecurityDashboardData } from "@/app/lib/types/security.types";
-import { UserStatus } from "@/app/lib/types/users.types";
-import { OrderStatus } from "@/app/lib/types/orders.types";
-import RefundModel from "../models/Refund.model";
-import ReportModel from "../models/Report.model";
+import {OrderStatus} from '@/app/lib/types/orders.types';
+import {UserStatus} from '@/app/lib/types/users.types';
+
+import CartModel from '../models/Cart.model';
+import OrderModel from '../models/Order.model';
+import ProductModel from '../models/Product.model';
+import RefundModel from '../models/Refund.model';
+import ReportModel from '../models/Report.model';
+import UserModel from '../models/User.model';
+import WishlistModel from '../models/Wishlist.model';
+
+import type {BaseDashboardRepository} from './BaseDashboardRepository';
 
 interface AggregationResult {
   [key: string]: any[];
@@ -21,10 +23,10 @@ interface AggregationResult {
 export class DashboardRepository implements BaseDashboardRepository {
   async getUserAnalytics() {
     const now = DateTime.now().toJSDate();
-    const last24h = DateTime.now().minus({ days: 1 }).toJSDate();
-    const last7d = DateTime.now().minus({ days: 7 }).toJSDate();
-    const lastWeekDate = DateTime.now().minus({ weeks: 1 }).toJSDate();
-    const last8WeekDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
+    const last24h = DateTime.now().minus({days: 1}).toJSDate();
+    const last7d = DateTime.now().minus({days: 7}).toJSDate();
+    const lastWeekDate = DateTime.now().minus({weeks: 1}).toJSDate();
+    const last8WeekDate = DateTime.now().minus({weeks: 8}).toJSDate();
     // const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     // const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     // const lastWeekDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -33,24 +35,18 @@ export class DashboardRepository implements BaseDashboardRepository {
       {
         $facet: {
           // User Analytics
-          total: [{ $count: "total" }],
-          active: [
-            { $match: { status: UserStatus.ACTIVE } },
-            { $count: "active" },
-          ],
-          recent: [
-            { $match: { createdAt: { $gte: lastWeekDate } } },
-            { $count: "recent" },
-          ],
+          total: [{$count: 'total'}],
+          active: [{$match: {status: UserStatus.ACTIVE}}, {$count: 'active'}],
+          recent: [{$match: {createdAt: {$gte: lastWeekDate}}}, {$count: 'recent'}],
           demographics: [
             {
               $group: {
-                _id: "$preferences.language",
-                count: { $sum: 1 },
-                devices: { $addToSet: "$security.loginHistory.device" },
+                _id: '$preferences.language',
+                count: {$sum: 1},
+                devices: {$addToSet: '$security.loginHistory.device'},
               },
             },
-            { $sort: { count: -1 } },
+            {$sort: {count: -1}},
           ],
 
           // Security Analytics
@@ -60,23 +56,19 @@ export class DashboardRepository implements BaseDashboardRepository {
                 _id: null,
                 lockedAccounts: {
                   $sum: {
-                    $cond: [
-                      { $gt: ["$security.rateLimits.login.lockUntil", now] },
-                      1,
-                      0,
-                    ],
+                    $cond: [{$gt: ['$security.rateLimits.login.lockUntil', now]}, 1, 0],
                   },
                 },
                 twoFactorAdoption: {
-                  $sum: { $cond: ["$security.twoFactorEnabled", 1, 0] },
+                  $sum: {$cond: ['$security.twoFactorEnabled', 1, 0]},
                 },
                 highRiskUsers: {
                   $sum: {
                     $cond: [
                       {
                         $or: [
-                          "$security.behavioralFlags.impossibleTravel",
-                          "$security.behavioralFlags.suspiciousDeviceChange",
+                          '$security.behavioralFlags.impossibleTravel',
+                          '$security.behavioralFlags.suspiciousDeviceChange',
                         ],
                       },
                       1,
@@ -89,20 +81,20 @@ export class DashboardRepository implements BaseDashboardRepository {
           ],
 
           authActivity: [
-            { $unwind: "$security.loginHistory" },
+            {$unwind: '$security.loginHistory'},
             {
-              $match: { "security.loginHistory.timestamp": { $gte: last24h } },
+              $match: {'security.loginHistory.timestamp': {$gte: last24h}},
             },
             {
               $group: {
                 _id: null,
                 logins: {
-                  $sum: { $cond: ["$security.loginHistory.success", 1, 0] },
+                  $sum: {$cond: ['$security.loginHistory.success', 1, 0]},
                 },
                 failures: {
-                  $sum: { $cond: ["$security.loginHistory.success", 0, 1] },
+                  $sum: {$cond: ['$security.loginHistory.success', 0, 1]},
                 },
-                locations: { $addToSet: "$security.loginHistory.location" },
+                locations: {$addToSet: '$security.loginHistory.location'},
               },
             },
           ],
@@ -113,16 +105,12 @@ export class DashboardRepository implements BaseDashboardRepository {
                 _id: null,
                 impossibleTravel: {
                   $sum: {
-                    $cond: ["$security.behavioralFlags.impossibleTravel", 1, 0],
+                    $cond: ['$security.behavioralFlags.impossibleTravel', 1, 0],
                   },
                 },
                 suspiciousDevices: {
                   $sum: {
-                    $cond: [
-                      "$security.behavioralFlags.suspiciousDeviceChange",
-                      1,
-                      0,
-                    ],
+                    $cond: ['$security.behavioralFlags.suspiciousDeviceChange', 1, 0],
                   },
                 },
                 // botAttempts: {
@@ -132,9 +120,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                   $sum: {
                     $size: {
                       $filter: {
-                        input: "$security.loginHistory",
-                        as: "login",
-                        cond: "$$login.isBot",
+                        input: '$security.loginHistory',
+                        as: 'login',
+                        cond: '$$login.isBot',
                       },
                     },
                   },
@@ -149,71 +137,63 @@ export class DashboardRepository implements BaseDashboardRepository {
                 _id: null,
                 loginLockouts: {
                   $sum: {
-                    $cond: [
-                      { $gt: ["$security.rateLimits.login.lockUntil", now] },
-                      1,
-                      0,
-                    ],
+                    $cond: [{$gt: ['$security.rateLimits.login.lockUntil', now]}, 1, 0],
                   },
                 },
                 passwordResets: {
-                  $sum: "$security.rateLimits.passwordReset.attempts",
+                  $sum: '$security.rateLimits.passwordReset.attempts',
                 },
               },
             },
           ],
 
           activityTrends: [
-            { $unwind: "$security.loginHistory" },
-            { $match: { "security.loginHistory.timestamp": { $gte: last7d } } },
+            {$unwind: '$security.loginHistory'},
+            {$match: {'security.loginHistory.timestamp': {$gte: last7d}}},
             {
               $group: {
                 _id: {
                   $dateToString: {
-                    format: "%Y-%m-%d",
-                    date: "$security.loginHistory.timestamp",
+                    format: '%Y-%m-%d',
+                    date: '$security.loginHistory.timestamp',
                   },
                 },
-                attempts: { $sum: 1 },
+                attempts: {$sum: 1},
                 failures: {
-                  $sum: { $cond: ["$security.loginHistory.success", 0, 1] },
+                  $sum: {$cond: ['$security.loginHistory.success', 0, 1]},
                 },
               },
             },
-            { $sort: { _id: 1 } },
+            {$sort: {_id: 1}},
           ],
           trafficSources: [
-            { $unwind: "$security.loginHistory" },
+            {$unwind: '$security.loginHistory'},
             {
               $match: {
-                "security.loginHistory.timestamp": { $gte: last7d },
-                "security.loginHistory.success": true,
-                "security.loginHistory.isBot": false,
+                'security.loginHistory.timestamp': {$gte: last7d},
+                'security.loginHistory.success': true,
+                'security.loginHistory.isBot': false,
               },
             },
             {
               $group: {
                 _id: {
-                  city: "$security.loginHistory.location.city",
-                  country: "$security.loginHistory.location.country",
+                  city: '$security.loginHistory.location.city',
+                  country: '$security.loginHistory.location.country',
                 },
-                logins: { $sum: 1 },
-                uniqueUsers: { $addToSet: "$_id" },
-                devices: { $addToSet: "$security.loginHistory.device" },
-                browsers: { $addToSet: "$security.loginHistory.browser" },
+                logins: {$sum: 1},
+                uniqueUsers: {$addToSet: '$_id'},
+                devices: {$addToSet: '$security.loginHistory.device'},
+                browsers: {$addToSet: '$security.loginHistory.browser'},
                 coordinates: {
                   $first: {
-                    lat: "$security.loginHistory.location.latitude",
-                    lng: "$security.loginHistory.location.longitude",
+                    lat: '$security.loginHistory.location.latitude',
+                    lng: '$security.loginHistory.location.longitude',
                   },
                 },
                 riskScore: {
                   $avg: {
-                    $cond: [
-                      { $gt: ["$security.rateLimits.login.attempts", 3] },
-                      1,
-                      0,
-                    ],
+                    $cond: [{$gt: ['$security.rateLimits.login.attempts', 3]}, 1, 0],
                   },
                 },
               },
@@ -221,42 +201,42 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $project: {
                 _id: 0,
-                city: "$_id.city",
-                country: "$_id.country",
+                city: '$_id.city',
+                country: '$_id.country',
                 logins: 1,
-                uniqueUsers: { $size: "$uniqueUsers" },
-                commonDevices: { $slice: ["$devices", 3] },
-                commonBrowsers: { $slice: ["$browsers", 2] },
+                uniqueUsers: {$size: '$uniqueUsers'},
+                commonDevices: {$slice: ['$devices', 3]},
+                commonBrowsers: {$slice: ['$browsers', 2]},
                 coordinates: 1,
               },
             },
-            { $sort: { logins: -1 } },
-            { $limit: 20 },
+            {$sort: {logins: -1}},
+            {$limit: 20},
           ],
 
           // Add device/browser breakdown
           deviceUsage: [
-            { $unwind: "$security.loginHistory" },
+            {$unwind: '$security.loginHistory'},
             {
               $group: {
                 _id: {
-                  device: "$security.loginHistory.device",
-                  os: "$security.loginHistory.os",
+                  device: '$security.loginHistory.device',
+                  os: '$security.loginHistory.os',
                 },
-                count: { $sum: 1 },
-                cities: { $addToSet: "$security.loginHistory.location.city" },
+                count: {$sum: 1},
+                cities: {$addToSet: '$security.loginHistory.location.city'},
               },
             },
             {
               $project: {
                 _id: 0, // 👈 This removes the _id from the output
-                device: "$_id.device",
-                os: "$_id.os",
+                device: '$_id.device',
+                os: '$_id.os',
                 count: 1,
-                citiesCoverage: { $size: "$cities" },
+                citiesCoverage: {$size: '$cities'},
               },
             },
-            { $sort: { count: -1 } },
+            {$sort: {count: -1}},
           ],
           // weeklyGrowth: [
           //   {
@@ -355,38 +335,38 @@ export class DashboardRepository implements BaseDashboardRepository {
           weeklyGrowth: [
             {
               $match: {
-                "security.loginHistory.timestamp": {
+                'security.loginHistory.timestamp': {
                   $gte: last8WeekDate,
                 },
               },
             },
             {
-              $unwind: "$security.loginHistory",
+              $unwind: '$security.loginHistory',
             },
             {
               $group: {
                 _id: {
                   year: {
-                    $isoWeekYear: "$security.loginHistory.timestamp",
+                    $isoWeekYear: '$security.loginHistory.timestamp',
                   },
                   week: {
-                    $isoWeek: "$security.loginHistory.timestamp",
+                    $isoWeek: '$security.loginHistory.timestamp',
                   },
                 },
-                currentWeekLogins: { $sum: 1 },
+                currentWeekLogins: {$sum: 1},
               },
             },
             {
-              $sort: { "_id.year": 1, "_id.week": 1 },
+              $sort: {'_id.year': 1, '_id.week': 1},
             },
             {
               $group: {
                 _id: null,
                 weeks: {
                   $push: {
-                    week: "$_id.week",
-                    year: "$_id.year",
-                    logins: "$currentWeekLogins",
+                    week: '$_id.week',
+                    year: '$_id.year',
+                    logins: '$currentWeekLogins',
                   },
                 },
               },
@@ -395,28 +375,25 @@ export class DashboardRepository implements BaseDashboardRepository {
               $project: {
                 weeklyGrowth: {
                   $map: {
-                    input: "$weeks",
-                    as: "currentWeek",
+                    input: '$weeks',
+                    as: 'currentWeek',
                     in: {
-                      week: "$$currentWeek.week",
-                      year: "$$currentWeek.year",
-                      currentLogins: "$$currentWeek.logins",
+                      week: '$$currentWeek.week',
+                      year: '$$currentWeek.year',
+                      currentLogins: '$$currentWeek.logins',
                       previousLogins: {
                         $let: {
                           vars: {
                             prevIndex: {
-                              $subtract: [
-                                { $indexOfArray: ["$weeks", "$$currentWeek"] },
-                                1,
-                              ],
+                              $subtract: [{$indexOfArray: ['$weeks', '$$currentWeek']}, 1],
                             },
                           },
                           in: {
                             $cond: [
-                              { $lt: ["$$prevIndex", 0] },
+                              {$lt: ['$$prevIndex', 0]},
                               0,
                               {
-                                $arrayElemAt: ["$weeks.logins", "$$prevIndex"],
+                                $arrayElemAt: ['$weeks.logins', '$$prevIndex'],
                               },
                             ],
                           },
@@ -427,24 +404,24 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
               },
             },
-            { $unwind: "$weeklyGrowth" },
+            {$unwind: '$weeklyGrowth'},
             {
               $project: {
                 _id: 0,
                 label: {
                   $concat: [
-                    "Week ",
-                    { $toString: "$weeklyGrowth.week" },
-                    " ",
-                    { $toString: "$weeklyGrowth.year" },
+                    'Week ',
+                    {$toString: '$weeklyGrowth.week'},
+                    ' ',
+                    {$toString: '$weeklyGrowth.year'},
                   ],
                 },
-                currentLogins: "$weeklyGrowth.currentLogins",
-                previousLogins: "$weeklyGrowth.previousLogins",
+                currentLogins: '$weeklyGrowth.currentLogins',
+                previousLogins: '$weeklyGrowth.previousLogins',
                 growthPercentage: {
                   $cond: [
                     {
-                      $eq: ["$weeklyGrowth.previousLogins", 0],
+                      $eq: ['$weeklyGrowth.previousLogins', 0],
                     },
                     0,
                     {
@@ -453,11 +430,11 @@ export class DashboardRepository implements BaseDashboardRepository {
                           $divide: [
                             {
                               $subtract: [
-                                "$weeklyGrowth.currentLogins",
-                                "$weeklyGrowth.previousLogins",
+                                '$weeklyGrowth.currentLogins',
+                                '$weeklyGrowth.previousLogins',
                               ],
                             },
-                            "$weeklyGrowth.previousLogins",
+                            '$weeklyGrowth.previousLogins',
                           ],
                         },
                         100,
@@ -469,8 +446,8 @@ export class DashboardRepository implements BaseDashboardRepository {
             },
             {
               $sort: {
-                "weeklyGrowth.year": 1,
-                "weeklyGrowth.week": 1,
+                'weeklyGrowth.year': 1,
+                'weeklyGrowth.week': 1,
               },
             },
           ],
@@ -479,71 +456,43 @@ export class DashboardRepository implements BaseDashboardRepository {
     ]);
     return {
       // User Analytics
-      totalUsers: this.getFirstNumber(result.total, "total"),
-      activeUsers: this.getFirstNumber(result.active, "active"),
-      recentSignups: this.getFirstNumber(result.recent, "recent"),
+      totalUsers: this.getFirstNumber(result.total, 'total'),
+      activeUsers: this.getFirstNumber(result.active, 'active'),
+      recentSignups: this.getFirstNumber(result.recent, 'recent'),
       languageDistribution: this.mapToObject(result.demographics),
       geographicalInsights: {
         // topLocations: result.trafficSources,
         topLocations: await Promise.all(
           result.trafficSources.map(async (city: any) => ({
             ...city,
-            growthPercentage: await this.calculateCityGrowth(
-              city.city,
-              city.country
-            ),
-          }))
+            growthPercentage: await this.calculateCityGrowth(city.city, city.country),
+          })),
         ),
         deviceDistribution: result.deviceUsage,
-        totalCities: new Set(
-          result.trafficSources.flatMap((t: any) => `${t.city}, ${t.country}`)
-        ).size,
+        totalCities: new Set(result.trafficSources.flatMap((t: any) => `${t.city}, ${t.country}`))
+          .size,
       },
       // Security Insights
       security: {
-        twoFactorAdoption: this.getFirstNumber(
-          result.securitySummary,
-          "twoFactorAdoption"
-        ),
-        lockedAccounts: this.getFirstNumber(
-          result.securitySummary,
-          "lockedAccounts"
-        ),
-        highRiskUsers: this.getFirstNumber(
-          result.securitySummary,
-          "highRiskUsers"
-        ),
+        twoFactorAdoption: this.getFirstNumber(result.securitySummary, 'twoFactorAdoption'),
+        lockedAccounts: this.getFirstNumber(result.securitySummary, 'lockedAccounts'),
+        highRiskUsers: this.getFirstNumber(result.securitySummary, 'highRiskUsers'),
 
         authActivity: {
-          loginsLast24h: this.getFirstNumber(result.authActivity, "logins"),
-          failedAttempts: this.getFirstNumber(result.authActivity, "failures"),
+          loginsLast24h: this.getFirstNumber(result.authActivity, 'logins'),
+          failedAttempts: this.getFirstNumber(result.authActivity, 'failures'),
           uniqueLocations: result.authActivity[0]?.locations?.length || 0,
         },
 
         threats: {
-          impossibleTravel: this.getFirstNumber(
-            result.threatAnalysis,
-            "impossibleTravel"
-          ),
-          suspiciousDevices: this.getFirstNumber(
-            result.threatAnalysis,
-            "suspiciousDevices"
-          ),
-          botAttempts: this.getFirstNumber(
-            result.threatAnalysis,
-            "botAttempts"
-          ),
+          impossibleTravel: this.getFirstNumber(result.threatAnalysis, 'impossibleTravel'),
+          suspiciousDevices: this.getFirstNumber(result.threatAnalysis, 'suspiciousDevices'),
+          botAttempts: this.getFirstNumber(result.threatAnalysis, 'botAttempts'),
         },
 
         rateLimits: {
-          activeLockouts: this.getFirstNumber(
-            result.rateLimits,
-            "loginLockouts"
-          ),
-          passwordResetAttempts: this.getFirstNumber(
-            result.rateLimits,
-            "passwordResets"
-          ),
+          activeLockouts: this.getFirstNumber(result.rateLimits, 'loginLockouts'),
+          passwordResetAttempts: this.getFirstNumber(result.rateLimits, 'passwordResets'),
         },
 
         // trends: result.activityTrends.map((t: any) => ({
@@ -557,17 +506,14 @@ export class DashboardRepository implements BaseDashboardRepository {
           attempts: t.attempts,
           successRate:
             t.attempts > 0
-              ? (((t.attempts - t.failures) / t.attempts) * 100).toFixed(1) +
-                "%"
-              : "0%",
+              ? (((t.attempts - t.failures) / t.attempts) * 100).toFixed(1) + '%'
+              : '0%',
         })),
       },
 
       // System Health
       deviceDiversity: {
-        totalDevices: [
-          ...new Set(result.demographics.flatMap((d: any) => d.devices)),
-        ].length,
+        totalDevices: [...new Set(result.demographics.flatMap((d: any) => d.devices))].length,
       },
       // cityGrowth: await Promise.all(
       //   result.trafficSources.map(async (city: any) => ({
@@ -592,8 +538,8 @@ export class DashboardRepository implements BaseDashboardRepository {
     };
   } // Product Analytics
   async getProductAnalytics() {
-    const lastWeekDate = DateTime.now().minus({ weeks: 1 }).toJSDate();
-    const last30d = DateTime.now().minus({ days: 30 }).toJSDate();
+    const lastWeekDate = DateTime.now().minus({weeks: 1}).toJSDate();
+    const last30d = DateTime.now().minus({days: 30}).toJSDate();
 
     const [result] = await ProductModel.aggregate([
       {
@@ -603,17 +549,17 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $group: {
                 _id: null,
-                total: { $sum: 1 },
+                total: {$sum: 1},
                 outOfStock: {
-                  $sum: { $cond: [{ $lte: ["$stock", 0] }, 1, 0] },
+                  $sum: {$cond: [{$lte: ['$stock', 0]}, 1, 0]},
                 },
-                lowStock: { $sum: { $cond: [{ $lte: ["$stock", 10] }, 1, 0] } },
-                active: { $sum: { $cond: ["$active", 1, 0] } },
+                lowStock: {$sum: {$cond: [{$lte: ['$stock', 10]}, 1, 0]}},
+                active: {$sum: {$cond: ['$active', 1, 0]}},
                 totalInventoryValue: {
-                  $sum: { $multiply: ["$price", "$stock"] },
+                  $sum: {$multiply: ['$price', '$stock']},
                 },
                 totalReservedValue: {
-                  $sum: { $multiply: ["$price", "$reserved"] },
+                  $sum: {$multiply: ['$price', '$reserved']},
                 },
               },
             },
@@ -624,10 +570,10 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $group: {
                 _id: null,
-                totalSold: { $sum: "$sold" },
-                totalRevenue: { $sum: { $multiply: ["$price", "$sold"] } },
-                avgSalesPerProduct: { $avg: "$sold" },
-                topSelling: { $max: "$sold" },
+                totalSold: {$sum: '$sold'},
+                totalRevenue: {$sum: {$multiply: ['$price', '$sold']}},
+                avgSalesPerProduct: {$avg: '$sold'},
+                topSelling: {$max: '$sold'},
               },
             },
           ],
@@ -636,20 +582,20 @@ export class DashboardRepository implements BaseDashboardRepository {
           discountAnalysis: [
             {
               $match: {
-                discount: { $gt: 0 },
-                discountExpire: { $exists: true },
+                discount: {$gt: 0},
+                discountExpire: {$exists: true},
               },
             },
             {
               $group: {
                 _id: null,
-                activeDiscounts: { $sum: 1 },
+                activeDiscounts: {$sum: 1},
                 expiringSoon: {
                   $sum: {
-                    $cond: [{ $gt: ["$discountExpire", new Date()] }, 1, 0],
+                    $cond: [{$gt: ['$discountExpire', new Date()]}, 1, 0],
                   },
                 },
-                avgDiscount: { $avg: "$discount" },
+                avgDiscount: {$avg: '$discount'},
               },
             },
           ],
@@ -659,11 +605,11 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $group: {
                 _id: null,
-                avgRating: { $avg: "$ratingsAverage" },
-                totalReviews: { $sum: "$ratingsQuantity" },
+                avgRating: {$avg: '$ratingsAverage'},
+                totalReviews: {$sum: '$ratingsQuantity'},
                 recentlyReviewed: {
                   $sum: {
-                    $cond: [{ $gte: ["$updatedAt", last30d] }, 1, 0],
+                    $cond: [{$gte: ['$updatedAt', last30d]}, 1, 0],
                   },
                 },
               },
@@ -674,11 +620,11 @@ export class DashboardRepository implements BaseDashboardRepository {
           categoryDistribution: [
             {
               $group: {
-                _id: "$category",
-                count: { $sum: 1 },
-                totalSales: { $sum: "$sold" },
-                avgPrice: { $avg: "$price" },
-                avgStock: { $avg: "$stock" },
+                _id: '$category',
+                count: {$sum: 1},
+                totalSales: {$sum: '$sold'},
+                avgPrice: {$avg: '$price'},
+                avgStock: {$avg: '$stock'},
               },
             },
           ],
@@ -687,10 +633,7 @@ export class DashboardRepository implements BaseDashboardRepository {
           recentActivity: [
             {
               $match: {
-                $or: [
-                  { createdAt: { $gte: lastWeekDate } },
-                  { updatedAt: { $gte: lastWeekDate } },
-                ],
+                $or: [{createdAt: {$gte: lastWeekDate}}, {updatedAt: {$gte: lastWeekDate}}],
               },
             },
             {
@@ -698,13 +641,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                 _id: 1,
                 name: 1,
                 type: {
-                  $cond: [
-                    { $gte: ["$createdAt", lastWeekDate] },
-                    "New Product",
-                    "Updated Product",
-                  ],
+                  $cond: [{$gte: ['$createdAt', lastWeekDate]}, 'New Product', 'Updated Product'],
                 },
-                modifiedBy: "$lastModifiedBy",
+                modifiedBy: '$lastModifiedBy',
               },
             },
           ],
@@ -714,13 +653,13 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $group: {
                 _id: null,
-                avgWeight: { $avg: "$shippingInfo.weight" },
+                avgWeight: {$avg: '$shippingInfo.weight'},
                 totalVolume: {
                   $sum: {
                     $multiply: [
-                      "$shippingInfo.dimensions.length",
-                      "$shippingInfo.dimensions.width",
-                      "$shippingInfo.dimensions.height",
+                      '$shippingInfo.dimensions.length',
+                      '$shippingInfo.dimensions.width',
+                      '$shippingInfo.dimensions.height',
                     ],
                   },
                 },
@@ -732,44 +671,44 @@ export class DashboardRepository implements BaseDashboardRepository {
               $match: {
                 $expr: {
                   $or: [
-                    { $lt: ["$stock", "$reserved"] },
-                    { $gt: ["$reserved", { $multiply: ["$stock", 0.5] }] },
+                    {$lt: ['$stock', '$reserved']},
+                    {$gt: ['$reserved', {$multiply: ['$stock', 0.5]}]},
                   ],
                 },
               },
             },
-            { $count: "riskyProducts" },
+            {$count: 'riskyProducts'},
           ],
           weeklyGrowth: [
             {
               $match: {
                 createdAt: {
-                  $gte: DateTime.now().minus({ weeks: 8 }).toJSDate(),
+                  $gte: DateTime.now().minus({weeks: 8}).toJSDate(),
                 },
               },
             },
             {
               $group: {
                 _id: {
-                  year: { $isoWeekYear: "$createdAt" },
-                  week: { $isoWeek: "$createdAt" },
+                  year: {$isoWeekYear: '$createdAt'},
+                  week: {$isoWeek: '$createdAt'},
                 },
-                currentWeekSales: { $sum: "$sold" },
+                currentWeekSales: {$sum: '$sold'},
                 currentWeekRevenue: {
-                  $sum: { $multiply: ["$price", "$sold"] },
+                  $sum: {$multiply: ['$price', '$sold']},
                 },
               },
             },
-            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {$sort: {'_id.year': 1, '_id.week': 1}},
             {
               $group: {
                 _id: null,
                 weeks: {
                   $push: {
-                    week: "$_id.week",
-                    year: "$_id.year",
-                    sales: "$currentWeekSales",
-                    revenue: "$currentWeekRevenue",
+                    week: '$_id.week',
+                    year: '$_id.year',
+                    sales: '$currentWeekSales',
+                    revenue: '$currentWeekRevenue',
                   },
                 },
               },
@@ -778,39 +717,33 @@ export class DashboardRepository implements BaseDashboardRepository {
               $project: {
                 weeklyGrowth: {
                   $map: {
-                    input: "$weeks",
-                    as: "week",
+                    input: '$weeks',
+                    as: 'week',
                     in: {
-                      week: "$$week.week",
-                      year: "$$week.year",
-                      currentSales: "$$week.sales",
+                      week: '$$week.week',
+                      year: '$$week.year',
+                      currentSales: '$$week.sales',
                       previousSales: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.sales",
+                              '$weeks.sales',
                               {
-                                $subtract: [
-                                  { $indexOfArray: ["$weeks", "$$week"] },
-                                  1,
-                                ],
+                                $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                               },
                             ],
                           },
                           0,
                         ],
                       },
-                      currentRevenue: "$$week.revenue",
+                      currentRevenue: '$$week.revenue',
                       previousRevenue: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.revenue",
+                              '$weeks.revenue',
                               {
-                                $subtract: [
-                                  { $indexOfArray: ["$weeks", "$$week"] },
-                                  1,
-                                ],
+                                $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                               },
                             ],
                           },
@@ -822,22 +755,17 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
               },
             },
-            { $unwind: "$weeklyGrowth" },
-            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {$unwind: '$weeklyGrowth'},
+            {$replaceRoot: {newRoot: '$weeklyGrowth'}},
             {
               $project: {
                 _id: 0,
                 label: {
-                  $concat: [
-                    "Week ",
-                    { $toString: "$week" },
-                    " ",
-                    { $toString: "$year" },
-                  ],
+                  $concat: ['Week ', {$toString: '$week'}, ' ', {$toString: '$year'}],
                 },
                 salesGrowth: {
                   $cond: [
-                    { $eq: ["$previousSales", 0] },
+                    {$eq: ['$previousSales', 0]},
                     0,
                     {
                       $round: [
@@ -846,12 +774,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentSales",
-                                    "$previousSales",
-                                  ],
+                                  $subtract: ['$currentSales', '$previousSales'],
                                 },
-                                "$previousSales",
+                                '$previousSales',
                               ],
                             },
                             100,
@@ -864,7 +789,7 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
                 revenueGrowth: {
                   $cond: [
-                    { $eq: ["$previousRevenue", 0] },
+                    {$eq: ['$previousRevenue', 0]},
                     0,
                     {
                       $round: [
@@ -873,12 +798,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentRevenue",
-                                    "$previousRevenue",
-                                  ],
+                                  $subtract: ['$currentRevenue', '$previousRevenue'],
                                 },
-                                "$previousRevenue",
+                                '$previousRevenue',
                               ],
                             },
                             100,
@@ -903,55 +825,34 @@ export class DashboardRepository implements BaseDashboardRepository {
 
       // Core Metrics
       inventory: {
-        total: this.getFirstNumber(result.stockInfo, "total"),
-        outOfStock: this.getFirstNumber(result.stockInfo, "outOfStock"),
-        lowStock: this.getFirstNumber(result.stockInfo, "lowStock"),
-        active: this.getFirstNumber(result.stockInfo, "active"),
-        totalValue: this.getFirstNumber(
-          result.stockInfo,
-          "totalInventoryValue"
-        ),
-        reservedValue: this.getFirstNumber(
-          result.stockInfo,
-          "totalReservedValue"
-        ),
+        total: this.getFirstNumber(result.stockInfo, 'total'),
+        outOfStock: this.getFirstNumber(result.stockInfo, 'outOfStock'),
+        lowStock: this.getFirstNumber(result.stockInfo, 'lowStock'),
+        active: this.getFirstNumber(result.stockInfo, 'active'),
+        totalValue: this.getFirstNumber(result.stockInfo, 'totalInventoryValue'),
+        reservedValue: this.getFirstNumber(result.stockInfo, 'totalReservedValue'),
       },
 
       // Sales Insights
       sales: {
-        totalSold: this.getFirstNumber(result.salesMetrics, "totalSold"),
-        totalRevenue: this.getFirstNumber(result.salesMetrics, "totalRevenue"),
-        avgSales: this.getFirstNumber(
-          result.salesMetrics,
-          "avgSalesPerProduct"
-        ),
-        topSelling: this.getFirstNumber(result.salesMetrics, "topSelling"),
+        totalSold: this.getFirstNumber(result.salesMetrics, 'totalSold'),
+        totalRevenue: this.getFirstNumber(result.salesMetrics, 'totalRevenue'),
+        avgSales: this.getFirstNumber(result.salesMetrics, 'avgSalesPerProduct'),
+        topSelling: this.getFirstNumber(result.salesMetrics, 'topSelling'),
       },
 
       // Promotions
       discounts: {
-        active: this.getFirstNumber(result.discountAnalysis, "activeDiscounts"),
-        expiringSoon: this.getFirstNumber(
-          result.discountAnalysis,
-          "expiringSoon"
-        ),
-        avgDiscount: this.getFirstNumber(
-          result.discountAnalysis,
-          "avgDiscount"
-        ),
+        active: this.getFirstNumber(result.discountAnalysis, 'activeDiscounts'),
+        expiringSoon: this.getFirstNumber(result.discountAnalysis, 'expiringSoon'),
+        avgDiscount: this.getFirstNumber(result.discountAnalysis, 'avgDiscount'),
       },
 
       // Customer Engagement
       engagement: {
-        avgRating: this.getFirstNumber(result.engagementMetrics, "avgRating"),
-        totalReviews: this.getFirstNumber(
-          result.engagementMetrics,
-          "totalReviews"
-        ),
-        recentReviews: this.getFirstNumber(
-          result.engagementMetrics,
-          "recentlyReviewed"
-        ),
+        avgRating: this.getFirstNumber(result.engagementMetrics, 'avgRating'),
+        totalReviews: this.getFirstNumber(result.engagementMetrics, 'totalReviews'),
+        recentReviews: this.getFirstNumber(result.engagementMetrics, 'recentlyReviewed'),
       },
 
       // Category Breakdown
@@ -968,15 +869,12 @@ export class DashboardRepository implements BaseDashboardRepository {
 
       // Logistics
       shipping: {
-        avgWeight: this.getFirstNumber(result.shippingMetrics, "avgWeight"),
-        totalVolume: this.getFirstNumber(result.shippingMetrics, "totalVolume"),
+        avgWeight: this.getFirstNumber(result.shippingMetrics, 'avgWeight'),
+        totalVolume: this.getFirstNumber(result.shippingMetrics, 'totalVolume'),
       },
       // Risk Analysis
       risk: {
-        stockConflicts: this.getFirstNumber(
-          result.riskAnalysis,
-          "riskyProducts"
-        ),
+        stockConflicts: this.getFirstNumber(result.riskAnalysis, 'riskyProducts'),
       },
     };
   }
@@ -984,10 +882,10 @@ export class DashboardRepository implements BaseDashboardRepository {
   async getOrderAnalytics() {
     const now = DateTime.now();
     const periods = {
-      dailyStart: now.startOf("day").toJSDate(),
-      weeklyStart: now.minus({ weeks: 1 }).toJSDate(),
-      monthlyStart: now.minus({ months: 1 }).toJSDate(),
-      yearlyStart: now.minus({ years: 1 }).toJSDate(),
+      dailyStart: now.startOf('day').toJSDate(),
+      weeklyStart: now.minus({weeks: 1}).toJSDate(),
+      monthlyStart: now.minus({months: 1}).toJSDate(),
+      yearlyStart: now.minus({years: 1}).toJSDate(),
     };
 
     const [result] = await OrderModel.aggregate([
@@ -998,15 +896,15 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $group: {
                 _id: null,
-                totalOrders: { $sum: 1 },
+                totalOrders: {$sum: 1},
                 completedOrders: {
                   $sum: {
-                    $cond: [{ $eq: ["$status", OrderStatus.Completed] }, 1, 0],
+                    $cond: [{$eq: ['$status', OrderStatus.Completed]}, 1, 0],
                   },
                 },
-                avgOrderValue: { $avg: "$total" },
-                totalRevenue: { $sum: "$total" },
-                avgItemsPerOrder: { $avg: { $size: "$items" } },
+                avgOrderValue: {$avg: '$total'},
+                totalRevenue: {$sum: '$total'},
+                avgItemsPerOrder: {$avg: {$size: '$items'}},
               },
             },
           ],
@@ -1014,28 +912,24 @@ export class DashboardRepository implements BaseDashboardRepository {
           // Financial Health
           financials: [
             {
-              $match: { status: OrderStatus.Completed },
+              $match: {status: OrderStatus.Completed},
             },
             {
               $group: {
                 _id: null,
-                netRevenue: { $sum: "$total" },
-                totalTax: { $sum: "$tax" },
+                netRevenue: {$sum: '$total'},
+                totalTax: {$sum: '$tax'},
                 avgProcessingCost: {
                   $avg: {
                     $add: [
-                      "$shippingCost",
-                      { $multiply: ["$total", 0.03] }, // Payment processing fee estimate
+                      '$shippingCost',
+                      {$multiply: ['$total', 0.03]}, // Payment processing fee estimate
                     ],
                   },
                 },
                 refunds: {
                   $sum: {
-                    $cond: [
-                      { $eq: ["$status", OrderStatus.Cancelled] },
-                      "$total",
-                      0,
-                    ],
+                    $cond: [{$eq: ['$status', OrderStatus.Cancelled]}, '$total', 0],
                   },
                 },
               },
@@ -1046,19 +940,19 @@ export class DashboardRepository implements BaseDashboardRepository {
           customerInsights: [
             {
               $group: {
-                _id: "$userId",
-                orderCount: { $sum: 1 },
-                totalSpent: { $sum: "$total" },
+                _id: '$userId',
+                orderCount: {$sum: 1},
+                totalSpent: {$sum: '$total'},
               },
             },
             {
               $group: {
                 _id: null,
                 repeatCustomers: {
-                  $sum: { $cond: [{ $gt: ["$orderCount", 1] }, 1, 0] },
+                  $sum: {$cond: [{$gt: ['$orderCount', 1]}, 1, 0]},
                 },
-                avgLifetimeValue: { $avg: "$totalSpent" },
-                topSpender: { $max: "$totalSpent" },
+                avgLifetimeValue: {$avg: '$totalSpent'},
+                topSpender: {$max: '$totalSpent'},
               },
             },
           ],
@@ -1066,20 +960,20 @@ export class DashboardRepository implements BaseDashboardRepository {
           // Product Performance
           productAnalytics: [
             {
-              $unwind: "$items",
+              $unwind: '$items',
             },
             {
               $group: {
-                _id: "$items.productId",
-                productName: { $first: "$items.name" },
-                totalSold: { $sum: "$items.quantity" },
+                _id: '$items.productId',
+                productName: {$first: '$items.name'},
+                totalSold: {$sum: '$items.quantity'},
                 totalRevenue: {
-                  $sum: { $multiply: ["$items.quantity", "$items.finalPrice"] },
+                  $sum: {$multiply: ['$items.quantity', '$items.finalPrice']},
                 },
               },
             },
             {
-              $sort: { totalRevenue: -1 },
+              $sort: {totalRevenue: -1},
             },
             {
               $limit: 10,
@@ -1089,21 +983,21 @@ export class DashboardRepository implements BaseDashboardRepository {
           // Temporal Analysis
           timeSeries: [
             {
-              $match: { createdAt: { $gte: periods.yearlyStart } },
+              $match: {createdAt: {$gte: periods.yearlyStart}},
             },
             {
               $group: {
                 _id: {
-                  year: { $year: "$createdAt" },
-                  month: { $month: "$createdAt" },
+                  year: {$year: '$createdAt'},
+                  month: {$month: '$createdAt'},
                 },
-                count: { $sum: 1 },
-                revenue: { $sum: "$total" },
-                avgOrderValue: { $avg: "$total" },
+                count: {$sum: 1},
+                revenue: {$sum: '$total'},
+                avgOrderValue: {$avg: '$total'},
               },
             },
             {
-              $sort: { "_id.year": 1, "_id.month": 1 },
+              $sort: {'_id.year': 1, '_id.month': 1},
             },
           ],
 
@@ -1111,15 +1005,15 @@ export class DashboardRepository implements BaseDashboardRepository {
           geographicInsights: [
             {
               $group: {
-                _id: "$shippingAddress.city",
-                state: { $first: "$shippingAddress.state" },
-                country: { $first: "$shippingAddress.country" },
-                orderCount: { $sum: 1 },
-                totalRevenue: { $sum: "$total" },
+                _id: '$shippingAddress.city',
+                state: {$first: '$shippingAddress.state'},
+                country: {$first: '$shippingAddress.country'},
+                orderCount: {$sum: 1},
+                totalRevenue: {$sum: '$total'},
               },
             },
             {
-              $sort: { totalRevenue: -1 },
+              $sort: {totalRevenue: -1},
             },
             {
               $limit: 15,
@@ -1130,10 +1024,10 @@ export class DashboardRepository implements BaseDashboardRepository {
           paymentMethods: [
             {
               $group: {
-                _id: "$payment.method",
-                count: { $sum: 1 },
-                totalAmount: { $sum: "$total" },
-                avgAmount: { $avg: "$total" },
+                _id: '$payment.method',
+                count: {$sum: 1},
+                totalAmount: {$sum: '$total'},
+                avgAmount: {$avg: '$total'},
               },
             },
           ],
@@ -1142,14 +1036,14 @@ export class DashboardRepository implements BaseDashboardRepository {
           fulfillment: [
             {
               $group: {
-                _id: "$status",
-                count: { $sum: 1 },
+                _id: '$status',
+                count: {$sum: 1},
                 avgFulfillmentTime: {
                   $avg: {
                     $dateDiff: {
-                      startDate: "$createdAt",
-                      endDate: "$updatedAt",
-                      unit: "hour",
+                      startDate: '$createdAt',
+                      endDate: '$updatedAt',
+                      unit: 'hour',
                     },
                   },
                 },
@@ -1160,7 +1054,7 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $match: {
                 createdAt: {
-                  $gte: DateTime.now().minus({ weeks: 2 }).toJSDate(),
+                  $gte: DateTime.now().minus({weeks: 2}).toJSDate(),
                 },
                 status: OrderStatus.Completed,
               },
@@ -1169,20 +1063,17 @@ export class DashboardRepository implements BaseDashboardRepository {
               $group: {
                 _id: {
                   $dateToString: {
-                    format: "%Y-%U",
-                    date: "$createdAt",
+                    format: '%Y-%U',
+                    date: '$createdAt',
                   },
                 },
                 currentWeek: {
                   $sum: {
                     $cond: [
                       {
-                        $gte: [
-                          "$createdAt",
-                          DateTime.now().startOf("week").toJSDate(),
-                        ],
+                        $gte: ['$createdAt', DateTime.now().startOf('week').toJSDate()],
                       },
-                      "$total",
+                      '$total',
                       0,
                     ],
                   },
@@ -1191,12 +1082,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                   $sum: {
                     $cond: [
                       {
-                        $lt: [
-                          "$createdAt",
-                          DateTime.now().startOf("week").toJSDate(),
-                        ],
+                        $lt: ['$createdAt', DateTime.now().startOf('week').toJSDate()],
                       },
-                      "$total",
+                      '$total',
                       0,
                     ],
                   },
@@ -1205,19 +1093,19 @@ export class DashboardRepository implements BaseDashboardRepository {
             },
             {
               $project: {
-                week: "$_id",
+                week: '$_id',
                 currentWeek: 1,
                 previousWeek: 1,
                 growthRate: {
                   $cond: [
-                    { $eq: ["$previousWeek", 0] },
-                    { $cond: [{ $gt: ["$currentWeek", 0] }, 100, 0] },
+                    {$eq: ['$previousWeek', 0]},
+                    {$cond: [{$gt: ['$currentWeek', 0]}, 100, 0]},
                     {
                       $multiply: [
                         {
                           $divide: [
-                            { $subtract: ["$currentWeek", "$previousWeek"] },
-                            "$previousWeek",
+                            {$subtract: ['$currentWeek', '$previousWeek']},
+                            '$previousWeek',
                           ],
                         },
                         100,
@@ -1230,37 +1118,37 @@ export class DashboardRepository implements BaseDashboardRepository {
           ],
 
           recentOrders: [
-            { $sort: { createdAt: -1 } }, // Separate stage
-            { $limit: 5 }, // Separate stage
+            {$sort: {createdAt: -1}}, // Separate stage
+            {$limit: 5}, // Separate stage
           ],
           weeklyGrowth: [
             {
               $match: {
                 createdAt: {
-                  $gte: DateTime.now().minus({ weeks: 8 }).toJSDate(),
+                  $gte: DateTime.now().minus({weeks: 8}).toJSDate(),
                 },
               },
             },
             {
               $group: {
                 _id: {
-                  year: { $isoWeekYear: "$createdAt" },
-                  week: { $isoWeek: "$createdAt" },
+                  year: {$isoWeekYear: '$createdAt'},
+                  week: {$isoWeek: '$createdAt'},
                 },
-                currentWeekOrders: { $sum: 1 },
-                currentWeekRevenue: { $sum: "$total" },
+                currentWeekOrders: {$sum: 1},
+                currentWeekRevenue: {$sum: '$total'},
               },
             },
-            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {$sort: {'_id.year': 1, '_id.week': 1}},
             {
               $group: {
                 _id: null,
                 weeks: {
                   $push: {
-                    week: "$_id.week",
-                    year: "$_id.year",
-                    orders: "$currentWeekOrders",
-                    revenue: "$currentWeekRevenue",
+                    week: '$_id.week',
+                    year: '$_id.year',
+                    orders: '$currentWeekOrders',
+                    revenue: '$currentWeekRevenue',
                   },
                 },
               },
@@ -1269,24 +1157,21 @@ export class DashboardRepository implements BaseDashboardRepository {
               $project: {
                 weeklyGrowth: {
                   $map: {
-                    input: "$weeks",
-                    as: "week",
+                    input: '$weeks',
+                    as: 'week',
                     in: {
-                      week: "$$week.week",
-                      year: "$$week.year",
-                      currentOrders: "$$week.orders",
+                      week: '$$week.week',
+                      year: '$$week.year',
+                      currentOrders: '$$week.orders',
                       previousOrders: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.orders",
+                              '$weeks.orders',
                               {
                                 $max: [
                                   {
-                                    $subtract: [
-                                      { $indexOfArray: ["$weeks", "$$week"] },
-                                      1,
-                                    ],
+                                    $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                                   },
                                   0,
                                 ],
@@ -1296,19 +1181,16 @@ export class DashboardRepository implements BaseDashboardRepository {
                           0,
                         ],
                       },
-                      currentRevenue: "$$week.revenue",
+                      currentRevenue: '$$week.revenue',
                       previousRevenue: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.revenue",
+                              '$weeks.revenue',
                               {
                                 $max: [
                                   {
-                                    $subtract: [
-                                      { $indexOfArray: ["$weeks", "$$week"] },
-                                      1,
-                                    ],
+                                    $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                                   },
                                   0,
                                 ],
@@ -1323,22 +1205,17 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
               },
             },
-            { $unwind: "$weeklyGrowth" },
-            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {$unwind: '$weeklyGrowth'},
+            {$replaceRoot: {newRoot: '$weeklyGrowth'}},
             {
               $project: {
                 _id: 0,
                 label: {
-                  $concat: [
-                    "Week ",
-                    { $toString: "$week" },
-                    " ",
-                    { $toString: "$year" },
-                  ],
+                  $concat: ['Week ', {$toString: '$week'}, ' ', {$toString: '$year'}],
                 },
                 orderGrowth: {
                   $cond: [
-                    { $eq: ["$previousOrders", 0] },
+                    {$eq: ['$previousOrders', 0]},
                     0,
                     {
                       $round: [
@@ -1347,12 +1224,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentOrders",
-                                    "$previousOrders",
-                                  ],
+                                  $subtract: ['$currentOrders', '$previousOrders'],
                                 },
-                                "$previousOrders",
+                                '$previousOrders',
                               ],
                             },
                             100,
@@ -1365,7 +1239,7 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
                 revenueGrowth: {
                   $cond: [
-                    { $eq: ["$previousRevenue", 0] },
+                    {$eq: ['$previousRevenue', 0]},
                     0,
                     {
                       $round: [
@@ -1374,12 +1248,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentRevenue",
-                                    "$previousRevenue",
-                                  ],
+                                  $subtract: ['$currentRevenue', '$previousRevenue'],
                                 },
-                                "$previousRevenue",
+                                '$previousRevenue',
                               ],
                             },
                             100,
@@ -1404,51 +1275,39 @@ export class DashboardRepository implements BaseDashboardRepository {
       weeklyGrowth: result.weeklyGrowth,
 
       summary: {
-        totalOrders: this.getFirstNumber(result.summary, "totalOrders"),
-        completedOrders: this.getFirstNumber(result.summary, "completedOrders"),
-        avgOrderValue: this.getFirstNumber(result.summary, "avgOrderValue"),
-        totalRevenue: this.getFirstNumber(result.summary, "totalRevenue"),
-        avgItemsPerOrder: this.getFirstNumber(
-          result.summary,
-          "avgItemsPerOrder"
-        ),
+        totalOrders: this.getFirstNumber(result.summary, 'totalOrders'),
+        completedOrders: this.getFirstNumber(result.summary, 'completedOrders'),
+        avgOrderValue: this.getFirstNumber(result.summary, 'avgOrderValue'),
+        totalRevenue: this.getFirstNumber(result.summary, 'totalRevenue'),
+        avgItemsPerOrder: this.getFirstNumber(result.summary, 'avgItemsPerOrder'),
       },
 
       // Financial Insights
       financialHealth: {
-        netRevenue: this.getFirstNumber(result.financials, "netRevenue"),
-        totalTax: this.getFirstNumber(result.financials, "totalTax"),
-        processingCosts: this.getFirstNumber(
-          result.financials,
-          "avgProcessingCost"
-        ),
+        netRevenue: this.getFirstNumber(result.financials, 'netRevenue'),
+        totalTax: this.getFirstNumber(result.financials, 'totalTax'),
+        processingCosts: this.getFirstNumber(result.financials, 'avgProcessingCost'),
         netProfitMargin: {
           monthly: this.calculateProfitMargin(
-            this.getFirstNumber(result.financials, "netRevenue"),
-            this.getFirstNumber(result.financials, "avgProcessingCost")
+            this.getFirstNumber(result.financials, 'netRevenue'),
+            this.getFirstNumber(result.financials, 'avgProcessingCost'),
           ),
         },
         refundRate:
-          (this.getFirstNumber(result.financials, "refunds") /
-            this.getFirstNumber(result.summary, "totalRevenue")) *
+          (this.getFirstNumber(result.financials, 'refunds') /
+            this.getFirstNumber(result.summary, 'totalRevenue')) *
             100 || 0,
-        weeklyGrowth: this.getFirstNumber(
-          result.weeklyComparison,
-          "growthRate"
-        ),
+        weeklyGrowth: this.getFirstNumber(result.weeklyComparison, 'growthRate'),
       },
 
       // Customer Insights
       customerBehavior: {
         repeatRate:
-          (this.getFirstNumber(result.customerInsights, "repeatCustomers") /
-            this.getFirstNumber(result.summary, "totalOrders")) *
+          (this.getFirstNumber(result.customerInsights, 'repeatCustomers') /
+            this.getFirstNumber(result.summary, 'totalOrders')) *
             100 || 0,
-        avgLTV: this.getFirstNumber(
-          result.customerInsights,
-          "avgLifetimeValue"
-        ),
-        topSpender: this.getFirstNumber(result.customerInsights, "topSpender"),
+        avgLTV: this.getFirstNumber(result.customerInsights, 'avgLifetimeValue'),
+        topSpender: this.getFirstNumber(result.customerInsights, 'topSpender'),
       },
 
       // Product Performance
@@ -1462,7 +1321,7 @@ export class DashboardRepository implements BaseDashboardRepository {
       // Trends & Forecasting
       trends: {
         monthly: result.timeSeries.map((t: any) => ({
-          period: `${t._id.year}-${String(t._id.month).padStart(2, "0")}`,
+          period: `${t._id.year}-${String(t._id.month).padStart(2, '0')}`,
           orders: t.count,
           revenue: t.revenue,
           aov: t.avgOrderValue,
@@ -1486,7 +1345,7 @@ export class DashboardRepository implements BaseDashboardRepository {
               avgHours: curr.avgFulfillmentTime,
             },
           }),
-          {}
+          {},
         ),
         slaCompliance: this.calculateSLACompliance(result.fulfillment),
       },
@@ -1511,8 +1370,8 @@ export class DashboardRepository implements BaseDashboardRepository {
 
   // Report Analytics
   async getReportAnalytics() {
-    const lastWeekDate = DateTime.now().minus({ weeks: 1 }).toJSDate();
-    const last8WeeksDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
+    const lastWeekDate = DateTime.now().minus({weeks: 1}).toJSDate();
+    const last8WeeksDate = DateTime.now().minus({weeks: 8}).toJSDate();
     const [result] = await ReportModel.aggregate([
       {
         $facet: {
@@ -1520,89 +1379,87 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $group: {
                 _id: null,
-                total: { $sum: 1 },
+                total: {$sum: 1},
                 resolved: {
-                  $sum: { $cond: [{ $eq: ["$status", "resolved"] }, 1, 0] },
+                  $sum: {$cond: [{$eq: ['$status', 'resolved']}, 1, 0]},
                 },
                 avgResolutionHours: {
                   $avg: {
                     $dateDiff: {
-                      startDate: "$createdAt",
-                      endDate: "$updatedAt",
-                      unit: "hour",
+                      startDate: '$createdAt',
+                      endDate: '$updatedAt',
+                      unit: 'hour',
                     },
                   },
                 },
               },
             },
           ],
-          statusDistribution: [
-            { $group: { _id: "$status", count: { $sum: 1 } } },
-          ],
+          statusDistribution: [{$group: {_id: '$status', count: {$sum: 1}}}],
           recentReports: [
-            { $sort: { createdAt: -1 } },
-            { $limit: 5 },
+            {$sort: {createdAt: -1}},
+            {$limit: 5},
             {
               $project: {
                 _id: 1,
                 issue: 1,
                 status: 1,
-                product: "$product.name",
-                reporter: "$user.name",
+                product: '$product.name',
+                reporter: '$user.name',
                 createdAt: 1,
               },
             },
           ],
           trendAnalysis: [
-            { $match: { createdAt: { $gte: lastWeekDate } } },
+            {$match: {createdAt: {$gte: lastWeekDate}}},
             {
               $group: {
                 _id: {
-                  $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+                  $dateToString: {format: '%Y-%m-%d', date: '$createdAt'},
                 },
-                count: { $sum: 1 },
+                count: {$sum: 1},
               },
             },
-            { $sort: { _id: 1 } },
+            {$sort: {_id: 1}},
           ],
           commonIssues: [
             {
               $group: {
-                _id: "$issue",
-                count: { $sum: 1 },
-                products: { $addToSet: "$product.name" },
+                _id: '$issue',
+                count: {$sum: 1},
+                products: {$addToSet: '$product.name'},
               },
             },
-            { $sort: { count: -1 } },
-            { $limit: 5 },
+            {$sort: {count: -1}},
+            {$limit: 5},
           ],
           weeklyGrowth: [
             {
               $match: {
-                createdAt: { $gte: last8WeeksDate },
-                status: "resolved",
+                createdAt: {$gte: last8WeeksDate},
+                status: 'resolved',
               },
             },
             {
               $group: {
                 _id: {
-                  year: { $isoWeekYear: "$createdAt" },
-                  week: { $isoWeek: "$createdAt" },
+                  year: {$isoWeekYear: '$createdAt'},
+                  week: {$isoWeek: '$createdAt'},
                 },
-                resolvedCount: { $sum: 1 },
-                totalCount: { $sum: 1 },
+                resolvedCount: {$sum: 1},
+                totalCount: {$sum: 1},
               },
             },
-            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {$sort: {'_id.year': 1, '_id.week': 1}},
             {
               $group: {
                 _id: null,
                 weeks: {
                   $push: {
-                    week: "$_id.week",
-                    year: "$_id.year",
-                    resolved: "$resolvedCount",
-                    total: "$totalCount",
+                    week: '$_id.week',
+                    year: '$_id.year',
+                    resolved: '$resolvedCount',
+                    total: '$totalCount',
                   },
                 },
               },
@@ -1611,24 +1468,21 @@ export class DashboardRepository implements BaseDashboardRepository {
               $project: {
                 weeklyGrowth: {
                   $map: {
-                    input: "$weeks",
-                    as: "week",
+                    input: '$weeks',
+                    as: 'week',
                     in: {
-                      week: "$$week.week",
-                      year: "$$week.year",
-                      currentResolved: "$$week.resolved",
+                      week: '$$week.week',
+                      year: '$$week.year',
+                      currentResolved: '$$week.resolved',
                       previousResolved: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.resolved",
+                              '$weeks.resolved',
                               {
                                 $max: [
                                   {
-                                    $subtract: [
-                                      { $indexOfArray: ["$weeks", "$$week"] },
-                                      1,
-                                    ],
+                                    $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                                   },
                                   0,
                                 ],
@@ -1638,19 +1492,16 @@ export class DashboardRepository implements BaseDashboardRepository {
                           0,
                         ],
                       },
-                      currentTotal: "$$week.total",
+                      currentTotal: '$$week.total',
                       previousTotal: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.total",
+                              '$weeks.total',
                               {
                                 $max: [
                                   {
-                                    $subtract: [
-                                      { $indexOfArray: ["$weeks", "$$week"] },
-                                      1,
-                                    ],
+                                    $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                                   },
                                   0,
                                 ],
@@ -1665,21 +1516,16 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
               },
             },
-            { $unwind: "$weeklyGrowth" },
-            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {$unwind: '$weeklyGrowth'},
+            {$replaceRoot: {newRoot: '$weeklyGrowth'}},
             {
               $project: {
                 label: {
-                  $concat: [
-                    "Week ",
-                    { $toString: "$week" },
-                    " ",
-                    { $toString: "$year" },
-                  ],
+                  $concat: ['Week ', {$toString: '$week'}, ' ', {$toString: '$year'}],
                 },
                 resolutionGrowth: {
                   $cond: [
-                    { $eq: ["$previousResolved", 0] },
+                    {$eq: ['$previousResolved', 0]},
                     0,
                     {
                       $round: [
@@ -1688,12 +1534,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentResolved",
-                                    "$previousResolved",
-                                  ],
+                                  $subtract: ['$currentResolved', '$previousResolved'],
                                 },
-                                "$previousResolved",
+                                '$previousResolved',
                               ],
                             },
                             100,
@@ -1706,7 +1549,7 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
                 reportGrowth: {
                   $cond: [
-                    { $eq: ["$previousTotal", 0] },
+                    {$eq: ['$previousTotal', 0]},
                     0,
                     {
                       $round: [
@@ -1715,12 +1558,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentTotal",
-                                    "$previousTotal",
-                                  ],
+                                  $subtract: ['$currentTotal', '$previousTotal'],
                                 },
-                                "$previousTotal",
+                                '$previousTotal',
                               ],
                             },
                             100,
@@ -1741,16 +1581,13 @@ export class DashboardRepository implements BaseDashboardRepository {
     ]);
 
     return {
-      total: this.getFirstNumber(result.summary, "total"),
-      resolved: this.getFirstNumber(result.summary, "resolved"),
+      total: this.getFirstNumber(result.summary, 'total'),
+      resolved: this.getFirstNumber(result.summary, 'resolved'),
       resolutionRate:
-        (this.getFirstNumber(result.summary, "resolved") /
-          this.getFirstNumber(result.summary, "total")) *
+        (this.getFirstNumber(result.summary, 'resolved') /
+          this.getFirstNumber(result.summary, 'total')) *
           100 || 0,
-      avgResolutionTime: this.getFirstNumber(
-        result.summary,
-        "avgResolutionHours"
-      ),
+      avgResolutionTime: this.getFirstNumber(result.summary, 'avgResolutionHours'),
       statusBreakdown: this.mapToObject(result.statusDistribution),
       trendingIssues: result.commonIssues.map((i: any) => ({
         issue: i._id,
@@ -1772,8 +1609,8 @@ export class DashboardRepository implements BaseDashboardRepository {
 
   // Refund Analytics
   async getRefundAnalytics() {
-    const lastMonthDate = DateTime.now().minus({ months: 1 }).toJSDate();
-    const last8WeeksDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
+    const lastMonthDate = DateTime.now().minus({months: 1}).toJSDate();
+    const last8WeeksDate = DateTime.now().minus({weeks: 8}).toJSDate();
     const [result] = await RefundModel.aggregate([
       {
         $facet: {
@@ -1781,17 +1618,17 @@ export class DashboardRepository implements BaseDashboardRepository {
             {
               $group: {
                 _id: null,
-                total: { $sum: 1 },
-                totalAmount: { $sum: "$amount" },
+                total: {$sum: 1},
+                totalAmount: {$sum: '$amount'},
                 approved: {
-                  $sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] },
+                  $sum: {$cond: [{$eq: ['$status', 'approved']}, 1, 0]},
                 },
                 avgProcessingHours: {
                   $avg: {
                     $dateDiff: {
-                      startDate: "$createdAt",
-                      endDate: "$updatedAt",
-                      unit: "hour",
+                      startDate: '$createdAt',
+                      endDate: '$updatedAt',
+                      unit: 'hour',
                     },
                   },
                 },
@@ -1799,27 +1636,27 @@ export class DashboardRepository implements BaseDashboardRepository {
             },
           ],
           statusTrend: [
-            { $match: { createdAt: { $gte: lastMonthDate } } },
+            {$match: {createdAt: {$gte: lastMonthDate}}},
             {
               $group: {
                 _id: {
-                  week: { $week: "$createdAt" },
-                  status: "$status",
+                  week: {$week: '$createdAt'},
+                  status: '$status',
                 },
-                count: { $sum: 1 },
+                count: {$sum: 1},
               },
             },
-            { $sort: { "_id.week": 1 } },
+            {$sort: {'_id.week': 1}},
           ],
           recentRefunds: [
-            { $sort: { createdAt: -1 } },
-            { $limit: 5 },
+            {$sort: {createdAt: -1}},
+            {$limit: 5},
             {
               $project: {
                 _id: 1,
                 amount: 1,
                 status: 1,
-                user: "$user.name",
+                user: '$user.name',
                 createdAt: 1,
                 invoiceId: 1,
               },
@@ -1828,29 +1665,26 @@ export class DashboardRepository implements BaseDashboardRepository {
           commonReasons: [
             {
               $group: {
-                _id: "$reason",
-                count: { $sum: 1 },
-                totalAmount: { $sum: "$amount" },
+                _id: '$reason',
+                count: {$sum: 1},
+                totalAmount: {$sum: '$amount'},
               },
             },
-            { $sort: { count: -1 } },
-            { $limit: 5 },
+            {$sort: {count: -1}},
+            {$limit: 5},
           ], // Add to refund analytics
-          highRiskRefunds: [
-            { $match: { amount: { $gt: 500 }, status: "pending" } },
-            { $count: "count" },
-          ], // Add to refund aggregation
+          highRiskRefunds: [{$match: {amount: {$gt: 500}, status: 'pending'}}, {$count: 'count'}], // Add to refund aggregation
           financialImpact: [
             {
               $group: {
                 _id: null,
                 totalRefunded: {
                   $sum: {
-                    $cond: [{ $eq: ["$status", "approved"] }, "$amount", 0],
+                    $cond: [{$eq: ['$status', 'approved']}, '$amount', 0],
                   },
                 },
-                avgRefund: { $avg: "$amount" },
-                maxRefund: { $max: "$amount" },
+                avgRefund: {$avg: '$amount'},
+                maxRefund: {$max: '$amount'},
               },
             },
           ],
@@ -1939,30 +1773,30 @@ export class DashboardRepository implements BaseDashboardRepository {
           weeklyGrowth: [
             {
               $match: {
-                createdAt: { $gte: last8WeeksDate },
-                status: "approved",
+                createdAt: {$gte: last8WeeksDate},
+                status: 'approved',
               },
             },
             {
               $group: {
                 _id: {
-                  year: { $isoWeekYear: "$createdAt" },
-                  week: { $isoWeek: "$createdAt" },
+                  year: {$isoWeekYear: '$createdAt'},
+                  week: {$isoWeek: '$createdAt'},
                 },
-                totalAmount: { $sum: "$amount" },
-                count: { $sum: 1 },
+                totalAmount: {$sum: '$amount'},
+                count: {$sum: 1},
               },
             },
-            { $sort: { "_id.year": 1, "_id.week": 1 } },
+            {$sort: {'_id.year': 1, '_id.week': 1}},
             {
               $group: {
                 _id: null,
                 weeks: {
                   $push: {
-                    week: "$_id.week",
-                    year: "$_id.year",
-                    totalAmount: "$totalAmount",
-                    count: "$count",
+                    week: '$_id.week',
+                    year: '$_id.year',
+                    totalAmount: '$totalAmount',
+                    count: '$count',
                   },
                 },
               },
@@ -1971,24 +1805,21 @@ export class DashboardRepository implements BaseDashboardRepository {
               $project: {
                 weeklyGrowth: {
                   $map: {
-                    input: "$weeks",
-                    as: "week",
+                    input: '$weeks',
+                    as: 'week',
                     in: {
-                      week: "$$week.week",
-                      year: "$$week.year",
-                      currentAmount: "$$week.totalAmount",
+                      week: '$$week.week',
+                      year: '$$week.year',
+                      currentAmount: '$$week.totalAmount',
                       previousAmount: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.totalAmount",
+                              '$weeks.totalAmount',
                               {
                                 $max: [
                                   {
-                                    $subtract: [
-                                      { $indexOfArray: ["$weeks", "$$week"] },
-                                      1,
-                                    ],
+                                    $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                                   },
                                   0,
                                 ],
@@ -1998,19 +1829,16 @@ export class DashboardRepository implements BaseDashboardRepository {
                           0,
                         ],
                       },
-                      currentCount: "$$week.count",
+                      currentCount: '$$week.count',
                       previousCount: {
                         $ifNull: [
                           {
                             $arrayElemAt: [
-                              "$weeks.count",
+                              '$weeks.count',
                               {
                                 $max: [
                                   {
-                                    $subtract: [
-                                      { $indexOfArray: ["$weeks", "$$week"] },
-                                      1,
-                                    ],
+                                    $subtract: [{$indexOfArray: ['$weeks', '$$week']}, 1],
                                   },
                                   0,
                                 ],
@@ -2025,21 +1853,16 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
               },
             },
-            { $unwind: "$weeklyGrowth" },
-            { $replaceRoot: { newRoot: "$weeklyGrowth" } },
+            {$unwind: '$weeklyGrowth'},
+            {$replaceRoot: {newRoot: '$weeklyGrowth'}},
             {
               $project: {
                 label: {
-                  $concat: [
-                    "Week ",
-                    { $toString: "$week" },
-                    " ",
-                    { $toString: "$year" },
-                  ],
+                  $concat: ['Week ', {$toString: '$week'}, ' ', {$toString: '$year'}],
                 },
                 amountGrowth: {
                   $cond: [
-                    { $eq: ["$previousAmount", 0] },
+                    {$eq: ['$previousAmount', 0]},
                     0,
                     {
                       $round: [
@@ -2048,12 +1871,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentAmount",
-                                    "$previousAmount",
-                                  ],
+                                  $subtract: ['$currentAmount', '$previousAmount'],
                                 },
-                                "$previousAmount",
+                                '$previousAmount',
                               ],
                             },
                             100,
@@ -2066,7 +1886,7 @@ export class DashboardRepository implements BaseDashboardRepository {
                 },
                 countGrowth: {
                   $cond: [
-                    { $eq: ["$previousCount", 0] },
+                    {$eq: ['$previousCount', 0]},
                     0,
                     {
                       $round: [
@@ -2075,12 +1895,9 @@ export class DashboardRepository implements BaseDashboardRepository {
                             {
                               $divide: [
                                 {
-                                  $subtract: [
-                                    "$currentCount",
-                                    "$previousCount",
-                                  ],
+                                  $subtract: ['$currentCount', '$previousCount'],
                                 },
-                                "$previousCount",
+                                '$previousCount',
                               ],
                             },
                             100,
@@ -2101,16 +1918,13 @@ export class DashboardRepository implements BaseDashboardRepository {
     ]);
 
     return {
-      total: this.getFirstNumber(result.summary, "total"),
-      totalAmount: this.getFirstNumber(result.summary, "totalAmount"),
+      total: this.getFirstNumber(result.summary, 'total'),
+      totalAmount: this.getFirstNumber(result.summary, 'totalAmount'),
       approvalRate:
-        (this.getFirstNumber(result.summary, "approved") /
-          this.getFirstNumber(result.summary, "total")) *
+        (this.getFirstNumber(result.summary, 'approved') /
+          this.getFirstNumber(result.summary, 'total')) *
           100 || 0,
-      avgProcessingTime: this.getFirstNumber(
-        result.summary,
-        "avgProcessingHours"
-      ),
+      avgProcessingTime: this.getFirstNumber(result.summary, 'avgProcessingHours'),
       weeklyTrend: result.statusTrend.reduce((acc: any, curr: any) => {
         const week = `Week ${curr._id.week}`;
         if (!acc[week]) acc[week] = {};
@@ -2135,50 +1949,50 @@ export class DashboardRepository implements BaseDashboardRepository {
         // { $unwind: "$items" },
         {
           $lookup: {
-            from: "products",
-            localField: "productId",
-            foreignField: "_id",
-            as: "product",
+            from: 'products',
+            localField: 'productId',
+            foreignField: '_id',
+            as: 'product',
           },
         },
-        { $unwind: "$product" },
+        {$unwind: '$product'},
         {
           $group: {
-            _id: "$product.category",
-            totalItems: { $sum: "$quantity" },
-            uniqueUsers: { $addToSet: "$userId" },
-            avgPrice: { $avg: "$product.price" },
-            maxPrice: { $max: "$product.price" },
-            minPrice: { $min: "$product.price" },
+            _id: '$product.category',
+            totalItems: {$sum: '$quantity'},
+            uniqueUsers: {$addToSet: '$userId'},
+            avgPrice: {$avg: '$product.price'},
+            maxPrice: {$max: '$product.price'},
+            minPrice: {$min: '$product.price'},
           },
         },
-        { $sort: { totalItems: -1 } },
+        {$sort: {totalItems: -1}},
       ]),
 
       WishlistModel.aggregate([
         {
           $lookup: {
-            from: "products",
-            localField: "productId",
-            foreignField: "_id",
-            as: "product",
+            from: 'products',
+            localField: 'productId',
+            foreignField: '_id',
+            as: 'product',
           },
         },
-        { $unwind: "$product" },
+        {$unwind: '$product'},
         {
           $group: {
-            _id: "$product.category",
-            totalItems: { $sum: 1 },
-            uniqueUsers: { $addToSet: "$userId" },
-            avgPrice: { $avg: "$product.price" },
+            _id: '$product.category',
+            totalItems: {$sum: 1},
+            uniqueUsers: {$addToSet: '$userId'},
+            avgPrice: {$avg: '$product.price'},
             priceSensitivity: {
               $avg: {
-                $cond: [{ $gt: ["$product.discount", 0] }, 1, 0],
+                $cond: [{$gt: ['$product.discount', 0]}, 1, 0],
               },
             },
           },
         },
-        { $sort: { totalItems: -1 } },
+        {$sort: {totalItems: -1}},
       ]),
 
       CartModel.aggregate([
@@ -2187,29 +2001,25 @@ export class DashboardRepository implements BaseDashboardRepository {
         {
           $group: {
             _id: {
-              product: "$productId",
-              week: { $week: "$createdAt" },
+              product: '$productId',
+              week: {$week: '$createdAt'},
             },
-            cartAdds: { $sum: 1 },
+            cartAdds: {$sum: 1},
             purchases: {
               $sum: {
-                $cond: [{ $ifNull: ["$purchasedAt", false] }, 1, 0],
+                $cond: [{$ifNull: ['$purchasedAt', false]}, 1, 0],
               },
             },
           },
         },
         {
           $project: {
-            productId: "$_id.product",
-            week: "$_id.week",
+            productId: '$_id.product',
+            week: '$_id.week',
             cartAdds: 1,
             purchases: 1,
             conversionRate: {
-              $cond: [
-                { $eq: ["$cartAdds", 0] },
-                0,
-                { $divide: ["$purchases", "$cartAdds"] },
-              ],
+              $cond: [{$eq: ['$cartAdds', 0]}, 0, {$divide: ['$purchases', '$cartAdds']}],
             },
           },
         },
@@ -2222,7 +2032,7 @@ export class DashboardRepository implements BaseDashboardRepository {
           category: c._id,
           totalItems: c.totalItems,
           uniqueUsers: c.uniqueUsers.length,
-          priceRange: { min: c.minPrice, max: c.maxPrice, avg: c.avgPrice },
+          priceRange: {min: c.minPrice, max: c.maxPrice, avg: c.avgPrice},
         })),
         wishlist: wishlistInsights.map((w) => ({
           category: w._id,
@@ -2232,10 +2042,8 @@ export class DashboardRepository implements BaseDashboardRepository {
         })),
       },
       conversionMetrics: combinedData.reduce((acc, curr) => {
-        const existing:
-          | { productId: Types.ObjectId; weeks: any[] }
-          | undefined = acc.find((i: { productId: Types.ObjectId }) =>
-          i.productId.equals(curr.productId)
+        const existing: {productId: Types.ObjectId; weeks: any[]} | undefined = acc.find(
+          (i: {productId: Types.ObjectId}) => i.productId.equals(curr.productId),
         );
         if (existing) {
           existing.weeks.push({
@@ -2269,24 +2077,24 @@ export class DashboardRepository implements BaseDashboardRepository {
 
   private async getTopProducts(model: Model<any>, limit: number) {
     return model.aggregate([
-      { $group: { _id: "$productId", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: limit },
+      {$group: {_id: '$productId', count: {$sum: 1}}},
+      {$sort: {count: -1}},
+      {$limit: limit},
       {
         $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "product",
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'product',
         },
       },
-      { $unwind: "$product" },
+      {$unwind: '$product'},
       {
         $project: {
-          productId: "$_id",
-          name: "$product.name",
-          category: "$product.category",
-          price: "$product.price",
+          productId: '$_id',
+          name: '$product.name',
+          category: '$product.category',
+          price: '$product.price',
           count: 1,
         },
       },
@@ -2297,23 +2105,23 @@ export class DashboardRepository implements BaseDashboardRepository {
     return CartModel.aggregate([
       // { $match: { expiresAt: { $lt: new Date() } } },
       // { $unwind: "$items" },
-      { $group: { _id: "$productId", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 10 },
+      {$group: {_id: '$productId', count: {$sum: 1}}},
+      {$sort: {count: -1}},
+      {$limit: 10},
       {
         $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "product",
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'product',
         },
       },
-      { $unwind: "$product" },
+      {$unwind: '$product'},
       {
         $project: {
-          productId: "$_id",
-          name: "$product.name",
-          stock: "$product.stock",
+          productId: '$_id',
+          name: '$product.name',
+          stock: '$product.stock',
           count: 1,
         },
       },
@@ -2626,7 +2434,7 @@ export class DashboardRepository implements BaseDashboardRepository {
 
   // Helper methods
 
-  private getFirstNumber(result: AggregationResult, field = "total"): number {
+  private getFirstNumber(result: AggregationResult, field = 'total'): number {
     return (result as any)?.[0]?.[field] || 0;
   }
   // private sumStatusCounts(
@@ -2656,13 +2464,8 @@ export class DashboardRepository implements BaseDashboardRepository {
   //   return statusCounts.find((s) => s._id === status)?.count || 0;
   // }
 
-  private mapToObject(
-    items: Array<{ _id: string; count: number }>
-  ): Record<string, number> {
-    return items.reduce(
-      (acc, { _id, count }) => ({ ...acc, [_id]: count }),
-      {}
-    );
+  private mapToObject(items: Array<{_id: string; count: number}>): Record<string, number> {
+    return items.reduce((acc, {_id, count}) => ({...acc, [_id]: count}), {});
   }
   private calculateProfitMargin(revenue: number, costs: number): number {
     return revenue > 0 ? ((revenue - costs) / revenue) * 100 : 0;
@@ -2674,48 +2477,34 @@ export class DashboardRepository implements BaseDashboardRepository {
     const current = timeSeries[timeSeries.length - 1]?.revenue || 0;
     const previous = timeSeries[timeSeries.length - 2]?.revenue || 0;
 
-    return previous !== 0
-      ? ((current - previous) / previous) * 100
-      : current > 0
-        ? 100
-        : 0;
+    return previous !== 0 ? ((current - previous) / previous) * 100 : current > 0 ? 100 : 0;
   }
 
-  private calculateSLACompliance(
-    fulfillmentData: any[],
-    targetHours = 48
-  ): number {
-    const totalOrders = fulfillmentData.reduce(
-      (sum, item) => sum + item.count,
-      0
-    );
+  private calculateSLACompliance(fulfillmentData: any[], targetHours = 48): number {
+    const totalOrders = fulfillmentData.reduce((sum, item) => sum + item.count, 0);
     const compliantOrders = fulfillmentData.reduce((sum, item) => {
-      return item._id === OrderStatus.Completed &&
-        item.avgFulfillmentTime <= targetHours
+      return item._id === OrderStatus.Completed && item.avgFulfillmentTime <= targetHours
         ? sum + item.count
         : sum;
     }, 0);
 
     return totalOrders > 0 ? (compliantOrders / totalOrders) * 100 : 0;
   }
-  private async calculateCityGrowth(
-    city: string,
-    country: string
-  ): Promise<number> {
+  private async calculateCityGrowth(city: string, country: string): Promise<number> {
     const now = DateTime.now();
-    const currentPeriodStart = now.minus({ weeks: 1 }).toJSDate();
-    const previousPeriodStart = now.minus({ weeks: 2 }).toJSDate();
+    const currentPeriodStart = now.minus({weeks: 1}).toJSDate();
+    const previousPeriodStart = now.minus({weeks: 2}).toJSDate();
 
     const [currentCount, previousCount] = await Promise.all([
       UserModel.countDocuments({
-        "security.loginHistory.location.city": city,
-        "security.loginHistory.location.country": country,
-        "security.loginHistory.timestamp": { $gte: currentPeriodStart },
+        'security.loginHistory.location.city': city,
+        'security.loginHistory.location.country': country,
+        'security.loginHistory.timestamp': {$gte: currentPeriodStart},
       }),
       UserModel.countDocuments({
-        "security.loginHistory.location.city": city,
-        "security.loginHistory.location.country": country,
-        "security.loginHistory.timestamp": {
+        'security.loginHistory.location.city': city,
+        'security.loginHistory.location.country': country,
+        'security.loginHistory.timestamp': {
           $gte: previousPeriodStart,
           $lt: currentPeriodStart,
         },
@@ -2726,8 +2515,6 @@ export class DashboardRepository implements BaseDashboardRepository {
       return currentCount > 0 ? 100 : 0;
     }
 
-    return Number(
-      (((currentCount - previousCount) / previousCount) * 100).toFixed(1)
-    );
+    return Number((((currentCount - previousCount) / previousCount) * 100).toFixed(1));
   }
 }

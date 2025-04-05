@@ -12,19 +12,16 @@
 //   onSwitchToTotp,
 // }) => {
 //   const [backupCode, setBackupCode] = useState("");
-
 //   const handleSubmit = (e: React.FormEvent) => {
 //     e.preventDefault();
 //     const normalizedCode = backupCode.replace(/-/g, ""); //;
 //     onVerify(normalizedCode);
 //   };
-
 //   return (
 //     <form onSubmit={handleSubmit}>
 //       <p className="text-sm text-gray-600 mb-4 text-center">
 //         Enter one of your backup codes. Each code can only be used once.
 //       </p>
-
 //       <div className="mb-4">
 //         <input
 //           type="text"
@@ -35,13 +32,11 @@
 //           disabled={isLoading}
 //         />
 //       </div>
-
 //       {error && (
 //         <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-center">
 //           {error}
 //         </div>
 //       )}
-
 //       <button
 //         type="submit"
 //         disabled={isLoading || backupCode.length < 16}
@@ -49,7 +44,6 @@
 //       >
 //         {isLoading ? "Verifying..." : "Verify Backup Code"}
 //       </button>
-
 //       <div className="mt-4 text-center text-sm text-gray-600">
 //         <button
 //           onClick={onSwitchToTotp}
@@ -62,10 +56,13 @@
 //   );
 // };
 // export default BackupCodeInput;
-import { type FC, useState, useCallback, useRef } from "react";
+import {type FC, useCallback, useRef, useState} from 'react';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {accountTwoFactorTranslate} from '@/public/locales/client/(auth)/account/twoFactorTranslate';
 
 interface BackupCodeInputProps {
-  onVerify: (codes: string[]) => void;
+  onVerify: (codes: string[]) => Promise<void>;
   isLoading: boolean;
   error: string;
   onSwitchToTotp: () => void;
@@ -77,11 +74,11 @@ const BackupCodeInput: FC<BackupCodeInputProps> = ({
   error,
   onSwitchToTotp,
 }) => {
-  const [codes, setCodes] = useState<string[]>(Array(5).fill(""));
+  const [codes, setCodes] = useState<string[]>(Array(5).fill(''));
   const inputs = useRef<HTMLInputElement[]>([]);
   const formatCode = useCallback((value: string) => {
-    const cleanValue = value.replace(/[^a-zA-Z0-9]/g, "");
-    return cleanValue.slice(0, 12).replace(/(\w{4})(?=\w)/g, "$1-");
+    const cleanValue = value.replace(/[^a-zA-Z0-9]/g, '');
+    return cleanValue.slice(0, 12).replace(/(\w{4})(?=\w)/g, '$1-');
   }, []);
 
   const handleCodeChange = (index: number, value: string) => {
@@ -93,25 +90,21 @@ const BackupCodeInput: FC<BackupCodeInputProps> = ({
 
   const validateCodes = useCallback(() => {
     return codes.every(
-      (code) =>
-        code.replace(/" "/g, "").length === 14 && /^[a-zA-Z0-9-]+$/.test(code)
+      (code) => code.replace(/" "/g, '').length === 14 && /^[a-zA-Z0-9-]+$/.test(code),
     );
   }, [codes]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateCodes()) {
       return;
     }
-    onVerify(codes);
+    await onVerify(codes);
   };
-  const handleOnPaste = (
-    index: number,
-    e: React.ClipboardEvent<HTMLInputElement>
-  ) => {
+  const handleOnPaste = async (index: number, e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData("text/plain").trim();
+    const pastedText = e.clipboardData.getData('text/plain').trim();
 
     // Split pasted codes, allow either newline or space separation
     const pastedCodes = pastedText.split(/\s+|\n/).slice(0, 5);
@@ -135,22 +128,22 @@ const BackupCodeInput: FC<BackupCodeInputProps> = ({
     }
 
     // Automatically submit if all fields are filled
-    if (newCodes.every((code) => code.trim() !== "")) {
-      handleSubmit(e);
+    if (newCodes.every((code) => code.trim() !== '')) {
+      await handleSubmit(e);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+    <form onSubmit={() => handleSubmit} className="max-w-md mx-auto">
       <p className="text-sm text-gray-600 mb-4 text-center">
-        Enter 5 backup codes. Each code can only be used once.
+        {accountTwoFactorTranslate[lang].TwoFactorForm.BackupCodeInput.title}
       </p>
 
       <div className="space-y-3 mb-6">
         {codes.map((code, index) => (
           <div key={index}>
             <label className="block text-sm font-medium mb-1">
-              Code {index + 1}
+              {accountTwoFactorTranslate[lang].TwoFactorForm.BackupCodeInput.code(index + 1)}
               <input
                 type="text"
                 value={code}
@@ -160,7 +153,7 @@ const BackupCodeInput: FC<BackupCodeInputProps> = ({
                   }
                 }}
                 onChange={(e) => handleCodeChange(index, e.target.value)}
-                onPaste={(e) => handleOnPaste(index, e)}
+                onPaste={(e) => void handleOnPaste(index, e)}
                 placeholder="XXXX-XXXX-XXXX"
                 className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center font-mono mt-1"
                 disabled={isLoading}
@@ -171,18 +164,18 @@ const BackupCodeInput: FC<BackupCodeInputProps> = ({
         ))}
       </div>
 
-      {error && (
-        <div className="mb-4 p-2.5 bg-red-100 text-red-700 rounded-md text-center text-sm">
+      {error ? <div className="mb-4 p-2.5 bg-red-100 text-red-700 rounded-md text-center text-sm">
           {error}
-        </div>
-      )}
+        </div> : null}
 
       <button
         type="submit"
         disabled={isLoading || !validateCodes()}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-md disabled:opacity-50 transition-colors"
       >
-        {isLoading ? "Verifying..." : "Verify Backup Codes"}
+        {isLoading
+          ? accountTwoFactorTranslate[lang].TwoFactorForm.BackupCodeInput.loading
+          : accountTwoFactorTranslate[lang].TwoFactorForm.BackupCodeInput.label}
       </button>
 
       <div className="mt-4 text-center text-sm text-gray-600">
@@ -191,7 +184,7 @@ const BackupCodeInput: FC<BackupCodeInputProps> = ({
           onClick={onSwitchToTotp}
           className="text-blue-600 hover:text-blue-700 underline"
         >
-          ← Return to regular 2FA
+          {accountTwoFactorTranslate[lang].TwoFactorForm.button.returnToRegular2FA}
         </button>
       </div>
     </form>

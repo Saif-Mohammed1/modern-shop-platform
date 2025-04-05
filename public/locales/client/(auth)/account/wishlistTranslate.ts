@@ -1,73 +1,73 @@
 export const accountWishlistTranslate = {
   en: {
     metadata: {
-      title: "Wishlist",
-      description: "Wishlist for the customer",
-      keywords: "customer, wishlist, customer wishlist",
+      title: 'Wishlist',
+      description: 'Wishlist for the customer',
+      keywords: 'customer, wishlist, customer wishlist',
     },
     wishlistPage: {
-      title: "My Wishlist",
-      emptyWhishlist: "Your wishlist is empty.",
+      title: 'My Wishlist',
+      emptyWhishlist: 'Your wishlist is empty.',
     },
     wishListContext: {
       loadWishlist: {
-        loading: "Loading wishlist...",
-        error: "Error loading wishlist",
-        success: "Wishlist loaded successfully",
+        loading: 'Loading wishlist...',
+        error: 'Error loading wishlist',
+        success: 'Wishlist loaded successfully',
       },
     },
     WishListCard: {
       functions: {
         handleWishlistClick: {
-          loading: "Processing wishlist...",
-          success: "Added to wishlist",
-          error: "Failed to Handel to wishlist",
-          removed: "Removed from wishlist",
+          loading: 'Processing wishlist...',
+          success: 'Added to wishlist',
+          error: 'Failed to Handel to wishlist',
+          removed: 'Removed from wishlist',
         },
         isInWishlist: {
-          remove: "Remove from Wishlist",
-          add: "Add to Wishlist",
+          remove: 'Remove from Wishlist',
+          add: 'Add to Wishlist',
         },
       },
     },
 
     errors: {
-      global: "Something went wrong please try again later",
+      global: 'Something went wrong please try again later',
     },
   },
   uk: {
     metadata: {
-      title: "Список бажань",
-      description: "Список бажань для клієнта",
-      keywords: "клієнт, список бажань, список бажань клієнта",
+      title: 'Список бажань',
+      description: 'Список бажань для клієнта',
+      keywords: 'клієнт, список бажань, список бажань клієнта',
     },
     wishlistPage: {
-      title: "Мій список бажань",
-      emptyWhishlist: "Ваш список бажань порожній.",
+      title: 'Мій список бажань',
+      emptyWhishlist: 'Ваш список бажань порожній.',
     },
     wishListContext: {
       loadWishlist: {
-        loading: "Завантаження списку бажань...",
-        error: "Помилка завантаження списку бажань",
-        success: "Список бажань успішно завантажено",
+        loading: 'Завантаження списку бажань...',
+        error: 'Помилка завантаження списку бажань',
+        success: 'Список бажань успішно завантажено',
       },
     },
     WishListCard: {
       functions: {
         handleWishlistClick: {
-          loading: "Обробка списку бажань...",
-          success: "Додано до списку бажань",
-          error: "Не вдалося обробити список бажань",
-          removed: "Видалено зі списку бажань",
+          loading: 'Обробка списку бажань...',
+          success: 'Додано до списку бажань',
+          error: 'Не вдалося обробити список бажань',
+          removed: 'Видалено зі списку бажань',
         },
         isInWishlist: {
-          remove: "Видалити зі списку бажань",
-          add: "Додати до списку бажань",
+          remove: 'Видалити зі списку бажань',
+          add: 'Додати до списку бажань',
         },
       },
     },
     errors: {
-      global: "Щось пішло не так, спробуйте пізніше",
+      global: 'Щось пішло не так, спробуйте пізніше',
     },
   },
 } as const;

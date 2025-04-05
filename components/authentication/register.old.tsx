@@ -1,14 +1,17 @@
 "use client";
-import { type FormEvent, useState } from "react";
+
 import Link from "next/link";
-import toast from "react-hot-toast";
-import Spinner from "../spinner/spinner";
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import api from "../../app/lib/utilities/api";
+import { signIn } from "next-auth/react";
+import { type FormEvent, useState } from "react";
+import toast from "react-hot-toast";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
+
+import api from "../../app/lib/utilities/api";
 import { lang } from "../../app/lib/utilities/lang";
+import Spinner from "../spinner/spinner";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");
@@ -81,7 +84,7 @@ const RegisterPage = () => {
       <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
         {registerTranslate[lang].form.title}
       </h2>
-      <form onSubmit={handleRegister} className="space-y-4">
+      <form onSubmit={() => void handleRegister} className="space-y-4">
         <div>
           <label className="block text-gray-600">
             {registerTranslate[lang].form.name.label}
@@ -121,12 +124,12 @@ const RegisterPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
-            <span
+            <button
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
             >
               {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-            </span>
+            </button>
           </div>
         </div>
         <div>
@@ -144,12 +147,12 @@ const RegisterPage = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
-            <span
+            <button
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
             >
               {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-            </span>
+            </button>
           </div>
         </div>
         <button

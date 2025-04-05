@@ -1,14 +1,11 @@
-import imageSrc from "@/app/lib/utilities/productImageHandler";
-import StarRatings from "react-star-ratings";
+import Image from 'next/image';
+import Link from 'next/link';
+import StarRatings from 'react-star-ratings';
 
-import Image from "next/image";
-import Link from "next/link";
-import type { ProductType } from "@/app/lib/types/products.types";
-const RelatedProducts = ({
-  relatedProducts,
-}: {
-  relatedProducts: ProductType[];
-}) => {
+import type {ProductType} from '@/app/lib/types/products.types';
+import imageSrc from '@/app/lib/utilities/productImageHandler';
+
+const RelatedProducts = ({relatedProducts}: {relatedProducts: ProductType[]}) => {
   return (
     <div className="mt-8 mb-3 ">
       <h3 className="text-lg font-semibold mb-4">Related Products</h3>
@@ -32,7 +29,7 @@ const RelatedProducts = ({
                   alt={product.name}
                   width={150}
                   height={150}
-                  style={{ objectFit: "cover" }}
+                  style={{objectFit: 'cover'}}
                   className="mb-4"
                   priority
                 />
@@ -53,15 +50,11 @@ const RelatedProducts = ({
                       </p>
                       <p className="text-sm font-light text-gray-600">
                         Discounted Price: $
-                        {parseFloat(
-                          (product.price - product.discount).toString()
-                        ).toFixed(2)}
+                        {parseFloat((product.price - product.discount).toString()).toFixed(2)}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-sm font-light text-gray-600">
-                      ${product.price}
-                    </p>
+                    <p className="text-sm font-light text-gray-600">${product.price}</p>
                   )}
                 </div>
               </Link>

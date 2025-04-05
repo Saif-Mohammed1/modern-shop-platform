@@ -1,28 +1,25 @@
 // src/repositories/order.repository.ts
-import { Model, type ClientSession } from "mongoose";
-import type {
-  CreateOrderDto,
-  UpdateOrderDto,
-  UpdateOrderStatusDto,
-} from "../dtos/order.dto";
-import type { IOrder } from "../models/Order.model";
-import { BaseRepository } from "./BaseRepository";
+import type {Model} from 'mongoose';
+import {type ClientSession} from 'mongoose';
+
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
-} from "@/app/lib/types/queryBuilder.types";
-import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import UserModel from "../models/User.model";
+} from '@/app/lib/types/queryBuilder.types';
+import {QueryBuilder} from '@/app/lib/utilities/queryBuilder';
+
+import type {CreateOrderDto, UpdateOrderDto, UpdateOrderStatusDto} from '../dtos/order.dto';
+import type {IOrder} from '../models/Order.model';
+import UserModel from '../models/User.model';
+
+import {BaseRepository} from './BaseRepository';
 
 export class OrderRepository extends BaseRepository<IOrder> {
   constructor(model: Model<IOrder>) {
     super(model);
   }
-  override async create(
-    dto: CreateOrderDto,
-    session?: ClientSession
-  ): Promise<IOrder> {
+  override async create(dto: CreateOrderDto, session?: ClientSession): Promise<IOrder> {
     const [order] = await this.model.create([dto], {
       session,
     });
@@ -30,47 +27,35 @@ export class OrderRepository extends BaseRepository<IOrder> {
   }
 
   override async findById(id: string): Promise<IOrder | null> {
-    return await this.model
-      .findById(id)
-      .populate("userId", "name email")
-      .lean()
-      .exec();
+    return await this.model.findById(id).populate('userId', 'name email').lean().exec();
   }
 
   async updateStatus(
     orderId: string,
-    status: UpdateOrderStatusDto["status"]
+    status: UpdateOrderStatusDto['status'],
   ): Promise<IOrder | null> {
     return await this.model
-      .findByIdAndUpdate(
-        orderId,
-        { status },
-        { new: true, runValidators: true }
-      )
-      .populate("userId", "name email")
+      .findByIdAndUpdate(orderId, {status}, {new: true, runValidators: true})
+      .populate('userId', 'name email')
       .exec();
   }
   override async update(
     id: string,
     dto: UpdateOrderDto,
-    session?: ClientSession
+    session?: ClientSession,
   ): Promise<IOrder | null> {
     return await this.model
-      .findByIdAndUpdate(
-        id,
-        { $set: dto },
-        { new: true, runValidators: true, session }
-      )
-      .populate("userId", "name email")
+      .findByIdAndUpdate(id, {$set: dto}, {new: true, runValidators: true, session})
+      .populate('userId', 'name email')
       .exec();
   }
 
   async findByUser(
     userId: string,
-    options: QueryOptionConfig
+    options: QueryOptionConfig,
   ): Promise<QueryBuilderResult<IOrder>> {
     const queryConfig: QueryBuilderConfig<IOrder> = {
-      allowedFilters: ["userId", "createdAt"],
+      allowedFilters: ['userId', 'createdAt'],
       //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IOrder>,
       //   maxLimit: 100,
     };
@@ -83,32 +68,26 @@ export class OrderRepository extends BaseRepository<IOrder> {
       // ...(options?.sort && { sort: options.sort }),
     });
 
-    const queryBuilder = new QueryBuilder<IOrder>(
-      this.model,
-      searchParams,
-      queryConfig
-    );
+    const queryBuilder = new QueryBuilder<IOrder>(this.model, searchParams, queryConfig);
 
     if (options?.populate) {
-      queryBuilder.populate([{ path: "userId", select: "name email" }]);
+      queryBuilder.populate([{path: 'userId', select: 'name email'}]);
     }
 
     return await queryBuilder.execute();
   }
 
-  async getOrders(
-    options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IOrder>> {
+  async getOrders(options: QueryOptionConfig): Promise<QueryBuilderResult<IOrder>> {
     const queryConfig: QueryBuilderConfig<IOrder> = {
-      allowedFilters: ["userId", "createdAt", "status"],
-      allowedSorts: ["createdAt", "updatedAt"],
+      allowedFilters: ['userId', 'createdAt', 'status'],
+      allowedSorts: ['createdAt', 'updatedAt'],
       //   maxLimit: 100,
     };
-    if (options.query.get("email")) {
+    if (options.query.get('email')) {
       const users = await UserModel.find({
-        email: new RegExp(options.query.get("email") || "", "i"),
+        email: new RegExp(options.query.get('email') || '', 'i'),
       })
-        .select("_id")
+        .select('_id')
         .lean();
       if (!users.length)
         return {
@@ -122,35 +101,28 @@ export class OrderRepository extends BaseRepository<IOrder> {
             hasPrev: false,
           },
         };
-      options.query.set("userId", users.map((u) => u._id.toString()).join(","));
+      options.query.set('userId', users.map((u) => u._id.toString()).join(','));
     }
-    const queryBuilder = new QueryBuilder<IOrder>(
-      this.model,
-      options.query,
-      queryConfig
-    );
+    const queryBuilder = new QueryBuilder<IOrder>(this.model, options.query, queryConfig);
 
     if (options?.populate) {
-      queryBuilder.populate([{ path: "userId", select: "name email" }]);
+      queryBuilder.populate([{path: 'userId', select: 'name email'}]);
     }
     return await queryBuilder.execute();
   }
   async getLatestOrder(userId: string): Promise<IOrder | null> {
     return await this.model
-      .findOne({ userId })
+      .findOne({userId})
       .sort({
         createdAt: -1,
       })
       .lean();
   }
-  async findByUserAndProduct(
-    userId: string,
-    productId: string
-  ): Promise<IOrder | null> {
+  async findByUserAndProduct(userId: string, productId: string): Promise<IOrder | null> {
     return await this.model
       .findOne({
         userId,
-        "items.productId": productId,
+        'items.productId': productId,
       })
       .lean();
   }

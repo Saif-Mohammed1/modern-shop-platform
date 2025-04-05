@@ -1,35 +1,31 @@
-"use client";
+'use client';
 
-import { type FC, useState } from "react";
+import type {ApexOptions} from 'apexcharts';
+import {type FC, useState} from 'react';
+import Chart from 'react-apexcharts';
 import {
-  FiUsers,
-  FiDollarSign,
-  FiPackage,
   FiAlertCircle,
-  FiShoppingCart,
-  FiRefreshCw,
-  FiChevronRight,
-  FiChevronLeft,
-  FiGrid,
   FiBarChart2,
-  FiMapPin,
+  FiChevronLeft,
+  FiChevronRight,
+  FiDollarSign,
   FiGlobe,
-  FiShield,
+  FiGrid,
+  FiMapPin,
+  FiPackage,
   FiPieChart,
-} from "react-icons/fi";
-import Chart from "react-apexcharts";
-import type { ApexOptions } from "apexcharts";
-import type { DashboardData } from "@/app/lib/types/dashboard.types";
+  FiRefreshCw,
+  FiShield,
+  FiShoppingCart,
+  FiUsers,
+} from 'react-icons/fi';
 
-const AdminDashboard = ({
-  dashboardData,
-}: {
-  dashboardData: DashboardData | null;
-}) => {
+import type {DashboardData} from '@/app/lib/types/dashboard.types';
+
+const AdminDashboard = ({dashboardData}: {dashboardData: DashboardData | null}) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  if (!dashboardData)
-    return <div className="text-gray-500 p-6">Loading dashboard data...</div>;
+  if (!dashboardData) return <div className="text-gray-500 p-6">Loading dashboard data...</div>;
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
@@ -56,23 +52,19 @@ const AdminDashboard = ({
           </button>
         </div>
 
-        {showAdvanced ? (
-          <AdvancedView data={dashboardData} />
-        ) : (
-          <BasicView data={dashboardData} />
-        )}
+        {showAdvanced ? <AdvancedView data={dashboardData} /> : <BasicView data={dashboardData} />}
       </div>
     </div>
   );
 };
 
-const BasicView = ({ data }: { data: DashboardData }) => {
+const BasicView = ({data}: {data: DashboardData}) => {
   const categoryDistribution = data.products.categories.reduce(
     (acc, category) => {
       acc[category.name] = category.sales;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
   return (
     <>
@@ -81,9 +73,7 @@ const BasicView = ({ data }: { data: DashboardData }) => {
           icon={<FiUsers className="h-6 w-6" />}
           title="Total Users"
           value={data.users.totalUsers}
-          growth={parseFloat(
-            data.users.weeklyGrowth[0]?.growthPercentage || "0"
-          )}
+          growth={parseFloat(data.users.weeklyGrowth[0]?.growthPercentage || '0')}
         />
         <MetricCard
           icon={<FiDollarSign className="h-6 w-6" />}
@@ -119,7 +109,7 @@ const BasicView = ({ data }: { data: DashboardData }) => {
           data={data.orders.recentOrders.map((order) => ({
             ...order,
             _id: order._id.toString(),
-            type: "order",
+            type: 'order',
             amount: order.total,
           }))}
           icon={<FiShoppingCart className="w-5 h-5" />}
@@ -144,7 +134,7 @@ const BasicView = ({ data }: { data: DashboardData }) => {
   );
 };
 
-const AdvancedView = ({ data }: { data: DashboardData }) => (
+const AdvancedView = ({data}: {data: DashboardData}) => (
   <>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <MetricCard
@@ -173,25 +163,19 @@ const AdvancedView = ({ data }: { data: DashboardData }) => (
       <MetricCard
         icon={<FiMapPin className="h-6 w-6" />}
         title="Top Country"
-        value={
-          data.users.geographicalInsights.topLocations[0]?.country || "N/A"
-        }
+        value={data.users.geographicalInsights.topLocations[0]?.country || 'N/A'}
       />
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <ChartCard title="Device Distribution">
-        <DeviceDistributionChart
-          devices={data.users.geographicalInsights.deviceDistribution}
-        />
+        <DeviceDistributionChart devices={data.users.geographicalInsights.deviceDistribution} />
       </ChartCard>
       <ChartCard title="Inventory Value">
         <InventoryValueChart inventory={data.products.inventory} />
       </ChartCard>
       <ChartCard title="User Locations">
-        <GeographicalMap
-          locations={data.users.geographicalInsights.topLocations}
-        />
+        <GeographicalMap locations={data.users.geographicalInsights.topLocations} />
       </ChartCard>
     </div>
 
@@ -223,7 +207,7 @@ const MetricCard: FC<MetricCardProps> = ({
   unit,
 }) => {
   const formattedValue =
-    typeof value === "number"
+    typeof value === 'number'
       ? isCurrency
         ? `$${value.toLocaleString()}`
         : value.toLocaleString()
@@ -234,11 +218,9 @@ const MetricCard: FC<MetricCardProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-gray-400 text-sm mb-1">{title}</p>
-          <p
-            className={`text-2xl font-bold ${isAlert ? "text-yellow-400" : ""}`}
-          >
+          <p className={`text-2xl font-bold ${isAlert ? 'text-yellow-400' : ''}`}>
             {formattedValue}
-            {unit && <span className="text-sm ml-1">{unit}</span>}
+            {unit ? <span className="text-sm ml-1">{unit}</span> : null}
           </p>
         </div>
         <div className="bg-gray-700 p-3 rounded-lg">{icon}</div>
@@ -258,17 +240,15 @@ interface GrowthBadgeProps {
   value: number;
 }
 
-const GrowthBadge: FC<GrowthBadgeProps> = ({ value }) => {
+const GrowthBadge: FC<GrowthBadgeProps> = ({value}) => {
   const isPositive = value >= 0;
   return (
     <span
       className={`flex items-center px-2 py-1 rounded-md text-sm ${
-        isPositive
-          ? "bg-green-900/50 text-green-400"
-          : "bg-red-900/50 text-red-400"
+        isPositive ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'
       }`}
     >
-      {isPositive ? "↑" : "↓"}
+      {isPositive ? '↑' : '↓'}
       {Math.abs(value).toFixed(1)}%
     </span>
   );
@@ -282,24 +262,16 @@ interface ChartCardProps {
   helpText?: string;
 }
 
-const ChartCard: FC<ChartCardProps> = ({
-  title,
-  children,
-  subtitle,
-  className = "",
-  helpText,
-}) => (
+const ChartCard: FC<ChartCardProps> = ({title, children, subtitle, className = '', helpText}) => (
   <div className={`bg-gray-800 p-6 rounded-xl ${className}`}>
     <div className="flex justify-between items-start mb-4">
       <div>
-        {title && <h2 className="text-xl font-semibold">{title}</h2>}{" "}
-        {subtitle && <p className="text-sm text-gray-400 mt-1">{subtitle}</p>}
+        {title ? <h2 className="text-xl font-semibold">{title}</h2> : null}{' '}
+        {subtitle ? <p className="text-sm text-gray-400 mt-1">{subtitle}</p> : null}
       </div>
-      {helpText && (
-        <div className="tooltip" data-tip={helpText}>
+      {helpText ? <div className="tooltip" data-tip={helpText}>
           <FiAlertCircle className="w-5 h-5 text-gray-400 hover:text-gray-300 cursor-help" />
-        </div>
-      )}
+        </div> : null}
     </div>
     <div className="relative min-h-[300px]">{children}</div>
   </div>
@@ -359,19 +331,19 @@ interface CategoryChartProps {
   distribution: Record<string, number>;
 }
 
-const CategoryChart: FC<CategoryChartProps> = ({ distribution }) => {
+const CategoryChart: FC<CategoryChartProps> = ({distribution}) => {
   const options: ApexOptions = {
     chart: {
-      type: "donut",
-      foreColor: "#fff",
-      animations: { enabled: true },
+      type: 'donut',
+      foreColor: '#fff',
+      animations: {enabled: true},
     },
     labels: Object.keys(distribution),
-    colors: ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"],
+    colors: ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'],
     legend: {
-      position: "bottom",
-      fontSize: "14px",
-      markers: { size: 4 },
+      position: 'bottom',
+      fontSize: '14px',
+      markers: {size: 4},
     },
     plotOptions: {
       pie: {
@@ -380,15 +352,15 @@ const CategoryChart: FC<CategoryChartProps> = ({ distribution }) => {
             show: true,
             total: {
               show: true,
-              label: "Total",
-              fontSize: "16px",
-              color: "#fff",
+              label: 'Total',
+              fontSize: '16px',
+              color: '#fff',
             },
           },
         },
       },
     },
-    dataLabels: { enabled: false },
+    dataLabels: {enabled: false},
   };
 
   const series = Object.values(distribution);
@@ -402,7 +374,7 @@ interface ActivityItem {
   totalPrice?: number;
   status: string;
   createdAt: Date;
-  type?: "refund" | "order" | "report";
+  type?: 'refund' | 'order' | 'report';
 }
 
 interface RecentActivitiesProps {
@@ -431,15 +403,13 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
     {error ? (
       <div className="text-center py-4">
         <p className="text-red-400 mb-2">Error loading activities</p>
-        {onRetry && (
-          <button
+        {onRetry ? <button
             onClick={onRetry}
             className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300"
           >
             <FiRefreshCw className="w-4 h-4" />
             Try Again
-          </button>
-        )}
+          </button> : null}
       </div>
     ) : loading ? (
       <div className="space-y-4">
@@ -462,30 +432,24 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
             <div>
               <p className="font-medium">#{activity._id.slice(-4)}</p>
               <p className="text-sm text-gray-400">
-                {new Date(activity.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
+                {new Date(activity.createdAt).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })}
               </p>
             </div>
             <div className="text-right">
-              {(activity.amount || activity.totalPrice) && (
-                <p
+              {(activity.amount || activity.totalPrice) ? <p
                   className={`font-semibold ${
-                    activity.type === "refund"
-                      ? "text-red-400"
-                      : "text-green-400"
+                    activity.type === 'refund' ? 'text-red-400' : 'text-green-400'
                   }`}
                 >
-                  {activity.type === "refund" ? "-" : "+"}$
+                  {activity.type === 'refund' ? '-' : '+'}$
                   {(activity.amount || activity.totalPrice)?.toFixed(2)}
-                </p>
-              )}
-              <p className="text-sm text-gray-400 capitalize">
-                {activity.status}
-              </p>
+                </p> : null}
+              <p className="text-sm text-gray-400 capitalize">{activity.status}</p>
             </div>
           </div>
         ))}
@@ -502,26 +466,24 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
 );
 // Revenue Trend Chart Component
 const RevenueTrendChart: FC<{
-  weeklyGrowth: DashboardData["orders"]["weeklyGrowth"];
-}> = ({ weeklyGrowth }) => {
+  weeklyGrowth: DashboardData['orders']['weeklyGrowth'];
+}> = ({weeklyGrowth}) => {
   const options: ApexOptions = {
-    chart: { type: "area", toolbar: { show: false } },
-    xaxis: { categories: weeklyGrowth.map((w) => w.label) },
+    chart: {type: 'area', toolbar: {show: false}},
+    xaxis: {categories: weeklyGrowth.map((w) => w.label)},
     yaxis: {
-      labels: { formatter: (val: number) => `$${val.toLocaleString()}` },
+      labels: {formatter: (val: number) => `$${val.toLocaleString()}`},
     },
-    colors: ["#4F46E5"],
-    dataLabels: { enabled: false },
-    stroke: { curve: "smooth" },
-    tooltip: { theme: "dark" },
+    colors: ['#4F46E5'],
+    dataLabels: {enabled: false},
+    stroke: {curve: 'smooth'},
+    tooltip: {theme: 'dark'},
   };
 
   return (
     <Chart
       options={options}
-      series={[
-        { name: "Revenue", data: weeklyGrowth.map((w) => w.currentRevenue) },
-      ]}
+      series={[{name: 'Revenue', data: weeklyGrowth.map((w) => w.currentRevenue)}]}
       type="area"
       height={350}
     />
@@ -578,8 +540,8 @@ const RevenueTrendChart: FC<{
 
 // Security Overview Component
 const SecurityOverview: FC<{
-  security: DashboardData["users"]["security"];
-}> = ({ security }) => (
+  security: DashboardData['users']['security'];
+}> = ({security}) => (
   <ChartCard title="Security Overview">
     <div className="grid grid-cols-2 gap-4">
       <div className="p-4 bg-gray-700 rounded-lg">
@@ -596,56 +558,44 @@ const SecurityOverview: FC<{
 
 // Device Distribution Chart Component
 const DeviceDistributionChart: FC<{
-  devices: DashboardData["users"]["geographicalInsights"]["deviceDistribution"];
-}> = ({ devices }) => {
+  devices: DashboardData['users']['geographicalInsights']['deviceDistribution'];
+}> = ({devices}) => {
   const options: ApexOptions = {
-    chart: { type: "polarArea" },
+    chart: {type: 'polarArea'},
     labels: devices.map((d) => d.device),
-    colors: ["#4F46E5", "#10B981", "#F59E0B"],
-    legend: { position: "bottom" },
+    colors: ['#4F46E5', '#10B981', '#F59E0B'],
+    legend: {position: 'bottom'},
   };
 
   return (
-    <Chart
-      options={options}
-      series={devices.map((d) => d.count)}
-      type="polarArea"
-      height={350}
-    />
+    <Chart options={options} series={devices.map((d) => d.count)} type="polarArea" height={350} />
   );
 };
 
 // Inventory Value Chart Component
 const InventoryValueChart: FC<{
-  inventory: DashboardData["products"]["inventory"];
-}> = ({ inventory }) => {
+  inventory: DashboardData['products']['inventory'];
+}> = ({inventory}) => {
   const options: ApexOptions = {
-    chart: { type: "radialBar" },
-    labels: ["Inventory Value"],
-    colors: ["#4F46E5"],
+    chart: {type: 'radialBar'},
+    labels: ['Inventory Value'],
+    colors: ['#4F46E5'],
     plotOptions: {
       radialBar: {
         dataLabels: {
-          value: { formatter: (val: number) => `$${val.toLocaleString()}` },
+          value: {formatter: (val: number) => `$${val.toLocaleString()}`},
         },
       },
     },
   };
 
-  return (
-    <Chart
-      options={options}
-      series={[inventory.totalValue]}
-      type="radialBar"
-      height={350}
-    />
-  );
+  return <Chart options={options} series={[inventory.totalValue]} type="radialBar" height={350} />;
 };
 
 // Geographical Map Component (Simplified)
 const GeographicalMap: FC<{
-  locations: DashboardData["users"]["geographicalInsights"]["topLocations"];
-}> = ({ locations }) => (
+  locations: DashboardData['users']['geographicalInsights']['topLocations'];
+}> = ({locations}) => (
   <ChartCard>
     <div className="space-y-4 max-h-96 overflow-y-auto">
       {locations.map((loc, index) => (
@@ -667,8 +617,8 @@ const GeographicalMap: FC<{
 
 // Top Products Table Component
 const TopProductsTable: FC<{
-  products: DashboardData["orders"]["topProducts"];
-}> = ({ products }) => (
+  products: DashboardData['orders']['topProducts'];
+}> = ({products}) => (
   <ChartCard title="Top Selling Products">
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -695,8 +645,8 @@ const TopProductsTable: FC<{
 
 // User Activity Analysis Component
 const UserActivityAnalysis: FC<{
-  userInterest: DashboardData["userInterestProducts"];
-}> = ({ userInterest }) => (
+  userInterest: DashboardData['userInterestProducts'];
+}> = ({userInterest}) => (
   <ChartCard title="User Activity Analysis">
     <div className="grid grid-cols-2 gap-4">
       <div className="bg-gray-700 p-4 rounded-lg">

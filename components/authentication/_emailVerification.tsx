@@ -1,9 +1,12 @@
 "use client";
+
+import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import Link from "next/link";
-import { lang } from "../../app/lib/utilities/lang";
+
 import { verifyEmailPasswordTranslate } from "@/public/locales/client/(public)/auth/verifyEmailPasswordTranslate copy";
+
+import { lang } from "../../app/lib/utilities/lang";
 
 const EmailVerificationPage = () => {
   const [isSending, setIsSending] = useState(false);
@@ -44,7 +47,7 @@ const EmailVerificationPage = () => {
           click the link to verify your email address.
         </p>
         <button
-          onClick={handleResendVerification}
+          onClick={() => void handleResendVerification()}
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
           disabled={isSending}
         >

@@ -1,33 +1,36 @@
 "use client";
-import { useState } from "react";
+
 import { useRouter } from "next/navigation";
-import api from "@/app/lib/utilities/api";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import {
+  FiKey,
+  FiLock,
+  FiShield,
+  // FiActivity,
+  FiTrash2,
+  FiUnlock,
+} from "react-icons/fi";
+
+import {
+  type AuditLogDetails,
+  SecurityAuditAction,
+} from "@/app/lib/types/audit.types";
 import {
   type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
-import {
-  FiLock,
-  FiUnlock,
-  FiTrash2,
-  FiKey,
-  FiShield,
-  // FiActivity,
-} from "react-icons/fi";
-import { SecurityActionsModal } from "./SecurityActionsModal";
-import AuditLogTable from "./AuditLogTable";
-import {
-  SecurityAuditAction,
-  type AuditLogDetails,
-} from "@/app/lib/types/audit.types";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
+
+import AuditLogTable from "./AuditLogTable";
+import { SecurityActionsModal } from "./SecurityActionsModal";
 
 interface UserEditPageProps {
   user: UserAuthType & {
@@ -128,8 +131,11 @@ export default function UserEditPage({ user }: UserEditPageProps) {
         usersTranslate.users[lang].editUsers.handleDeleteUser.success
       );
       router.push("/dashboard/users");
-    } catch (error) {
-      toast.error(usersTranslate.users[lang].editUsers.handleDeleteUser.failed);
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          usersTranslate.users[lang].editUsers.handleDeleteUser.failed
+      );
     }
   };
 
@@ -148,7 +154,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
         </div>
         <ConfirmModal
           title={usersTranslate.users[lang].editUsers.actions.deleteConfirm}
-          onConfirm={handleDeleteUser}
+          onConfirm={() => void handleDeleteUser()}
           // confirmVariant="destructive"
         >
           <Button variant="destructive" size="sm" icon={<FiTrash2 />} danger>
@@ -207,7 +213,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
           {updatingFields.size > 0 && (
             <Button
               variant="primary"
-              onClick={confirmUpdate}
+              onClick={() => void confirmUpdate()}
               className="w-full"
               loading={loading}
             >
@@ -225,7 +231,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
           <div className="space-y-3">
             <Button
               variant="secondary"
-              onClick={() => handleSecurityAction("forcePasswordReset")}
+              onClick={() => void handleSecurityAction("forcePasswordReset")}
               className="w-full"
             >
               <FiKey className="mr-2" />
@@ -237,7 +243,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
 
             <Button
               variant="secondary"
-              onClick={() => handleSecurityAction("revokeSessions")}
+              onClick={() => void handleSecurityAction("revokeSessions")}
               className="w-full"
             >
               <FiShield className="mr-2" />
@@ -285,14 +291,14 @@ export default function UserEditPage({ user }: UserEditPageProps) {
               usersTranslate.users[lang].editUsers.handleSecurityAction
                 .lockAccount.label,
             icon: <FiLock />,
-            handler: () => handleSecurityAction("lockAccount"),
+            handler: () => void handleSecurityAction("lockAccount"),
           },
           {
             label:
               usersTranslate.users[lang].editUsers.handleSecurityAction
                 .unlockAccount.label,
             icon: <FiUnlock />,
-            handler: () => handleSecurityAction("unlockAccount"),
+            handler: () => void handleSecurityAction("unlockAccount"),
           },
         ]}
       />
@@ -307,7 +313,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
       /> */}
       <ConfirmModal
         title={usersTranslate.users[lang].editUsers.actions.deleteConfirm}
-        onConfirm={handleDeleteUser}
+        onConfirm={() => void handleDeleteUser()}
         // confirmVariant="destructive"
       >
         <Button variant="destructive" size="sm" icon={<FiTrash2 />} danger />

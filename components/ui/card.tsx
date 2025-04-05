@@ -1,8 +1,11 @@
 // components/ui/card.tsx
 "use client";
 
-import { cn } from "@/app/lib/utilities/cn";
 import { type HTMLAttributes, forwardRef } from "react";
+
+import { cn } from "@/app/lib/utilities/cn";
+
+// components/ui/card.tsx
 
 const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
@@ -29,20 +32,16 @@ const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 );
 CardHeader.displayName = "CardHeader";
 
-const CardTitle = forwardRef<
-  HTMLParagraphElement,
-  HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
-      className
-    )}
-    {...props}
-  />
-));
-CardTitle.displayName = "CardTitle";
+// const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHeadingElement>>(
+//   ({className, ...props}, ref) => (
+//     <h3
+//       ref={ref}
+//       className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
+//       {...props}
+//     />
+//   ),
+// );
+// CardTitle.displayName = 'CardTitle';
 
 const CardDescription = forwardRef<
   HTMLParagraphElement,
@@ -74,11 +73,4 @@ const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 );
 CardFooter.displayName = "CardFooter";
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-};
+export { Card, CardHeader, CardFooter, CardDescription, CardContent };

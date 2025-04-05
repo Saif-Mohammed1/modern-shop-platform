@@ -1,93 +1,87 @@
-"use client";
+'use client';
 
-import { type FC, useEffect, useRef, useState } from "react";
+
+import {DateTime} from 'luxon';
+import Image from 'next/image';
+import Link from 'next/link';
+import {parseAsInteger, parseAsString, useQueryState} from 'nuqs';
+import {type FC, useEffect, useRef, useState} from 'react';
+import toast from 'react-hot-toast';
 import {
-  FaTag,
-  FaCalendarAlt,
-  FaStar,
-  FaCheckCircle,
   FaArchive,
+  FaCalendarAlt,
+  FaCheckCircle,
   FaEdit,
-  FaTrash,
-  FaTimesCircle,
-  FaWeightHanging,
   FaRulerCombined,
+  FaStar,
+  FaTag,
+  FaTimesCircle,
+  FaTrash,
   FaUserEdit,
-} from "react-icons/fa";
-import Image from "next/image";
-// import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Pagination, {
-  type PaginationType,
-} from "@/components/pagination/Pagination";
-import toast from "react-hot-toast";
-import api from "@/app/lib/utilities/api";
-import imageSrc from "@/app/lib/utilities/productImageHandler";
+  FaWeightHanging,
+} from 'react-icons/fa';
+import {HiFilter} from 'react-icons/hi';
+import {MdHistory} from 'react-icons/md';
+import {TfiReload} from 'react-icons/tfi';
+
+import type {Event, ProductType} from '@/app/lib/types/products.types';
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import imageSrc from '@/app/lib/utilities/productImageHandler';
+import Pagination, {type PaginationType} from '@/components/pagination/Pagination';
 // import { updateQueryParams } from "@/components/util/updateQueryParams";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import Link from "next/link";
-import type { Event, ProductType } from "@/app/lib/types/products.types";
-import { TfiReload } from "react-icons/tfi";
-import { HiFilter } from "react-icons/hi";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import SearchBar from "@/components/ui/SearchBar";
-import Select from "@/components/ui/Select";
-import { DateTime } from "luxon";
-import MobileFilter from "@/components/ui/MobileFilter";
-import { MdHistory } from "react-icons/md";
+import MobileFilter from '@/components/ui/MobileFilter';
+import SearchBar from '@/components/ui/SearchBar';
+import Select from '@/components/ui/Select';
+import {productsTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/productTranslate';
+import {shopPageTranslate} from '@/public/locales/client/(public)/shop/shoppageTranslate';
+
 type Category = string;
 type ProductListProps = {
   products: ProductType[];
   categories: Category[];
   pagination: PaginationType;
 };
-const ProductList: FC<ProductListProps> = ({
-  products,
-  categories,
-  pagination,
-}) => {
+const ProductList: FC<ProductListProps> = ({products, categories, pagination}) => {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useQueryState(
-    "search",
-    parseAsString
-      .withDefault("")
-      .withOptions({ shallow: false, throttleMs: 1000 })
+    'search',
+    parseAsString.withDefault('').withOptions({shallow: false, throttleMs: 1000}),
   );
   const [categoryFilter, setCategoryFilter] = useQueryState(
-    "category",
-    parseAsString.withDefault("").withOptions({ shallow: false })
+    'category',
+    parseAsString.withDefault('').withOptions({shallow: false}),
   );
   const [currentPage, setCurrentPage] = useQueryState(
-    "page",
-    parseAsInteger.withDefault(1).withOptions({ shallow: false })
+    'page',
+    parseAsInteger.withDefault(1).withOptions({shallow: false}),
   );
   const [sortOrder, setSortOrder] = useQueryState(
-    "sort",
-    parseAsString.withDefault("").withOptions({ shallow: false })
+    'sort',
+    parseAsString.withDefault('').withOptions({shallow: false}),
   );
   const [productsList, setProductsList] = useState(products || []);
   const productsContainerRef = useRef<HTMLDivElement>(null);
 
   const handleCategoryFilterChange = (event: Event) => {
     const value = event.target.value;
-    setCategoryFilter(value);
+    void setCategoryFilter(value);
   };
   const handleSortFilterChange = (event: Event) => {
     const value = event.target.value;
-    setSortOrder(value);
+    void setSortOrder(value);
     // updateQueryParams({ sort: value }, searchParamsReadOnly, router, pathName);
   };
 
   const handleSearch = (event: Event) => {
     const value = event.target.value;
-    setSearchQuery(value);
+    void setSearchQuery(value);
   };
 
   const onPaginationChange = (page: number) => {
     // const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
-    setCurrentPage(page);
+    void setCurrentPage(page);
 
     // if (page === 1) {
     //   paramsSearch.delete("page");
@@ -100,26 +94,20 @@ const ProductList: FC<ProductListProps> = ({
     let toastLoading;
     try {
       toastLoading = toast.loading(
-        productsTranslate.products[lang].function.toggleProductStatus.loading
+        productsTranslate.products[lang].function.toggleProductStatus.loading,
       );
       await api.put(`/admin/dashboard/products/${slug}/active`, {
         active: !productsList.find((product) => product.slug === slug)?.active,
       });
       setProductsList((prevProducts) =>
         prevProducts.map((product) =>
-          product.slug === slug
-            ? { ...product, active: !product.active }
-            : product
-        )
+          product.slug === slug ? {...product, active: !product.active} : product,
+        ),
       );
-      toast.success(
-        productsTranslate.products[lang].function.toggleProductStatus.success
-      );
+      toast.success(productsTranslate.products[lang].function.toggleProductStatus.success);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error(
-          error?.message || productsTranslate.products[lang].error.general
-        );
+        toast.error(error?.message || productsTranslate.products[lang].error.general);
       } else {
         toast.error(productsTranslate.products[lang].error.general);
       }
@@ -131,21 +119,13 @@ const ProductList: FC<ProductListProps> = ({
   const handleDelete = async (slug: string) => {
     let toastLoading;
     try {
-      toastLoading = toast.loading(
-        productsTranslate.products[lang].function.handleDelete.loading
-      );
+      toastLoading = toast.loading(productsTranslate.products[lang].function.handleDelete.loading);
       await api.delete(`/admin/dashboard/products/${slug}`);
-      setProductsList((prevProducts) =>
-        prevProducts.filter((product) => product.slug !== slug)
-      );
-      toast.success(
-        productsTranslate.products[lang].function.handleDelete.success
-      );
+      setProductsList((prevProducts) => prevProducts.filter((product) => product.slug !== slug));
+      toast.success(productsTranslate.products[lang].function.handleDelete.success);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error(
-          error?.message || productsTranslate.products[lang].error.general
-        );
+        toast.error(error?.message || productsTranslate.products[lang].error.general);
       } else {
         toast.error(productsTranslate.products[lang].error.general);
       }
@@ -158,10 +138,10 @@ const ProductList: FC<ProductListProps> = ({
     if (productsContainerRef.current) {
       productsContainerRef.current.scrollTo({
         top: 0,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
-    window.scrollTo({ top: 1, behavior: "smooth" });
+    window.scrollTo({top: 1, behavior: 'smooth'});
     setProductsList(products);
   }, [searchQuery, categoryFilter, currentPage, sortOrder, products]);
   return (
@@ -200,29 +180,28 @@ const ProductList: FC<ProductListProps> = ({
           value={sortOrder}
           options={[
             {
-              value: "-createdAt",
+              value: '-createdAt',
               label: productsTranslate.products[lang].filter.select.newest,
             },
             {
-              value: "createdAt",
+              value: 'createdAt',
               label: productsTranslate.products[lang].filter.select.oldest,
             },
             {
-              value: "-price",
-              label:
-                productsTranslate.products[lang].filter.select.highestPrice,
+              value: '-price',
+              label: productsTranslate.products[lang].filter.select.highestPrice,
             },
             {
-              value: "price",
+              value: 'price',
               label: productsTranslate.products[lang].filter.select.lowestPrice,
             },
 
             {
-              value: "-ratingsAverage",
+              value: '-ratingsAverage',
               label: productsTranslate.products[lang].filter.select.topRated,
             },
             {
-              value: "ratingsAverage",
+              value: 'ratingsAverage',
               label: productsTranslate.products[lang].filter.select.lowestRated,
             },
           ]}
@@ -240,8 +219,7 @@ const ProductList: FC<ProductListProps> = ({
         </Link>
       </div>
       {/* Mobile Filters */}
-      {isMobileFiltersOpen && (
-        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+      {isMobileFiltersOpen ? <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
           <div className="flex flex-col  items-center mb-6 gap-2">
             {/* Search Section */}
             <SearchBar
@@ -271,33 +249,29 @@ const ProductList: FC<ProductListProps> = ({
               value={sortOrder}
               options={[
                 {
-                  value: "-createdAt",
+                  value: '-createdAt',
                   label: productsTranslate.products[lang].filter.select.newest,
                 },
                 {
-                  value: "createdAt",
+                  value: 'createdAt',
                   label: productsTranslate.products[lang].filter.select.oldest,
                 },
                 {
-                  value: "-price",
-                  label:
-                    productsTranslate.products[lang].filter.select.highestPrice,
+                  value: '-price',
+                  label: productsTranslate.products[lang].filter.select.highestPrice,
                 },
                 {
-                  value: "price",
-                  label:
-                    productsTranslate.products[lang].filter.select.lowestPrice,
+                  value: 'price',
+                  label: productsTranslate.products[lang].filter.select.lowestPrice,
                 },
 
                 {
-                  value: "-ratingsAverage",
-                  label:
-                    productsTranslate.products[lang].filter.select.topRated,
+                  value: '-ratingsAverage',
+                  label: productsTranslate.products[lang].filter.select.topRated,
                 },
                 {
-                  value: "ratingsAverage",
-                  label:
-                    productsTranslate.products[lang].filter.select.lowestRated,
+                  value: 'ratingsAverage',
+                  label: productsTranslate.products[lang].filter.select.lowestRated,
                 },
               ]}
               placeholder={productsTranslate.products[lang].filter.select.all}
@@ -315,14 +289,13 @@ const ProductList: FC<ProductListProps> = ({
               {productsTranslate.products[lang].filter.addProduct}
             </Link>
           </div>
-        </MobileFilter>
-      )}
+        </MobileFilter> : null}
       <div ref={productsContainerRef} className="max-h-[70dvh] overflow-y-auto">
         <div
           className="grid col gap-4 p-4"
           style={
             {
-              "--col-min-width": "320px",
+              '--col-min-width': '320px',
               // "--col-gap": "1.5rem",
             } as React.CSSProperties
           }
@@ -331,7 +304,7 @@ const ProductList: FC<ProductListProps> = ({
             const discountExpireDate = product.discountExpire
               ? DateTime.fromJSDate(new Date(product.discountExpire))
               : null;
-            const daysToExpire = discountExpireDate?.diffNow("days").days ?? 0;
+            const daysToExpire = discountExpireDate?.diffNow('days').days ?? 0;
             // const formattedExpireDate =
             //   discountExpireDate?.toFormat("MMM dd, yyyy") || "N/A";
 
@@ -344,12 +317,8 @@ const ProductList: FC<ProductListProps> = ({
                   {/* Product Header */}
                   <div className="flex justify-between items-start gap-2">
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900 truncate">
-                        {product.name}
-                      </h2>
-                      <p className="text-xs text-gray-400 mt-1">
-                        SKU: {product.sku}
-                      </p>
+                      <h2 className="text-xl font-bold text-gray-900 truncate">{product.name}</h2>
+                      <p className="text-xs text-gray-400 mt-1">SKU: {product.sku}</p>
                     </div>
                     <span className="bg-indigo-600/10 text-indigo-600 text-xs font-semibold px-2.5 py-1 rounded-full">
                       {product.category}
@@ -371,21 +340,15 @@ const ProductList: FC<ProductListProps> = ({
                   <div className="grid grid-cols-3 gap-2">
                     <div className="bg-gray-50 p-3 rounded-lg text-center">
                       <p className="text-sm text-gray-500 mb-1">Price</p>
-                      <p className="font-semibold text-gray-900">
-                        ${product.price.toFixed(2)}
-                      </p>
+                      <p className="font-semibold text-gray-900">${product.price.toFixed(2)}</p>
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg text-center">
                       <p className="text-sm text-gray-500 mb-1">Stock</p>
-                      <p className="font-semibold text-gray-900">
-                        {product.stock}
-                      </p>
+                      <p className="font-semibold text-gray-900">{product.stock}</p>
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg text-center">
                       <p className="text-sm text-gray-500 mb-1">Sold</p>
-                      <p className="font-semibold text-gray-900">
-                        {product.sold}
-                      </p>
+                      <p className="font-semibold text-gray-900">{product.sold}</p>
                     </div>
                   </div>
 
@@ -395,12 +358,10 @@ const ProductList: FC<ProductListProps> = ({
                       <div className="flex items-center gap-2">
                         <FaTag className="text-purple-600" />
                         <span className="font-medium">Discount:</span>
-                        <span className="text-purple-600">
-                          ${product.discount.toFixed(2)}
-                        </span>
+                        <span className="text-purple-600">${product.discount.toFixed(2)}</span>
                       </div>
                       <span
-                        className={`text-sm ${daysToExpire > 0 ? "text-green-600" : "text-red-600"}`}
+                        className={`text-sm ${daysToExpire > 0 ? 'text-green-600' : 'text-red-600'}`}
                       >
                         {daysToExpire > 0 ? (
                           <>
@@ -423,9 +384,7 @@ const ProductList: FC<ProductListProps> = ({
                         <FaStar className="text-yellow-400" />
                         <span>Rating</span>
                       </div>
-                      <span className="font-medium">
-                        {product.ratingsAverage}/5
-                      </span>
+                      <span className="font-medium">{product.ratingsAverage}/5</span>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -433,9 +392,7 @@ const ProductList: FC<ProductListProps> = ({
                         <FaWeightHanging />
                         <span>Weight</span>
                       </div>
-                      <span className="font-medium">
-                        {product.shippingInfo?.weight} kg
-                      </span>
+                      <span className="font-medium">{product.shippingInfo?.weight} kg</span>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -457,24 +414,22 @@ const ProductList: FC<ProductListProps> = ({
                       <div className="flex items-center gap-2">
                         <div
                           className={`flex items-center gap-1 text-sm ${
-                            product.active ? "text-green-600" : "text-red-600"
+                            product.active ? 'text-green-600' : 'text-red-600'
                           }`}
                         >
                           {product.active ? <FaCheckCircle /> : <FaArchive />}
-                          <span>{product.active ? "Active" : "Archived"}</span>
+                          <span>{product.active ? 'Active' : 'Archived'}</span>
                         </div>
-                        {product.lastModifiedBy && (
-                          <div className="flex items-center gap-1 text-gray-400 text-sm">
+                        {product.lastModifiedBy ? <div className="flex items-center gap-1 text-gray-400 text-sm">
                             <FaUserEdit />
                             <span className="truncate max-w-[120px]">
                               {product.lastModifiedBy.name}
                             </span>
-                          </div>
-                        )}
+                          </div> : null}
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {" "}
+                        {' '}
                         <Link
                           href={`/dashboard/products/${product.slug}/history`}
                           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-blue-600 transition-colors"
@@ -482,7 +437,7 @@ const ProductList: FC<ProductListProps> = ({
                           <MdHistory className="w-4 h-4" />
                         </Link>
                         <button
-                          onClick={() => toggleProductStatus(product.slug)}
+                          onClick={() => void toggleProductStatus(product.slug)}
                           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-indigo-600 transition-colors"
                         >
                           <TfiReload className="w-4 h-4" />
@@ -494,7 +449,7 @@ const ProductList: FC<ProductListProps> = ({
                           <FaEdit className="w-4 h-4" />
                         </Link>
                         <button
-                          onClick={() => handleDelete(product.slug)}
+                          onClick={() => void handleDelete(product.slug)}
                           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-red-600 transition-colors"
                         >
                           <FaTrash className="w-4 h-4" />

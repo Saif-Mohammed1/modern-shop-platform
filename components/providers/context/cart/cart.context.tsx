@@ -1,22 +1,25 @@
 "use client";
 
 import { createContext, use, useEffect, useState } from "react";
-import {
-  addToCart,
-  getCartItems,
-  removeFromCart,
-  clearItemFromCart,
-  // mergeLocalCartWithDB,
-} from "./cartAction";
 import toast from "react-hot-toast";
-import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { useUser } from "../user/user.context";
+
 import type {
   CartContextType,
   CartItemsType,
   ProductCartPick,
 } from "@/app/lib/types/cart.types";
+import { lang } from "@/app/lib/utilities/lang";
+import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
+
+import { useUser } from "../user/user.context";
+
+import {
+  addToCart,
+  clearItemFromCart,
+  // mergeLocalCartWithDB,
+  getCartItems,
+  removeFromCart,
+} from "./cartAction";
 
 // Create the cart context
 export const CartContext = createContext<CartContextType>({
@@ -116,7 +119,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     // Add small delay if experiencing race conditions
-    const timer = setTimeout(loadCart, 500);
+    const timer = setTimeout(() => void loadCart(), 500);
     return () => {
       isMounted = false;
       clearTimeout(timer);

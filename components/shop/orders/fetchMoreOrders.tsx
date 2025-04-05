@@ -1,8 +1,11 @@
 "use client";
-import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { useQueryState, parseAsInteger } from "nuqs";
+
+import { parseAsInteger, useQueryState } from "nuqs";
 import { useState } from "react";
+
+import { lang } from "@/app/lib/utilities/lang";
+import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
+
 type CustomButtonProps = {
   showMore: boolean;
   //   getMoreResults: () => void;
@@ -25,7 +28,7 @@ const FetchMoreOrders = ({ showMore }: CustomButtonProps) => {
     //   pathName
     // );
 
-    setPage(nextPage);
+    void setPage(nextPage);
     // new Promise((resolve) => setTimeout(resolve, 1000));
     setLoading(false);
   };

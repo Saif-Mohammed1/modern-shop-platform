@@ -1,18 +1,22 @@
-"use client";
-import { lang } from "@/app/lib/utilities/lang";
-import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
-import AddressForm, { type AddressFormValues } from "./AddressForm";
-import { useState } from "react";
-import api from "@/app/lib/utilities/api";
-import toast from "react-hot-toast";
-import Spinner from "@/components/spinner/spinner";
-import type { AddressType } from "@/app/lib/types/address.types";
+'use client';
+
+import {useState} from 'react';
+import toast from 'react-hot-toast';
+
+import type {AddressType} from '@/app/lib/types/address.types';
+import api from '@/app/lib/utilities/api';
+import {lang} from '@/app/lib/utilities/lang';
+import Spinner from '@/components/spinner/spinner';
+import {addressTranslate} from '@/public/locales/client/(auth)/account/addressTranslate';
+
+import AddressForm, {type AddressFormValues} from './AddressForm';
+
 type AddressBookProps = {
   initialAddresses: AddressType[];
   hasNextPage: boolean;
 };
 // Main Address Book Component
-const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
+const AddressBook = ({initialAddresses, hasNextPage}: AddressBookProps) => {
   const [addresses, setAddresses] = useState<AddressType[]>(initialAddresses);
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -25,14 +29,12 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
     try {
       setLoadingMore(true);
       const nextPage = page + 1;
-      const { data } = await api.get(`/customers/address?page=${nextPage}`);
+      const {data} = await api.get(`/customers/address?page=${nextPage}`);
       setAddresses((prev) => [...prev, ...data.docs]);
       setPage(nextPage);
       setHasMore(data.meta.hasNextPage);
     } catch (error) {
-      toast.error(
-        (error as Error).message || addressTranslate[lang].error.global
-      );
+      toast.error((error as Error).message || addressTranslate[lang].error.global);
     } finally {
       setLoadingMore(false);
     }
@@ -41,27 +43,23 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
   const handleFormSubmit = async (data: AddressFormValues) => {
     try {
       if (isEditing && editAddress) {
-        const { data: updatedAddress } = await api.patch(
+        const {data: updatedAddress} = await api.patch(
           `/customers/address/${editAddress._id}`,
-          data
+          data,
         );
         setAddresses((prev) =>
-          prev.map((addr) =>
-            addr._id === editAddress._id ? updatedAddress : addr
-          )
+          prev.map((addr) => (addr._id === editAddress._id ? updatedAddress : addr)),
         );
         toast.success(addressTranslate[lang].function.handleSaveEdit.success);
       } else {
-        const { data: newAddress } = await api.post("/customers/address", data);
+        const {data: newAddress} = await api.post('/customers/address', data);
         setAddresses((prev) => [newAddress, ...prev]);
         toast.success(addressTranslate[lang].function.handleAddAddress.success);
       }
       setShowForm(false);
       setIsEditing(null);
     } catch (error) {
-      toast.error(
-        (error as Error).message || addressTranslate[lang].error.global
-      );
+      toast.error((error as Error).message || addressTranslate[lang].error.global);
     }
   };
 
@@ -69,21 +67,15 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
     try {
       await api.delete(`/customers/address/${id}`);
       setAddresses((prev) => prev.filter((addr) => addr._id !== id));
-      toast.success(
-        addressTranslate[lang].function.handleDeleteAddress.success
-      );
+      toast.success(addressTranslate[lang].function.handleDeleteAddress.success);
     } catch (error) {
-      toast.error(
-        (error as Error).message || addressTranslate[lang].error.global
-      );
+      toast.error((error as Error).message || addressTranslate[lang].error.global);
     }
   };
 
   return (
     <div className="container mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">
-        {addressTranslate[lang].title.main}
-      </h1>
+      <h1 className="text-3xl font-bold mb-6">{addressTranslate[lang].title.main}</h1>
 
       <div className="mb-8">
         {!showForm && !isEditing && (
@@ -95,8 +87,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
           </button>
         )}
 
-        {(showForm || isEditing) && (
-          <AddressForm
+        {(showForm || isEditing) ? <AddressForm
             defaultValues={editAddress ?? undefined}
             onSubmit={handleFormSubmit}
             onCancel={() => {
@@ -104,14 +95,11 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
               setIsEditing(null);
             }}
             isEditing={!!isEditing}
-          />
-        )}
+          /> : null}
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">
-          {addressTranslate[lang].title.subTitle}
-        </h2>
+        <h2 className="text-2xl font-semibold">{addressTranslate[lang].title.subTitle}</h2>
 
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           {addresses.map((address) => (
@@ -131,12 +119,10 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
                       {address.city}, {address.state} {address.postalCode}
                     </p>
                     <p>
-                      {addressTranslate[lang].addAddress.form.phone.label}:{" "}
-                      {address.phone}
+                      {addressTranslate[lang].addAddress.form.phone.label}: {address.phone}
                     </p>
                     <p>
-                      {addressTranslate[lang].addAddress.form.country.label}:{" "}
-                      {address.country}
+                      {addressTranslate[lang].addAddress.form.country.label}: {address.country}
                     </p>
                   </div>
                   <div className="mt-4 flex gap-2">
@@ -150,7 +136,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
                       {addressTranslate[lang].button.edit}
                     </button>
                     <button
-                      onClick={() => handleDelete(address._id)}
+                      onClick={() => void handleDelete(address._id)}
                       className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                     >
                       {addressTranslate[lang].button.delete}
@@ -162,15 +148,13 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
           ))}
         </div>
 
-        {hasMore && (
-          <button
-            onClick={loadMoreAddresses}
+        {hasMore ? <button
+            onClick={() => void loadMoreAddresses}
             disabled={loadingMore}
             className="mt-4 px-6 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
           >
             {loadingMore ? <Spinner /> : addressTranslate[lang].button.loadMore}
-          </button>
-        )}
+          </button> : null}
       </div>
     </div>
   );

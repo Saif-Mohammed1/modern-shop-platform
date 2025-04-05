@@ -1,9 +1,10 @@
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import ErrorHandler from "@/components/Error/errorHandler";
-import ProductDetail from "@/components/products/product-details/productDetails";
+import type { Metadata } from "next";
+
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
-import type { Metadata } from "next";
+import ErrorHandler from "@/components/Error/errorHandler";
+import ProductDetail from "@/components/products/product-details/productDetails";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 type Props = {
   params: Promise<{
@@ -35,7 +36,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         product.description,
       keywords: shopPageTranslate[lang].metadata.keywords + ", " + product.name,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       title: shopPageTranslate[lang].metadata.title,
       description: shopPageTranslate[lang].metadata.description,

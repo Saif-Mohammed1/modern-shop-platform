@@ -1,10 +1,12 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { v4 as uuidv4 } from "uuid";
-import AppError from "@/app/lib/utilities/appError";
-import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { logRequestError, logtail } from "@/app/lib/logger/logs";
+import {type NextRequest, NextResponse} from 'next/server';
+import {v4 as uuidv4} from 'uuid';
+import {z} from 'zod';
+
+import {logRequestError, logtail} from '@/app/lib/logger/logs';
+import AppError from '@/app/lib/utilities/appError';
+import {lang} from '@/app/lib/utilities/lang';
+
+import {errorControllerTranslate} from '../../../public/locales/server/errorControllerTranslate';
 
 // Type definitions
 interface CastError {
@@ -18,10 +20,7 @@ interface DuplicateFieldsError {
 
 interface ValidationError {
   _message: string;
-  errors: Record<
-    string,
-    { properties: { type: string; path: string; value: any } }
-  >;
+  errors: Record<string, {properties: {type: string; path: string; value: any}}>;
 }
 
 // Utility Type Export
@@ -30,7 +29,7 @@ class ErrorHandler {
   private correlationId!: string;
   // Main Error Handler
   main = (error: any, req: NextRequest): NextResponse => {
-    this.correlationId = req.headers.get("X-Correlation-ID") || uuidv4();
+    this.correlationId = req.headers.get('X-Correlation-ID') || uuidv4();
 
     // Convert error to AppError
     let err = this.normalizeError(error);
@@ -39,21 +38,20 @@ class ErrorHandler {
     if (error instanceof z.ZodError) {
       err = this.handleZodValidationError(error);
     }
-    if (error.name === "JsonWebTokenError") err = this.handleJWTError();
-    if (error.name === "TokenExpiredError") err = this.handleJWTExpiredError();
+    if (error.name === 'JsonWebTokenError') err = this.handleJWTError();
+    if (error.name === 'TokenExpiredError') err = this.handleJWTExpiredError();
     // Production error processing
-    if (process.env.NODE_ENV === "production") {
-      if (error.name === "CastError") err = this.handleCastErrorDB(error);
+    if (process.env.NODE_ENV === 'production') {
+      if (error.name === 'CastError') err = this.handleCastErrorDB(error);
       if (error.code === 11000) err = this.handleDuplicateFieldsDB(error);
-      if (error.name === "ValidationError")
-        err = this.handleValidationErrorDB(error);
+      if (error.name === 'ValidationError') err = this.handleValidationErrorDB(error);
 
       // Log errors
       // Enhanced logging with translation context
       // logRequestError(err, req, this.correlationId);
     }
 
-    return process.env.NODE_ENV === "development"
+    return process.env.NODE_ENV === 'development'
       ? this.sendErrorDev(err, req)
       : this.sendErrorProd(err, req);
   };
@@ -67,31 +65,30 @@ class ErrorHandler {
 
       return issue.message;
     });
-    return new AppError(errors.join("; "), 400);
+    return new AppError(errors.join('; '), 400);
   };
   private normalizeError = (error: any): AppError => {
     if (error instanceof AppError) return error; // Already an AppError instance
     return new AppError(
       error.message || errorControllerTranslate[lang].errors.globalError,
 
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   };
 
   // Database Error Handlers
   private handleCastErrorDB = (err: CastError): AppError => {
-    const message = errorControllerTranslate[
-      lang
-    ].controllers.handleCastErrorDB(err.path, err.value).message;
+    const message = errorControllerTranslate[lang].controllers.handleCastErrorDB(
+      err.path,
+      err.value,
+    ).message;
     return new AppError(message, 400);
   };
 
   private handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
-    const value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || "unknown value";
+    const value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || 'unknown value';
     const message =
-      errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(
-        value
-      ).message;
+      errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(value).message;
     return new AppError(message, 400);
   };
 
@@ -109,18 +106,17 @@ class ErrorHandler {
   //   return new AppError(errors.join("; "), 400);
   // };
   private handleValidationErrorDB = (err: ValidationError) => {
-    const schemaName = err._message.split(" ")[0].toLowerCase() ?? " ";
+    const schemaName = err._message.split(' ')[0].toLowerCase() ?? ' ';
     const errors = Object.values(err.errors).map((el: any) => {
       const type = el.properties.type; //u need to check this if exist in error object
       const path = el.properties.path;
 
       // Add checks before accessing dynamic properties
       const schemaErrors = (
-        errorControllerTranslate[lang].controllers
-          .handleValidationErrorDB as any
+        errorControllerTranslate[lang].controllers.handleValidationErrorDB as any
       )[schemaName];
 
-      let message = "An error occurred";
+      let message = 'An error occurred';
 
       if (schemaErrors && schemaErrors[path] && schemaErrors[path][type]) {
         message = schemaErrors[path][type];
@@ -129,21 +125,16 @@ class ErrorHandler {
       return message;
     });
 
-    return new AppError(errors.join(","), 400);
+    return new AppError(errors.join(','), 400);
   };
   // JWT Handlers
   private createAuthError = (
     // translationKey: keyof (typeof errorControllerTranslate)[typeof lang]["controllers"]
-    translationKey: "handleJWTError" | "handleJWTExpiredError"
-  ) =>
-    new AppError(
-      errorControllerTranslate[lang].controllers[translationKey].message,
-      401
-    );
+    translationKey: 'handleJWTError' | 'handleJWTExpiredError',
+  ) => new AppError(errorControllerTranslate[lang].controllers[translationKey].message, 401);
 
-  private handleJWTError = () => this.createAuthError("handleJWTError");
-  private handleJWTExpiredError = () =>
-    this.createAuthError("handleJWTExpiredError");
+  private handleJWTError = () => this.createAuthError('handleJWTError');
+  private handleJWTExpiredError = () => this.createAuthError('handleJWTExpiredError');
 
   // Error Response Formatters
   private createErrorResponse = (err: AppError, includeDetails: boolean) =>
@@ -151,18 +142,15 @@ class ErrorHandler {
       {
         status: err.status,
         message: err.message,
-        ...(includeDetails && { stack: err.stack }),
+        ...(includeDetails && {stack: err.stack}),
       },
-      { status: err.statusCode }
+      {status: err.statusCode},
     );
 
   // Environment-specific Handlers
   private sendErrorDev = (err: AppError, req: NextRequest) => {
-    if (err.name === "ZodError") return this.createErrorResponse(err, true);
-    return this.createErrorResponse(
-      err,
-      req.nextUrl.pathname.startsWith("/api/")
-    );
+    if (err.name === 'ZodError') return this.createErrorResponse(err, true);
+    return this.createErrorResponse(err, req.nextUrl.pathname.startsWith('/api/'));
   };
 
   private sendErrorProd = (err: AppError, req: NextRequest) => {
@@ -172,10 +160,10 @@ class ErrorHandler {
     logtail
       ?.flush()
       .then(() => {
-        console.log("Logs flushed successfully.");
+        console.log('Logs flushed successfully.');
       })
       .catch((err) => {
-        console.error("Error flushing logs:", err);
+        console.error('Error flushing logs:', err);
       });
     // return NextResponse.json(
     //   {
@@ -198,10 +186,10 @@ class ErrorHandler {
       {
         status: err.statusCode,
         headers: {
-          "X-Correlation-ID": this.correlationId,
-          "Content-Type": "application/problem+json", // RFC 7807 compliance
+          'X-Correlation-ID': this.correlationId,
+          'Content-Type': 'application/problem+json', // RFC 7807 compliance
         },
-      }
+      },
     );
   };
 }

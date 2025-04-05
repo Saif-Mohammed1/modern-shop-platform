@@ -1,12 +1,13 @@
-import type { Event } from "@/app/lib/types/products.types";
-import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { getCities } from "countries-cities";
-import Input from "@/components/ui/Input";
-import type { AddressType } from "@/app/lib/types/address.types";
+
+import type {AddressType} from '@/app/lib/types/address.types';
+import type {Event} from '@/app/lib/types/products.types';
+import {lang} from '@/app/lib/utilities/lang';
+import Input from '@/components/ui/Input';
+import {addressTranslate} from '@/public/locales/client/(auth)/account/addressTranslate';
+import {getCities} from 'countries-cities';
 
 type AddAddressComponentProps = {
-  newAddress: Omit<AddressType, "_id">;
+  newAddress: Omit<AddressType, '_id'>;
   onChange: (e: Event) => void;
   handleSubmitAddress: () => void;
   handleCancelAddAddress: () => void;
@@ -17,13 +18,11 @@ const AddAddressComponent = ({
   handleSubmitAddress,
   handleCancelAddAddress,
 }: AddAddressComponentProps) => {
-  const ukraineCities = getCities("Ukraine");
+  const ukraineCities = getCities('Ukraine');
 
   return (
     <div className="mt-6 p-6 bg-white rounded-lg shadow">
-      <h3 className="text-xl font-semibold mb-4">
-        {addressTranslate[lang].addAddress.title}
-      </h3>
+      <h3 className="text-xl font-semibold mb-4">{addressTranslate[lang].addAddress.title}</h3>
       <Input
         label={addressTranslate[lang].addAddress.form.street.label}
         name="street"
@@ -63,9 +62,7 @@ const AddAddressComponent = ({
             onChange={onChange}
             className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
           >
-            <option value="">
-              {addressTranslate[lang].addAddress.form.city.option.select}
-            </option>
+            <option value="">{addressTranslate[lang].addAddress.form.city.option.select}</option>
             {ukraineCities.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -84,9 +81,7 @@ const AddAddressComponent = ({
             value={newAddress.state}
             onChange={onChange}
             className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
-            placeholder={
-              addressTranslate[lang].addAddress.form.state.placeholder
-            }
+            placeholder={addressTranslate[lang].addAddress.form.state.placeholder}
           />
         </div>
 
@@ -101,9 +96,7 @@ const AddAddressComponent = ({
             value={newAddress.postalCode}
             onChange={onChange}
             className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
-            placeholder={
-              addressTranslate[lang].addAddress.form.postalCode.placeholder
-            }
+            placeholder={addressTranslate[lang].addAddress.form.postalCode.placeholder}
           />
         </div>
 
@@ -118,9 +111,7 @@ const AddAddressComponent = ({
             value={newAddress.phone}
             onChange={onChange}
             className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
-            placeholder={
-              addressTranslate[lang].addAddress.form.phone.placeholder
-            }
+            placeholder={addressTranslate[lang].addAddress.form.phone.placeholder}
           />
         </div>
 
@@ -132,12 +123,10 @@ const AddAddressComponent = ({
           <input
             name="country"
             type="text"
-            value={"Ukraine"}
+            value="Ukraine"
             readOnly
             className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
-            placeholder={
-              addressTranslate[lang].addAddress.form.country.placeholder
-            }
+            placeholder={addressTranslate[lang].addAddress.form.country.placeholder}
           />
         </div>
       </div>

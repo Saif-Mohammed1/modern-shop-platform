@@ -1,12 +1,14 @@
 // favorite.model.ts
-import { Document, Model, Schema, Types, model, models } from "mongoose";
-import { type IUser } from "./User.model";
-import { type IProduct } from "./Product.model";
+import type {Document, Model, Types} from 'mongoose';
+import {Schema, model, models} from 'mongoose';
+
+import {type IProduct} from './Product.model';
+import {type IUser} from './User.model';
 
 export interface IWishlist extends Document {
   _id: Types.ObjectId;
-  userId: IUser["_id"];
-  productId: IProduct["_id"];
+  userId: IUser['_id'];
+  productId: IProduct['_id'];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,13 +17,13 @@ const WishlistSchema = new Schema<IWishlist>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
       index: true,
     },
     productId: {
       type: Schema.Types.ObjectId,
-      ref: "Product",
+      ref: 'Product',
       required: true,
       index: true,
     },
@@ -32,43 +34,43 @@ const WishlistSchema = new Schema<IWishlist>(
       virtuals: true,
       getters: true,
       transform: function (_, ret) {
-        ["createdAt", "updatedAt"].forEach((field) => {
+        ['createdAt', 'updatedAt'].forEach((field) => {
           if (ret[field]) {
-            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
+            ret[field] = new Date(ret[field]).toISOString().split('T')[0];
           }
         });
         return ret;
       },
     },
-    toObject: { virtuals: true },
-  }
+    toObject: {virtuals: true},
+  },
 );
 
 // Compound index to prevent duplicate favorites
-WishlistSchema.index({ userId: 1, productId: 1 }, { unique: true });
-WishlistSchema.set("toJSON", { versionKey: false });
+WishlistSchema.index({userId: 1, productId: 1}, {unique: true});
+WishlistSchema.set('toJSON', {versionKey: false});
 // Virtual population (if needed)
-WishlistSchema.virtual("user", {
-  ref: "User",
-  localField: "userId",
-  foreignField: "_id",
+WishlistSchema.virtual('user', {
+  ref: 'User',
+  localField: 'userId',
+  foreignField: '_id',
   justOne: true,
 });
 
-WishlistSchema.virtual("product", {
-  ref: "Product",
-  localField: "productId",
-  foreignField: "_id",
+WishlistSchema.virtual('product', {
+  ref: 'Product',
+  localField: 'productId',
+  foreignField: '_id',
   justOne: true,
 });
 
-WishlistSchema.virtual("purchased", {
+WishlistSchema.virtual('purchased', {
   type: Boolean,
-  ref: "Order",
-  localField: "productId",
-  foreignField: "items.productId",
+  ref: 'Order',
+  localField: 'productId',
+  foreignField: 'items.productId',
 });
 
 const WishlistModel: Model<IWishlist> =
-  models.Wishlist || model<IWishlist>("Wishlist", WishlistSchema);
+  models.Wishlist || model<IWishlist>('Wishlist', WishlistSchema);
 export default WishlistModel;

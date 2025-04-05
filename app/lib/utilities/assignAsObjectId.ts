@@ -1,7 +1,9 @@
-import mongoose from "mongoose";
-import { z } from "zod";
-import { lang } from "./lang";
-import { commonTranslations } from "@/public/locales/server/Common.Translate";
+import mongoose from 'mongoose';
+import {z} from 'zod';
+
+import {commonTranslations} from '@/public/locales/server/Common.Translate';
+
+import {lang} from './lang';
 
 export const assignAsObjectId = (id: string) => new mongoose.Types.ObjectId(id);
 
@@ -23,6 +25,4 @@ export const zObjectId = z
   .refine((id) => mongoose.Types.ObjectId.isValid(id.toString()), {
     message: commonTranslations[lang].objectIdInvalid,
   })
-  .transform((id) =>
-    typeof id === "string" ? new mongoose.Types.ObjectId(id) : id
-  ); // Convert string to ObjectId, keep ObjectId unchanged
+  .transform((id) => (typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id)); // Convert string to ObjectId, keep ObjectId unchanged

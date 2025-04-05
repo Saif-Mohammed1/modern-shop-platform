@@ -1,23 +1,27 @@
 "use client";
-import { signOut } from "next-auth/react";
+
 import Link from "next/link";
+import { signOut } from "next-auth/react";
+import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { AiOutlineShoppingCart } from "react-icons/ai";
+import { MdDashboard } from "react-icons/md";
 import {
   VscAccount,
+  VscHeart,
+  VscPackage,
   VscSignIn,
   VscSignOut,
-  VscPackage,
-  VscHeart,
 } from "react-icons/vsc";
-import { MdDashboard } from "react-icons/md";
+
+import type { UserAuthType } from "@/app/lib/types/users.types";
+import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
+
 import api from "../../app/lib/utilities/api";
 import { deleteCookies } from "../../app/lib/utilities/cookies";
-import { useEffect, useRef } from "react";
-import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 import { lang } from "../../app/lib/utilities/lang";
-import type { UserAuthType } from "@/app/lib/types/users.types";
 import CustomLink from "../ui/CustomLink";
+
 type AccountNavListProps = {
   user: UserAuthType | null;
   setAccountMenuOpen: (open: boolean) => void;
@@ -68,7 +72,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
             `, ${user.name.split(" ")[0]}`
           : navBarTranslate[lang].accountNavList.content.accountMenu.welcome}
       </div>
-      {user && user.role === "admin" && (
+      {user && user.role === "admin" ? (
         <Link href="/dashboard">
           <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
             <MdDashboard className="mr-2" />{" "}
@@ -78,16 +82,16 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
             }
           </span>
         </Link>
-      )}
+      ) : null}
       {/* Dropdown Links with icons and bottom borders */}
-      {user && (
+      {user ? (
         <Link href="/account/dashboard">
           <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
             <VscAccount className="mr-2" />{" "}
             {navBarTranslate[lang].accountNavList.content.accountMenu.myAccount}
           </span>
         </Link>
-      )}
+      ) : null}
       {!user && (
         <>
           <CustomLink href="/auth/" className="hidden md:block">
@@ -142,7 +146,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
           <VscChecklist className="mr-2" /> Track Order
         </span>
       </Link> */}
-      {user && (
+      {user ? (
         <>
           <Link href="/account/orders/">
             <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
@@ -164,15 +168,15 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
             </span>
           </Link>
 
-          <span
+          <button
             className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300 cursor-pointer"
-            onClick={logOut}
+            onClick={() => void logOut()}
           >
             <VscSignOut className="mr-2" />
             {navBarTranslate[lang].accountNavList.content.accountMenu.logOut}
-          </span>
+          </button>
         </>
-      )}
+      ) : null}
     </div>
   );
 };

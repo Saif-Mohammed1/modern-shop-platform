@@ -1,11 +1,12 @@
 // src/lib/dto/order.dto.ts
-import { z } from "zod";
-import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { OrderTranslate } from "@/public/locales/server/Order.Translate";
-import { lang } from "@/app/lib/utilities/lang";
-import { OrderStatus } from "@/app/lib/types/orders.types";
-import { ProductTranslate } from "@/public/locales/server/Product.Translate";
-import { UserCurrency } from "@/app/lib/types/users.types";
+import {z} from 'zod';
+
+import {OrderStatus} from '@/app/lib/types/orders.types';
+import {UserCurrency} from '@/app/lib/types/users.types';
+import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import {lang} from '@/app/lib/utilities/lang';
+import {OrderTranslate} from '@/public/locales/server/Order.Translate';
+import {ProductTranslate} from '@/public/locales/server/Product.Translate';
 
 export class OrderValidation {
   private static dimensionsSchema = z.object({
@@ -113,13 +114,9 @@ export class OrderValidation {
         required_error: OrderTranslate[lang].dto.totalPrice.required,
       })
       .min(0),
-    subtotal: z
-      .number({ required_error: OrderTranslate[lang].dto.subtotal.required })
-      .min(0),
+    subtotal: z.number({required_error: OrderTranslate[lang].dto.subtotal.required}).min(0),
     // shippingCost: z.number().min(0),
-    tax: z
-      .number({ required_error: OrderTranslate[lang].dto.tax.required })
-      .min(0),
+    tax: z.number({required_error: OrderTranslate[lang].dto.tax.required}).min(0),
     orderNotes: z.array(z.string()).optional(),
     cancellationReason: z.string().optional(),
   });
@@ -141,12 +138,6 @@ export class OrderValidation {
   }
 }
 
-export type CreateOrderDto = z.infer<
-  typeof OrderValidation.CreateOrderDtoSchema
->;
-export type UpdateOrderStatusDto = z.infer<
-  typeof OrderValidation.UpdateOrderStatusDtoSchema
->;
-export type UpdateOrderDto = z.infer<
-  typeof OrderValidation.UpdateOrderDtoSchema
->;
+export type CreateOrderDto = z.infer<typeof OrderValidation.CreateOrderDtoSchema>;
+export type UpdateOrderStatusDto = z.infer<typeof OrderValidation.UpdateOrderStatusDtoSchema>;
+export type UpdateOrderDto = z.infer<typeof OrderValidation.UpdateOrderDtoSchema>;

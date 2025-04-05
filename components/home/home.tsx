@@ -1,10 +1,13 @@
-"use client";
-import { homePageTranslate } from "@/public/locales/client/(public)/homePageTranslate";
-import Slider from "./slider/slider";
+'use client';
 
-import RelatedProducts from "@/components/ui/relatedProducts";
-import { lang } from "../../app/lib/utilities/lang";
-import type { ProductType } from "@/app/lib/types/products.types";
+import type {ProductType} from '@/app/lib/types/products.types';
+import RelatedProducts from '@/components/ui/relatedProducts';
+import {homePageTranslate} from '@/public/locales/client/(public)/homePageTranslate';
+
+import {lang} from '../../app/lib/utilities/lang';
+
+import Slider from './slider/slider';
+
 type HomeComponentProps = {
   productData: {
     topOfferProducts: ProductType[];
@@ -19,7 +22,7 @@ const HomeComponent = ({
   // topRating,
   productData,
 }: HomeComponentProps) => {
-  const { topOfferProducts, newProducts, topRating } = productData;
+  const {topOfferProducts, newProducts, topRating} = productData;
   return (
     <section>
       <Slider />

@@ -1,10 +1,12 @@
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import EditProduct from "@/components/(admin)/dashboard/products/EditProductForm";
-import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/utilities/api";
-import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import EditProduct from "@/components/(admin)/dashboard/products/EditProductForm";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
 // export const metadata = {
 //   title: "Edit Product",
 //   description: "Edit product for the admin",
@@ -31,7 +33,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description: `${productsTranslate.products[lang].editProduct.metadata.description} ${product.name}. ${product.description}`,
       keywords: `${productsTranslate.products[lang].editProduct.metadata.keywords}, ${product.name}, ${product.description}`,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       title: productsTranslate.products[lang].editProduct.metadata.title,
       description:

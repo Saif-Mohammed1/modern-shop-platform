@@ -1,17 +1,19 @@
 "use client";
 
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import api from "@/app/lib/utilities/api";
-import imageSrc from "@/app/lib/utilities/productImageHandler";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import dynamic from "next/dynamic";
-import type { Event } from "@/app/lib/types/products.types";
-import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { AddressFormValues } from "@/components/customers/address/AddressForm";
+
 import type { AddressType } from "@/app/lib/types/address.types";
+import type { Event } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
+import type { AddressFormValues } from "@/components/customers/address/AddressForm";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
+
 const AddressForm = dynamic(
   () => import("@/components/customers/address/AddressForm")
 );
@@ -200,7 +202,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
         <div className="flex gap-4">
           <button
             className="bg-green-500 text-white px-4 py-2 rounded-md"
-            onClick={handelCheckout}
+            onClick={() => void handelCheckout()}
           >
             {checkoutPageTranslate[lang].button.checkout}
           </button>

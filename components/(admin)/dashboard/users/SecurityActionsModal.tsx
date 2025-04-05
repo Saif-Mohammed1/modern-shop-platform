@@ -30,17 +30,46 @@
 //     </Dialog>
 //   );
 // }
-"use client";
-import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  Transition,
-  TransitionChild,
-} from "@headlessui/react";
-import { Fragment } from "react";
-import Button from "@/components/ui/Button";
-import { FiX } from "react-icons/fi";
+'use client';
+
+import {Dialog, DialogPanel, DialogTitle, Transition, TransitionChild} from '@headlessui/react';
+import {Fragment} from 'react';
+import {FiX} from 'react-icons/fi';
+
+import Button from '@/components/ui/Button';
+
+// // components/admin/SecurityActionsModal.tsx
+// "use client";
+// import Button from "@/components/ui/Button";
+// import { Dialog } from "@headlessui/react";
+
+// export function SecurityActionsModal({ open, onClose, actions }) {
+//   return (
+//     <Dialog open={open} onOpenChange={onClose}>
+//       <DialogContent>
+//         <DialogHeader>
+//           <DialogTitle>Security Actions</DialogTitle>
+//         </DialogHeader>
+//         <div className="space-y-2">
+//           {actions.map((action, index) => (
+//             <Button
+//               key={index}
+//               variant="outline"
+//               className="w-full justify-start"
+//               onClick={() => {
+//                 action.handler();
+//                 onClose();
+//               }}
+//             >
+//               {action.icon}
+//               {action.label}
+//             </Button>
+//           ))}
+//         </div>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// }
 
 interface SecurityAction {
   label: string;
@@ -54,11 +83,7 @@ interface SecurityActionsModalProps {
   actions: SecurityAction[];
 }
 
-export function SecurityActionsModal({
-  open,
-  onClose,
-  actions,
-}: SecurityActionsModalProps) {
+export function SecurityActionsModal({open, onClose, actions}: SecurityActionsModalProps) {
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -87,10 +112,7 @@ export function SecurityActionsModal({
             >
               <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="flex justify-between items-center mb-4">
-                  <DialogTitle
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
-                  >
+                  <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900">
                     Security Actions
                   </DialogTitle>
                   <button

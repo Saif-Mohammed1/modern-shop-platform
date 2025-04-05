@@ -1,10 +1,13 @@
 "use client";
-import { useRouter } from "next/navigation";
+
 import Lottie from "lottie-react";
-import notFoundAnimation from "/public/animations/notFound.json"; // You need a Lottie animation JSON file
 import Link from "next/link";
-import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
+import { useRouter } from "next/navigation";
+
 import { lang } from "@/app/lib/utilities/lang";
+import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
+
+import notFoundAnimation from "/public/animations/notFound.json";
 
 const NotFoundComponent = () => {
   const router = useRouter();

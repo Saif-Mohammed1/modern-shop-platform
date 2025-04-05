@@ -1,11 +1,12 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { createServer } from "https";
-import { parse } from "url";
-import next from "next";
 import fs from "fs";
+import type { IncomingMessage, ServerResponse } from "http";
+import { createServer } from "https";
 import path from "path";
+import { parse } from "url";
+
 // Add to server.ts
 import heapdump from "heapdump";
+import next from "next";
 
 // Take a heap dump when memory exceeds 1GB
 setInterval(() => {
@@ -32,18 +33,24 @@ const httpsOptions = {
   cert: fs.readFileSync(path.join(__dirname, "config/localhost.pem")),
 };
 
-app.prepare().then(() => {
-  // Add to server.ts
+app
+  .prepare()
+  .then(() => {
+    // Add to server.ts
 
-  createServer(httpsOptions, (req: IncomingMessage, res: ServerResponse) => {
-    const parsedUrl = parse(req.url!, true);
-    handle(req, res, parsedUrl);
-  }).listen(port, (err?: any) => {
-    if (err) throw err;
-    console.log(
-      `> Server listening at https://localhost:${port} as ${
-        dev ? "development" : process.env.NODE_ENV
-      }`
-    );
+    createServer(httpsOptions, (req: IncomingMessage, res: ServerResponse) => {
+      const parsedUrl = parse(req.url!, true);
+      void handle(req, res, parsedUrl);
+    }).listen(port, (err?: any) => {
+      if (err) throw err;
+      console.log(
+        `> Server listening at https://localhost:${port} as ${
+          dev ? "development" : process.env.NODE_ENV
+        }`
+      );
+    });
+  })
+  .catch((ex: any) => {
+    console.error(ex.stack);
+    process.exit(1);
   });
-});

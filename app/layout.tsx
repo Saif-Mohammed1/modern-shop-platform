@@ -1,13 +1,15 @@
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "react-hot-toast";
-import Footer from "@/components/footer/footer";
-import NavBar from "@/components/navBar/navBar";
-import Providers from "@/components/providers/providers";
-import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import {Inter} from 'next/font/google';
+import {Toaster} from 'react-hot-toast';
 
-const inter = Inter({ subsets: ["latin"] });
+import {lang} from '@/app/lib/utilities/lang';
+import Footer from '@/components/footer/footer';
+import NavBar from '@/components/navBar/navBar';
+import Providers from '@/components/providers/providers';
+
+import {rootStaticPagesTranslate} from '../public/locales/client/(public)/rootStaticPagesTranslate';
+import './globals.css';
+
+const inter = Inter({subsets: ['latin']});
 
 export const metadata = {
   title: rootStaticPagesTranslate[lang].layout.metadata.title,
@@ -23,7 +25,7 @@ export default async function RootLayout({
   interceptor: React.ReactNode;
 }) {
   return (
-    <html lang={lang ?? "en"}>
+    <html lang={lang ?? 'en'}>
       <body className={`${inter.className} `}>
         <Providers>
           <main className="space-y-3 p-2 sm:p-4">

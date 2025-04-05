@@ -1,39 +1,30 @@
 // product-shipping.tsx
-import { lang } from "@/app/lib/utilities/lang";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { useFormContext } from "react-hook-form";
-import { FaWeightHanging, FaRulerCombined } from "react-icons/fa";
+import {useFormContext} from 'react-hook-form';
+import {FaRulerCombined, FaWeightHanging} from 'react-icons/fa';
 
-export default function ProductShipping({
-  editMode = false,
-}: {
-  editMode?: boolean;
-}) {
-  const { register } = useFormContext();
+import {lang} from '@/app/lib/utilities/lang';
+import {productsTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/productTranslate';
+
+export default function ProductShipping({editMode = false}: {editMode?: boolean}) {
+  const {register} = useFormContext();
 
   return (
     <div className="space-y-6">
-      {" "}
-      {editMode && (
-        <div className="bg-yellow-100 p-3 rounded-lg mb-4">
+      {' '}
+      {editMode ? <div className="bg-yellow-100 p-3 rounded-lg mb-4">
           {productsTranslate.products[lang].editMode}
-        </div>
-      )}
+        </div> : null}
       <div className="form-group">
         <label className="form-label">
           <FaWeightHanging className="form-icon" />
-          {
-            productsTranslate.products[lang].addProduct.form.productShipping
-              .labels.weight
-          }
+          {productsTranslate.products[lang].addProduct.form.productShipping.labels.weight}
         </label>
         <input
           type="number"
-          {...register("shippingInfo.weight", { required: true })}
+          {...register('shippingInfo.weight', {required: true})}
           className="form-input"
           placeholder={
-            productsTranslate.products[lang].addProduct.form.productShipping
-              .placeholders.weight
+            productsTranslate.products[lang].addProduct.form.productShipping.placeholders.weight
           }
         />
       </div>
@@ -41,18 +32,14 @@ export default function ProductShipping({
         <div className="form-group">
           <label className="form-label">
             <FaRulerCombined className="form-icon" />
-            {
-              productsTranslate.products[lang].addProduct.form.productShipping
-                .labels.length
-            }
+            {productsTranslate.products[lang].addProduct.form.productShipping.labels.length}
           </label>
           <input
             type="number"
-            {...register("shippingInfo.dimensions.length", { required: true })}
+            {...register('shippingInfo.dimensions.length', {required: true})}
             className="form-input"
             placeholder={
-              productsTranslate.products[lang].addProduct.form.productShipping
-                .placeholders.length
+              productsTranslate.products[lang].addProduct.form.productShipping.placeholders.length
             }
           />
         </div>
@@ -60,18 +47,14 @@ export default function ProductShipping({
         <div className="form-group">
           <label className="form-label">
             <FaRulerCombined className="form-icon" />
-            {
-              productsTranslate.products[lang].addProduct.form.productShipping
-                .labels.width
-            }
+            {productsTranslate.products[lang].addProduct.form.productShipping.labels.width}
           </label>
           <input
             type="number"
-            {...register("shippingInfo.dimensions.width", { required: true })}
+            {...register('shippingInfo.dimensions.width', {required: true})}
             className="form-input"
             placeholder={
-              productsTranslate.products[lang].addProduct.form.productShipping
-                .placeholders.width
+              productsTranslate.products[lang].addProduct.form.productShipping.placeholders.width
             }
           />
         </div>
@@ -79,18 +62,14 @@ export default function ProductShipping({
         <div className="form-group">
           <label className="form-label">
             <FaRulerCombined className="form-icon" />
-            {
-              productsTranslate.products[lang].addProduct.form.productShipping
-                .labels.height
-            }
+            {productsTranslate.products[lang].addProduct.form.productShipping.labels.height}
           </label>
           <input
             type="number"
-            {...register("shippingInfo.dimensions.height", { required: true })}
+            {...register('shippingInfo.dimensions.height', {required: true})}
             className="form-input"
             placeholder={
-              productsTranslate.products[lang].addProduct.form.productShipping
-                .placeholders.height
+              productsTranslate.products[lang].addProduct.form.productShipping.placeholders.height
             }
           />
         </div>

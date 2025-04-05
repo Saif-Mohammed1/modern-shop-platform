@@ -1,5 +1,5 @@
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import {lang} from '@/app/lib/utilities/lang';
+import {productsTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/productTranslate';
 
 type ButtonStepsProps = {
   prevStep: () => void;
@@ -7,11 +7,7 @@ type ButtonStepsProps = {
   parentStyle?: string;
 };
 
-const ButtonSteps = ({
-  prevStep,
-  handleNext,
-  parentStyle,
-}: ButtonStepsProps) => {
+const ButtonSteps = ({prevStep, handleNext, parentStyle}: ButtonStepsProps) => {
   return (
     <div className={`flex justify-between ${parentStyle}`}>
       <button

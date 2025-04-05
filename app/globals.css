@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-primary: #2086ff;
@@ -105,10 +105,7 @@
 } */
 .col {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(min(var(--col-min-width, 300px), 100%), 1fr)
-  );
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--col-min-width, 300px), 100%), 1fr));
   gap: var(--col-gap, 1rem);
   padding: var(--col-gap, 1rem);
 }
@@ -139,14 +136,14 @@
   animation: marquee 15s linear infinite;
 }
 /* Hide spinners in Chrome, Safari, Edge, and Opera */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
 /* Hide spinners in Firefox */
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 /* Smooth transitions for mobile */

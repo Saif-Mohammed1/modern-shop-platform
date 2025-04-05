@@ -1,19 +1,20 @@
-import Image from "next/image";
-import Link from "next/link";
-import StarRatings from "react-star-ratings";
-import type { ProductType } from "@/app/lib/types/products.types";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import imageSrc from "@/app/lib/utilities/productImageHandler";
-import { cn } from "@/app/lib/utilities/cn";
-import { DEFAULT_BREAKPOINTS, SWIPER_CONFIG } from "./config";
+import Image from 'next/image';
+import Link from 'next/link';
+import StarRatings from 'react-star-ratings';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import {Autoplay, Navigation, Pagination} from 'swiper/modules';
+import {Swiper, SwiperSlide} from 'swiper/react';
 
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "./styles.css";
+import type {ProductType} from '@/app/lib/types/products.types';
+import {cn} from '@/app/lib/utilities/cn';
+import {lang} from '@/app/lib/utilities/lang';
+import imageSrc from '@/app/lib/utilities/productImageHandler';
+import {shopPageTranslate} from '@/public/locales/client/(public)/shop/shoppageTranslate';
+
+import {DEFAULT_BREAKPOINTS, SWIPER_CONFIG} from './config';
+import './styles.css';
 
 type RelatedProductsProps = {
   title?: string;
@@ -38,10 +39,10 @@ const RelatedProducts = ({
 }: RelatedProductsProps) => {
   const swiperConfig = slidesPerView
     ? SWIPER_CONFIG.slidesPerViewAuto
-    : { breakpoints: DEFAULT_BREAKPOINTS };
+    : {breakpoints: DEFAULT_BREAKPOINTS};
 
   return (
-    <section className={cn("mt-8", className, { "mb-6": lastChild })}>
+    <section className={cn('mt-8', className, {'mb-6': lastChild})}>
       <h2 className="text-lg font-semibold mb-4 px-4">{title}</h2>
 
       {relatedProducts.length === 0 ? (
@@ -51,7 +52,7 @@ const RelatedProducts = ({
           <Swiper
             {...swiperConfig}
             navigation={true}
-            autoplay={{ delay, reverseDirection }}
+            autoplay={{delay, reverseDirection}}
             modules={[Pagination, Autoplay, Navigation]}
             loop={true}
             className="px-4"
@@ -68,16 +69,14 @@ const RelatedProducts = ({
   );
 };
 
-const ProductCard = ({ product }: { product: ProductType }) => {
+const ProductCard = ({product}: {product: ProductType}) => {
   const discountPercentage = product.discount
     ? ((product.discount / product.price) * 100).toFixed(0)
     : 0;
 
   return (
     <article className="card group border p-4 hover:shadow-lg transition-all duration-300 shadow-md rounded-lg bg-background overflow-hidden w-[160px] md:w-[180px]">
-      {product.discount > 0 && (
-        <DiscountBadge discountPercentage={discountPercentage.toString()} />
-      )}
+      {product.discount > 0 && <DiscountBadge discountPercentage={discountPercentage.toString()} />}
 
       <Link
         href={`/shop/${product.slug}`}
@@ -106,17 +105,13 @@ const ProductCard = ({ product }: { product: ProductType }) => {
   );
 };
 
-const DiscountBadge = ({
-  discountPercentage,
-}: {
-  discountPercentage: string;
-}) => (
+const DiscountBadge = ({discountPercentage}: {discountPercentage: string}) => (
   <div className="absolute top-3 -left-8 transform -rotate-45 bg-red-500 text-white px-8 py-1 text-xs font-bold shadow-lg">
     {discountPercentage}%{shopPageTranslate[lang].RelatedProducts.off}
   </div>
 );
 
-const StarRating = ({ rating }: { rating: number }) => (
+const StarRating = ({rating}: {rating: number}) => (
   <StarRatings
     rating={rating}
     starRatedColor="#ffb829"
@@ -129,28 +124,17 @@ const StarRating = ({ rating }: { rating: number }) => (
   />
 );
 
-const PriceDisplay = ({
-  price,
-  discount,
-}: {
-  price: number;
-  discount?: number;
-}) => (
+const PriceDisplay = ({price, discount}: {price: number; discount?: number}) => (
   <div className="flex flex-col">
     {discount ? (
       <>
-        <span className="text-xs text-muted-foreground line-through">
-          {formatPrice(price)}
-        </span>
+        <span className="text-xs text-muted-foreground line-through">{formatPrice(price)}</span>
         <span className="text-sm text-foreground font-medium">
-          {shopPageTranslate[lang].RelatedProducts.discountedPrice}:
-          {formatPrice(price - discount)}
+          {shopPageTranslate[lang].RelatedProducts.discountedPrice}:{formatPrice(price - discount)}
         </span>
       </>
     ) : (
-      <span className="text-sm text-foreground font-medium">
-        {formatPrice(price)}
-      </span>
+      <span className="text-sm text-foreground font-medium">{formatPrice(price)}</span>
     )}
   </div>
 );
@@ -158,8 +142,8 @@ const PriceDisplay = ({
 // Utility function in separate file
 const formatPrice = (value: number) =>
   new Intl.NumberFormat(lang, {
-    style: "currency",
-    currency: lang === "en" ? "USD" : "EUR",
+    style: 'currency',
+    currency: lang === 'en' ? 'USD' : 'EUR',
     minimumFractionDigits: 2,
   }).format(value);
 
