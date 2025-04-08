@@ -1,5 +1,3 @@
-// disable eslint checks
-/* eslint-disable */
 import { ipAddress } from "@vercel/functions";
 import { type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";

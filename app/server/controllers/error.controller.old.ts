@@ -1,5 +1,3 @@
-// disable eslint checks
-/* eslint-disable */
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

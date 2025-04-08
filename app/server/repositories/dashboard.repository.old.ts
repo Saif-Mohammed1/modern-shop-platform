@@ -1,5 +1,3 @@
-// disable eslint checks
-/* eslint-disable */
 import { DateTime } from "luxon";
 import type { Model, Types } from "mongoose";
 

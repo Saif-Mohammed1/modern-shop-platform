@@ -1,5 +1,3 @@
-// disable eslint checks
-/* eslint-disable */
 import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
 import Stripe from "stripe";

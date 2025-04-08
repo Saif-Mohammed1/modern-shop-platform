@@ -1,5 +1,3 @@
-// disable eslint checks
- 
 import type { AddressType } from "@/app/lib/types/address.types";
 import type { Event } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";

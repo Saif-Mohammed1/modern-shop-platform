@@ -1,5 +1,3 @@
-/* eslint-disable */
-// disable eslint checks
 "use client";
 
 import type { ApexOptions } from "apexcharts";
