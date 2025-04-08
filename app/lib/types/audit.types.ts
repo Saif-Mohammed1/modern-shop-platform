@@ -90,8 +90,8 @@ export enum EntityType {
 export interface AuditLogDetails {
   success: boolean;
   device: DeviceInfo;
-  message: string;
-  // [key: string]: any; // Additional dynamic details
+  // message: string;
+  [key: string]: any; // Additional dynamic details
 }
 export interface ClientAuditLogDetails {
   details: AuditLogDetails;
