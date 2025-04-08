@@ -1,9 +1,8 @@
-import type {IpVersion} from 'zod';
-import {z} from 'zod';
+import { type IpVersion, z } from "zod";
 
-import {AuditSource} from '@/app/lib/types/audit.types';
-import {lang} from '@/app/lib/utilities/lang';
-import {ProductTranslate} from '@/public/locales/server/Product.Translate';
+import { AuditSource } from "@/app/lib/types/audit.types";
+import { lang } from "@/app/lib/utilities/lang";
+import { ProductTranslate } from "@/public/locales/server/Product.Translate";
 
 export class LogsValidation {
   static LogsSchema = z.object({
@@ -12,7 +11,7 @@ export class LogsValidation {
         required_error: ProductTranslate[lang].dto.ipAddress.required,
       })
       .ip({
-        version: 'v4' as IpVersion,
+        version: "v4" as IpVersion,
         message: ProductTranslate[lang].dto.ipAddress.invalid,
       }),
     userAgent: z
@@ -25,7 +24,7 @@ export class LogsValidation {
       .default(AuditSource.WEB)
       .optional(),
   });
-  static validateLogs = (data: LogsTypeDto) => {
+  static validateLogs = (data: z.infer<typeof this.LogsSchema>) => {
     return this.LogsSchema.parse(data);
   };
 }

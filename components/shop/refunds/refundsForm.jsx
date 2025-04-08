@@ -33,8 +33,7 @@ const RefundRequest = ({ orderId, totalAmount }) => {
       } else {
         throw new Error("Failed to submit refund.");
       }
-    } catch (error) {
-      console.error("Error submitting refund request:", error);
+    } catch (_error) {
       toast.error("Error submitting refund request.");
     } finally {
       setLoading(false);

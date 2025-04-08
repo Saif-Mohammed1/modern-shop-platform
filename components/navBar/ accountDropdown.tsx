@@ -30,7 +30,9 @@ const AccountDropdown: FC<Props> = ({ cartItems, toggleCart }) => {
         <div className="flex items-center cursor-pointer">
           <div
             className="flex items-center "
-            onMouseEnter={() => setAccountMenuOpen(true)}
+            onMouseEnter={() => {
+              setAccountMenuOpen(true);
+            }}
           >
             <VscAccount className="text-2xl" />
             <span className="ml-2">{navBarTranslate[lang].navBar.account}</span>
@@ -41,7 +43,7 @@ const AccountDropdown: FC<Props> = ({ cartItems, toggleCart }) => {
 
           <button
             className="relative flex items-center cursor-pointer shopping-cart"
-            onClick={() => void toggleCart()}
+            onClick={toggleCart}
           >
             <AiOutlineShoppingCart className="text-2xl text-gray-800 mx-3" />
             {cartItems?.length > 0 && (

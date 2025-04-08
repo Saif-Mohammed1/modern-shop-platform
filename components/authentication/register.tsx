@@ -1,28 +1,27 @@
-'use client';
+"use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import { FiLock, FiMail, FiUser } from "react-icons/fi";
+import { z } from "zod";
 
-import {zodResolver} from '@hookform/resolvers/zod';
-import Link from 'next/link';
-import {useRouter, useSearchParams} from 'next/navigation';
-import {signIn} from 'next-auth/react';
-import {useState} from 'react';
-import {useForm} from 'react-hook-form';
-import toast from 'react-hot-toast';
-import {AiFillEye, AiFillEyeInvisible} from 'react-icons/ai';
-import {FiLock, FiMail, FiUser} from 'react-icons/fi';
-import {z} from 'zod';
+import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
+import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 
-import {registerTranslate} from '@/public/locales/client/(public)/auth/registerTranslate';
-import {userZodValidatorTranslate} from '@/public/locales/server/userControllerTranslate';
-
-import api from '../../app/lib/utilities/api';
-import {lang} from '../../app/lib/utilities/lang';
-import {mergeLocalCartWithDB} from '../providers/context/cart/cartAction';
-import Spinner from '../spinner/spinner';
-import Input from '../ui/Input';
+import api from "../../app/lib/utilities/api";
+import { lang } from "../../app/lib/utilities/lang";
+import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
+import Spinner from "../spinner/spinner";
+import Input from "../ui/Input";
 
 // Allowed email domains
-const allowedEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com'];
+const allowedEmailDomains = ["gmail.com", "yahoo.com", "outlook.com"];
 
 // Zod schema
 const registerSchema = z
@@ -39,16 +38,19 @@ const registerSchema = z
       })
       .email(userZodValidatorTranslate[lang].email.invalid)
       .refine(
-        (email) => allowedEmailDomains.includes(email.split('@')[1]),
-        userZodValidatorTranslate[lang].email.domainNotAllowed,
+        (email) => allowedEmailDomains.includes(email.split("@")[1]),
+        userZodValidatorTranslate[lang].email.domainNotAllowed
       ),
     phone: z
       .string({
         // required_error: userZodValidatorTranslate[lang].phone.required,
       })
-      .regex(/^\+?[1-9]\d{1,14}$/, userZodValidatorTranslate[lang].phone.invalid)
+      .regex(
+        /^\+?[1-9]\d{1,14}$/,
+        userZodValidatorTranslate[lang].phone.invalid
+      )
       .optional()
-      .or(z.literal('')),
+      .or(z.literal("")),
     password: z
       .string({
         required_error: userZodValidatorTranslate[lang].password.required,
@@ -57,7 +59,7 @@ const registerSchema = z
       .max(40, userZodValidatorTranslate[lang].password.maxLength)
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        userZodValidatorTranslate[lang].password.invalid,
+        userZodValidatorTranslate[lang].password.invalid
       ),
     confirmPassword: z.string({
       required_error: userZodValidatorTranslate[lang].confirmPassword.required,
@@ -65,7 +67,7 @@ const registerSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: userZodValidatorTranslate[lang].confirmPassword.invalid,
-    path: ['confirmPassword'],
+    path: ["confirmPassword"],
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -74,39 +76,41 @@ const RegisterPage = () => {
   const {
     register,
     handleSubmit,
-    formState: {errors, isSubmitting},
+    formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    mode: 'onBlur',
+    mode: "onBlur",
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const params = useSearchParams();
-  const callbackUrl = params.get('callbackUrl');
+  const callbackUrl = params.get("callbackUrl");
   const router = useRouter();
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await api.post('/auth/register', data);
-      const result = await signIn('credentials', {
+      await api.post("/auth/register", data);
+      const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
       });
 
-      if (result?.error) throw new Error(result.error);
+      if (result?.error) {
+        throw new Error(result.error);
+      }
       const res = await mergeLocalCartWithDB();
       if (res?.message) {
         toast.success(res.message);
       }
-      router.replace(callbackUrl || '/');
+      router.replace(callbackUrl || "/");
       toast.success(registerTranslate[lang].functions.handleRegister.success);
     } catch (error: unknown) {
       toast.error(
         error instanceof Error
           ? error.message
-          : registerTranslate[lang].functions.handleRegister.error,
+          : registerTranslate[lang].functions.handleRegister.error
       );
     }
   };
@@ -117,11 +121,11 @@ const RegisterPage = () => {
         {registerTranslate[lang].form.title}
       </h2>
 
-      <form onSubmit={() => void handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Name Field */}
         <Input
           icon={<FiUser />}
-          {...register('name')}
+          {...register("name")}
           label={registerTranslate[lang].form.name.label}
           placeholder={registerTranslate[lang].form.name.placeholder}
           error={errors.name?.message}
@@ -144,7 +148,7 @@ const RegisterPage = () => {
         </div> */}
         <Input
           icon={<FiMail />}
-          {...register('email')}
+          {...register("email")}
           label={registerTranslate[lang].form.email.label}
           placeholder={registerTranslate[lang].form.email.placeholder}
           error={errors.email?.message}
@@ -178,18 +182,20 @@ const RegisterPage = () => {
         </div> */}
         <div className="relative">
           <Input
-            {...register('password')}
+            {...register("password")}
             label={registerTranslate[lang].form.password.label}
             placeholder={registerTranslate[lang].form.password.placeholder}
-            type={showPassword ? 'text' : 'password'}
+            type={showPassword ? "text" : "password"}
             error={errors.password?.message}
             icon={<FiLock />}
           />
           <button
             type="button"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => {
+              setShowPassword(!showPassword);
+            }}
             className="absolute inset-y-0 right-2 flex items-center text-gray-500"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
           </button>
@@ -228,18 +234,22 @@ const RegisterPage = () => {
 
         <div className="relative">
           <Input
-            {...register('confirmPassword')}
+            {...register("confirmPassword")}
             label={registerTranslate[lang].form.confirmPassword.label}
-            placeholder={registerTranslate[lang].form.confirmPassword.placeholder}
-            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder={
+              registerTranslate[lang].form.confirmPassword.placeholder
+            }
+            type={showConfirmPassword ? "text" : "password"}
             error={errors.confirmPassword?.message}
             icon={<FiLock />}
           />
           <button
             type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            onClick={() => {
+              setShowConfirmPassword(!showConfirmPassword);
+            }}
             className="absolute inset-y-0 right-2 flex items-center text-gray-500"
-            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >
             {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
           </button>

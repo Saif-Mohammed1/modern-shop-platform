@@ -85,7 +85,9 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
     <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden relative border-8 border-white">
       {/*    Close Button */}
       <button
-        onClick={() => router.back()}
+        onClick={() => {
+          router.back();
+        }}
         className="absolute top-4 right-4 z-50 p-2 bg-white/80 rounded-full backdrop-blur-sm hover:bg-gray-100 transition-colors cursor-pointer"
         aria-label="Close"
       >
@@ -111,7 +113,9 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             {product.images.map((_, index) => (
               <button
                 key={index}
-                onClick={() => handleImageNavigation(index)}
+                onClick={() => {
+                  handleImageNavigation(index);
+                }}
                 className={`w-2 h-2 rounded-full transition-colors ${
                   index === currentImageIndex
                     ? "bg-primary"
@@ -174,7 +178,9 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
         <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-4">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              onClick={() => {
+                setQuantity(Math.max(1, quantity - 1));
+              }}
               className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
             >
               -
@@ -194,7 +200,9 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
               className="w-16 text-center border-gray-50 rounded"
             />
             <button
-              onClick={() => setQuantity(Math.min(stock, quantity + 1))}
+              onClick={() => {
+                setQuantity(Math.min(stock, quantity + 1));
+              }}
               className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
             >
               +
@@ -209,7 +217,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
         "
         >
           <button
-            onClick={() => void handleAddToCart()}
+            onClick={handleAddToCart}
             // className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
             className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
             aria-label="Add to cart"
@@ -226,7 +234,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             </p>
           </button>
           <button
-            onClick={() => void toggleWishlistHandler()}
+            onClick={toggleWishlistHandler}
             className="p-3 rounded-lg hover:border-2 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-600 cursor-pointer"
             aria-label={
               isInWishlist(product._id)
@@ -250,7 +258,9 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
         ) : null}
 
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            window.location.reload();
+          }}
           // href={`/shop/${product.slug}`}
           // intercept={false}
           className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors cursor-pointer"

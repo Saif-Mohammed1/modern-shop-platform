@@ -1,63 +1,72 @@
-import type {ClientSession} from 'mongoose';
-import {cookies} from 'next/headers';
+import type { ClientSession } from "mongoose";
+import { cookies } from "next/headers";
 
-import {type AuditLogDetails, SecurityAuditAction} from '@/app/lib/types/audit.types';
-import type {QueryBuilderResult, QueryOptionConfig} from '@/app/lib/types/queryBuilder.types';
-import type {DeviceInfo} from '@/app/lib/types/session.types';
-import type {UserRole} from '@/app/lib/types/users.types';
-import {type UserAuthType, UserStatus, type accountAction} from '@/app/lib/types/users.types';
-import AppError from '@/app/lib/utilities/appError';
-import {lang} from '@/app/lib/utilities/lang';
-import {generateVerificationToken} from '@/app/lib/utilities/user.utilty';
-import {SecurityAlertType} from '@/app/server/services/email.service';
-import {AuthTranslate} from '@/public/locales/server/Auth.Translate';
-import {authControllerTranslate} from '@/public/locales/server/authControllerTranslate';
-import {userControllerTranslate} from '@/public/locales/server/userControllerTranslate';
+import {
+  type AuditLogDetails,
+  SecurityAuditAction,
+} from "@/app/lib/types/audit.types";
+import type {
+  QueryBuilderResult,
+  QueryOptionConfig,
+} from "@/app/lib/types/queryBuilder.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
+import {
+  type UserAuthType,
+  UserStatus,
+  type accountAction,
+  type UserRole,
+} from "@/app/lib/types/users.types";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { generateVerificationToken } from "@/app/lib/utilities/user.utilty";
+import { SecurityAlertType } from "@/app/server/services/email.service";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
+import { userControllerTranslate } from "@/public/locales/server/userControllerTranslate";
 
 import type {
   CreateUserByAdminDTO,
   UpdateUserByAdminDTO,
   UserChangePasswordDTO,
   UserCreateDTO,
-} from '../dtos/user.dto';
-import type {ISession} from '../models/Session.model';
-import UserModel, {type IUser} from '../models/User.model';
-import {UserRepository} from '../repositories/user.repository';
+} from "../dtos/user.dto";
+import type { ISession } from "../models/Session.model";
+import UserModel, { type IUser } from "../models/User.model";
+import { UserRepository } from "../repositories/user.repository";
 
-import {SessionService} from './session.service';
-import {TokensService} from './tokens.service';
+import { SessionService } from "./session.service";
+import { TokensService } from "./tokens.service";
 
-import {emailService} from '.';
+import { emailService } from ".";
 
 export class UserService {
   constructor(
     private repository: UserRepository = new UserRepository(UserModel),
     private sessionService: SessionService = new SessionService(),
-    private tokensService: TokensService = new TokensService(),
+    private tokensService: TokensService = new TokensService()
   ) {}
   async finalizeLogin(
     user: IUser,
-    deviceInfo: DeviceInfo,
+    deviceInfo: DeviceInfo
   ): Promise<{
     user: UserAuthType;
     accessToken: string;
     refreshToken: string;
   }> {
-    const {accessToken, refreshToken, hashedToken} = this.tokensService.generateAuthTokens(
-      user._id.toString(),
-    );
+    const { accessToken, refreshToken, hashedToken } =
+      this.tokensService.generateAuthTokens(user._id.toString());
     await Promise.all([
       this.sessionService.createSession(
         user._id.toString(),
         deviceInfo,
         hashedToken,
-        this.tokensService.getRefreshTokenExpiry(),
+        this.tokensService.getRefreshTokenExpiry()
       ),
       this.repository.updateLastLogin(user._id),
       this.repository.clearTwoFactorSecret(String(user._id)),
     ]);
     await this.tokensService.setRefreshTokenCookies(refreshToken);
-    await this.repository.clearRateLimit(user, 'login');
+    await this.repository.clearRateLimit(user, "login");
     // After successful authentication
     if (user.loginNotificationSent) {
       user.detectAnomalies(deviceInfo);
@@ -81,7 +90,10 @@ export class UserService {
     try {
       const existingUser = await this.repository.findByEmail(dto.email);
       if (existingUser) {
-        throw new AppError(userControllerTranslate[lang].errors.userAlreadyExist, 400);
+        throw new AppError(
+          userControllerTranslate[lang].errors.userAlreadyExist,
+          400
+        );
       }
       const user = await this.repository.createUserByAdmin(dto, session);
       await session.commitTransaction();
@@ -93,7 +105,10 @@ export class UserService {
       await session.endSession();
     }
   }
-  async updateUserByAdmin(id: string, dto: UpdateUserByAdminDTO): Promise<IUser> {
+  async updateUserByAdmin(
+    id: string,
+    dto: UpdateUserByAdminDTO
+  ): Promise<IUser> {
     const session = await this.repository.startSession();
     session.startTransaction();
 
@@ -118,12 +133,19 @@ export class UserService {
     try {
       const existingUser = await this.repository.findByEmail(dto.email);
       if (existingUser) {
-        throw new AppError(userControllerTranslate[lang].errors.userAlreadyExist, 400);
+        throw new AppError(
+          userControllerTranslate[lang].errors.userAlreadyExist,
+          400
+        );
       }
       const user = await this.repository.createUser(dto, session);
       // Generate and send verification token
       const verificationToken = generateVerificationToken();
-      await this.repository.setVerificationToken(user._id.toString(), verificationToken, session);
+      await this.repository.setVerificationToken(
+        user._id.toString(),
+        verificationToken,
+        session
+      );
 
       await emailService.sendVerification(user.email, verificationToken);
       // Audit log
@@ -134,7 +156,7 @@ export class UserService {
           success: true,
           device: deviceInfo,
         },
-        session,
+        session
       );
       await session.commitTransaction();
       return await this.finalizeLogin(user, deviceInfo);
@@ -151,7 +173,7 @@ export class UserService {
     email: string,
     password: string,
 
-    deviceInfo: DeviceInfo,
+    deviceInfo: DeviceInfo
   ): Promise<
     // | { user: IUser; accessToken: string; refreshToken: string }
     | ReturnType<typeof this.finalizeLogin>
@@ -164,13 +186,19 @@ export class UserService {
   > {
     const user = await this.repository.findByEmail(email);
     if (!user || !user.password) {
-      throw new AppError(AuthTranslate[lang].userService.authenticateUser.invalidCredentials, 401);
+      throw new AppError(
+        AuthTranslate[lang].userService.authenticateUser.invalidCredentials,
+        401
+      );
     }
 
     if (user.status === UserStatus.SUSPENDED) {
-      throw new AppError(AuthTranslate[lang].userService.authenticateUser.userSuspended, 403);
+      throw new AppError(
+        AuthTranslate[lang].userService.authenticateUser.userSuspended,
+        403
+      );
     }
-    user.checkRateLimit('login');
+    user.checkRateLimit("login");
     // if (user.isAccountLocked("login")) {
     //   throw new AppError("Account temporarily locked", 423);
     // }
@@ -182,30 +210,36 @@ export class UserService {
       // if (user.security.loginAttempts >= 5) {
       //   await EmailService.security.sendLockoutAlert(user);
       // }
-      await this.repository.incrementRateLimit(user, 'login');
+      await this.repository.incrementRateLimit(user, "login");
       // await user.incrementRateLimit("login");
       // await user.save();
-      throw new AppError(AuthTranslate[lang].userService.authenticateUser.invalidCredentials, 401);
+      throw new AppError(
+        AuthTranslate[lang].userService.authenticateUser.invalidCredentials,
+        401
+      );
     }
 
     if (user.security.twoFactorEnabled) {
-      user.checkRateLimit('2fa');
+      user.checkRateLimit("2fa");
 
-      const tempToken = await this.repository.generateMFAToken(user._id.toString());
+      const tempToken = await this.repository.generateMFAToken(
+        user._id.toString()
+      );
       const expires = new Date(Date.now() + 1000 * 60 * 5);
-      (await cookies()).set('tempToken', tempToken, {
+      (await cookies()).set("tempToken", tempToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         expires,
-        path: '/',
+        path: "/",
       });
-      await this.repository.incrementRateLimit(user, '2fa');
+      await this.repository.incrementRateLimit(user, "2fa");
       return {
         requires2FA: true,
         tempToken: tempToken,
         expires,
-        message: authControllerTranslate[lang].functions.logIn.twoFactorRequired,
+        message:
+          authControllerTranslate[lang].functions.logIn.twoFactorRequired,
       };
     }
     // const { accessToken, refreshToken, hashedToken } =
@@ -244,19 +278,24 @@ export class UserService {
   }> {
     await this.tokensService.clearRefreshTokenCookies();
 
-    return {message: AuthTranslate[lang].auth.logOut.logOutSuccess};
+    return { message: AuthTranslate[lang].auth.logOut.logOutSuccess };
   }
-  async requestPasswordReset(email: string, deviceInfo: DeviceInfo): Promise<void> {
+  async requestPasswordReset(
+    email: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
       const user = await this.repository.findByEmail(email);
-      if (!user) return; // Don't reveal user existence
-      user.checkRateLimit('passwordReset');
+      if (!user) {
+        return;
+      } // Don't reveal user existence
+      user.checkRateLimit("passwordReset");
 
       const resetToken = await this.repository.generatePasswordResetToken(
         user._id.toString(),
-        session,
+        session
       );
 
       // await EmailService.passwordReset.sendPasswordReset(user.email, resetToken);
@@ -264,11 +303,11 @@ export class UserService {
       await this.repository.createAuditLog(
         user._id.toString(),
         SecurityAuditAction.PASSWORD_RESET_REQUEST,
-        {device: deviceInfo, success: true},
-        session,
+        { device: deviceInfo, success: true },
+        session
       );
 
-      await this.repository.incrementRateLimit(user, 'passwordReset', session);
+      await this.repository.incrementRateLimit(user, "passwordReset", session);
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -278,23 +317,28 @@ export class UserService {
       await session.endSession();
     }
   }
-  async forcePasswordResetByAdmin(id: string, deviceInfo: DeviceInfo): Promise<void> {
+  async forcePasswordResetByAdmin(
+    id: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
-      const user = await this.repository.findUserById(id, '+password');
-      if (!user) return; // Don't reveal user existence
+      const user = await this.repository.findUserById(id, "+password");
+      if (!user) {
+        return;
+      } // Don't reveal user existence
 
       const password = this.tokensService.generateForceRestPassword();
       user.password = password;
-      await user.save({session});
+      await user.save({ session });
       // await EmailService.passwordReset.sendPasswordReset(user.email, resetToken);
       await emailService.forcePasswordReset(user.email, password);
       await this.repository.createAuditLog(
         user._id.toString(),
         SecurityAuditAction.FORCE_PASSWORD_RESET,
-        {success: true, device: deviceInfo},
-        session,
+        { success: true, device: deviceInfo },
+        session
       );
       await session.commitTransaction();
     } catch (error) {
@@ -307,9 +351,15 @@ export class UserService {
   }
 
   async validateEmailAndToken(token: string, email: string): Promise<boolean> {
-    const user = await this.repository.validateResetPasswordEmailAndToken(token, email);
+    const user = await this.repository.validateResetPasswordEmailAndToken(
+      token,
+      email
+    );
     if (!user) {
-      throw new AppError(AuthTranslate[lang].userService.validateEmailAndToken.invalidToken, 400);
+      throw new AppError(
+        AuthTranslate[lang].userService.validateEmailAndToken.invalidToken,
+        400
+      );
     }
     return true;
   }
@@ -320,25 +370,34 @@ export class UserService {
     token: string,
     email: string,
     newPassword: string,
-    deviceInfo: DeviceInfo,
+    deviceInfo: DeviceInfo
   ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
 
-    const user = await this.repository.validateResetPasswordEmailAndToken(token, email);
+    const user = await this.repository.validateResetPasswordEmailAndToken(
+      token,
+      email
+    );
     if (!user) {
-      throw new AppError(AuthTranslate[lang].userService.validateEmailAndToken.invalidToken, 400);
+      throw new AppError(
+        AuthTranslate[lang].userService.validateEmailAndToken.invalidToken,
+        400
+      );
     }
     try {
       // 4. Check against previous passwords
       if (await user.isPreviousPassword(newPassword)) {
-        throw new AppError(AuthTranslate[lang].userService.isPreviousPassword.passwordMatch, 400);
+        throw new AppError(
+          AuthTranslate[lang].userService.isPreviousPassword.passwordMatch,
+          400
+        );
       }
 
       // 5. Update password and invalidate token
       await this.repository.updatePassword(user, newPassword, session);
       await this.repository.invalidateResetToken(user._id.toString(), session);
-      await this.repository.clearRateLimit(user, 'passwordReset');
+      await this.repository.clearRateLimit(user, "passwordReset");
 
       await this.repository.createAuditLog(
         user._id.toString(),
@@ -347,7 +406,7 @@ export class UserService {
           device: deviceInfo,
           success: true,
         },
-        session,
+        session
       );
       // await Promise.all([
       //   this.repository.updatePassword(user, newPassword, session),
@@ -384,17 +443,23 @@ export class UserService {
     userId: string,
     action: SecurityAuditAction,
     details: AuditLogDetails,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
-    return await this.repository.createAuditLog(userId, action, details, session);
+    await this.repository.createAuditLog(userId, action, details, session);
   }
-  async changePassword(userId: string, dto: UserChangePasswordDTO): Promise<void> {
+  async changePassword(
+    userId: string,
+    dto: UserChangePasswordDTO
+  ): Promise<void> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
     if (!(await user.comparePassword(dto.currentPassword))) {
-      throw new AppError(AuthTranslate[lang].errors.currentPasswordNotMatch, 400);
+      throw new AppError(
+        AuthTranslate[lang].errors.currentPasswordNotMatch,
+        400
+      );
     }
     if (await user.isPreviousPassword(dto.newPassword)) {
       throw new AppError(AuthTranslate[lang].errors.isPreviousPassword, 400);
@@ -403,7 +468,10 @@ export class UserService {
   }
 
   // Email Verification
-  async sendVerificationCode(userId: string, deviceInfo: DeviceInfo): Promise<void> {
+  async sendVerificationCode(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
@@ -412,7 +480,7 @@ export class UserService {
       throw new AppError(AuthTranslate[lang].errors.emailVerified, 400);
     }
 
-    user.checkRateLimit('verification');
+    user.checkRateLimit("verification");
     try {
       await this.regenerateVerificationCode(user, deviceInfo);
     } catch (error) {
@@ -423,17 +491,25 @@ export class UserService {
           success: false,
           message: (error as Error).message || undefined,
           device: deviceInfo,
-        },
+        }
       );
     }
-    await this.repository.incrementRateLimit(user, 'verification');
+    await this.repository.incrementRateLimit(user, "verification");
   }
-  async regenerateVerificationCode(user: IUser, deviceInfo: DeviceInfo): Promise<void> {
+  async regenerateVerificationCode(
+    user: IUser,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const verificationToken = generateVerificationToken();
-    const hashedToken = this.tokensService.hashVerificationToken(verificationToken);
+    const hashedToken =
+      this.tokensService.hashVerificationToken(verificationToken);
     const session = await this.repository.startSession();
     await session.withTransaction(async () => {
-      await this.repository.setVerificationToken(user._id.toString(), hashedToken, session);
+      await this.repository.setVerificationToken(
+        user._id.toString(),
+        hashedToken,
+        session
+      );
       await emailService.sendVerification(user.email, verificationToken);
       await this.repository.createAuditLog(
         user._id.toString(),
@@ -442,7 +518,7 @@ export class UserService {
           success: true,
           device: deviceInfo,
         },
-        session,
+        session
       );
     });
   }
@@ -461,12 +537,16 @@ export class UserService {
   //   emailService.sendVerification(user.email, verificationToken),
   // ]);
 
-  async verifyEmail(userId: string, token: string, deviceInfo: DeviceInfo): Promise<IUser | null> {
+  async verifyEmail(
+    userId: string,
+    token: string,
+    deviceInfo: DeviceInfo
+  ): Promise<IUser | null> {
     const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
-    user.checkRateLimit('verification');
+    user.checkRateLimit("verification");
     if (user.verification.emailVerified) {
       throw new AppError(AuthTranslate[lang].errors.emailVerified, 400);
     }
@@ -476,7 +556,7 @@ export class UserService {
       if (!isVerify?.verification.emailVerified) {
         throw new AppError(AuthTranslate[lang].errors.invalidToken, 400);
       }
-      await this.repository.clearRateLimit(user, 'verification');
+      await this.repository.clearRateLimit(user, "verification");
       return isVerify;
     } catch (error) {
       await this.repository.createAuditLog(
@@ -486,9 +566,9 @@ export class UserService {
           success: false,
           message: (error as Error).message || undefined,
           device: deviceInfo,
-        },
+        }
       );
-      await this.repository.incrementRateLimit(user, 'verification');
+      await this.repository.incrementRateLimit(user, "verification");
       throw error;
     }
   }
@@ -529,18 +609,20 @@ export class UserService {
       //   tempTokenExpires: user.security.twoFactorSecretExpiry,
       // };
     }
-    user.checkRateLimit('2fa');
+    user.checkRateLimit("2fa");
 
-    const tempToken = await this.repository.generateMFAToken(user._id.toString());
+    const tempToken = await this.repository.generateMFAToken(
+      user._id.toString()
+    );
     const expires = new Date(Date.now() + 1000 * 60 * 5);
-    (await cookies()).set('tempToken', tempToken, {
+    (await cookies()).set("tempToken", tempToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       expires,
-      path: '/',
+      path: "/",
     });
-    await this.repository.incrementRateLimit(user, '2fa');
+    await this.repository.incrementRateLimit(user, "2fa");
     // return {
     //   message: "Temporary token generated",
     //   tempToken,
@@ -555,30 +637,40 @@ export class UserService {
   async requestEmailChange(
     userId: string,
     newEmail: string,
-    deviceInfo: DeviceInfo,
+    deviceInfo: DeviceInfo
   ): Promise<void> {
     const existingUser = await this.repository.findByEmail(newEmail);
     if (existingUser) {
       throw new AppError(
         AuthTranslate[lang].errors.emailAlreadyInUse,
 
-        409,
+        409
       );
     }
     const user = await this.repository.findUserById(userId);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
-    const changeToken = await this.repository.generateEmailChangeToken(userId, newEmail);
-    await this.repository.createAuditLog(userId, SecurityAuditAction.EMAIL_CHANGE_REQUEST, {
-      success: true,
-      device: deviceInfo,
-      newEmail,
-    });
+    const changeToken = await this.repository.generateEmailChangeToken(
+      userId,
+      newEmail
+    );
+    await this.repository.createAuditLog(
+      userId,
+      SecurityAuditAction.EMAIL_CHANGE_REQUEST,
+      {
+        success: true,
+        device: deviceInfo,
+        newEmail,
+      }
+    );
     await emailService.sendEmailChangeConfirmation(user.email, changeToken);
   }
 
-  async confirmEmailChange(token: string, deviceInfo: DeviceInfo): Promise<void> {
+  async confirmEmailChange(
+    token: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const user = await this.repository.validateEmailChangeToken(token);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.invalidToken, 400);
@@ -595,7 +687,7 @@ export class UserService {
           success: true,
           device: deviceInfo,
         },
-        session,
+        session
       );
       await session.commitTransaction();
     } catch (error) {
@@ -609,7 +701,7 @@ export class UserService {
           message: (error as Error).message || undefined,
 
           device: deviceInfo,
-        },
+        }
       );
       throw error;
     } finally {
@@ -630,11 +722,16 @@ export class UserService {
   async updateName(userId: string, name: string): Promise<void> {
     await this.repository.updateName(userId, name);
   }
-  async updateLoginNotificationSent(userId: string, result: boolean): Promise<void> {
+  async updateLoginNotificationSent(
+    userId: string,
+    result: boolean
+  ): Promise<void> {
     await this.repository.updateLoginNotificationSent(userId, result);
   }
   // Admin Functions
-  async getAllUsers(options: QueryOptionConfig): Promise<QueryBuilderResult<IUser>> {
+  async getAllUsers(
+    options: QueryOptionConfig
+  ): Promise<QueryBuilderResult<IUser>> {
     return await this.repository.findAllUsers(options);
   }
 
@@ -651,7 +748,11 @@ export class UserService {
     session.startTransaction();
     try {
       await this.sessionService.revokeAllSessionsByAdmin(userId, session);
-      await this.repository.updateUserStatus(userId, UserStatus.DELETED, session);
+      await this.repository.updateUserStatus(
+        userId,
+        UserStatus.DELETED,
+        session
+      );
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -663,19 +764,24 @@ export class UserService {
   async logSecurityAlert(
     email: string,
     type: SecurityAlertType,
-    details: AuditLogDetails,
+    details: AuditLogDetails
   ): Promise<void> {
     await this.repository.logSecurityAlert(email, type, details);
   }
   // Security Functions
-  async getActiveSessions(userId: string): Promise<QueryBuilderResult<ISession>> {
+  async getActiveSessions(
+    userId: string
+  ): Promise<QueryBuilderResult<ISession>> {
     return await this.sessionService.getUserSessions(userId);
   }
 
   async revokeSession(userId: string): Promise<void> {
     await this.sessionService.revokeSession(userId);
   }
-  async revokeAllSessionsByAdmin(userId: string, deviceInfo: DeviceInfo): Promise<void> {
+  async revokeAllSessionsByAdmin(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
@@ -687,7 +793,7 @@ export class UserService {
           success: true,
           device: deviceInfo,
         },
-        session,
+        session
       );
       await session.commitTransaction();
     } catch (error) {
@@ -697,7 +803,10 @@ export class UserService {
       await session.endSession();
     }
   }
-  async lockUserAccountByAdmin(userId: string, deviceInfo: DeviceInfo): Promise<void> {
+  async lockUserAccountByAdmin(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
@@ -709,7 +818,7 @@ export class UserService {
           success: true,
           device: deviceInfo,
         },
-        session,
+        session
       );
       await session.commitTransaction();
     } catch (error) {
@@ -719,7 +828,10 @@ export class UserService {
       await session.endSession();
     }
   }
-  async unlockUserAccountByAdmin(userId: string, deviceInfo: DeviceInfo): Promise<void> {
+  async unlockUserAccountByAdmin(
+    userId: string,
+    deviceInfo: DeviceInfo
+  ): Promise<void> {
     const session = await this.repository.startSession();
     session.startTransaction();
     try {
@@ -731,7 +843,7 @@ export class UserService {
           success: true,
           device: deviceInfo,
         },
-        session,
+        session
       );
       await session.commitTransaction();
     } catch (error) {

@@ -16,7 +16,7 @@ const ErrorHandler: FC<ErrorHandlerProps> = ({message, reset}) => {
           {message ? message : rootStaticPagesTranslate[lang].error.message.default}
         </p>
         {reset ? <button
-            onClick={() => reset()}
+            onClick={() => { reset(); }}
             className="bg-white text-red-500 py-2 px-4 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
           >
             {rootStaticPagesTranslate[lang].error.button.reset}

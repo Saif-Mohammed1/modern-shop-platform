@@ -1,14 +1,12 @@
-// @ts-ignore
-import type {Document, Model} from 'mongoose';
-import {Schema, model, models} from 'mongoose';
+import { Schema, model, models, type Document, type Model } from "mongoose";
 
-import type {IUser} from './User.model';
+import type { IUser } from "./User.model";
 
-type status = 'received' | 'read' | 'responded';
+type status = "received" | "read" | "responded";
 export interface IContactUsSchema extends Document {
   _id: Schema.Types.ObjectId;
 
-  user: IUser['_id'];
+  user: IUser["_id"];
   subject: string;
   message: string;
   status: status;
@@ -19,7 +17,7 @@ const ContactUsSchema = new Schema<IContactUsSchema>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
@@ -35,16 +33,16 @@ const ContactUsSchema = new Schema<IContactUsSchema>(
     },
     status: {
       type: String,
-      enum: ['received', 'read', 'responded'],
-      default: 'received',
+      enum: ["received", "read", "responded"],
+      default: "received",
     },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 const ContactUs: Model<IContactUsSchema> =
-  models.ContactUs || model<IContactUsSchema>('ContactUs', ContactUsSchema);
+  models.ContactUs || model<IContactUsSchema>("ContactUs", ContactUsSchema);
 
 export default ContactUs;

@@ -66,9 +66,9 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
       );
       // Reload the page
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(
-        err?.message ||
+        (err as Error)?.message ||
           ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.error
       );
     } finally {
@@ -107,13 +107,13 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
                 </TableCell>
                 <TableCell>
                   {version.price
-                    ? "$" + version.price.toFixed(2)
+                    ? `$${version.price.toFixed(2)}`
                     : ProductTranslate[lang].Tables.noValue}
                 </TableCell>
                 {/* Add Discount and Description cells */}
                 <TableCell>
                   {version.discount
-                    ? "$" + version.discount.toFixed(2)
+                    ? `$${version.discount.toFixed(2)}`
                     : ProductTranslate[lang].Tables.noValue}
                 </TableCell>
                 <TableCell>

@@ -1,42 +1,32 @@
-import 'next-auth';
-import 'next-auth/jwt';
+import "next-auth";
+import "next-auth/jwt";
 
-import type {UserAuthType} from '@/app/lib/types/users.types';
+import type { UserAuthType } from "@/app/lib/types/users.types";
 
-// declare module "next-auth" {
-//   /**
-//    * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
-//    */
-//   interface Session {
-//     user: UserAuthType;
-//   }
-// }
-
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session {
-    user: UserAuthType;
+    user?: User;
     error?: string;
   }
+  /**
+   * interface User
+The shape of the returned object in the OAuth providers' profile callback, available in the jwt and session callbacks, or the second parameter of the session callback, when using a database.
 
-  // interface User {
-  //   accessTokenExpires?: number;
-  //   // ... other fields
-  // }
-  interface User {
+signIn callback | session callback | jwt callback | profile OAuth provider callback
+ */
+  interface User extends UserAuthType {
     accessTokenExpires?: number;
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
-    user: UserAuthType;
+    user?: User; // type User = /*unresolved*/ any
     accessTokenExpires?: number;
-  }
-}
 
-// If using a database adapter
-// declare module "next-auth/adapters" {
-//   interface AdapterUser extends UserAuthType {
-//     accessTokenExpires?: number;
-//   }
-// }
+    error?: string;
+  }
+  // interface User extends UserAuthType {
+  //   accessTokenExpires?: number;
+  // }
+}

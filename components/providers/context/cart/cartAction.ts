@@ -17,45 +17,40 @@ export const addToCart = async (
 ) => {
   if (user) {
     // User is signed in, store cart in DB
-    const data = await saveCartToDB(product._id, quantity);
-
-    return data;
-  } else {
-    // User is not signed in, store cart in localStorage
-    const StoredCart = localStorage.getItem("cart");
-
-    const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-    const existingProduct = cart.find((item) => item._id === product._id);
-
-    if (existingProduct) {
-      if (quantity > 1 && quantity > product.stock) {
-        throw new AppError(
-          cartContextTranslate[lang].functions.addToCart.outOfStock,
-          400
-        );
-      }
-      if (
-        quantity == 1 &&
-        existingProduct.quantity + quantity > product.stock
-      ) {
-        throw new AppError(
-          cartContextTranslate[lang].functions.addToCart.outOfStock,
-          400
-        );
-      }
-
-      // existingProduct.quantity += quantity;
-    }
-    cart.push({
-      ...product,
-      quantity,
-      // user: product.user._id as string,
-    });
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    return cart;
+    await saveCartToDB(product._id, quantity);
+    return;
   }
+  // User is not signed in, store cart in localStorage
+  const StoredCart = localStorage.getItem("cart");
+
+  const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
+  const existingProduct = cart.find((item) => item._id === product._id);
+
+  if (existingProduct) {
+    if (quantity > 1 && quantity > product.stock) {
+      throw new AppError(
+        cartContextTranslate[lang].functions.addToCart.outOfStock,
+        400
+      );
+    }
+    if (quantity === 1 && existingProduct.quantity + quantity > product.stock) {
+      throw new AppError(
+        cartContextTranslate[lang].functions.addToCart.outOfStock,
+        400
+      );
+    }
+
+    // existingProduct.quantity += quantity;
+  }
+  cart.push({
+    ...product,
+    quantity,
+    // user: product.user._id as string,
+  });
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  return cart;
 };
 
 // Remove item from cart
@@ -71,23 +66,22 @@ export const removeFromCart = async (
     await removeCartItemFromDB(product);
     const data = await getCartItems(user);
     return data;
-  } else {
-    // User is not signed in, remove cart item from localStorage
-    const StoredCart = localStorage.getItem("cart");
-
-    cart = StoredCart ? JSON.parse(StoredCart) : [];
-    const existingProduct = cart.find((item) => item._id === product._id);
-
-    if (existingProduct) {
-      if (existingProduct.quantity > 1) {
-        existingProduct.quantity -= quantity;
-      } else {
-        cart = cart.filter((item) => item._id !== product._id);
-      }
-      localStorage.setItem("cart", JSON.stringify(cart));
-    }
-    return cart;
   }
+  // User is not signed in, remove cart item from localStorage
+  const StoredCart = localStorage.getItem("cart");
+
+  cart = StoredCart ? JSON.parse(StoredCart) : [];
+  const existingProduct = cart.find((item) => item._id === product._id);
+
+  if (existingProduct) {
+    if (existingProduct.quantity > 1) {
+      existingProduct.quantity -= quantity;
+    } else {
+      cart = cart.filter((item) => item._id !== product._id);
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }
+  return cart;
 };
 
 // Clear cart
@@ -100,50 +94,50 @@ export const clearItemFromCart = async (
     await clearCartInDB(product);
     const data = await getCartItems(user);
     return data;
-  } else {
-    // User is not signed in, remove cart item from localStorage
-    const StoredCart = localStorage.getItem("cart");
-
-    let cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-    cart = cart.filter((item) => item._id !== product._id);
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    return cart;
   }
+  // User is not signed in, remove cart item from localStorage
+  const StoredCart = localStorage.getItem("cart");
+
+  let cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
+  cart = cart.filter((item) => item._id !== product._id);
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  return cart;
 };
-export const saveCartToDB = async (productId: string, quantity: number) => {
-  await api.post("/customers/cart/" + productId, {
+export async function saveCartToDB(productId: string, quantity: number) {
+  await api.post(`/customers/cart/${productId}`, {
     quantity,
   });
 
   // return data.data;
-};
+}
 
 // Get cart items (either from DB or localStorage)
-export const getCartItems = async (user: User) => {
+export async function getCartItems(user: User) {
   if (user) {
     // Fetch cart items from the database
     const data = await fetchCartItemsFromDB();
     return data;
-  } else {
-    // Fetch cart items from localStorage
-    const StoredCart = localStorage.getItem("cart");
-
-    const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
-    return cart;
   }
-};
-export const removeCartItemFromDB = async (product: ProductCartPick) => {
+  // Fetch cart items from localStorage
+  const StoredCart = localStorage.getItem("cart");
+
+  const cart: CartItemsType[] = StoredCart ? JSON.parse(StoredCart) : [];
+  return cart;
+}
+export async function removeCartItemFromDB(product: ProductCartPick) {
   await api.put(`/customers/cart/${product._id}`);
-};
-export const clearCartInDB = async (product: ProductCartPick) => {
+}
+export async function clearCartInDB(product: ProductCartPick) {
   await api.delete(`/customers/cart/${product._id}`);
-};
+}
 export const mergeLocalCartWithDB = async () => {
   try {
     const StoredCart = localStorage.getItem("cart");
-    if (!StoredCart) return;
+    if (!StoredCart) {
+      return;
+    }
 
     const localCart: CartItemsType[] = JSON.parse(StoredCart);
     if (!Array.isArray(localCart) || localCart.length === 0) {
@@ -167,11 +161,17 @@ export const mergeLocalCartWithDB = async () => {
     };
   }
 };
-const fetchCartItemsFromDB = async () => {
-  const { data } = await api.get("/customers/cart");
+async function fetchCartItemsFromDB() {
+  const {
+    data,
+  }: {
+    data: {
+      products: CartItemsType[];
+    };
+  } = await api.get("/customers/cart");
 
   return data.products;
-};
+}
 // export const updateCartQuantity = async (
 //   productId: string,
 //   quantity: number

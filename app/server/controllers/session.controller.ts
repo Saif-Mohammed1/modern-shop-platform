@@ -20,10 +20,10 @@ class SessionController {
       req?.cookies?.get('refreshAccessToken')?.value;
 
     if (!refreshToken)
-      throw new AppError(
+      {throw new AppError(
         refreshTokenControllerTranslate[lang].functions.refreshAccessToken.requiredFields,
         401,
-      );
+      );}
     const decoded = await this.tokenService.decodedRefreshToken(refreshToken);
     // Check database validity
     const isValid = await this.sessionService.validateRefreshToken(decoded?.userId, refreshToken);
@@ -41,7 +41,7 @@ class SessionController {
     return NextResponse.json({message: 'All sessions revoked successfully'}, {status: 200});
   }
   async revokeSession(req: NextRequest) {
-    if (!req.id) throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
+    if (!req.id) {throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);}
     await this.sessionService.revokeSession(req?.id);
     return NextResponse.json({message: 'Session revoked successfully'}, {status: 200});
   }

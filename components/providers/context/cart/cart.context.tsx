@@ -110,12 +110,16 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const loadCart = async () => {
       try {
         const data = await getCartItems(user);
-        if (isMounted) setCartItems(data);
-      } catch (error: any) {
-        if (isMounted)
+        if (isMounted) {
+          setCartItems(data);
+        }
+      } catch (error: unknown) {
+        if (isMounted) {
           toast.error(
-            error?.message || cartContextTranslate[lang].errors.global
+            (error as Error)?.message ||
+              cartContextTranslate[lang].errors.global
           );
+        }
       }
     };
     // Add small delay if experiencing race conditions
@@ -128,7 +132,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Sync local storage
   useEffect(() => {
-    if (!user) localStorage.setItem("cart", JSON.stringify(cartItems));
+    if (!user) {
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+    }
   }, [cartItems, user]);
 
   // Merge carts with cleanup

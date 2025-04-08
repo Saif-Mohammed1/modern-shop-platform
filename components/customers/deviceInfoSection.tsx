@@ -156,8 +156,8 @@ const DeviceSessionCard = ({
 
   return (
     <motion.div
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
+      onHoverStart={() => { setIsHovered(true); }}
+      onHoverEnd={() => { setIsHovered(false); }}
       className="bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-start justify-between gap-4">
@@ -224,7 +224,7 @@ const DeviceSessionCard = ({
               >
                 {session.isActive ? <Tooltip content={accountSettingsTranslate[lang].devices.actions.revoke}>
                     <button
-                      onClick={() => setShowRevokeModal(true)}
+                      onClick={() => { setShowRevokeModal(true); }}
                       className="p-2 hover:bg-red-50 rounded-lg text-red-500 hover:text-red-700 transition-colors"
                     >
                       <MdDelete className="text-xl" />
@@ -257,7 +257,7 @@ const DeviceSessionCard = ({
 
       <ConfirmationModal
         isOpen={showRevokeModal}
-        onClose={() => setShowRevokeModal(false)}
+        onClose={() => { setShowRevokeModal(false); }}
         onConfirm={handleRevoke}
         title={accountSettingsTranslate[lang].devices.confirmRevoke.title}
         message={accountSettingsTranslate[lang].devices.confirmRevoke.message}

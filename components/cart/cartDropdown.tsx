@@ -41,7 +41,9 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
       const message = error instanceof Error ? error.message : errorMessage;
       toast.error(message);
     } finally {
-      if (toastId) toast.dismiss(toastId);
+      if (toastId) {
+        toast.dismiss(toastId);
+      }
     }
   };
 
@@ -119,7 +121,9 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [setIsCartOpen]);
 
   const calculatePrice = (item: CartItemsType) => {
@@ -132,7 +136,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
     <>
       <button
         className="fixed inset-0 bg-black/50 z-40 md:hidden"
-        onClick={() => void setIsCartOpen(false)}
+        onClick={() => setIsCartOpen(false)}
       />
 
       <div
@@ -146,7 +150,9 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
         <div className="flex items-center justify-between p-4 border-b md:hidden">
           <h2 className="text-lg font-semibold">Shopping Cart</h2>
           <button
-            onClick={() => setIsCartOpen(false)}
+            onClick={() => {
+              setIsCartOpen(false);
+            }}
             className="p-2 hover:bg-gray-100 rounded-full"
           >
             <FiX className="text-xl" />
@@ -187,7 +193,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
                     <div className="flex items-center gap-2 mt-2">
                       <button
                         className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
-                        onClick={() => void handleDecrease(item)}
+                        onClick={() => handleDecrease(item)}
                       >
                         -
                       </button>
@@ -215,13 +221,13 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
                       />
                       <button
                         className="px-2 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
-                        onClick={() => void handleIncrease(item)}
+                        onClick={() => handleIncrease(item)}
                       >
                         +
                       </button>
                       <button
                         className="px-2 py-1 text-red-600 hover:text-red-700 text-lg ml-auto"
-                        onClick={() => void handelClearItem(item)}
+                        onClick={() => handelClearItem(item)}
                       >
                         ×
                       </button>

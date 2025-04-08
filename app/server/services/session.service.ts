@@ -49,7 +49,7 @@ export class SessionService {
     const tokenHash = this.tokensService.hashRefreshToken(rawToken);
     const token = await this.repository.findActiveToken(userId, tokenHash);
 
-    if (!token) return false;
+    if (!token) {return false;}
 
     // Update last used timestamp
     await this.repository.updateLastUsedAt(String(token._id));

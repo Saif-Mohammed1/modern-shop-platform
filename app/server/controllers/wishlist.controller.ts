@@ -11,7 +11,7 @@ import {WishlistService} from '../services/wishlist.service';
 class WishlistController {
   constructor(private readonly wishlistService: WishlistService = new WishlistService()) {}
   async toggleWishlist(req: NextRequest) {
-    if (!req.user) throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+    if (!req.user) {throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);}
 
     const check = WishlistValidation.validateCreateWishlist({
       productId: req.id,
@@ -38,7 +38,7 @@ class WishlistController {
   }
 
   async checkWishlist(req: NextRequest) {
-    if (!req.user) throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+    if (!req.user) {throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);}
 
     const check = WishlistValidation.validateCreateWishlist({
       productId: req.id,

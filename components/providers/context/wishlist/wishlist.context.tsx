@@ -88,7 +88,7 @@ export const WishlistProvider = ({
             },
           ]);
 
-          await api.post("/customers/wishlist/" + product._id);
+          await api.post(`/customers/wishlist/${  product._id}`);
           toast.success(
             accountWishlistTranslate[lang].WishListCard.functions
               .handleWishlistClick.success

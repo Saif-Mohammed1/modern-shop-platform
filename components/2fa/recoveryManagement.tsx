@@ -1,10 +1,10 @@
-import {useState} from 'react';
-import {RiCloseCircleLine} from 'react-icons/ri';
+import { useState } from "react";
+import { RiCloseCircleLine } from "react-icons/ri";
 
-import {lang} from '@/app/lib/utilities/lang';
-import {accountTwoFactorTranslate} from '@/public/locales/client/(auth)/account/twoFactorTranslate';
+import { lang } from "@/app/lib/utilities/lang";
+import { accountTwoFactorTranslate } from "@/public/locales/client/(auth)/account/twoFactorTranslate";
 
-import BackupCodesDisplay from './backupCodesDisplay';
+import BackupCodesDisplay from "./backupCodesDisplay";
 
 const RecoveryManagement = ({
   onRegenerate,
@@ -36,13 +36,20 @@ const RecoveryManagement = ({
 
       {!confirm ? (
         <button
-          onClick={() => setConfirm(true)}
+          onClick={() => {
+            setConfirm(true);
+          }}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg"
         >
           {accountTwoFactorTranslate[lang].RecoveryManagement.generateText}
         </button>
       ) : generatedCodes.length ? (
-        <BackupCodesDisplay codes={generatedCodes} onComplete={() => setConfirm(false)} />
+        <BackupCodesDisplay
+          codes={generatedCodes}
+          onComplete={() => {
+            setConfirm(false);
+          }}
+        />
       ) : (
         <div className="space-y-4">
           <p className="text-gray-600">
@@ -50,13 +57,15 @@ const RecoveryManagement = ({
           </p>
           <div className="flex gap-3">
             <button
-              onClick={() => void onRegenerate()}
+              onClick={onRegenerate}
               className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg"
             >
               {accountTwoFactorTranslate[lang].RecoveryManagement.confirmText}
             </button>
             <button
-              onClick={() => setConfirm(false)}
+              onClick={() => {
+                setConfirm(false);
+              }}
               className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg"
             >
               {accountTwoFactorTranslate[lang].RecoveryManagement.cancelText}

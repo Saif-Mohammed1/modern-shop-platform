@@ -1,7 +1,7 @@
-import {type FC, useRef, useState} from 'react';
+import { type FC, useRef, useState } from "react";
 
-import {lang} from '@/app/lib/utilities/lang';
-import {accountTwoFactorTranslate} from '@/public/locales/client/(auth)/account/twoFactorTranslate';
+import { lang } from "@/app/lib/utilities/lang";
+import { accountTwoFactorTranslate } from "@/public/locales/client/(auth)/account/twoFactorTranslate";
 
 interface TotpInputProps {
   onVerify: (code: string) => Promise<void>;
@@ -17,9 +17,11 @@ const TotpInput: FC<TotpInputProps> = ({
   // onResend,
   onSwitchToBackup,
 }) => {
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
-
+  const handleSubmit = async (finalCode?: string) => {
+    await onVerify(finalCode || code.join(""));
+  };
   const handleChange = async (index: number, value: string) => {
     // if (!/^\d*$/.test(value)) return;
 
@@ -31,39 +33,36 @@ const TotpInput: FC<TotpInputProps> = ({
       inputs.current[index + 1]?.focus();
     }
 
-    if (newCode.every((c) => c !== '')) {
-      await handleSubmit(newCode.join(''));
+    if (newCode.every((c) => c !== "")) {
+      await handleSubmit(newCode.join(""));
     }
   };
 
   const handlePaste = async (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text/plain').slice(0, 6);
+    const pastedData = e.clipboardData.getData("text/plain").slice(0, 6);
     // if (/^\d+$/.test(pastedData)) {
-    const newCode = pastedData.split('').slice(0, 6);
+    const newCode = pastedData.split("").slice(0, 6);
     setCode(newCode);
-    await handleSubmit(newCode.join(''));
+    await handleSubmit(newCode.join(""));
     // }
   };
 
-  const handleSubmit = async (finalCode?: string) => {
-    await onVerify(finalCode || code.join(''));
-  };
   // handel key backspace or delete to remove the value
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' || e.key === 'Delete') {
+    if (e.key === "Backspace" || e.key === "Delete") {
       e.preventDefault();
       const newCode = [...code];
 
-      if (newCode[index] === '') {
+      if (newCode[index] === "") {
         // Delete previous field if current is empty
         if (index > 0) {
-          newCode[index - 1] = '';
+          newCode[index - 1] = "";
           inputs.current[index - 1]?.focus();
         }
       } else {
         // Clear current field but keep focus
-        newCode[index] = '';
+        newCode[index] = "";
         inputs.current[index]?.focus();
       }
 
@@ -89,18 +88,24 @@ const TotpInput: FC<TotpInputProps> = ({
             value={digit}
             onChange={(e) => void handleChange(index, e.target.value)}
             onPaste={() => handlePaste}
-            onKeyDown={(e) => handleKeyDown(index, e)}
+            onKeyDown={(e) => {
+              handleKeyDown(index, e);
+            }}
             className="w-12 h-12 text-2xl text-center border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={isLoading}
           />
         ))}
       </div>
 
-      {error ? <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-center">{error}</div> : null}
+      {error ? (
+        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-center">
+          {error}
+        </div>
+      ) : null}
 
       <button
-        onClick={() => void handleSubmit()}
-        disabled={isLoading || code.some((c) => c === '')}
+        onClick={() => handleSubmit(code.join(""))}
+        disabled={isLoading || code.some((c) => c === "")}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg disabled:opacity-50"
       >
         {isLoading
@@ -116,9 +121,15 @@ const TotpInput: FC<TotpInputProps> = ({
           Resend Code
         </button> */}
         <div className="text-sm text-gray-600">
-          {accountTwoFactorTranslate[lang].TwoFactorForm.TotpInput.lostAccess}?{' '}
-          <button onClick={onSwitchToBackup} className="text-blue-600 hover:text-blue-700">
-            {accountTwoFactorTranslate[lang].TwoFactorForm.TotpInput.lostAccessDescription}
+          {accountTwoFactorTranslate[lang].TwoFactorForm.TotpInput.lostAccess}?{" "}
+          <button
+            onClick={onSwitchToBackup}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            {
+              accountTwoFactorTranslate[lang].TwoFactorForm.TotpInput
+                .lostAccessDescription
+            }
           </button>
         </div>
       </div>

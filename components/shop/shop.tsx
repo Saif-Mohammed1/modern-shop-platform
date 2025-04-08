@@ -64,12 +64,12 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
   );
   const productsContainerRef = useRef<HTMLDivElement>(null);
   const handleCategoryFilterChange = (e: Event) => {
-    const value = e.target.value;
+    const {value} = e.target;
     void setCategoryFilter(value);
   };
 
   const handlePriceFilterChange = (e: Event) => {
-    const value = e.target.value;
+    const {value} = e.target;
     void setPriceFilter(value);
   };
 
@@ -79,7 +79,7 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
   };
 
   const handleSearch = (e: Event) => {
-    const value = e.target.value;
+    const {value} = e.target;
     void setSearchQuery(value);
   };
 
@@ -103,7 +103,7 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
 
       {/* Mobile Filter Button */}
       <button
-        onClick={() => setIsMobileFiltersOpen(true)}
+        onClick={() => { setIsMobileFiltersOpen(true); }}
         className="md:hidden flex items-center gap-2 p-3 bg-white rounded-lg shadow-md"
       >
         <HiFilter className="text-xl" />
@@ -132,7 +132,7 @@ const Shop = ({ products, categories, pagination }: ShopProps) => {
 
       {/* Mobile Filters Overlay */}
       {isMobileFiltersOpen ? (
-        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+        <MobileFilter closeFilters={() => { setIsMobileFiltersOpen(false); }}>
           {/* // <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
         //   <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto">
         //     <div className="flex justify-between items-center mb-6">

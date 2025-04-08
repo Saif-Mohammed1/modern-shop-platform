@@ -92,7 +92,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
   return (
     <div className="w-full">
       <button
-        onClick={() => void checkOrder()}
+        onClick={checkOrder}
         disabled={isLoading || isOpen}
         className={`w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg
           shadow-lg hover:shadow-xl transition-all duration-300 font-medium flex items-center justify-center
@@ -121,7 +121,9 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
               className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative"
             >
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                }}
                 className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
                 aria-label={
                   reviewsTranslate[lang].createReviewsSection.content.close
@@ -171,9 +173,9 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
                   </label>
                   <textarea
                     value={comment}
-                    onChange={(e) =>
-                      setComment(e.target.value.slice(0, MAX_COMMENT_LENGTH))
-                    }
+                    onChange={(e) => {
+                      setComment(e.target.value.slice(0, MAX_COMMENT_LENGTH));
+                    }}
                     placeholder={
                       reviewsTranslate[lang].createReviewsSection.content
                         .textArea.placeholder
@@ -203,7 +205,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
                 </div>
 
                 <button
-                  onClick={() => void handleSubmit()}
+                  onClick={handleSubmit}
                   disabled={
                     isLoading || rating === 0 || comment.trim().length === 0
                   }

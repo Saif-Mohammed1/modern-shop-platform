@@ -102,23 +102,25 @@ const LoginPage = () => {
       setError(message);
       toast.error(message);
     } finally {
-      void setIsLoading2fa(false);
+      setIsLoading2fa(false);
     }
   };
 
   const handleBackupVerify = async (codes: string[]) => {
     // setIsLoading(true);
-    void setIsLoading2fa(true);
+    setIsLoading2fa(true);
     try {
       ///auth/2fa/backup/validate
 
-      const { data } = await api.post("/auth/2fa/backup/validate", {
+      const {
+        data: { message },
+      } = await api.post("/auth/2fa/backup/validate", {
         email,
         codes,
       });
 
       toast.success(
-        data.message || loginTranslate[lang].functions.handelBackup2fa.success
+        message || loginTranslate[lang].functions.handelBackup2fa.success
       );
     } catch (error: unknown) {
       const message =
@@ -126,7 +128,7 @@ const LoginPage = () => {
       setError(message);
       toast.error(message);
     } finally {
-      void setIsLoading2fa(false);
+      setIsLoading2fa(false);
     }
   };
   // const handleResend = async () => {
@@ -154,14 +156,16 @@ const LoginPage = () => {
           isLoading={isLoading2fa}
           onBackupVerify={handleBackupVerify}
           // onResend={handleResend}
-          back={() => setRequiredTwoFactor(false)}
+          back={() => {
+            setRequiredTwoFactor(false);
+          }}
         />
       ) : (
         <>
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
             {loginTranslate[lang].form.title}
           </h2>
-          <form onSubmit={() => handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-gray-600">
                 {loginTranslate[lang].form.email.label}
@@ -170,7 +174,9 @@ const LoginPage = () => {
                 type="email"
                 placeholder={loginTranslate[lang].form.email.placeholder}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
                 required
                 className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
@@ -185,11 +191,13 @@ const LoginPage = () => {
                   name="password"
                   placeholder={loginTranslate[lang].form.password.placeholder}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                   className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <button
-                  onClick={() => void setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
                 >
                   {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}

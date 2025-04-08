@@ -7,8 +7,8 @@ const Tooltip = ({content, children}: {content: string; children: React.ReactNod
   return (
     <div
       className="relative"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={() => { setShowTooltip(true); }}
+      onMouseLeave={() => { setShowTooltip(false); }}
     >
       {children}
       {showTooltip ? <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-gray-700 text-white rounded-md">

@@ -62,14 +62,19 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
     <div
       ref={navListRef}
       className="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-lg py-2 text-gray-800 z-50"
-      onMouseEnter={() => setAccountMenuOpen(true)}
-      onMouseLeave={() => setAccountMenuOpen(false)}
+      onMouseEnter={() => {
+        setAccountMenuOpen(true);
+      }}
+      onMouseLeave={() => {
+        setAccountMenuOpen(false);
+      }}
     >
       {/* Welcome */}
       <div className="px-4 py-2 font-bold text-black border-b border-gray-300">
         {user
-          ? navBarTranslate[lang].accountNavList.content.accountMenu.welcome +
-            `, ${user.name.split(" ")[0]}`
+          ? `${
+              navBarTranslate[lang].accountNavList.content.accountMenu.welcome
+            }, ${user.name.split(" ")[0]}`
           : navBarTranslate[lang].accountNavList.content.accountMenu.welcome}
       </div>
       {user && user.role === "admin" ? (
@@ -170,7 +175,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
 
           <button
             className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300 cursor-pointer"
-            onClick={() => void logOut()}
+            onClick={logOut}
           >
             <VscSignOut className="mr-2" />
             {navBarTranslate[lang].accountNavList.content.accountMenu.logOut}

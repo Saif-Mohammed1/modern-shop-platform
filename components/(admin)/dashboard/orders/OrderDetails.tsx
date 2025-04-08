@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import {useRouter} from 'next/navigation';
-import React, {useEffect, useState} from 'react';
-import toast from 'react-hot-toast';
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
-import {OrderStatus, type OrderType} from '@/app/lib/types/orders.types';
-import api from '@/app/lib/utilities/api';
-import {formatCurrency} from '@/app/lib/utilities/formatCurrency';
-import {lang} from '@/app/lib/utilities/lang';
-import Button from '@/components/ui/Button';
-import {Card, CardContent, CardHeader} from '@/components/ui/card';
-import Select from '@/components/ui/Select';
-import StatusBadge from '@/components/ui/StatusBadge';
-import {ordersTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate';
+import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
+import api from "@/app/lib/utilities/api";
+import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
+import { lang } from "@/app/lib/utilities/lang";
+import Button from "@/components/ui/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Select from "@/components/ui/Select";
+import StatusBadge from "@/components/ui/StatusBadge";
+import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
 
 interface AdminOrderDetailsProps {
   order: OrderType;
 }
 
-const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
+const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
   const router = useRouter();
   const [status, setStatus] = useState<OrderStatus>(order.status);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -30,11 +30,13 @@ const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
   const handleStatusUpdate = async () => {
     try {
       setIsUpdating(true);
-      await api.put(`/admin/dashboard/orders/${order._id}`, {status});
+      await api.put(`/admin/dashboard/orders/${order._id}`, { status });
       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || ordersTranslate.functions[lang].error);
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error).message || ordersTranslate.functions[lang].error
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -47,11 +49,19 @@ const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
           <h1 className="text-2xl font-bold">Order #{order.invoiceId}</h1>
           <StatusBadge status={order.status as OrderStatus} />
         </div>
-        <Button onClick={() => router.push('/dashboard/orders')}>Back to Orders</Button>
+        <Button
+          onClick={() => {
+            router.push("/dashboard/orders");
+          }}
+        >
+          Back to Orders
+        </Button>
       </div>
 
       <Card>
-        <CardHeader className="text-lg font-semibold">Shipping Information</CardHeader>
+        <CardHeader className="text-lg font-semibold">
+          Shipping Information
+        </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
           <div>
             <p className="font-medium">Contact</p>
@@ -74,7 +84,10 @@ const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
         <CardHeader className="text-lg font-semibold">Order Items</CardHeader>
         <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
           {order.items.map((item, index) => (
-            <div key={index} className="flex justify-between items-center border-b pb-2">
+            <div
+              key={index}
+              className="flex justify-between items-center border-b pb-2"
+            >
               <div>
                 <p className="font-medium">{item.name}</p>
                 <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
@@ -83,16 +96,18 @@ const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
                     Attributes: {JSON.stringify(item.attributes)}
                   </p>
                 )} */}
-                {item.attributes ? Object.entries(item.attributes).map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <dt className="text-gray-600 capitalize">{key}</dt>
-                      <dd className="text-gray-900 font-medium">{value}</dd>
-                    </div>
-                  )) : null}
+                {item.attributes
+                  ? Object.entries(item.attributes).map(([key, value]) => (
+                      <div key={key} className="flex justify-between">
+                        <dt className="text-gray-600 capitalize">{key}</dt>
+                        <dd className="text-gray-900 font-medium">{value}</dd>
+                      </div>
+                    ))
+                  : null}
               </div>
               <div className="text-right">
                 <p>
-                  {item.quantity} ×{' '}
+                  {item.quantity} ×{" "}
                   {formatCurrency(item.finalPrice, {
                     currency: order.currency,
                   })}
@@ -109,30 +124,42 @@ const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
       </Card>
 
       <Card>
-        <CardHeader className="text-lg font-semibold">Financial Details</CardHeader>
+        <CardHeader className="text-lg font-semibold">
+          Financial Details
+        </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>{formatCurrency(order.subtotal, {currency: order.currency})}</span>
+            <span>
+              {formatCurrency(order.subtotal, { currency: order.currency })}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>Tax</span>
-            <span>{formatCurrency(order.tax, {currency: order.currency})}</span>
+            <span>
+              {formatCurrency(order.tax, { currency: order.currency })}
+            </span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Total</span>
-            <span>{formatCurrency(order.total, {currency: order.currency})}</span>
+            <span>
+              {formatCurrency(order.total, { currency: order.currency })}
+            </span>
           </div>
           <div className="pt-4">
-            <p className="text-sm text-muted-foreground">Invoice ID: {order.invoiceId}</p>
-            {order.invoiceLink ? <a
+            <p className="text-sm text-muted-foreground">
+              Invoice ID: {order.invoiceId}
+            </p>
+            {order.invoiceLink ? (
+              <a
                 href={order.invoiceLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline text-sm"
               >
                 View Invoice
-              </a> : null}
+              </a>
+            ) : null}
           </div>
         </CardContent>
       </Card>
@@ -146,19 +173,22 @@ const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
               value: status,
             }))}
             value={status}
-            onChange={(e) => setStatus(e.target.value as OrderStatus)}
+            onChange={(e) => {
+              setStatus(e.target.value as OrderStatus);
+            }}
             placeholder="Select Status"
           />
           <Button
-            onClick={() => void handleStatusUpdate()}
+            onClick={handleStatusUpdate}
             disabled={isUpdating || status === order.status}
           >
-            {isUpdating ? 'Updating...' : 'Update Status'}
+            {isUpdating ? "Updating..." : "Update Status"}
           </Button>
         </CardContent>
       </Card>
 
-      {order.orderNotes && order.orderNotes.length > 0 ? <Card>
+      {order.orderNotes && order.orderNotes.length > 0 ? (
+        <Card>
           <CardHeader className="text-lg font-semibold">Order Notes</CardHeader>
           <CardContent className="space-y-2">
             {order.orderNotes.map((note, index) => (
@@ -167,7 +197,8 @@ const AdminOrderDetails = ({order}: AdminOrderDetailsProps) => {
               </p>
             ))}
           </CardContent>
-        </Card> : null}
+        </Card>
+      ) : null}
     </div>
   );
 };

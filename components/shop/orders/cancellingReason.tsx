@@ -11,8 +11,8 @@ const OrderCancellation = () => {
   const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const handleReasonChange = (e: Event) => setReason(e.target.value);
-  const handleFeedbackChange = (e: ChangeEvent<HTMLTextAreaElement>) => setFeedback(e.target.value);
+  const handleReasonChange = (e: Event) => { setReason(e.target.value); };
+  const handleFeedbackChange = (e: ChangeEvent<HTMLTextAreaElement>) => { setFeedback(e.target.value); };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();

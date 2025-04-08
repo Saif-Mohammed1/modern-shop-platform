@@ -1,43 +1,49 @@
-'use client';
+"use client";
 
 // components/Sidebar.js
 
-import Link from 'next/link';
-import {usePathname, useRouter} from 'next/navigation';
-import {signOut} from 'next-auth/react';
-import {type FC, Fragment, useEffect, useState} from 'react';
-import toast from 'react-hot-toast';
-import {FaChartBar, FaHome, FaShoppingCart, FaSignOutAlt, FaUser} from 'react-icons/fa';
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { type FC, Fragment, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import {
+  FaChartBar,
+  FaHome,
+  FaShoppingCart,
+  FaSignOutAlt,
+  FaUser,
+} from "react-icons/fa";
 
-import api from '@/app/lib/utilities/api';
-import {deleteCookies} from '@/app/lib/utilities/cookies';
-import {lang} from '@/app/lib/utilities/lang';
-import {dashboardTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate';
+import api from "@/app/lib/utilities/api";
+import { deleteCookies } from "@/app/lib/utilities/cookies";
+import { lang } from "@/app/lib/utilities/lang";
+import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
 
 const Sidebar: FC = () => {
   const Links = [
     {
-      href: '/dashboard',
+      href: "/dashboard",
       icon: <FaHome className="w-5 h-5" />,
       text: dashboardTranslate.layout.sidebar[lang].links.text.home,
     },
     {
-      href: '/dashboard/products',
+      href: "/dashboard/products",
       icon: <FaShoppingCart className="w-5 h-5" />,
       text: dashboardTranslate.layout.sidebar[lang].links.text.products,
     },
     {
-      href: '/dashboard/users',
+      href: "/dashboard/users",
       icon: <FaUser className="w-5 h-5" />,
       text: dashboardTranslate.layout.sidebar[lang].links.text.users,
     },
     {
-      href: '/dashboard/orders',
+      href: "/dashboard/orders",
       icon: <FaShoppingCart className="w-5 h-5" />,
       text: dashboardTranslate.layout.sidebar[lang].links.text.orders,
     },
     {
-      href: '/dashboard/reports',
+      href: "/dashboard/reports",
       icon: <FaChartBar className="w-5 h-5" />,
       text: dashboardTranslate.layout.sidebar[lang].links.text.reports,
     },
@@ -59,15 +65,18 @@ const Sidebar: FC = () => {
   const logout = async () => {
     let toastLoading;
     try {
-      toastLoading = toast.loading('Logging out...');
+      toastLoading = toast.loading("Logging out...");
       await signOut();
-      await deleteCookies('refreshAccessToken');
+      await deleteCookies("refreshAccessToken");
 
-      await api.post('/auth/logout');
+      await api.post("/auth/logout");
 
-      toast.success('Logged out successfully');
-    } catch (error: any) {
-      toast.error(error?.message || 'Something went wrong');
+      toast.success("Logged out successfully");
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error).message ||
+          dashboardTranslate.metadata[lang].errors.global
+      );
     } finally {
       toast.dismiss(toastLoading);
     }
@@ -117,7 +126,7 @@ const Sidebar: FC = () => {
                       className={`flex items-center justify-between p-3
                        text-gray-200 hover:bg-gray-700 rounded-lg
                         transition duration-150 ease-in-out ${
-                          selectedLink === link.href ? 'bg-gray-700' : ''
+                          selectedLink === link.href ? "bg-gray-700" : ""
                         }`}
                     >
                       <p aria-label={link.text} className="flex items-center ">
@@ -141,16 +150,19 @@ const Sidebar: FC = () => {
                     </Link>
                   </li>
                 </Fragment>
-              ))}{' '}
+              ))}{" "}
               <li>
                 <button
                   className="flex w-full items-center justify-between p-3 text-gray-200 hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out"
-                  onClick={() => void logout()}
+                  onClick={logout}
                 >
                   <p className="flex items-center">
                     <FaSignOutAlt className="w-5 h-5" />
                     <span className="ml-4">
-                      {dashboardTranslate.layout.sidebar[lang].links.text.logout}
+                      {
+                        dashboardTranslate.layout.sidebar[lang].links.text
+                          .logout
+                      }
                     </span>
                   </p>
                   <svg

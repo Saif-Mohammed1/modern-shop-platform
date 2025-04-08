@@ -1,79 +1,70 @@
-import Link from 'next/link';
-import {FaHome, FaTruck} from 'react-icons/fa';
+import Link from "next/link";
+import { FaHome, FaTruck } from "react-icons/fa";
 
-import type {OrderType} from '@/app/lib/types/orders.types';
-import {formatCurrency} from '@/app/lib/utilities/formatCurrency';
-import {formatDateTime} from '@/app/lib/utilities/formatDate';
-import {lang} from '@/app/lib/utilities/lang';
-import {accountOrdersTranslate} from '@/public/locales/client/(auth)/account/ordersTranslate';
-
-const OrderCompleted = ({order}: {order: OrderType}) => {
-  const t = accountOrdersTranslate[lang].orderCompleted;
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl">
-        <h1 className="text-3xl font-bold text-green-600 mb-4 text-center">{t.message}</h1>
-
-        <OrderSummary order={order} t={t.summery} />
-        <ProductList items={order.items} t={t.summery.Items} />
-        <ActionButtons t={t.button} />
-      </div>
-    </div>
-  );
-};
-
+import type { OrderType } from "@/app/lib/types/orders.types";
+import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
+import { formatDateTime } from "@/app/lib/utilities/formatDate";
+import { lang } from "@/app/lib/utilities/lang";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 // Sub-components
 const OrderSummary = ({
   order,
   t,
 }: {
   order: OrderType;
-  t: (typeof accountOrdersTranslate)[typeof lang]['orderCompleted']['summery'];
+  t: (typeof accountOrdersTranslate)[typeof lang]["orderCompleted"]["summery"];
 }) => (
   <div className="border-t border-gray-200 pt-4">
     <p className="text-lg mb-2">
       {t.orderId}: <span className="font-semibold">{order._id}</span>
     </p>
     <p className="text-lg mb-2">
-      {t.orderDate}: <span className="font-semibold">{formatDateTime(order.createdAt)}</span>
+      {t.orderDate}:{" "}
+      <span className="font-semibold">{formatDateTime(order.createdAt)}</span>
     </p>
     <p className="text-lg mb-4">
-      {t.subtotal}: <span className="font-semibold">{formatCurrency(order.subtotal)}</span>
+      {t.subtotal}:{" "}
+      <span className="font-semibold">{formatCurrency(order.subtotal)}</span>
     </p>
 
     <p className="text-lg mb-4 border-b border-gray-200 pb-4">
-      {t.tax}: <span className="font-semibold">{formatCurrency(order.tax)}</span>
+      {t.tax}:{" "}
+      <span className="font-semibold">{formatCurrency(order.tax)}</span>
     </p>
     <p className="text-lg mb-4 border-b border-gray-200 pb-4">
-      {t.totalAmount}: <span className="font-semibold">{formatCurrency(order.total)}</span>
+      {t.totalAmount}:{" "}
+      <span className="font-semibold">{formatCurrency(order.total)}</span>
     </p>
   </div>
 );
-
-const ProductList = ({
-  items,
-  t,
+const PriceDisplay = ({
+  item,
+  hasDiscount,
 }: {
-  items: OrderType['items'];
-  t: (typeof accountOrdersTranslate)[typeof lang]['orderCompleted']['summery']['Items'];
+  item: OrderType["items"][number];
+  hasDiscount: boolean;
 }) => (
-  <>
-    <h2 className="text-xl font-bold mb-2">{t.title}:</h2>
-    <ul className="mb-4 max-h-96 overflow-y-auto">
-      {items.map((item) => (
-        <ProductListItem key={item.productId.toString()} item={item} t={t} />
-      ))}
-    </ul>
-  </>
+  <div>
+    {hasDiscount ? (
+      <>
+        <p className="line-through text-sm text-gray-500">
+          {formatCurrency(item.price)}
+        </p>
+        <p className="font-semibold text-green-600">
+          {formatCurrency(item.finalPrice)}
+        </p>
+      </>
+    ) : (
+      <p className="font-semibold">{formatCurrency(item.price)}</p>
+    )}
+  </div>
 );
-
 const ProductListItem = ({
   item,
   t,
 }: {
-  item: OrderType['items'][number];
-  t: (typeof accountOrdersTranslate)[typeof lang]['orderCompleted']['summery']['Items'];
+  item: OrderType["items"][number];
+  t: (typeof accountOrdersTranslate)[typeof lang]["orderCompleted"]["summery"]["Items"];
 }) => {
   const hasDiscount = item.discount > 0;
 
@@ -84,55 +75,33 @@ const ProductListItem = ({
         <p className="text-sm text-gray-500">
           {t.quantity}: {item.quantity}
         </p>
-        {hasDiscount ? <>
+        {hasDiscount ? (
+          <>
             <p className="text-sm text-green-600">
               {t.discountApplied}: {formatCurrency(item.discount)}
             </p>
-          </> : null}
+          </>
+        ) : null}
       </div>
       <PriceDisplay item={item} hasDiscount={hasDiscount} />
     </li>
   );
 };
-
-const PriceDisplay = ({
-  item,
-  hasDiscount,
-}: {
-  item: OrderType['items'][number];
-  hasDiscount: boolean;
-}) => (
-  <div>
-    {hasDiscount ? (
-      <>
-        <p className="line-through text-sm text-gray-500">{formatCurrency(item.price)}</p>
-        <p className="font-semibold text-green-600">{formatCurrency(item.finalPrice)}</p>
-      </>
-    ) : (
-      <p className="font-semibold">{formatCurrency(item.price)}</p>
-    )}
-  </div>
-);
-
-const ActionButtons = ({
+const ProductList = ({
+  items,
   t,
 }: {
-  t: (typeof accountOrdersTranslate)[typeof lang]['orderCompleted']['button'];
+  items: OrderType["items"];
+  t: (typeof accountOrdersTranslate)[typeof lang]["orderCompleted"]["summery"]["Items"];
 }) => (
-  <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
-    <ActionButton
-      href="/account/orders"
-      icon={<FaTruck />}
-      text={t.orderTracking}
-      className="bg-blue-600 hover:bg-blue-700"
-    />
-    <ActionButton
-      href="/"
-      icon={<FaHome />}
-      text={t.backToHome}
-      className="bg-gray-600 hover:bg-gray-700"
-    />
-  </div>
+  <>
+    <h2 className="text-xl font-bold mb-2">{t.title}:</h2>
+    <ul className="mb-4 max-h-96 overflow-y-auto">
+      {items.map((item) => (
+        <ProductListItem key={item.productId.toString()} item={item} t={t} />
+      ))}
+    </ul>
+  </>
 );
 
 const ActionButton = ({
@@ -154,5 +123,42 @@ const ActionButton = ({
     <span className="ml-2">{text}</span>
   </Link>
 );
+const ActionButtons = ({
+  t,
+}: {
+  t: (typeof accountOrdersTranslate)[typeof lang]["orderCompleted"]["button"];
+}) => (
+  <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
+    <ActionButton
+      href="/account/orders"
+      icon={<FaTruck />}
+      text={t.orderTracking}
+      className="bg-blue-600 hover:bg-blue-700"
+    />
+    <ActionButton
+      href="/"
+      icon={<FaHome />}
+      text={t.backToHome}
+      className="bg-gray-600 hover:bg-gray-700"
+    />
+  </div>
+);
+const OrderCompleted = ({ order }: { order: OrderType }) => {
+  const t = accountOrdersTranslate[lang].orderCompleted;
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl">
+        <h1 className="text-3xl font-bold text-green-600 mb-4 text-center">
+          {t.message}
+        </h1>
+
+        <OrderSummary order={order} t={t.summery} />
+        <ProductList items={order.items} t={t.summery.Items} />
+        <ActionButtons t={t.button} />
+      </div>
+    </div>
+  );
+};
 
 export default OrderCompleted;

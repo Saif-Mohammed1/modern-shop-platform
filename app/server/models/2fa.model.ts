@@ -1,7 +1,6 @@
-import type {Document, Model} from 'mongoose';
-import {Schema, model, models} from 'mongoose';
+import { Schema, model, models, type Document, type Model } from "mongoose";
 
-import type {IUser} from './User.model';
+import type { IUser } from "./User.model";
 
 // Enhanced Type Definitions
 export interface SecurityMetadata {
@@ -25,7 +24,7 @@ export interface EncryptedData {
 
 // Improved 2FA Schema
 export interface ITwoFactorAuth extends Document {
-  userId: IUser['_id'];
+  userId: IUser["_id"];
   encryptedSecret: EncryptedData;
   backupCodes: string[]; // Hashed codes
   recoveryAttempts?: number;
@@ -41,7 +40,7 @@ const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: 'User',
+      ref: "User",
       unique: true,
       index: true,
     },
@@ -80,17 +79,17 @@ const TwoFactorAuthSchema: Schema = new Schema<ITwoFactorAuth>(
     toJSON: {
       virtuals: true,
       transform: function (_, ret) {
-        ['createdAt', 'updatedAt', 'lastUsed'].forEach((field) => {
+        ["createdAt", "updatedAt", "lastUsed"].forEach((field) => {
           if (ret[field]) {
-            ret[field] = new Date(ret[field]).toISOString().split('T')[0];
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
           }
         });
         return ret;
       },
     },
-  },
+  }
 );
-TwoFactorAuthSchema.set('toJSON', {
+TwoFactorAuthSchema.set("toJSON", {
   versionKey: false,
   transform: (_, ret) => {
     delete ret.encryptedSecret;
@@ -98,5 +97,6 @@ TwoFactorAuthSchema.set('toJSON', {
   },
 });
 const TwoFactorAuthModel: Model<ITwoFactorAuth> =
-  models.TwoFactorAuth || model<ITwoFactorAuth>('TwoFactorAuth', TwoFactorAuthSchema);
+  models.TwoFactorAuth ||
+  model<ITwoFactorAuth>("TwoFactorAuth", TwoFactorAuthSchema);
 export default TwoFactorAuthModel;

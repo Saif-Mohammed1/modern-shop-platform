@@ -1,14 +1,12 @@
+import type { Metadata } from "next";
+import { headers } from "next/headers";
+import type { FC } from "react";
 
-import type {Metadata} from 'next';
-import {headers} from 'next/headers';
-import type {FC} from 'react';
-
-import api from '@/app/lib/utilities/api';
-import AppError from '@/app/lib/utilities/appError';
-import {lang} from '@/app/lib/utilities/lang';
-import AdminOrdersDashboard from '@/components/(admin)/dashboard/orders/orderMangement';
-import ErrorHandler from '@/components/Error/errorHandler';
-import {ordersTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate';
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import AdminOrdersDashboard from "@/components/(admin)/dashboard/orders/orderMangement";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
 
 export const metadata: Metadata = {
   title: ordersTranslate.metadata[lang].title,
@@ -29,43 +27,43 @@ const queryParams = async (searchParams: SearchParams) => {
 
   // Append each parameter only if it's not undefined
   if (searchParams.email !== undefined) {
-    url.append('email', searchParams.email);
+    url.append("email", searchParams.email);
   }
   if (searchParams.status !== undefined) {
-    url.append('status', searchParams.status);
+    url.append("status", searchParams.status);
   }
   if (searchParams.startDate !== undefined) {
-    url.append('createAt[gte]', searchParams.startDate);
+    url.append("createAt[gte]", searchParams.startDate);
   }
   if (searchParams.endDate !== undefined) {
-    url.append('createAt[lte]', searchParams.endDate);
+    url.append("createAt[lte]", searchParams.endDate);
   }
   if (searchParams.sort !== undefined) {
-    url.append('sort', searchParams.sort);
+    url.append("sort", searchParams.sort);
   }
 
   if (searchParams.page !== undefined) {
-    url.append('page', searchParams.page);
+    url.append("page", searchParams.page);
   }
   if (searchParams.limit !== undefined) {
-    url.append('limit', searchParams.limit);
+    url.append("limit", searchParams.limit);
   }
 
   const queryString = url.toString();
-  try {
-    // const {
-    //   orders, pageCount
-    // }
-    const {
-      data: {docs, meta, links},
-    } = await api.get('/admin/dashboard/orders' + (queryString ? `?${queryString}` : ''), {
-      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
-    });
 
-    return {orders: docs, pagination: {meta, links}};
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+  // const {
+  //   orders, pageCount
+  // }
+  const {
+    data: { docs, meta, links },
+  } = await api.get(
+    `/admin/dashboard/orders${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
+    }
+  );
+
+  return { orders: docs, pagination: { meta, links } };
 };
 type PageProps = {
   searchParams: Promise<SearchParams>;
@@ -83,7 +81,7 @@ const page: FC<PageProps> = async (props) => {
   // };
 
   try {
-    const {orders, pagination} = await queryParams(searchParams);
+    const { orders, pagination } = await queryParams(searchParams);
     return (
       <AdminOrdersDashboard
         initialOrders={orders}
@@ -97,15 +95,14 @@ const page: FC<PageProps> = async (props) => {
               hasNext: false,
               hasPrev: false,
             },
-            links: {previous: '', next: ''},
+            links: { previous: "", next: "" },
           }
         }
       />
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error.message} />;
-
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

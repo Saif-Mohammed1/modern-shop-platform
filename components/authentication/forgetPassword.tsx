@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import {type FormEvent, useState} from 'react';
-import toast from 'react-hot-toast';
+import Link from "next/link";
+import { type FormEvent, useState } from "react";
+import toast from "react-hot-toast";
 
-import api from '@/app/lib/utilities/api';
-import {forgetPasswordTranslate} from '@/public/locales/client/(public)/auth/forgetPasswordTranslate';
+import api from "@/app/lib/utilities/api";
+import { forgetPasswordTranslate } from "@/public/locales/client/(public)/auth/forgetPasswordTranslate";
 
-import {lang} from '../../app/lib/utilities/lang';
-import Spinner from '../spinner/spinner';
+import { lang } from "../../app/lib/utilities/lang";
+import Spinner from "../spinner/spinner";
 
 const ForgotPasswordPage = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   // const [token, setToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   // const [hasToken, setHasToken] = useState(false); // New state to toggle token input
@@ -20,7 +20,9 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
 
     if (!email) {
-      toast.error(forgetPasswordTranslate[lang].functions.handlePasswordReset.email.error);
+      toast.error(
+        forgetPasswordTranslate[lang].functions.handlePasswordReset.email.error
+      );
       return;
     }
 
@@ -28,16 +30,18 @@ const ForgotPasswordPage = () => {
 
     try {
       const {
-        data: {message},
-      } = await api.post('/auth/forgot-password', {
+        data: { message },
+      } = await api.post("/auth/forgot-password", {
         email,
       });
 
       toast.success(message);
-      setEmail('');
+      setEmail("");
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error(error.message || forgetPasswordTranslate[lang].functions.errors.global);
+        toast.error(
+          error.message || forgetPasswordTranslate[lang].functions.errors.global
+        );
       } else {
         toast.error(forgetPasswordTranslate[lang].functions.errors.global);
       }
@@ -103,7 +107,7 @@ const ForgotPasswordPage = () => {
         {forgetPasswordTranslate[lang].functions.form.title}
       </h2>
 
-      <form onSubmit={() => void handlePasswordReset} className="space-y-4">
+      <form onSubmit={handlePasswordReset} className="space-y-4">
         <div>
           <label className="block text-gray-600">
             {forgetPasswordTranslate[lang].functions.form.email.label}
@@ -111,8 +115,12 @@ const ForgotPasswordPage = () => {
           <input
             type="email"
             value={email}
-            placeholder={forgetPasswordTranslate[lang].functions.form.email.placeholder}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder={
+              forgetPasswordTranslate[lang].functions.form.email.placeholder
+            }
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
             required
             className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
@@ -123,7 +131,11 @@ const ForgotPasswordPage = () => {
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
           disabled={isLoading}
         >
-          {isLoading ? <Spinner /> : forgetPasswordTranslate[lang].functions.form.submit.email}
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            forgetPasswordTranslate[lang].functions.form.submit.email
+          )}
         </button>
       </form>
 

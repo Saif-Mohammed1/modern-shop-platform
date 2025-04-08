@@ -44,7 +44,7 @@ const ProductDetail = ({
   // };
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState<ProductType[]>([]);
   const [quantity, setQuantity] = useState(1);
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
@@ -106,9 +106,15 @@ const ProductDetail = ({
   useEffect(() => {
     const getrelatedProducts = async () => {
       try {
-        const { data } = await api.get(
-          `/shop/?category=${product.category}&limit=8`
-        );
+        const {
+          data,
+        }: {
+          data: {
+            products: {
+              docs: ProductType[];
+            };
+          };
+        } = await api.get(`/shop/?category=${product.category}&limit=8`);
 
         setRelatedProducts(data.products.docs);
       } catch (_error) {
@@ -121,6 +127,7 @@ const ProductDetail = ({
       try {
         await getrelatedProducts();
       } catch (error) {
+        /* eslint-disable no-console */
         console.error("Error fetching related products:", error);
       }
     })();
@@ -146,22 +153,22 @@ const ProductDetail = ({
             {product.images.length > 1 && (
               <div className="absolute top-1/2 transform -translate-y-1/2 w-full flex justify-between px-4">
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     handleImageChange(
                       (currentImageIndex - 1 + product.images.length) %
                         product.images.length
-                    )
-                  }
+                    );
+                  }}
                   className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
                 >
                   <BsArrowLeftCircle className="w-6 h-6" />
                 </button>
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     handleImageChange(
                       (currentImageIndex + 1) % product.images.length
-                    )
-                  }
+                    );
+                  }}
                   className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
                 >
                   <BsArrowRightCircle className="w-6 h-6" />
@@ -174,7 +181,9 @@ const ProductDetail = ({
             {product.images.map((image, index) => (
               <button
                 key={index}
-                onClick={() => handleImageChange(index)}
+                onClick={() => {
+                  handleImageChange(index);
+                }}
                 className={`aspect-square rounded-lg overflow-hidden border-2 ${
                   index === currentImageIndex
                     ? "border-blue-500"
@@ -216,7 +225,7 @@ const ProductDetail = ({
             </div>
             {user ? (
               <button
-                onClick={() => void toggleWishlistHandaler()}
+                onClick={toggleWishlistHandaler}
                 className="p-2 hover:bg-gray-100 rounded-full"
                 aria-label={
                   isInWishlist(product._id)
@@ -269,7 +278,9 @@ const ProductDetail = ({
             <div className="flex items-center space-x-4">
               <div className="flex items-center border rounded-lg">
                 <button
-                  onClick={() => handleQuantityChange(quantity - 1)}
+                  onClick={() => {
+                    handleQuantityChange(quantity - 1);
+                  }}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   disabled={quantity <= 1}
                 >
@@ -280,13 +291,15 @@ const ProductDetail = ({
                   value={quantity}
                   min={1}
                   max={stock}
-                  onChange={(e) =>
-                    handleQuantityChange(parseInt(e.target.value))
-                  }
+                  onChange={(e) => {
+                    handleQuantityChange(parseInt(e.target.value));
+                  }}
                   className="w-16 text-center border-0 focus:ring-0"
                 />
                 <button
-                  onClick={() => handleQuantityChange(quantity + 1)}
+                  onClick={() => {
+                    handleQuantityChange(quantity + 1);
+                  }}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   disabled={quantity >= stock}
                 >
@@ -295,7 +308,7 @@ const ProductDetail = ({
               </div>
 
               <button
-                onClick={() => void handleAddToCart()}
+                onClick={handleAddToCart}
                 disabled={stock === 0}
                 className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${
                   stock === 0

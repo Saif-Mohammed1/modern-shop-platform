@@ -22,5 +22,5 @@ export const updateQueryParams = (
     }
   }
 
-  router.push(pathName + '?' + paramsSearch.toString());
+  router.push(`${pathName  }?${  paramsSearch.toString()}`);
 };

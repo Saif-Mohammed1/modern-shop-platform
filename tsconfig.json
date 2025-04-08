@@ -115,12 +115,14 @@
     "@types/**/*.d.ts",
     "next-env.d.ts", // Include all declaration files in the @types directory
     ".next/types/**/*.ts",
-    "eslint-plugin-no-void-jsx/",
+    "./eslint-plugin-no-void-jsx/**/*",
     "eslint.config.mjs",
     "./components/(admin)/dashboard/refunds/adminRefundReview.jsx",
     "./components/shop/refunds/refundsForm.jsx",
     "./components/shop/refunds/refundsViewer.jsx",
-    "./components/shop/refunds/UserRefundRequest.jsx"
+    "./components/shop/refunds/UserRefundRequest.jsx",
+    "next.config.mjs",
+    "postcss.config.mjs"
   ],
   "exclude": [
     "node_modules",

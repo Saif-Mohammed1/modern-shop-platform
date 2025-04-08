@@ -30,7 +30,7 @@ export class AddressService {
     session.startTransaction();
     try {
       const address = await this.repository.update(id, data, session);
-      if (!address) throw new AppError(AddressTranslate[lang].error.addressNotFound, 404);
+      if (!address) {throw new AppError(AddressTranslate[lang].error.addressNotFound, 404);}
       await session.commitTransaction();
       return address;
     } catch (error) {
@@ -45,10 +45,10 @@ export class AddressService {
   }
   async deleteMyAddress(id: string, userId: string) {
     const isDeleted = await this.repository.deleteAddress(id, userId);
-    if (!isDeleted) throw new AppError(AddressTranslate[lang].error.addressNotFound, 404);
+    if (!isDeleted) {throw new AppError(AddressTranslate[lang].error.addressNotFound, 404);}
   }
   async delete(id: string) {
     const isDeleted = await this.repository.delete(id);
-    if (!isDeleted) throw new AppError(AddressTranslate[lang].error.addressNotFound, 404);
+    if (!isDeleted) {throw new AppError(AddressTranslate[lang].error.addressNotFound, 404);}
   }
 }

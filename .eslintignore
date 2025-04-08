@@ -1,5 +1,0 @@
-# .eslintignore
-**/*.d.ts
-.next/
-dist/
-node_modules/

@@ -90,15 +90,15 @@ export class CryptoService {
   hashCode(code: string): string {
     const salt = crypto.randomBytes(16).toString('hex');
     return (
-      crypto
+      `${crypto
         .pbkdf2Sync(code, salt, SECURITY_CONFIG.PBKDF2_ITERATIONS, 64, 'sha512')
-        .toString('hex') + `:${salt}`
+        .toString('hex')  }:${salt}`
     );
   }
 
   verifyBackupCode(code: string, hash: string): boolean {
     const [hashValue, salt] = hash.split(':');
-    if (!salt) return false;
+    if (!salt) {return false;}
     return (
       crypto
         .pbkdf2Sync(code, salt, SECURITY_CONFIG.PBKDF2_ITERATIONS, 64, 'sha512')

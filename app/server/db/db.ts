@@ -86,8 +86,7 @@ export { connectDB, disconnectDB, getDB };
 /**
  *  update pre code connection second typeScript version
  * */
-import type { Connection } from "mongoose";
-import mongoose from "mongoose";
+import mongoose, { type Connection } from "mongoose";
 
 /** 
  * pre code connection first javaScript version
@@ -129,7 +128,9 @@ const getDB = () => {
 export { connectDB, disconnectDB, getDB };
 */
 
-if (process.env.NODE_ENV === "development") mongoose.set("debug", true);
+if (process.env.NODE_ENV === "development") {
+  mongoose.set("debug", true);
+}
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
 

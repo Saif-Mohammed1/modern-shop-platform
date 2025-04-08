@@ -84,7 +84,7 @@ const RegisterPage = () => {
       <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
         {registerTranslate[lang].form.title}
       </h2>
-      <form onSubmit={() => void handleRegister} className="space-y-4">
+      <form onSubmit={handleRegister} className="space-y-4">
         <div>
           <label className="block text-gray-600">
             {registerTranslate[lang].form.name.label}
@@ -93,7 +93,9 @@ const RegisterPage = () => {
             type="text"
             value={name}
             placeholder={registerTranslate[lang].form.name.placeholder}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
             required
             className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
@@ -105,7 +107,9 @@ const RegisterPage = () => {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
             required
             placeholder={registerTranslate[lang].form.email.placeholder}
             className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -121,11 +125,15 @@ const RegisterPage = () => {
               name="password"
               placeholder={registerTranslate[lang].form.password.placeholder}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
               className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <button
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => {
+                setShowPassword(!showPassword);
+              }}
               className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
             >
               {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
@@ -144,11 +152,15 @@ const RegisterPage = () => {
                 registerTranslate[lang].form.confirmPassword.placeholder
               }
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+              }}
               className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <button
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              onClick={() => {
+                setShowConfirmPassword(!showConfirmPassword);
+              }}
               className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
             >
               {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}

@@ -1,9 +1,8 @@
-import {headers} from 'next/headers';
+import { headers } from "next/headers";
 
-import api from '@/app/lib/utilities/api';
-import AppError from '@/app/lib/utilities/appError';
-import ErrorHandler from '@/components/Error/errorHandler';
-import ProductVersionHistory from '@/components/products/ProductVersionHistory';
+import api from "@/app/lib/utilities/api";
+import ErrorHandler from "@/components/Error/errorHandler";
+import ProductVersionHistory from "@/components/products/ProductVersionHistory";
 
 type SearchParams = {
   sort?: string;
@@ -16,55 +15,52 @@ const queryParams = async (slug: string, searchParams: SearchParams) => {
   const url = new URLSearchParams();
 
   if (searchParams.sort !== undefined) {
-    url.append('sort', searchParams.sort);
+    url.append("sort", searchParams.sort);
   }
 
   if (searchParams.page !== undefined) {
-    url.append('page', searchParams.page);
+    url.append("page", searchParams.page);
   }
   if (searchParams.limit !== undefined) {
-    url.append('limit', searchParams.limit);
+    url.append("limit", searchParams.limit);
   }
   if (searchParams.actor !== undefined) {
-    url.append('actor', searchParams.actor);
+    url.append("actor", searchParams.actor);
   }
   if (searchParams.action !== undefined) {
-    url.append('action', searchParams.action);
+    url.append("action", searchParams.action);
   }
 
   const queryString = url.toString();
-  try {
-    const {
-      data: {
-        product: {docs, meta, links},
-      },
-    } = await api.get(
-      '/admin/dashboard/products/' + slug + '/history' + (queryString ? `?${queryString}` : ''),
-      {
-        headers: Object.fromEntries((await headers()).entries()), // convert headers to object
-      },
-    );
-    return {
-      docs,
-      pagination: {
-        meta,
-        links,
-      },
-    };
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+
+  const {
+    data: {
+      product: { docs, meta, links },
+    },
+  } = await api.get(
+    `/admin/dashboard/products/${slug}/history${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: Object.fromEntries((await headers()).entries()), // convert headers to object
+    }
+  );
+  return {
+    docs,
+    pagination: {
+      meta,
+      links,
+    },
+  };
 };
 const page = async (props: {
-  params: Promise<{slug: string}>;
+  params: Promise<{ slug: string }>;
   searchParams: Promise<SearchParams>;
 }) => {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const {slug} = params;
+  const { slug } = params;
 
   try {
-    const {docs, pagination} = await queryParams(slug, searchParams);
+    const { docs, pagination } = await queryParams(slug, searchParams);
 
     return (
       <ProductVersionHistory
@@ -78,15 +74,16 @@ const page = async (props: {
               hasNext: false,
               hasPrev: false,
             },
-            links: {previous: '', next: ''},
+            links: { previous: "", next: "" },
           }
         }
         slug={slug}
         versions={docs}
       />
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error?.message} />;
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 export default page;

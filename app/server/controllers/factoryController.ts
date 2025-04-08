@@ -1,12 +1,14 @@
-import type {Document, Model} from 'mongoose';
-import type {NextRequest} from 'next/server';
+// disable eslint checks
+/* eslint-disable */
+import type { Document, Model } from "mongoose";
+import type { NextRequest } from "next/server";
 
-import type {UserAuthType} from '@/app/lib/types/users.types';
-import APIFeatures from '@/app/lib/utilities/APIFeatures';
-import AppError from '@/app/lib/utilities/appError';
-import {lang} from '@/app/lib/utilities/lang';
+import type { UserAuthType } from "@/app/lib/types/users.types";
+import APIFeatures from "@/app/lib/utilities/APIFeatures";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
 
-import {factoryControllerTranslate} from '../../../public/locales/server/factoryControllerTranslate';
+import { factoryControllerTranslate } from "../../../public/locales/server/factoryControllerTranslate";
 
 // import { uploadImage } from "@/components/util/cloudinary";
 // import { NextResponse } from "next/server";
@@ -22,15 +24,20 @@ type PopOptions = {
   // filterField?: string;
   filterValue?: string;
   filterField?: string;
-  regexOptions?: 'i' | 'eq';
+  regexOptions?: "i" | "eq";
 };
-export const createOne = async <T extends Document>(req: NextRequest, Model: Model<T>) => {
-  const {user} = req;
+export const createOne = async <T extends Document>(
+  req: NextRequest,
+  Model: Model<T>
+) => {
+  const { user } = req;
   let doc;
 
   let data = await req.json();
 
-  if (user) data = {...data, user};
+  if (user) {
+    data = { ...data, user };
+  }
   doc = await Model.create(data);
 
   return {
@@ -38,7 +45,10 @@ export const createOne = async <T extends Document>(req: NextRequest, Model: Mod
     statusCode: 201,
   };
 };
-export const deleteOne = async <T extends Document>(req: NextRequest, Model: Model<T>) => {
+export const deleteOne = async <T extends Document>(
+  req: NextRequest,
+  Model: Model<T>
+) => {
   const doc = await Model.findByIdAndDelete(req.id);
 
   if (!doc) {
@@ -46,7 +56,10 @@ export const deleteOne = async <T extends Document>(req: NextRequest, Model: Mod
     //   { message: "No document found with that ID" },
     //   { status: 404 }
     // );
-    throw new AppError(factoryControllerTranslate[lang].errors.noDocumentsFoundWithId, 404);
+    throw new AppError(
+      factoryControllerTranslate[lang].errors.noDocumentsFoundWithId,
+      404
+    );
   }
 
   // return NextResponse.json(
@@ -64,7 +77,7 @@ export const deleteOne = async <T extends Document>(req: NextRequest, Model: Mod
 export const updateOne = async <T extends Document>(
   req: NextRequest,
   Model: Model<T>,
-  allowedFields: string[],
+  allowedFields: string[]
 ) => {
   const data = await req.json();
 
@@ -72,8 +85,10 @@ export const updateOne = async <T extends Document>(
 
   if (allowedFields.length === 0) {
     throw new AppError(
-      factoryControllerTranslate[lang].controllers.updateOne.noValidFieldsProvidedForUpdate,
-      400,
+      factoryControllerTranslate[
+        lang
+      ].controllers.updateOne.noValidFieldsProvidedForUpdate,
+      400
     );
   }
 
@@ -86,8 +101,10 @@ export const updateOne = async <T extends Document>(
   // Check if updateData is empty
   if (Object.keys(updateData).length === 0) {
     throw new AppError(
-      factoryControllerTranslate[lang].controllers.updateOne.noValidFieldsProvidedForUpdate,
-      400,
+      factoryControllerTranslate[
+        lang
+      ].controllers.updateOne.noValidFieldsProvidedForUpdate,
+      400
     );
   }
 
@@ -97,37 +114,45 @@ export const updateOne = async <T extends Document>(
   });
 
   if (!doc) {
-    throw new AppError(factoryControllerTranslate[lang].errors.noDocumentsFoundWithId, 404);
+    throw new AppError(
+      factoryControllerTranslate[lang].errors.noDocumentsFoundWithId,
+      404
+    );
   }
 
-  return {data: doc, statusCode: 200};
+  return { data: doc, statusCode: 200 };
 };
 
 export const getOne = async <T extends Document>(
   req: NextRequest,
   Model: Model<T>,
-  popOptions?: PopOptions,
+  popOptions?: PopOptions
 ) => {
   //popOptions ={path: 'user', select: 'name email'}
 
   let query = Model.findById(req.id).lean();
-  if (popOptions) query = query.populate(popOptions);
+  if (popOptions) {
+    query = query.populate(popOptions);
+  }
   let doc = await query;
 
-  if (!doc || ('user' in doc && doc.user === null)) {
-    throw new AppError(factoryControllerTranslate[lang].errors.noDocumentsFoundWithId, 404);
+  if (!doc || ("user" in doc && doc.user === null)) {
+    throw new AppError(
+      factoryControllerTranslate[lang].errors.noDocumentsFoundWithId,
+      404
+    );
   }
-  return {data: doc, statusCode: 200};
+  return { data: doc, statusCode: 200 };
 };
 export const getAggregate = async <T extends Document>(
   // req: NextRequest,
   Model: Model<T>,
-  popOptions?: PopOptions,
+  popOptions?: PopOptions
 ) => {
   const {
-    page = '1',
-    limit = '15',
-    sort = 'createdAt',
+    page = "1",
+    limit = "15",
+    sort = "createdAt",
     filterField,
     filterValue,
     regexOptions,
@@ -143,10 +168,10 @@ export const getAggregate = async <T extends Document>(
   if (filterValue && filterField) {
     matchFilter[filterField] = {};
 
-    if (regexOptions === 'i') {
+    if (regexOptions === "i") {
       // If regexOptions is 'i', use $regex for case-insensitive match
       matchFilter[filterField].$regex = filterValue;
-      matchFilter[filterField].$options = 'i';
+      matchFilter[filterField].$options = "i";
     } else {
       // If regexOptions is not 'i', use $eq for equality match
       matchFilter[filterField].$eq = filterValue;
@@ -157,57 +182,58 @@ export const getAggregate = async <T extends Document>(
     Model.aggregate([
       {
         $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'user',
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
         },
       },
       {
-        $unwind: '$user',
+        $unwind: "$user",
       },
-      {$match: matchFilter},
+      { $match: matchFilter },
 
       {
-        $count: 'total',
+        $count: "total",
       },
     ]), // Add exec() to trigger middleware
     Model.aggregate([
       {
         $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'user',
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
         },
       },
       {
-        $unwind: '$user',
+        $unwind: "$user",
       },
-      {$match: matchFilter},
-      {$sort: {[sort]: 1}}, // Default sorting by createdAt
-      {$skip: skip},
-      {$limit: currentLimit},
+      { $match: matchFilter },
+      { $sort: { [sort]: 1 } }, // Default sorting by createdAt
+      { $skip: skip },
+      { $limit: currentLimit },
     ]), // Add exec() to trigger middleware
   ]);
 
-  const totalCount = totalCountResult.length > 0 ? totalCountResult[0].total : 0;
+  const totalCount =
+    totalCountResult.length > 0 ? totalCountResult[0].total : 0;
   const pageCount = Math.ceil(totalCount / currentLimit);
 
-  return {data: paginatedResult, statusCode: 200, pageCount};
+  return { data: paginatedResult, statusCode: 200, pageCount };
 };
 
 export const getAll = async <T extends BaseDocument>(
   req: NextRequest,
   Model: Model<T>,
   popOptions?: PopOptions,
-  enablePagination = true,
+  enablePagination = true
 ) => {
   const features =
     // .paginate()
     new APIFeatures<T>(
       Model.find(),
-      req.nextUrl.searchParams,
+      req.nextUrl.searchParams
       //  req.query // == undefined
     )
       .filter()
@@ -215,7 +241,9 @@ export const getAll = async <T extends BaseDocument>(
       .sort()
       .limitFields();
 
-  if (popOptions) features.query = features.query.populate(popOptions);
+  if (popOptions) {
+    features.query = features.query.populate(popOptions);
+  }
 
   let doc = await features.query.lean();
 
@@ -228,7 +256,10 @@ export const getAll = async <T extends BaseDocument>(
   }
 
   if (!doc) {
-    throw new AppError(factoryControllerTranslate[lang].errors.noDocumentsFound, 404);
+    throw new AppError(
+      factoryControllerTranslate[lang].errors.noDocumentsFound,
+      404
+    );
   }
   return {
     // allData,
@@ -240,12 +271,12 @@ export const getAll = async <T extends BaseDocument>(
 export const getAllWithoutLimit = async <T extends Document>(
   // req: NextRequest,
   Model: Model<T>,
-  popOptions?: PopOptions,
+  popOptions?: PopOptions
 ) => {
   let doc;
 
-  if (Model.modelName == 'User') {
-    doc = Model.find().select('+active').lean();
+  if (Model.modelName == "User") {
+    doc = Model.find().select("+active").lean();
   } else {
     if (popOptions) {
       doc = Model.find().populate(popOptions).lean();
@@ -255,7 +286,10 @@ export const getAllWithoutLimit = async <T extends Document>(
   }
   const data = await doc;
   if (!data) {
-    throw new AppError(factoryControllerTranslate[lang].errors.noDocumentsFound, 404);
+    throw new AppError(
+      factoryControllerTranslate[lang].errors.noDocumentsFound,
+      404
+    );
   }
 
   return {
@@ -267,24 +301,33 @@ export const getAllWithoutLimit = async <T extends Document>(
 
 export const getDataByUser = async <
   T extends Document & {
-    user: UserAuthType['_id'];
+    user: UserAuthType["_id"];
   },
 >(
   req: NextRequest,
   Model: Model<T>,
-  popOptions?: PopOptions,
+  popOptions?: PopOptions
 ) => {
   const searchParams = new URLSearchParams(req.nextUrl.searchParams);
-  const page = searchParams.get('page') ?? '1';
+  const page = searchParams.get("page") ?? "1";
   const limit = 3;
   const currentPage = parseInt(page, 10);
   const skip = (currentPage - 1) * limit;
   // if (!req.id) {
   //   throw new AppError("Invalid product id", 400);
   // }
-  let load = Model.find({user: req.user?._id}).skip(skip).limit(limit).sort({createdAt: -1}).lean();
-  if (popOptions) load = load.populate(popOptions);
-  const [doc, totalCount] = await Promise.all([load, Model.countDocuments({user: req.user?._id})]);
+  let load = Model.find({ user: req.user?._id })
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
+    .lean();
+  if (popOptions) {
+    load = load.populate(popOptions);
+  }
+  const [doc, totalCount] = await Promise.all([
+    load,
+    Model.countDocuments({ user: req.user?._id }),
+  ]);
   const hasNextPage = totalCount > currentPage * limit;
 
   // let doc = Model.find({ user: req.user?._id });
@@ -292,7 +335,7 @@ export const getDataByUser = async <
 
   // const data = await doc;
 
-  return {data: doc, hasNextPage, statusCode: 200};
+  return { data: doc, hasNextPage, statusCode: 200 };
 };
 
 // export const updatePaymentStatus = async <T extends Document>(req:NextRequest, Model:Model<T>,) => {

@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { faker } from "@faker-js/faker";
 import { NextRequest } from "next/server";
 import puppeteer from "puppeteer";
@@ -10,6 +12,8 @@ import productController from "@/app/server/controllers/product.controller";
 import reviewController from "@/app/server/controllers/review.controller";
 import stripeController from "@/app/server/controllers/stripe.controller";
 import wishlistController from "@/app/server/controllers/wishlist.controller";
+import type { IOrder } from "@/app/server/models/Order.model";
+import type { IProduct } from "@/app/server/models/Product.model";
 import type { IUser } from "@/app/server/models/User.model";
 
 // create a random user
@@ -31,7 +35,7 @@ export const createRandomUsers = async (count: number) => {
     const randomPassword = "Pa@password12345";
     const emailVerify = faker.datatype.boolean();
     const reqs = new NextRequest(
-      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/products"),
+      new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/products`),
       {
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +65,7 @@ export const createRandomUsers = async (count: number) => {
   await Promise.all(req);
 }; // create a random product
 
-export const loginRandomUsers = async (count: number, usersId: any[]) => {
+export const loginRandomUsers = async (count: number, usersId: IUser[]) => {
   const req = [];
   for (let i = 0; i < count; i++) {
     const ip = faker.internet.ipv4();
@@ -70,7 +74,7 @@ export const loginRandomUsers = async (count: number, usersId: any[]) => {
     console.log("randomEmail", randomEmail);
     const randomPassword = "Pa@password12345";
     const reqs = new NextRequest(
-      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/products"),
+      new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/products`),
       {
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +125,7 @@ export const loginRandomUsers = async (count: number, usersId: any[]) => {
 
 //   //   createdAt: Date;
 // }
-export const createRandomProducts = async (count: number, userId: any[]) => {
+export const createRandomProducts = async (count: number, userId: IUser[]) => {
   const req = [];
   for (let i = 0; i < count; i++) {
     const images = [];
@@ -161,7 +165,7 @@ export const createRandomProducts = async (count: number, userId: any[]) => {
     };
     const randomUserId = faker.helpers.arrayElement(userId);
     const reqs = new NextRequest(
-      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/products"),
+      new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/products`),
       {
         headers: {
           "Content-Type": "application/json",
@@ -197,7 +201,10 @@ export const createRandomProducts = async (count: number, userId: any[]) => {
   }
   await Promise.all(req);
 };
-export const editRandomProducts = async (products: any[], userId: IUser[]) => {
+export const editRandomProducts = async (
+  products: IProduct[],
+  userId: IUser[]
+) => {
   // const editedProducts = [] as IProductInput[];
   const req = [];
   for (let i = 0; i < products.length; i++) {
@@ -260,7 +267,7 @@ export const editRandomProducts = async (products: any[], userId: IUser[]) => {
     //   userId,
     // });
     const reqs = new NextRequest(
-      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/products"),
+      new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/products`),
       {
         headers: {
           "Content-Type": "application/json",
@@ -298,7 +305,10 @@ export const editRandomProducts = async (products: any[], userId: IUser[]) => {
   }
   await Promise.all(req);
 };
-export const createRandomReviews = async (productId: any[], userId: any[]) => {
+export const createRandomReviews = async (
+  productId: IProduct[],
+  userId: IUser[]
+) => {
   // {
   //   [
   //     {
@@ -315,7 +325,7 @@ export const createRandomReviews = async (productId: any[], userId: any[]) => {
       const randomRating = faker.number.float({ min: 1, max: 5 });
       const randomReviewText = faker.lorem.sentence({ min: 5, max: 10 });
       const reqs = new NextRequest(
-        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/review"),
+        new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/review`),
         {
           headers: {
             "Content-Type": "application/json",
@@ -331,7 +341,7 @@ export const createRandomReviews = async (productId: any[], userId: any[]) => {
           }),
         }
       );
-      reqs.id = productId[i]["_id"];
+      reqs.id = productId[i]["_id"].toString();
       reqs.user = userId[j];
       req.push(reviewController.createReview(reqs));
     }
@@ -347,7 +357,7 @@ export const createRandomReviews = async (productId: any[], userId: any[]) => {
   country: string;
   user: IUser["_id"];*/
 
-export const createRandomAddresses = async (count: number, userId: any[]) => {
+export const createRandomAddresses = async (count: number, userId: IUser[]) => {
   const req = [];
 
   for (let i = 0; i < userId.length; i++) {
@@ -366,7 +376,7 @@ export const createRandomAddresses = async (count: number, userId: any[]) => {
       const randomUser = userId[i];
 
       const reqs = new NextRequest(
-        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/address"),
+        new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/address`),
         {
           headers: {
             "Content-Type": "application/json",
@@ -404,59 +414,52 @@ export const createRandomAddresses = async (count: number, userId: any[]) => {
 
 export const createRandomOrders = (
   count: number,
-  productId: any[],
-  userId: any[]
+  productId: IProduct[],
+  userId: IUser[]
 ) => {
-  const orders = [] as any[];
+  const orders: any[] = [];
   for (let i = 0; i < userId.length; i++) {
     for (let j = 0; j < count; j++) {
       const randomStreet = faker.location.street();
       const randomCity = faker.location.city();
       const randomState = faker.location.state();
-      // const randomPostalCode = faker.location.zipCode();
       const randomPostalCode = faker.helpers.fromRegExp("[0-9]{9}");
-      // const randomPhone = faker.phone.number();
-      // /\+380\d{9}/
       const randomPhone = faker.helpers.fromRegExp("+380[0-9]{9}");
       const randomCountry = faker.location.country();
       const randomUser = userId[i]["_id"];
-      const randomItems = [] as any[];
+      const randomItems = [] as IOrder["items"];
       for (let k = 0; k < faker.number.int({ min: 1, max: 5 }); k++) {
         const randomProduct = faker.helpers.arrayElement(productId);
         const randomQuantity = faker.number.int({ min: 1, max: 5 });
         const randomPrice = randomProduct.price;
         const randomDiscount = randomProduct.discount;
         const randomFinalPrice = randomPrice - randomDiscount;
-        const randomDiscountExpire = randomProduct.discountExpire;
         randomItems.push({
-          _id: randomProduct._id,
+          productId: randomProduct._id,
           name: randomProduct.name,
           quantity: randomQuantity,
           price: randomPrice,
           discount: randomDiscount,
           finalPrice: randomFinalPrice,
-          discountExpire: randomDiscountExpire,
+          sku: randomProduct.sku,
+          attributes: randomProduct.attributes,
+          shippingInfo: randomProduct.shippingInfo,
         });
       }
-      // const randomStatus = faker.random.arrayElement([
-      //   "pending",
-      //   "completed",
-      //   "refunded",
-      //   "processing",
-      //   "cancelled",
-      // ]);
       const randomInvoiceId = faker.helpers.fromRegExp("[0-9]{9}");
       const randomInvoiceLink = faker.internet.url();
       const randomStatus = faker.helpers.arrayElement(
         Object.values(OrderStatus)
       );
-
-      const randomTotalPrice = randomItems.reduce((acc: number, item: any) => {
+      const randomTax = faker.number.float({ min: 0, max: 100 }); // in percentage
+      const randomSubTotalPrice = randomItems.reduce((acc: number, item) => {
         return acc + item.finalPrice;
       }, 0);
+      const randomTotalPrice =
+        randomSubTotalPrice + (randomSubTotalPrice * randomTax) / 100;
       orders.push({
         userId: randomUser,
-        shippingInfo: {
+        shippingAddress: {
           street: randomStreet,
           city: randomCity,
           state: randomState,
@@ -468,11 +471,19 @@ export const createRandomOrders = (
         status: randomStatus,
         invoiceId: randomInvoiceId,
         invoiceLink: randomInvoiceLink,
-        totalPrice: randomTotalPrice,
+        payment: {
+          method: "credit_card",
+          transactionId: faker.helpers.fromRegExp("[0-9]{9}"),
+        },
+        subtotal: randomSubTotalPrice,
+        tax: randomTax,
+        total: randomTotalPrice,
+        currency: "USD",
+        createdAt: faker.date.past(),
       });
     }
   }
-  return orders;
+  // return orders;
 };
 /* user: IUser["_id"];
   product: IProductSchema["_id"];
@@ -482,8 +493,8 @@ export const createRandomOrders = (
   message: string;*/
 export const createRandomReport = async (
   count: number,
-  productId: any[],
-  userId: any[]
+  productId: IProduct[],
+  userId: IUser[]
 ) => {
   const req = [];
   for (let i = 0; i < userId.length; i++) {
@@ -499,7 +510,7 @@ export const createRandomReport = async (
       const randomIssue = faker.lorem.sentence();
       const randomMessage = faker.lorem.paragraph();
       const reqs = new NextRequest(
-        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/report"),
+        new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/report`),
         {
           headers: {
             "Content-Type": "application/json",
@@ -518,7 +529,7 @@ export const createRandomReport = async (
         }
       );
       reqs.user = randomUser;
-      reqs.id = randomProduct;
+      reqs.id = randomProduct["_id"].toString();
       req.push(reqs); /// not working
     }
     // reports.push({
@@ -535,7 +546,7 @@ export const createRandomReport = async (
   }
 };
 
-export const createRandomRefund = (count: number, userId: any[]) => {
+export const createRandomRefund = (count: number, userId: IUser[]) => {
   const refunds = [] as any[];
   for (let i = 0; i < userId.length; i++) {
     for (let j = 0; j < count; j++) {
@@ -550,12 +561,14 @@ export const createRandomRefund = (count: number, userId: any[]) => {
       const randomAmount = faker.number.float({ min: 1, max: 1000 });
       const randomInvoiceId = faker.helpers.fromRegExp("[0-9]{9}");
       refunds.push({
-        user: randomUser,
+        userId: randomUser,
         status: randomStatus,
         issue: randomIssue,
         reason: randomReason,
         amount: randomAmount,
         invoiceId: randomInvoiceId,
+        createdAt: faker.date.past(),
+        updatedAt: faker.date.recent(),
       });
     }
   }
@@ -564,8 +577,8 @@ export const createRandomRefund = (count: number, userId: any[]) => {
 
 export const createRandomCartItems = async (
   count: number,
-  userId: any[],
-  productId: any[]
+  userId: IUser[],
+  productId: IProduct[]
 ) => {
   const req = [];
   for (let i = 0; i < userId.length; i++) {
@@ -575,7 +588,7 @@ export const createRandomCartItems = async (
       const randomProduct = productId[j];
       const randomQuantity = faker.number.int({ min: 1, max: 5 });
       const reqs = new NextRequest(
-        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/cart"),
+        new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/cart`),
         {
           headers: {
             "Content-Type": "application/json",
@@ -591,7 +604,7 @@ export const createRandomCartItems = async (
         }
       );
       reqs.user = randomUser;
-      reqs.id = randomProduct["_id"];
+      reqs.id = randomProduct["_id"].toString();
       req.push(cartController.addToCart(reqs));
       // cartItems.push({
       //   userId: randomUser,
@@ -604,8 +617,8 @@ export const createRandomCartItems = async (
 };
 export const createRandomWishlistItems = async (
   count: number,
-  userId: any[],
-  productId: any[]
+  userId: IUser[],
+  productId: IProduct[]
 ) => {
   const req = [];
   for (let i = 0; i < userId.length; i++) {
@@ -614,7 +627,7 @@ export const createRandomWishlistItems = async (
       const randomProduct = productId[j];
       // const randomProduct = faker.helpers.arrayElement(productId);
       const reqs = new NextRequest(
-        new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/wishlist"),
+        new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/wishlist`),
         {
           headers: {
             "Content-Type": "application/json",
@@ -630,13 +643,13 @@ export const createRandomWishlistItems = async (
         }
       );
       reqs.user = randomUser;
-      reqs.id = randomProduct["_id"];
+      reqs.id = randomProduct["_id"].toString();
       req.push(wishlistController.toggleWishlist(reqs));
     }
   }
   await Promise.all(req);
 };
-export const createRandomMessages = (count: number, userId: any[]) => {
+export const createRandomMessages = (count: number, userId: IUser[]) => {
   const messages = [] as any[];
   for (let i = 0; i < userId.length; i++) {
     for (let j = 0; j < count; j++) {
@@ -650,7 +663,7 @@ export const createRandomMessages = (count: number, userId: any[]) => {
   }
   return messages;
 };
-export const createRandomNotifications = (count: number, userId: any[]) => {
+export const createRandomNotifications = (count: number, userId: IUser[]) => {
   const notifications = [] as any[];
   for (let i = 0; i < userId.length; i++) {
     for (let j = 0; j < count; j++) {
@@ -666,7 +679,7 @@ export const createRandomNotifications = (count: number, userId: any[]) => {
 };
 
 export const createRandomStripeSession = async (
-  userId: any[],
+  userId: IUser[],
   shippingInfo: any[]
 ) => {
   const req = [];
@@ -677,7 +690,7 @@ export const createRandomStripeSession = async (
     const randomShippingInfo = faker.helpers.arrayElement(findRelatedAddress);
     const randomUser = userId[i];
     const reqs = new NextRequest(
-      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/stripe"),
+      new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/stripe`),
       {
         headers: {
           "Content-Type": "application/json",

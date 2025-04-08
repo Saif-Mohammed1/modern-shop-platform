@@ -47,7 +47,7 @@ const EmailVerificationPage = () => {
           click the link to verify your email address.
         </p>
         <button
-          onClick={() => void handleResendVerification()}
+          onClick={handleResendVerification}
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
           disabled={isSending}
         >

@@ -1,11 +1,20 @@
 // audit-log.model.ts
-import {Schema, model, models} from 'mongoose';
-import type {Document, Types} from 'mongoose';
-import type {Model} from 'mongoose';
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Types,
+  type Model,
+} from "mongoose";
 
-import {AuditAction, AuditSource, EntityType} from '@/app/lib/types/audit.types';
+import {
+  AuditAction,
+  AuditSource,
+  EntityType,
+} from "@/app/lib/types/audit.types";
 
-import type {IUser} from './User.model';
+import type { IUser } from "./User.model";
 
 export interface IAuditLog extends Document {
   actor: Types.ObjectId | IUser;
@@ -16,7 +25,7 @@ export interface IAuditLog extends Document {
     field: string;
     before?: any;
     after?: any;
-    changeType: 'ADD' | 'MODIFY' | 'REMOVE';
+    changeType: "ADD" | "MODIFY" | "REMOVE";
   }[];
   ipAddress?: string;
   userAgent?: string;
@@ -31,7 +40,7 @@ const AuditLogSchema = new Schema<IAuditLog>(
   {
     actor: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
@@ -52,12 +61,12 @@ const AuditLogSchema = new Schema<IAuditLog>(
     },
     changes: [
       {
-        field: {type: String, required: true},
-        before: {type: Schema.Types.Mixed},
-        after: {type: Schema.Types.Mixed},
+        field: { type: String, required: true },
+        before: { type: Schema.Types.Mixed },
+        after: { type: Schema.Types.Mixed },
         changeType: {
           type: String,
-          enum: ['ADD', 'MODIFY', 'REMOVE'],
+          enum: ["ADD", "MODIFY", "REMOVE"],
           required: true,
         },
       },
@@ -80,9 +89,9 @@ const AuditLogSchema = new Schema<IAuditLog>(
     toJSON: {
       virtuals: true,
       transform: (_, ret) => {
-        ['createdAt', 'updatedAt'].forEach((field) => {
+        ["createdAt", "updatedAt"].forEach((field) => {
           if (ret[field]) {
-            ret[field] = new Date(ret[field]).toISOString().split('T')[0];
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
           }
         });
         delete ret.__v;
@@ -91,25 +100,25 @@ const AuditLogSchema = new Schema<IAuditLog>(
     },
     // Auto-expire logs after 2 years (730 days)
     expireAfterSeconds: 63072000,
-  },
+  }
 );
 
 // Compound indexes for common queries
 // Fix timestamp reference to use createdAt
-AuditLogSchema.index({entityType: 1, entityId: 1, createdAt: -1});
-AuditLogSchema.index({actor: 1, entityType: 1, createdAt: -1});
+AuditLogSchema.index({ entityType: 1, entityId: 1, createdAt: -1 });
+AuditLogSchema.index({ actor: 1, entityType: 1, createdAt: -1 });
 
 // Add new indexes for common query patterns
-AuditLogSchema.index({'changes.field': 1, 'changes.changeType': 1});
-AuditLogSchema.index({action: 1, createdAt: -1});
+AuditLogSchema.index({ "changes.field": 1, "changes.changeType": 1 });
+AuditLogSchema.index({ action: 1, createdAt: -1 });
 // Middleware example: Auto-add correlation ID for API requests
-AuditLogSchema.pre('save', function (next) {
-  if (this.source === 'API' && !this.correlationId) {
+AuditLogSchema.pre("save", function (next) {
+  if (this.source === "API" && !this.correlationId) {
     this.correlationId = `CORR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
   next();
 });
 
 const AuditLogModel: Model<IAuditLog> =
-  models.AuditLog || model<IAuditLog>('AuditLog', AuditLogSchema);
+  models.AuditLog || model<IAuditLog>("AuditLog", AuditLogSchema);
 export default AuditLogModel;

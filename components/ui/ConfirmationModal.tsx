@@ -1,4 +1,4 @@
-import {AnimatePresence, motion} from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
 
 const ConfirmationModal = ({
   isOpen,
@@ -19,15 +19,16 @@ const ConfirmationModal = ({
 }) => {
   return (
     <AnimatePresence>
-      {isOpen ? <motion.div
-          initial={{opacity: 0}}
-          animate={{opacity: 1}}
-          exit={{opacity: 0}}
+      {isOpen ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
         >
           <motion.div
-            initial={{y: 20}}
-            animate={{y: 0}}
+            initial={{ y: 20 }}
+            animate={{ y: 0 }}
             className="bg-white rounded-lg p-6 max-w-md w-full"
           >
             <h3 className="text-lg font-semibold mb-2">{title}</h3>
@@ -40,14 +41,15 @@ const ConfirmationModal = ({
                 {cancelText}
               </button>
               <button
-                onClick={() => void onConfirm()}
+                onClick={onConfirm}
                 className="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded"
               >
                 {confirmText}
               </button>
             </div>
           </motion.div>
-        </motion.div> : null}
+        </motion.div>
+      ) : null}
     </AnimatePresence>
   );
 };

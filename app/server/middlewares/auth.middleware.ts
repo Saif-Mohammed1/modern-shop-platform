@@ -47,7 +47,7 @@ export class AuthMiddleware {
           decoded.userId,
           // "-security"
         );
-        if (!user) throw new AppError(commonTranslations[lang].userNotExists, 404);
+        if (!user) {throw new AppError(commonTranslations[lang].userNotExists, 404);}
 
         if (user.status !== UserStatus.ACTIVE) {
           throw new AppError(commonTranslations[lang].userSuspended, 403);
@@ -60,10 +60,10 @@ export class AuthMiddleware {
         req.user = user;
       } catch (error) {
         if (error instanceof Error && error.name === 'handleJWTExpiredError')
-          throw new AppError(
+          {throw new AppError(
             errorControllerTranslate[lang].controllers['handleJWTExpiredError'].message,
             401,
-          );
+          );}
         throw error;
       }
     };

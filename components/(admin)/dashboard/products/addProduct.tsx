@@ -1,31 +1,31 @@
 // add-product.tsx (main form component)
-'use client';
+"use client";
 
-import {useEffect, useState} from 'react';
-import {FormProvider, useForm} from 'react-hook-form';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
-import type {ProductType} from '@/app/lib/types/products.types';
-import api from '@/app/lib/utilities/api';
-import {lang} from '@/app/lib/utilities/lang';
-import {productsTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/productTranslate';
+import type { ProductType } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 
-import FormProgress from './form-progress';
-import ProductDetails from './product-details';
-import ProductImages from './product-images';
-import ProductInventory from './product-inventory';
-import ProductPricing from './product-pricing';
-import ProductReview from './product-review';
-import ProductShipping from './product-shipping';
+import FormProgress from "./form-progress";
+import ProductDetails from "./product-details";
+import ProductImages from "./product-images";
+import ProductInventory from "./product-inventory";
+import ProductPricing from "./product-pricing";
+import ProductReview from "./product-review";
+import ProductShipping from "./product-shipping";
 
 // add-product.tsx (main form component)
 
 export type PreviewFile = string;
 // export type PreviewFile = File & { preview: string };
-interface FormData
+export interface FormData
   extends Omit<
     ProductType,
-    '_id' | 'slug' | 'ratingsAverage' | 'ratingsQuantity' | 'active' | 'images'
+    "_id" | "slug" | "ratingsAverage" | "ratingsQuantity" | "active" | "images"
   > {
   images: PreviewFile[];
 }
@@ -35,7 +35,7 @@ export default function AddProduct() {
     defaultValues: {
       shippingInfo: {
         weight: 0,
-        dimensions: {length: 0, width: 0, height: 0},
+        dimensions: { length: 0, width: 0, height: 0 },
       },
       attributes: {},
       reserved: 0,
@@ -46,12 +46,16 @@ export default function AddProduct() {
   const [step, setStep] = useState(1);
   const totalSteps = 6;
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, totalSteps));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+  const nextStep = () => {
+    setStep((prev) => Math.min(prev + 1, totalSteps));
+  };
+  const prevStep = () => {
+    setStep((prev) => Math.max(prev - 1, 1));
+  };
 
   const saveDraft = () => {
     const formData = methods.getValues();
-    localStorage.setItem('productDraft', JSON.stringify(formData));
+    localStorage.setItem("productDraft", JSON.stringify(formData));
     toast.success(productsTranslate.products[lang].draftSaved);
   };
 
@@ -62,14 +66,18 @@ export default function AddProduct() {
 
       try {
         toastLoading = toast.loading(
-          productsTranslate.products[lang].addProduct.form.productSubmit.loading,
+          productsTranslate.products[lang].addProduct.form.productSubmit.loading
         );
-        await api.post('/admin/dashboard/products/', data);
-        toast.success(productsTranslate.products[lang].addProduct.form.productSubmit.success);
-        localStorage.removeItem('productDraft');
+        await api.post("/admin/dashboard/products/", data);
+        toast.success(
+          productsTranslate.products[lang].addProduct.form.productSubmit.success
+        );
+        localStorage.removeItem("productDraft");
       } catch (error: unknown) {
         if (error instanceof Error) {
-          toast.error(error?.message || productsTranslate.products[lang].error.general);
+          toast.error(
+            error?.message || productsTranslate.products[lang].error.general
+          );
         } else {
           toast.error(productsTranslate.products[lang].error.general);
         }
@@ -81,7 +89,7 @@ export default function AddProduct() {
     }
   };
   useEffect(() => {
-    const draft = localStorage.getItem('productDraft');
+    const draft = localStorage.getItem("productDraft");
     if (draft) {
       methods.reset(JSON.parse(draft));
     }
@@ -93,7 +101,7 @@ export default function AddProduct() {
         <FormProgress currentStep={step} totalSteps={totalSteps} />
 
         <form
-          onSubmit={() => void methods.handleSubmit(onSubmit)}
+          onSubmit={methods.handleSubmit(onSubmit)}
           className="bg-white rounded-xl shadow-lg p-6"
         >
           {step === 1 && <ProductDetails />}
@@ -105,15 +113,29 @@ export default function AddProduct() {
 
           <div className="mt-8 flex justify-between gap-4">
             {step > 1 && (
-              <button type="button" onClick={prevStep} className="btn-secondary flex-1">
-                {productsTranslate.products[lang].addProduct.form.button.previous}
+              <button
+                type="button"
+                onClick={prevStep}
+                className="btn-secondary flex-1"
+              >
+                {
+                  productsTranslate.products[lang].addProduct.form.button
+                    .previous
+                }
               </button>
             )}
 
             {step < totalSteps ? (
               <>
-                <button type="button" onClick={saveDraft} className="btn-gray flex-1">
-                  {productsTranslate.products[lang].addProduct.form.button.saveDraft}
+                <button
+                  type="button"
+                  onClick={saveDraft}
+                  className="btn-gray flex-1"
+                >
+                  {
+                    productsTranslate.products[lang].addProduct.form.button
+                      .saveDraft
+                  }
                 </button>
                 <button type="submit" className="btn-primary flex-1">
                   {productsTranslate.products[lang].addProduct.form.button.next}

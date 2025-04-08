@@ -1,12 +1,11 @@
-import type {Metadata} from 'next';
-import {headers} from 'next/headers';
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 
-import api from '@/app/lib/utilities/api';
-import AppError from '@/app/lib/utilities/appError';
-import {lang} from '@/app/lib/utilities/lang';
-import ErrorHandler from '@/components/Error/errorHandler';
-import Shop from '@/components/shop/shop';
-import {shopPageTranslate} from '@/public/locales/client/(public)/shop/shoppageTranslate';
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import ErrorHandler from "@/components/Error/errorHandler";
+import Shop from "@/components/shop/shop";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 
@@ -32,29 +31,29 @@ const queryParams = async (searchParams: SearchParams) => {
 
   // Append each parameter only if it's not undefined
   if (searchParams.category !== undefined) {
-    url.append('category', searchParams.category);
+    url.append("category", searchParams.category);
   }
   if (searchParams.name !== undefined) {
-    url.append('name', searchParams.name);
+    url.append("name", searchParams.name);
   }
   if (searchParams.search !== undefined) {
-    url.append('search', searchParams.search);
+    url.append("search", searchParams.search);
   }
   if (searchParams.sort !== undefined) {
-    url.append('sort', searchParams.sort);
+    url.append("sort", searchParams.sort);
   }
   if (searchParams.fields !== undefined) {
-    url.append('fields', searchParams.fields);
+    url.append("fields", searchParams.fields);
   }
   if (searchParams.page !== undefined) {
-    url.append('page', searchParams.page);
+    url.append("page", searchParams.page);
   }
   if (searchParams.limit !== undefined) {
-    url.append('limit', searchParams.limit);
+    url.append("limit", searchParams.limit);
   }
   if (searchParams.rating !== undefined) {
-    url.append('rating[gte]', searchParams.rating);
-    url.append('rating[lte]', '5');
+    url.append("rating[gte]", searchParams.rating);
+    url.append("rating[lte]", "5");
     // url.append("sort", "-ratingsAverage");
   }
   // if (searchParams.min !== undefined) {
@@ -65,32 +64,29 @@ const queryParams = async (searchParams: SearchParams) => {
   // }
 
   const queryString = url.toString();
-  try {
-    const {
-      data: {
-        products: {docs, meta, links},
-        categories,
-      },
-    } = await api.get('/shop/' + (queryString ? `?${queryString}` : ''), {
-      headers: Object.fromEntries((await headers()).entries()), // convert headers to object
-    });
-    return {
-      docs,
-      pagination: {
-        meta,
-        links,
-      },
+
+  const {
+    data: {
+      products: { docs, meta, links },
       categories,
-    };
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+    },
+  } = await api.get(`/shop/${queryString ? `?${queryString}` : ""}`, {
+    headers: Object.fromEntries((await headers()).entries()), // convert headers to object
+  });
+  return {
+    docs,
+    pagination: {
+      meta,
+      links,
+    },
+    categories,
+  };
 };
 
-const page = async (props: {searchParams: Promise<SearchParams>}) => {
+const page = async (props: { searchParams: Promise<SearchParams> }) => {
   const searchParams = await props.searchParams;
   try {
-    const {docs, categories, pagination} = await queryParams(searchParams);
+    const { docs, categories, pagination } = await queryParams(searchParams);
     // await new Promise<void>((resolve) => {
     //   setTimeout(() => {
     //     resolve();
@@ -113,15 +109,14 @@ const page = async (props: {searchParams: Promise<SearchParams>}) => {
               hasNext: false,
               hasPrev: false,
             },
-            links: {previous: '', next: ''},
+            links: { previous: "", next: "" },
           }
         }
       />
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error.message} />;
-
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

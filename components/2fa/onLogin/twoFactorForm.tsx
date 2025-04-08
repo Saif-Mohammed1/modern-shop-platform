@@ -38,19 +38,19 @@ export const TwoFactorForm = ({
           isLoading={isLoading}
           error={error}
           // onResend={onResend}
-          onSwitchToBackup={() => setView('backup')}
+          onSwitchToBackup={() => { setView('backup'); }}
         />
       ) : (
         <BackupCodeInput
           onVerify={onBackupVerify}
           isLoading={isLoading}
           error={error}
-          onSwitchToTotp={() => setView('totp')}
+          onSwitchToTotp={() => { setView('totp'); }}
         />
       )}
 
       <div className="mt-4 text-center">
-        <button onClick={() => back()} className="text-sm text-gray-600 hover:text-gray-800">
+        <button onClick={() => { back(); }} className="text-sm text-gray-600 hover:text-gray-800">
           {accountTwoFactorTranslate[lang].TwoFactorForm.button.backToLogin}
         </button>
       </div>

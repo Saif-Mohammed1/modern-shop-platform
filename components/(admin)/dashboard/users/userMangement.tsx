@@ -1,13 +1,13 @@
-import {DateTime} from 'luxon';
+import { DateTime } from "luxon";
 import {
   AiOutlineCheckCircle, // ✅ BadgeCheck (Ant Design)
-} from 'react-icons/ai';
+} from "react-icons/ai";
 import {
   FaLockOpen,
   FaTableTennis,
   FaUserPlus,
   FaWallet, // 👛 Wallet (FontAwesome)
-} from 'react-icons/fa';
+} from "react-icons/fa";
 import {
   FiActivity,
   // 🌍 Globe (Feather)
@@ -23,58 +23,70 @@ import {
   FiSettings,
   // ⏰ Clock (Feather)
   FiShield,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 import {
   MdAlignHorizontalCenter, // 🌐 Languages (Material Icons)
   // 📱 MonitorSmartphone (Material Icons)
   MdLanguage,
   MdSmartphone,
-} from 'react-icons/md';
+} from "react-icons/md";
 
-import type {UserStatus} from '@/app/lib/types/users.types';
-import {cn} from '@/app/lib/utilities/cn';
+import type { UserStatus } from "@/app/lib/types/users.types";
+import { cn } from "@/app/lib/utilities/cn";
 
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: string;
-  createdAt: string;
-  verification: {
-    emailVerified: boolean;
-    phoneVerified: boolean;
-  };
-  authMethods: string[];
-  security: Security;
-  preferences: UserPreferencesProps['preferences'];
-  status: UserStatus;
+interface LoginHistory {
+  timestamp: string;
+  browser: string;
+  os: string;
+  device: string;
+  location?: string;
+  success: boolean;
+  ip: string;
+}
+interface Details {
+  device: LoginHistory;
+  newEmail: string;
+}
+interface AuditLog {
+  timestamp: string;
+  action: string;
+  details: Details;
 }
 
+interface UserPreferencesProps {
+  preferences: {
+    // theme: string;
+    // notifications: boolean;
+    // language: string;
+    language: string;
+    currency: string;
+    marketingOptIn: boolean;
+  };
+}
 interface Security {
   twoFactorEnabled: boolean;
   rateLimits: {
-    'login': {
+    login: {
       locked: boolean;
       lastAttempt: string;
       attempts: number;
     };
-    'passwordReset': {
+    passwordReset: {
       attempts: number;
       lastAttempt: Date;
       lockUntil: Date;
     };
-    'verification': {
+    verification: {
       attempts: number;
       lastAttempt: Date;
       lockUntil: Date;
     };
-    '2fa': {
+    "2fa": {
       attempts: number;
       lastAttempt: Date;
       lockUntil: Date;
     };
-    'backup_recovery': {
+    backup_recovery: {
       attempts: number;
       lastAttempt: Date;
       lockUntil: Date;
@@ -90,48 +102,58 @@ interface Security {
   lastLogin: string;
   passwordChangedAt: string;
 }
-interface Details {
-  device: LoginHistory;
-  newEmail: string;
-}
-interface AuditLog {
-  timestamp: string;
-  action: string;
-  details: Details;
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: string;
+  createdAt: string;
+  verification: {
+    emailVerified: boolean;
+    phoneVerified: boolean;
+  };
+  authMethods: string[];
+  security: Security;
+  preferences: UserPreferencesProps["preferences"];
+  status: UserStatus;
 }
 
-interface LoginHistory {
-  timestamp: string;
-  browser: string;
-  os: string;
-  device: string;
-  location?: string;
-  success: boolean;
-  ip: string;
-}
-interface UserPreferencesProps {
-  preferences: {
-    // theme: string;
-    // notifications: boolean;
-    // language: string;
-    language: string;
-    currency: string;
-    marketingOptIn: boolean;
-  };
-}
 // interface StatusBadgeProps {
 //   status: "ACTIVE" | "SUSPENDED" | "PENDING";
 // }
 
-const statusColors: Record<UserStatus, string> = {
-  active: 'bg-green-500', // Green for active users
-  suspended: 'bg-red-500', // Red for suspended users
-  // pending: "bg-yellow-500", // Yellow for pending users
-  inactive: 'bg-gray-400', // Gray for inactive users
-  deleted: 'bg-gray-500', // Darker gray for deleted users
+// Add these to your utils
+const languageNames: Record<string, string> = {
+  uk: "Ukrainian",
+  en: "English",
 };
-export default function UserAdminPage({user}: {user: User}) {
-  if (!user) return <p className="text-red-500">User not found</p>;
+
+const currencySymbols: Record<string, string> = {
+  UAH: "₴",
+  USD: "$",
+  EUR: "€",
+};
+
+const actionTitles: Record<string, string> = {
+  REGISTRATION: "Account Created",
+  PASSWORD_RESET_REQUEST: "Password Reset Requested",
+  PASSWORD_RESET: "Password Changed",
+  EMAIL_CHANGE_REQUEST: "Email Change Requested",
+  VERIFICATION_EMAIL_REQUEST: "Verification Email Sent",
+  VERIFICATION_EMAIL_FAILURE: "Verification Failed",
+};
+const statusColors: Record<UserStatus, string> = {
+  active: "bg-green-500", // Green for active users
+  suspended: "bg-red-500", // Red for suspended users
+  // pending: "bg-yellow-500", // Yellow for pending users
+  inactive: "bg-gray-400", // Gray for inactive users
+  deleted: "bg-gray-500", // Darker gray for deleted users
+};
+export default function UserAdminPage({ user }: { user: User }) {
+  if (!user) {
+    return <p className="text-red-500">User not found</p>;
+  }
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -161,11 +183,11 @@ export default function UserAdminPage({user}: {user: User}) {
   );
 }
 
-function AccountHealthIndicator({security}: {security: Security}) {
+function AccountHealthIndicator({ security }: { security: Security }) {
   const warnings = [
-    security.behavioralFlags.impossibleTravel && 'Suspicious location activity',
-    security.behavioralFlags.suspiciousDeviceChange && 'Device change detected',
-    security.rateLimits.login.attempts > 3 && 'Multiple failed logins',
+    security.behavioralFlags.impossibleTravel && "Suspicious location activity",
+    security.behavioralFlags.suspiciousDeviceChange && "Device change detected",
+    security.rateLimits.login.attempts > 3 && "Multiple failed logins",
   ].filter(Boolean);
 
   return (
@@ -174,7 +196,8 @@ function AccountHealthIndicator({security}: {security: Security}) {
         <>
           <FiShield className="text-yellow-600" size={18} />
           <span className="text-yellow-600">
-            {warnings.length} active security {warnings.length === 1 ? 'warning' : 'warnings'}
+            {warnings.length} active security{" "}
+            {warnings.length === 1 ? "warning" : "warnings"}
           </span>
         </>
       ) : (
@@ -187,7 +210,7 @@ function AccountHealthIndicator({security}: {security: Security}) {
   );
 }
 
-function UserProfileCard({user}: {user: User}) {
+function UserProfileCard({ user }: { user: User }) {
   return (
     <div className="p-6 bg-card rounded-xl shadow-sm border">
       <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -196,8 +219,14 @@ function UserProfileCard({user}: {user: User}) {
       </h2>
 
       <dl className="grid grid-cols-2 gap-4">
-        <DetailItem label="Registered" value={new Date(user.createdAt).toLocaleDateString()} />
-        <DetailItem label="Last Active" value={<RelativeTime date={user.security?.lastLogin} />} />
+        <DetailItem
+          label="Registered"
+          value={new Date(user.createdAt).toLocaleDateString()}
+        />
+        <DetailItem
+          label="Last Active"
+          value={<RelativeTime date={user.security?.lastLogin} />}
+        />
         <DetailItem
           label="Authentication"
           value={
@@ -207,10 +236,12 @@ function UserProfileCard({user}: {user: User}) {
                   {method.toLowerCase()}
                 </span>
               ))}
-              {user.security.twoFactorEnabled ? <span className="badge badge-success">
+              {user.security.twoFactorEnabled ? (
+                <span className="badge badge-success">
                   <FiLock size={14} className="mr-1" />
                   2FA Enabled
-                </span> : null}
+                </span>
+              ) : null}
             </div>
           }
         />
@@ -226,14 +257,21 @@ function UserProfileCard({user}: {user: User}) {
                   <FiMail className="text-yellow-600 " size={16} />
                 )}
               </div>
-              {user.phone ? <div className="flex items-center gap-1.5">
+              {user.phone ? (
+                <div className="flex items-center gap-1.5">
                   {user.phone}
                   {user.verification.phoneVerified ? (
-                    <AiOutlineCheckCircle className="text-green-600" size={16} />
+                    <AiOutlineCheckCircle
+                      className="text-green-600"
+                      size={16}
+                    />
                   ) : (
-                    <span className="text-muted-foreground text-sm">Unverified</span>
+                    <span className="text-muted-foreground text-sm">
+                      Unverified
+                    </span>
                   )}
-                </div> : null}
+                </div>
+              ) : null}
             </div>
           }
         />
@@ -242,7 +280,7 @@ function UserProfileCard({user}: {user: User}) {
   );
 }
 
-function SecurityStatusCard({security}: {security: Security}) {
+function SecurityStatusCard({ security }: { security: Security }) {
   return (
     <div className="p-6 bg-card rounded-xl shadow-sm border space-y-4">
       <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -254,22 +292,32 @@ function SecurityStatusCard({security}: {security: Security}) {
         <SecurityMetric
           label="Recent Failed Logins"
           value={security.rateLimits.login.attempts}
-          status={security.rateLimits.login.attempts > 3 ? 'warning' : 'normal'}
+          status={security.rateLimits.login.attempts > 3 ? "warning" : "normal"}
         />
         <SecurityMetric
           label="Password Resets"
           value={security.rateLimits.passwordReset.attempts}
-          status={security.rateLimits.passwordReset.attempts > 2 ? 'warning' : 'normal'}
+          status={
+            security.rateLimits.passwordReset.attempts > 2
+              ? "warning"
+              : "normal"
+          }
         />
         <SecurityMetric
           label="2FA Attempts"
-          value={security.rateLimits['2fa'].attempts}
-          status={security.rateLimits['2fa'].attempts > 1 ? 'warning' : 'normal'}
+          value={security.rateLimits["2fa"].attempts}
+          status={
+            security.rateLimits["2fa"].attempts > 1 ? "warning" : "normal"
+          }
         />
         <SecurityMetric
           label="Request Velocity"
           value={`${security.behavioralFlags.requestVelocity}/hr`}
-          status={security.behavioralFlags.requestVelocity > 100 ? 'warning' : 'normal'}
+          status={
+            security.behavioralFlags.requestVelocity > 100
+              ? "warning"
+              : "normal"
+          }
         />
       </div>
 
@@ -282,7 +330,9 @@ function SecurityStatusCard({security}: {security: Security}) {
           <span className="text-muted-foreground">Recent Security Events</span>
           <span
             className={cn(
-              security.auditLog.length > 5 ? 'text-yellow-600' : 'text-muted-foreground',
+              security.auditLog.length > 5
+                ? "text-yellow-600"
+                : "text-muted-foreground"
             )}
           >
             {security.auditLog.length} in last 30 days
@@ -293,7 +343,7 @@ function SecurityStatusCard({security}: {security: Security}) {
   );
 }
 
-function ActivityFeed({logs}: {logs: AuditLog[]}) {
+function ActivityFeed({ logs }: { logs: AuditLog[] }) {
   const groupedLogs = groupLogsByDate(logs);
 
   return (
@@ -306,9 +356,14 @@ function ActivityFeed({logs}: {logs: AuditLog[]}) {
       <div className="space-y-4">
         {Object.entries(groupedLogs).map(([date, dailyLogs]) => (
           <div key={date} className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground">{date}</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              {date}
+            </h3>
             {dailyLogs.map((log, index) => (
-              <div key={index} className="flex items-start gap-3 p-2 hover:bg-muted/50 rounded-lg">
+              <div
+                key={index}
+                className="flex items-start gap-3 p-2 hover:bg-muted/50 rounded-lg"
+              >
                 <div className="flex-shrink-0 mt-1">
                   <ActivityIcon action={log.action} />
                 </div>
@@ -318,12 +373,18 @@ function ActivityFeed({logs}: {logs: AuditLog[]}) {
                   </div>
                   <div className="text-xs text-muted-foreground">
                     <RelativeTime date={log.timestamp} />
-                    {log.details?.device?.location ? <span className="ml-2">
+                    {log.details?.device?.location ? (
+                      <span className="ml-2">
                         <FiGlobe size={12} className="inline mr-1" />
                         {log.details.device.location}
-                      </span> : null}
+                      </span>
+                    ) : null}
                   </div>
-                  {log.details?.newEmail ? <div className="text-xs text-blue-600">New email: {log.details?.newEmail}</div> : null}
+                  {log.details?.newEmail ? (
+                    <div className="text-xs text-blue-600">
+                      New email: {log.details?.newEmail}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -334,7 +395,7 @@ function ActivityFeed({logs}: {logs: AuditLog[]}) {
   );
 }
 
-function SessionHistory({sessions}: {sessions: LoginHistory[]}) {
+function SessionHistory({ sessions }: { sessions: LoginHistory[] }) {
   return (
     <div className="p-6 bg-card rounded-xl shadow-sm border">
       <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -344,7 +405,10 @@ function SessionHistory({sessions}: {sessions: LoginHistory[]}) {
 
       <div className="space-y-4">
         {sessions.map((session, index) => (
-          <div key={index} className="flex items-center gap-4 p-2 hover:bg-muted/50 rounded-lg">
+          <div
+            key={index}
+            className="flex items-center gap-4 p-2 hover:bg-muted/50 rounded-lg"
+          >
             <div className="flex-shrink-0">
               <DeviceIcon device={session.device} />
             </div>
@@ -354,17 +418,22 @@ function SessionHistory({sessions}: {sessions: LoginHistory[]}) {
                   {session.browser} on {session.os}
                 </span>
                 <span
-                  className={cn('text-xs', session.success ? 'text-green-600' : 'text-red-600')}
+                  className={cn(
+                    "text-xs",
+                    session.success ? "text-green-600" : "text-red-600"
+                  )}
                 >
-                  {session.success ? 'Successful' : 'Failed'}
+                  {session.success ? "Successful" : "Failed"}
                 </span>
               </div>
               <div className="text-xs text-muted-foreground">
                 <RelativeTime date={session.timestamp} />
-                {session.location ? <span className="ml-2">
+                {session.location ? (
+                  <span className="ml-2">
                     <FiGlobe size={12} className="inline mr-1" />
                     {session.location}
-                  </span> : null}
+                  </span>
+                ) : null}
               </div>
               <div className="text-xs font-mono text-muted-foreground truncate">
                 {truncateHash(session.ip)}
@@ -377,7 +446,7 @@ function SessionHistory({sessions}: {sessions: LoginHistory[]}) {
   );
 }
 
-function UserPreferencesPanel({preferences}: UserPreferencesProps) {
+function UserPreferencesPanel({ preferences }: UserPreferencesProps) {
   return (
     <div className="p-6 bg-card rounded-xl shadow-sm border">
       <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -409,9 +478,11 @@ function UserPreferencesPanel({preferences}: UserPreferencesProps) {
         <div className="flex items-center gap-3">
           <FiBellOff size={18} className="text-muted-foreground" />
           <div>
-            <div className="text-sm text-muted-foreground">Marketing Emails</div>
+            <div className="text-sm text-muted-foreground">
+              Marketing Emails
+            </div>
             <div className="font-medium">
-              {preferences.marketingOptIn ? 'Subscribed' : 'Not Subscribed'}
+              {preferences.marketingOptIn ? "Subscribed" : "Not Subscribed"}
             </div>
           </div>
         </div>
@@ -421,7 +492,13 @@ function UserPreferencesPanel({preferences}: UserPreferencesProps) {
 }
 
 // Helper components and utilities
-function DetailItem({label, value}: {label: string; value: React.ReactNode}) {
+function DetailItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
     <div>
       <dt className="text-sm text-muted-foreground">{label}</dt>
@@ -437,15 +514,15 @@ function SecurityMetric({
 }: {
   label: string;
   value: string | number;
-  status: 'normal' | 'warning';
+  status: "normal" | "warning";
 }) {
   return (
     <div className="space-y-1">
       <div className="text-sm text-muted-foreground">{label}</div>
       <div
         className={cn(
-          'font-semibold',
-          status === 'warning' ? 'text-yellow-600' : 'text-foreground',
+          "font-semibold",
+          status === "warning" ? "text-yellow-600" : "text-foreground"
         )}
       >
         {value}
@@ -454,7 +531,7 @@ function SecurityMetric({
   );
 }
 
-export function RelativeTime({date}: {date: string}) {
+export function RelativeTime({ date }: { date: string }) {
   const relativeTime = DateTime.fromISO(date).toRelative();
   return (
     <time dateTime={date} className="text-muted-foreground">
@@ -463,47 +540,32 @@ export function RelativeTime({date}: {date: string}) {
   );
 }
 
-// Add these to your utils
-const languageNames: Record<string, string> = {
-  uk: 'Ukrainian',
-  en: 'English',
-};
-
-const currencySymbols: Record<string, string> = {
-  UAH: '₴',
-  USD: '$',
-  EUR: '€',
-};
-
-const actionTitles: Record<string, string> = {
-  REGISTRATION: 'Account Created',
-  PASSWORD_RESET_REQUEST: 'Password Reset Requested',
-  PASSWORD_RESET: 'Password Changed',
-  EMAIL_CHANGE_REQUEST: 'Email Change Requested',
-  VERIFICATION_EMAIL_REQUEST: 'Verification Email Sent',
-  VERIFICATION_EMAIL_FAILURE: 'Verification Failed',
-};
-
-function ActivityIcon({action}: {action: string}) {
-  const iconProps = {size: 16};
+function ActivityIcon({ action }: { action: string }) {
+  const iconProps = { size: 16 };
   switch (action) {
-    case 'REGISTRATION':
+    case "REGISTRATION":
       return <FaUserPlus {...iconProps} className="text-blue-600" />;
-    case 'PASSWORD_RESET_REQUEST':
+    case "PASSWORD_RESET_REQUEST":
       return <FiLock {...iconProps} className="text-red-600" />;
-    case 'PASSWORD_RESET':
+    case "PASSWORD_RESET":
       return <FaLockOpen {...iconProps} className="text-green-600" />;
-    case 'EMAIL_CHANGE_REQUEST':
-      return <MdAlignHorizontalCenter {...iconProps} className="text-purple-600" />;
+    case "EMAIL_CHANGE_REQUEST":
+      return (
+        <MdAlignHorizontalCenter {...iconProps} className="text-purple-600" />
+      );
     default:
       return <FiActivity {...iconProps} className="text-muted-foreground" />;
   }
 }
 
-function DeviceIcon({device}: {device: string}) {
-  const iconProps = {size: 20};
-  if (device.includes('Mobile')) return <MdSmartphone {...iconProps} />;
-  if (device.includes('Tablet')) return <FaTableTennis {...iconProps} />;
+function DeviceIcon({ device }: { device: string }) {
+  const iconProps = { size: 20 };
+  if (device.includes("Mobile")) {
+    return <MdSmartphone {...iconProps} />;
+  }
+  if (device.includes("Tablet")) {
+    return <FaTableTennis {...iconProps} />;
+  }
   return <FiMonitor {...iconProps} />;
 }
 
@@ -515,17 +577,21 @@ function groupLogsByDate(logs: AuditLog[]) {
   return logs.reduce(
     (acc, log) => {
       const date = new Date(log.timestamp).toLocaleDateString();
-      if (!acc[date]) acc[date] = [];
+      if (!acc[date]) {
+        acc[date] = [];
+      }
       acc[date].push(log);
       return acc;
     },
-    {} as Record<string, AuditLog[]>,
+    {} as Record<string, AuditLog[]>
   );
 }
-const StatusBadge = ({status}: {status: UserStatus}) => {
+function StatusBadge({ status }: { status: UserStatus }) {
   return (
-    <span className={`px-2 py-1 text-xs font-bold text-white rounded-lg ${statusColors[status]}`}>
+    <span
+      className={`px-2 py-1 text-xs font-bold text-white rounded-lg ${statusColors[status]}`}
+    >
       {status}
     </span>
   );
-};
+}

@@ -11,7 +11,7 @@ import {ReviewService} from '../services/review.service';
 class ReviewController {
   constructor(private readonly reviewService: ReviewService = new ReviewService()) {}
   async createReview(req: NextRequest) {
-    if (!req.id) throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
+    if (!req.id) {throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);}
     const body = await req.json();
     const dto = ReviewValidation.validateCreateReview({
       ...body,
@@ -23,7 +23,7 @@ class ReviewController {
   }
 
   async updateReview(req: NextRequest) {
-    if (!req.id) throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
+    if (!req.id) {throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);}
     const body = await req.json();
     const dto = ReviewValidation.validateUpdateReview({
       ...body,
@@ -34,7 +34,7 @@ class ReviewController {
   }
 
   async deleteReview(req: NextRequest) {
-    if (!req.id) throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
+    if (!req.id) {throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);}
     await this.reviewService.deleteReview(req?.id, (req.user as IUser)._id.toString());
     return NextResponse.json(
       {message: ReviewTranslate[lang].controllers.deleteReview.success},
@@ -43,7 +43,7 @@ class ReviewController {
   }
 
   async getProductReviews(req: NextRequest) {
-    if (!req.id) throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
+    if (!req.id) {throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);}
     const reviews = await this.reviewService.getProductReviews(req?.id, {
       query: req.nextUrl.searchParams,
       populate: true,
@@ -71,7 +71,7 @@ class ReviewController {
     return NextResponse.json(reviews, {status: 200});
   }
   async checkReview(req: NextRequest) {
-    if (!req.id) throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);
+    if (!req.id) {throw new AppError(ReviewTranslate[lang].errors.noDocumentsFound, 404);}
     await this.reviewService.checkIfUserHasOrderedProduct(
       (req.user as IUser)._id.toString(),
       req.id,

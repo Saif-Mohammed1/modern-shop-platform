@@ -1,5 +1,12 @@
-import type {IOrder} from '@/app/server/models/Order.model';
-
+import type { IOrder } from "@/app/server/models/Order.model";
+interface FrequentlyProductsPurchased {
+  _id: string;
+  count: number;
+  productId: string;
+  name: string;
+  category: string;
+  price: number;
+}
 interface UserAnalytics {
   totalUsers: number;
   activeUsers: number;
@@ -25,7 +32,7 @@ interface UserAnalytics {
       count: number;
       device: string;
       os: string;
-      browser: string;
+      // browser: string;
       // device: "Desktop" | "Mobile" | "Tablet" | "Unknown";
       // os:
       //   | "Windows"
@@ -62,7 +69,7 @@ interface UserAnalytics {
       passwordResetAttempts: number;
     };
 
-    trends: [{date: string; attempts: number; successRate: string}];
+    trends: Array<{ date: string; attempts: number; successRate: string }>;
   };
   deviceDiversity: {
     totalDevices: number;
@@ -109,7 +116,7 @@ interface ProductAnalytics {
   recentChanges: {
     _id: string;
     name: string;
-    type: 'New Product' | 'Updated Product';
+    type: "New Product" | "Updated Product";
     modifiedBy: string;
   }[];
   shipping: {
@@ -172,7 +179,7 @@ interface OrderAnalytics {
     }>;
   };
   fulfillment: {
-    statusDistribution: Record<string, {count: number; avgHours: number}>;
+    statusDistribution: Record<string, { count: number; avgHours: number }>;
     slaCompliance: number;
   };
   paymentMethods: Array<{
@@ -216,7 +223,7 @@ interface ReportAnalytics {
     reporter: string;
     createdAt: Date;
   }>;
-  dailyTrend: Array<{date: string; reports: number}>;
+  dailyTrend: Array<{ date: string; reports: number }>;
   weeklyTrends: Array<{
     label: string;
     resolutionGrowth: string;
@@ -251,6 +258,12 @@ interface RefundAnalytics {
     countGrowth: string;
     currentAmount: number;
     currentCount: number;
+  }>;
+  highRiskRefunds: Array<{ count: number }>;
+  financialImpact: Array<{
+    totalRefunded: number;
+    avgRefund: number;
+    maxRefund: number;
   }>;
   // weeklyGrowth: Array<{
   //   week: string;
@@ -300,15 +313,8 @@ interface UserInterestProducts {
     }[];
   };
 }
-interface FrequentlyProductsPurchased {
-  _id: string;
-  count: number;
-  productId: string;
-  name: string;
-  category: string;
-  price: number;
-}
-export interface DashboardData {
+
+export interface DashboardDataApi {
   users: UserAnalytics;
   orders: OrderAnalytics;
   products: ProductAnalytics;
@@ -320,7 +326,7 @@ export interface DashboardData {
   userInterestProducts: UserInterestProducts;
 }
 
-// export interface DashboardData {
+// export interface DashboardDataApi {
 //   users: {
 //     total: number;
 //     growthPercentage: number;

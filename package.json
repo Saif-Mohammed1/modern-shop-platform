@@ -6,7 +6,7 @@
     "dev": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --max-warnings 0 --fix",
+    "lint": "next lint --max-warnings 0 --fix  --no-cache ",
     "check-types": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -14,7 +14,7 @@
   },
   "lint-staged": {
     "./**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix --max-warnings 0 --no-warn-ignored"
+      "npx eslint . --fix --max-warnings 0 --no-warn-ignored"
     ]
   },
   "dependencies": {
@@ -24,6 +24,7 @@
     "@logtail/winston": "^0.5.2",
     "@next/bundle-analyzer": "15.2.3",
     "@types/jsonwebtoken": "^9.0.9",
+    "@typescript-eslint/utils": "^8.29.0",
     "@upstash/redis": "^1.34.6",
     "@vercel/functions": "^2.0.0",
     "apexcharts": "^4.5.0",

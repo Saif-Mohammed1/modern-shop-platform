@@ -1,36 +1,44 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
-import {type ClientSession} from 'mongoose';
-import type {Model} from 'mongoose';
+import type { Model, ClientSession } from "mongoose";
 
-import type {SecurityAuditAction} from '@/app/lib/types/audit.types';
-import {type AuditLogDetails} from '@/app/lib/types/audit.types';
+import type {
+  SecurityAuditAction,
+  AuditLogDetails,
+} from "@/app/lib/types/audit.types";
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
-} from '@/app/lib/types/queryBuilder.types';
-import type {DeviceInfo} from '@/app/lib/types/session.types';
-import type {accountAction} from '@/app/lib/types/users.types';
-import AppError from '@/app/lib/utilities/appError';
-import {lang} from '@/app/lib/utilities/lang';
-import {QueryBuilder} from '@/app/lib/utilities/queryBuilder';
-import type {SecurityAlertType} from '@/app/server/services/email.service';
-import {AuthTranslate} from '@/public/locales/server/Auth.Translate';
+} from "@/app/lib/types/queryBuilder.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
+import type { accountAction } from "@/app/lib/types/users.types";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+import type { SecurityAlertType } from "@/app/server/services/email.service";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 
-import type {CreateUserByAdminDTO, UpdateUserByAdminDTO, UserCreateDTO} from '../dtos/user.dto';
-import type {IUser} from '../models/User.model';
-import {TokensService} from '../services/tokens.service';
+import type {
+  CreateUserByAdminDTO,
+  UpdateUserByAdminDTO,
+  UserCreateDTO,
+} from "../dtos/user.dto";
+import type { IUser } from "../models/User.model";
+import { TokensService } from "../services/tokens.service";
 
-import {BaseRepository} from './BaseRepository';
+import { BaseRepository } from "./BaseRepository";
 
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {
     super(model);
   }
-  async createUser(dto: UserCreateDTO, session?: ClientSession): Promise<IUser> {
-    const [user] = await this.model.create([dto], {session});
+  async createUser(
+    dto: UserCreateDTO,
+    session?: ClientSession
+  ): Promise<IUser> {
+    const [user] = await this.model.create([dto], { session });
     // none of them worked for me
     // const user = new this.model(dto);
     // await user.save({ session }); //
@@ -39,83 +47,107 @@ export class UserRepository extends BaseRepository<IUser> {
 
   async findUserById(id: string, options?: string): Promise<IUser | null> {
     if (!options) {
-      return await this.model.findById(id).select('+security');
+      return (await this.model
+        .findById(id)
+        .select("+security")) as IUser | null;
     }
-    return await this.model.findById(id).select(options);
+    return (await this.model.findById(id).select(options)) as IUser | null;
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
-    return await this.model.findOne({email}).select('+password +security');
+    return (await this.model
+      .findOne({ email })
+      .select("+password +security")) as IUser | null;
   }
 
   override async update(
     id: string,
     updates: Partial<IUser>,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<IUser | null> {
     return await this.model.findByIdAndUpdate(id, updates, {
       new: true,
       session,
     });
   }
-  async lockUserAccount(userId: string, session?: ClientSession): Promise<void> {
+  async lockUserAccount(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
-        'security.rateLimits.login.lockUntil': new Date(Date.now() + 1000 * 60 * 60), // 1 hour      },
-        'security.rateLimits.passwordReset.lockUntil': new Date(Date.now() + 1000 * 60 * 60), // 1 hour      },
-        'security.rateLimits.verification.lockUntil': new Date(Date.now() + 1000 * 60 * 60), // 1 hour      },
-        'security.rateLimits.2fa.lockUntil': new Date(Date.now() + 1000 * 60 * 60), // 1 hour      },
-        'security.rateLimits.backup_recovery.lockUntil': new Date(Date.now() + 1000 * 60 * 60), // 1 hour      },
+        "security.rateLimits.login.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.passwordReset.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.verification.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.2fa.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
+        "security.rateLimits.backup_recovery.lockUntil": new Date(
+          Date.now() + 1000 * 60 * 60
+        ), // 1 hour      },
       },
-      {session},
+      { session }
     );
   }
-  async unlockUserAccount(userId: string, session?: ClientSession): Promise<void> {
+  async unlockUserAccount(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
         $unset: {
-          'security.rateLimits.login.lockUntil': '',
-          'security.rateLimits.passwordReset.lockUntil': '',
-          'security.rateLimits.verification.lockUntil': '',
-          'security.rateLimits.2fa.lockUntil': '',
-          'security.rateLimits.backup_recovery.lockUntil': '',
+          "security.rateLimits.login.lockUntil": "",
+          "security.rateLimits.passwordReset.lockUntil": "",
+          "security.rateLimits.verification.lockUntil": "",
+          "security.rateLimits.2fa.lockUntil": "",
+          "security.rateLimits.backup_recovery.lockUntil": "",
         },
       },
-      {session},
+      { session }
     );
   }
   override async delete(id: string, session?: ClientSession): Promise<boolean> {
-    const result = await this.model.deleteOne({_id: id}, {session});
+    const result = await this.model.deleteOne({ _id: id }, { session });
     return result.deletedCount === 1;
   }
-  async trackVerification(user: IUser, success: boolean, session?: ClientSession): Promise<void> {
+  async trackVerification(
+    user: IUser,
+    success: boolean,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateOne(
-      {_id: user._id},
+      { _id: user._id },
       {
         $push: {
-          'verification.verificationHistory': {
+          "verification.verificationHistory": {
             success,
             timestamp: new Date(),
           },
         },
       },
-      {session},
+      { session }
     );
   }
   async trackLogin(
     user: IUser,
     deviceInfo: DeviceInfo,
     success: boolean,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
-      {_id: user._id},
+      { _id: user._id },
 
       {
         $push: {
-          'security.loginHistory': {
+          "security.loginHistory": {
             ...deviceInfo,
             success,
             timestamp: new Date(),
@@ -127,7 +159,7 @@ export class UserRepository extends BaseRepository<IUser> {
         //   "security.accountLockedUntil": success ? undefined : new Date(Date.now() + 30 * 60 * 1000),
         // },
       },
-      {session},
+      { session }
     );
     /** 
     // const update: any = {
@@ -164,80 +196,97 @@ export class UserRepository extends BaseRepository<IUser> {
   async setVerificationToken(
     userId: string,
     verificationToken: string,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
-        'verification.verificationToken': verificationToken,
-        'verification.verificationExpires': new Date(Date.now() + 10 * 60 * 1000),
+        "verification.verificationToken": verificationToken,
+        "verification.verificationExpires": new Date(
+          Date.now() + 10 * 60 * 1000
+        ),
       },
-      {session},
+      { session }
     );
   }
-  async updateLastLogin(userId: IUser['_id']): Promise<void> {
-    await this.model.updateOne({_id: userId}, {'security.lastLogin': new Date()});
+  async updateLastLogin(userId: IUser["_id"]): Promise<void> {
+    await this.model.updateOne(
+      { _id: userId },
+      { "security.lastLogin": new Date() }
+    );
   }
-  async verifyUserEmail(token: string, session?: ClientSession): Promise<IUser | null> {
+  async verifyUserEmail(
+    token: string,
+    session?: ClientSession
+  ): Promise<IUser | null> {
     return await this.model.findOneAndUpdate(
       {
-        'verification.verificationToken': token,
-        'verification.verificationExpires': {$gt: new Date()},
+        "verification.verificationToken": token,
+        "verification.verificationExpires": { $gt: new Date() },
       },
       {
-        'verification.emailVerified': true,
-        'verification.verificationToken': '',
-        'verification.verificationExpires': '',
+        "verification.emailVerified": true,
+        "verification.verificationToken": "",
+        "verification.verificationExpires": "",
       },
-      {new: true, session},
+      { new: true, session }
     );
   }
-  async generatePasswordResetToken(userId: string, session?: ClientSession): Promise<string> {
-    const resetToken = crypto.randomBytes(32).toString('hex');
+  async generatePasswordResetToken(
+    userId: string,
+    session?: ClientSession
+  ): Promise<string> {
+    const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = this.tokensService.hashRestPasswordToken(resetToken);
 
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
-        'verification.verificationToken': hashedToken,
-        'verification.verificationExpires': this.tokensService.getResetPasswordTokenExpiry(),
+        "verification.verificationToken": hashedToken,
+        "verification.verificationExpires":
+          this.tokensService.getResetPasswordTokenExpiry(),
       },
-      {session},
+      { session }
     );
 
     return resetToken;
   }
 
-  async validateResetPasswordEmailAndToken(token: string, email?: string): Promise<IUser | null> {
+  async validateResetPasswordEmailAndToken(
+    token: string,
+    email?: string
+  ): Promise<IUser | null> {
     const hashedToken = this.tokensService.hashRestPasswordToken(token);
-    const query: any = {
-      'verification.verificationToken': hashedToken,
-      'verification.verificationExpires': {$gt: new Date()},
+    const query: Record<string, any> = {
+      "verification.verificationToken": hashedToken,
+      "verification.verificationExpires": { $gt: new Date() },
     };
     if (email) {
       query.email = email;
     }
 
-    return await this.model.findOne(query).select('+security');
+    return (await this.model
+      .findOne(query)
+      .select("+security")) as IUser | null;
   }
   async createAuditLog(
     userId: string,
     action: SecurityAuditAction,
     details: AuditLogDetails,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
         $push: {
-          'security.auditLog': {
+          "security.auditLog": {
             action,
             details,
             timestamp: new Date(),
           },
         },
       },
-      {session},
+      { session }
     );
 
     // example usage:
@@ -253,19 +302,19 @@ export class UserRepository extends BaseRepository<IUser> {
   async logSecurityAlert(
     userEmail: string,
     type: SecurityAlertType,
-    details: AuditLogDetails,
+    details: AuditLogDetails
   ): Promise<void> {
     await this.model.findOneAndUpdate(
-      {email: userEmail},
+      { email: userEmail },
       {
         $push: {
-          'security.auditLog': {
+          "security.auditLog": {
             timestamp: new Date(),
             action: type,
             details,
           },
         },
-      },
+      }
     );
   }
   async startSession(): Promise<ClientSession> {
@@ -274,7 +323,7 @@ export class UserRepository extends BaseRepository<IUser> {
   async incrementRateLimit(
     user: IUser,
     action: accountAction,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
     const rateLimit = user.security.rateLimits[action];
     rateLimit.attempts = (rateLimit.attempts || 0) + 1;
@@ -285,25 +334,29 @@ export class UserRepository extends BaseRepository<IUser> {
     }
 
     await this.model.updateOne(
-      {_id: user._id},
+      { _id: user._id },
       {
         [`security.rateLimits.${action}`]: rateLimit,
       },
-      {session},
+      { session }
     );
   }
 
-  async clearRateLimit(user: IUser, action: accountAction, session?: ClientSession): Promise<void> {
+  async clearRateLimit(
+    user: IUser,
+    action: accountAction,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateOne(
-      {_id: user._id},
+      { _id: user._id },
       {
         [`security.rateLimits.${action}`]: {
           attempts: 0,
           lastAttempt: new Date(),
-          lockUntil: '',
+          lockUntil: "",
         },
       },
-      {session},
+      { session }
     );
   }
   // async isPreviousPassword(
@@ -313,97 +366,115 @@ export class UserRepository extends BaseRepository<IUser> {
   //   const user = await this.model.findById(userId).select("+security");
   //   return user?.security.previousPasswords.includes(password) || false;
   // }
-  async updatePassword(user: IUser, password: string, session?: ClientSession): Promise<void> {
+  async updatePassword(
+    user: IUser,
+    password: string,
+    session?: ClientSession
+  ): Promise<void> {
     user.password = password;
     // user.verification.verificationToken = undefined;
     // user.verification.verificationExpires = undefined;
-    await user.save({validateModifiedOnly: true, session});
+    await user.save({ validateModifiedOnly: true, session });
   }
-  async invalidateResetToken(userId: string, session?: ClientSession): Promise<void> {
+  async invalidateResetToken(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.findByIdAndUpdate(
       userId,
       {
         $unset: {
-          'verification.verificationToken': 1,
-          'verification.verificationExpires': 1,
+          "verification.verificationToken": 1,
+          "verification.verificationExpires": 1,
 
-          'security.twoFactorSecret': 1,
+          "security.twoFactorSecret": 1,
         },
         $set: {
-          'security.twoFactorEnabled': false,
+          "security.twoFactorEnabled": false,
         },
       },
 
-      {session, new: true}, // Ensure the document is updated
+      { session, new: true } // Ensure the document is updated
     );
   }
   async updateUserStatus(
     userId: string,
-    status: IUser['status'],
-    session?: ClientSession,
+    status: IUser["status"],
+    session?: ClientSession
   ): Promise<void> {
-    await this.model.updateOne({_id: userId}, {status}, {session});
+    await this.model.updateOne({ _id: userId }, { status }, { session });
   }
   async updateUserRole(
     userId: string,
-    role: IUser['role'],
-    session?: ClientSession,
+    role: IUser["role"],
+    session?: ClientSession
   ): Promise<void> {
-    await this.model.updateOne({_id: userId}, {role}, {session});
+    await this.model.updateOne({ _id: userId }, { role }, { session });
   }
   async validateTempToken(tempToken: string): Promise<IUser | null> {
     const user = await this.model
       .findOne({
-        'security.twoFactorSecret': tempToken,
-        'security.twoFactorSecretExpiry': {$gt: new Date()},
+        "security.twoFactorSecret": tempToken,
+        "security.twoFactorSecretExpiry": { $gt: new Date() },
         // status: "active",
       })
-      .select('+security');
+      .select("+security");
 
     return user;
   }
-  async generateMFAToken(userId: string, session?: ClientSession): Promise<string> {
-    const tempToken = crypto.randomBytes(32).toString('hex');
+  async generateMFAToken(
+    userId: string,
+    session?: ClientSession
+  ): Promise<string> {
+    const tempToken = crypto.randomBytes(32).toString("hex");
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
         $set: {
-          'security.twoFactorSecret': tempToken,
-          'security.twoFactorSecretExpiry': new Date(Date.now() + 5 * 60 * 1000), // 5m expiry
+          "security.twoFactorSecret": tempToken,
+          "security.twoFactorSecretExpiry": new Date(
+            Date.now() + 5 * 60 * 1000
+          ), // 5m expiry
         },
       },
-      {session},
+      { session }
     );
     return tempToken;
   }
-  async clearTwoFactorSecret(userId: string, session?: ClientSession): Promise<void> {
+  async clearTwoFactorSecret(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
 
       {
         $unset: {
-          'security.twoFactorSecret': '',
-          'security.twoFactorSecretExpiry': '',
+          "security.twoFactorSecret": "",
+          "security.twoFactorSecretExpiry": "",
         },
       },
-      {session},
+      { session }
     );
   }
-  async createUserByAdmin(dto: CreateUserByAdminDTO, session?: ClientSession): Promise<IUser> {
-    const [user] = await this.model.create([dto], {session});
+  async createUserByAdmin(
+    dto: CreateUserByAdminDTO,
+    session?: ClientSession
+  ): Promise<IUser> {
+    const [user] = await this.model.create([dto], { session });
     return user;
   }
   async updateUserByAdmin(
     id: string,
     updates: UpdateUserByAdminDTO,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<IUser | null> {
     return await this.model.findByIdAndUpdate(
       id,
       {
         ...updates,
         $push: {
-          'security.auditLog': {
+          "security.auditLog": {
             action: updates.auditAction,
             details: updates,
             timestamp: new Date(),
@@ -413,31 +484,34 @@ export class UserRepository extends BaseRepository<IUser> {
       {
         new: true,
         session,
-      },
+      }
     );
   }
 
-  async deleteUserByAdmin(id: string, session?: ClientSession): Promise<boolean> {
+  async deleteUserByAdmin(
+    id: string,
+    session?: ClientSession
+  ): Promise<boolean> {
     return await this.delete(id, session);
   }
   async updateUserStatusByAdmin(
     userId: string,
-    status: IUser['status'],
-    session?: ClientSession,
+    status: IUser["status"],
+    session?: ClientSession
   ): Promise<void> {
-    return await this.updateUserStatus(userId, status, session);
+    await this.updateUserStatus(userId, status, session);
   }
   async updateUserRoleByAdmin(
     userId: string,
-    role: IUser['role'],
-    session?: ClientSession,
+    role: IUser["role"],
+    session?: ClientSession
   ): Promise<void> {
-    return await this.updateUserRole(userId, role, session);
+    await this.updateUserRole(userId, role, session);
   }
   async updateUserPasswordByAdmin(
     userId: string,
     password: string,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
     const user = await this.findById(userId);
     if (!user) {
@@ -448,140 +522,164 @@ export class UserRepository extends BaseRepository<IUser> {
   async updateUserEmailByAdmin(
     userId: string,
     email: string,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
-    await this.model.updateOne({_id: userId}, {email}, {session});
+    await this.model.updateOne({ _id: userId }, { email }, { session });
   }
   async updateUserProfileByAdmin(
     userId: string,
     updates: Partial<IUser>,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<IUser | null> {
     return await this.update(userId, updates, session);
   }
   async updateUserVerificationStatusByAdmin(
     userId: string,
     emailVerified: boolean,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
-      {'verification.emailVerified': emailVerified},
-      {session},
+      { _id: userId },
+      { "verification.emailVerified": emailVerified },
+      { session }
     );
   }
   async updateUserSecurityByAdmin(
     userId: string,
-    updates: Partial<IUser['security']>,
-    session?: ClientSession,
+    updates: Partial<IUser["security"]>,
+    session?: ClientSession
   ): Promise<void> {
-    await this.model.updateOne({_id: userId}, {security: updates}, {session});
+    await this.model.updateOne(
+      { _id: userId },
+      { security: updates },
+      { session }
+    );
   }
   async updateUserVerificationByAdmin(
     userId: string,
-    updates: Partial<IUser['verification']>,
-    session?: ClientSession,
+    updates: Partial<IUser["verification"]>,
+    session?: ClientSession
   ): Promise<void> {
-    await this.model.updateOne({_id: userId}, {verification: updates}, {session});
+    await this.model.updateOne(
+      { _id: userId },
+      { verification: updates },
+      { session }
+    );
   }
   async disable2FA(userId: string, session?: ClientSession): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
         $unset: {
-          'security.twoFactorSecret': '',
+          "security.twoFactorSecret": "",
         },
         $set: {
-          'security.twoFactorEnabled': false,
+          "security.twoFactorEnabled": false,
         },
       },
 
-      {session},
+      { session }
     );
   }
   async enable2FA(userId: string, session?: ClientSession): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
-        'security.twoFactorEnabled': true,
+        "security.twoFactorEnabled": true,
       },
-      {session},
+      { session }
     );
   }
   async generateEmailChangeToken(
     userId: string,
     email: string,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<string> {
-    const {hashedToken, token} = this.tokensService.generateEmailChangeTokenAndHashed();
+    const { hashedToken, token } =
+      this.tokensService.generateEmailChangeTokenAndHashed();
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
-        'verification.emailChangeToken': hashedToken,
-        'verification.emailChange': email,
-        'verification.emailChangeExpires': new Date(Date.now() + 10 * 60 * 1000),
+        "verification.emailChangeToken": hashedToken,
+        "verification.emailChange": email,
+        "verification.emailChangeExpires": new Date(
+          Date.now() + 10 * 60 * 1000
+        ),
       },
-      {session},
+      { session }
     );
     return token;
   }
   async validateEmailChangeToken(
-    token: string,
+    token: string
     // email: string
   ): Promise<IUser | null> {
     const hashedToken = this.tokensService.hashEmailChangeToken(token);
     return await this.model.findOne({
-      'verification.emailChangeToken': hashedToken,
+      "verification.emailChangeToken": hashedToken,
       // "verification.emailChange": email,
-      'verification.emailChangeExpires': {$gt: new Date()},
+      "verification.emailChangeExpires": { $gt: new Date() },
     });
   }
-  async processEmailChange(userId: string, session?: ClientSession): Promise<void> {
+  async processEmailChange(
+    userId: string,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateOne(
-      {_id: userId},
+      { _id: userId },
       {
-        email: '$verification.emailChange',
+        email: "$verification.emailChange",
         $unset: {
-          'verification.emailChange': '',
-          'verification.emailChangeToken': '',
-          'verification.emailChangeExpires': '',
+          "verification.emailChange": "",
+          "verification.emailChangeToken": "",
+          "verification.emailChangeExpires": "",
         },
       },
-      {session},
+      { session }
     );
   }
-  async updateName(userId: string, name: string, session?: ClientSession): Promise<void> {
-    await this.model.updateOne(
-      {
-        _id: userId,
-      },
-      {name},
-      {session},
-    );
-  }
-  async updateLoginNotificationSent(
+  async updateName(
     userId: string,
-    loginNotificationSent: boolean,
-    session?: ClientSession,
+    name: string,
+    session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
       {
         _id: userId,
       },
-      {loginNotificationSent},
-      {session},
+      { name },
+      { session }
     );
   }
-  async findAllUsers(options: QueryOptionConfig): Promise<QueryBuilderResult<IUser>> {
+  async updateLoginNotificationSent(
+    userId: string,
+    loginNotificationSent: boolean,
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.updateOne(
+      {
+        _id: userId,
+      },
+      { loginNotificationSent },
+      { session }
+    );
+  }
+  async findAllUsers(
+    options: QueryOptionConfig
+  ): Promise<QueryBuilderResult<IUser>> {
     const queryConfig: QueryBuilderConfig<IUser> = {
-      allowedFilters: ['name', 'email', 'role', 'status', 'createdAt'],
-      searchFields: ['name', 'email'],
+      allowedFilters: ["name", "email", "role", "status", "createdAt"],
+      searchFields: ["name", "email"],
       // allowedSorts: ["createdAt", "updatedAt"],
     };
 
     //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
     //   maxLimit: 100,
-    const queryBuilder = new QueryBuilder<IUser>(this.model, options.query, queryConfig);
+    const queryBuilder = new QueryBuilder<IUser>(
+      this.model,
+      options.query,
+      queryConfig
+    );
     // this work around is to prevent non-admin users from seeing inactive products
     // and this work too
     //  fixedFilters: !isAdmin ? { active: true } : undefined,

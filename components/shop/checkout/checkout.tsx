@@ -75,7 +75,10 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
         checkoutPageTranslate[lang].functions.handleAddNewAddress.loading
       );
       const { data: newAddress } = await api.post("/customers/address", data);
-      setAddresses((prevAddresses) => [...prevAddresses, newAddress]);
+      setAddresses((prevAddresses) => [
+        ...prevAddresses,
+        newAddress as AddressType,
+      ]);
       toast.success(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.success
       );
@@ -114,14 +117,16 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handelCheckout.loading
       );
-      const { data } = await api.post("/customers/orders", {
+      const {
+        data: { url },
+      } = await api.post("/customers/orders", {
         shippingInfo: selectedAddress,
         // products: cartItems,
       });
       toast.success(
         checkoutPageTranslate[lang].functions.handelCheckout.success
       );
-      window.open(data.url, "_blank");
+      window.open(url, "_blank");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -168,12 +173,16 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
         {showAddressForm ? (
           <AddressForm
             onSubmit={handleFormSubmit}
-            onCancel={() => setShowAddressForm(false)}
+            onCancel={() => {
+              setShowAddressForm(false);
+            }}
             // defaultValues={
           />
         ) : (
           <button
-            onClick={() => setShowAddressForm(true)}
+            onClick={() => {
+              setShowAddressForm(true);
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded-md"
           >
             {checkoutPageTranslate[lang].button.addNewAddress}
@@ -202,7 +211,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
         <div className="flex gap-4">
           <button
             className="bg-green-500 text-white px-4 py-2 rounded-md"
-            onClick={() => void handelCheckout()}
+            onClick={handelCheckout}
           >
             {checkoutPageTranslate[lang].button.checkout}
           </button>

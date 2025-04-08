@@ -23,7 +23,7 @@ export class WishlistService {
         message: WishlistTranslate[lang].wishlist.remove,
         added: false,
       };
-    } else {
+    } 
       // Add to wishlist
       await this.repository.create({
         userId: assignAsObjectId(userId),
@@ -35,7 +35,7 @@ export class WishlistService {
         message: WishlistTranslate[lang].wishlist.add,
         added: true,
       };
-    }
+    
   }
 
   async checkWishlist(userId: string, productId: string) {

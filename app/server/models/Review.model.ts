@@ -1,15 +1,21 @@
-import type {Document, Model, Query} from 'mongoose';
-import {Schema, model, models} from 'mongoose';
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Query,
+} from "mongoose";
 
-import {assignAsObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
-import Product, {type IProduct} from './Product.model';
-import {type IUser} from './User.model';
+import Product, { type IProduct } from "./Product.model";
+import { type IUser } from "./User.model";
 
 export interface IReview extends Document {
   // _id: Schema.Types.ObjectId; // makes error
-  userId: IUser['_id'];
-  productId: IProduct['_id'];
+  userId: IUser["_id"];
+  productId: IProduct["_id"];
   rating: number;
   comment: string;
   createdAt: Date;
@@ -24,45 +30,45 @@ const reviewSchema = new Schema<IReview, IReviewModel>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
     productId: {
       type: Schema.Types.ObjectId,
-      ref: 'Product',
+      ref: "Product",
       required: true,
       index: true,
     },
-    rating: {type: Number, min: 1, max: 5, required: true},
-    comment: {type: String, minlength: 4, maxlength: 200, required: true},
+    rating: { type: Number, min: 1, max: 5, required: true },
+    comment: { type: String, minlength: 4, maxlength: 200, required: true },
   },
   {
     timestamps: true,
     toJSON: {
       virtuals: true,
       transform: function (_, ret) {
-        ['createdAt', 'updatedAt'].forEach((field) => {
+        ["createdAt", "updatedAt"].forEach((field) => {
           if (ret[field]) {
-            ret[field] = new Date(ret[field]).toISOString().split('T')[0];
+            ret[field] = new Date(ret[field]).toISOString().split("T")[0];
           }
         });
         return ret;
       },
     },
-    toObject: {virtuals: true},
-  },
+    toObject: { virtuals: true },
+  }
 );
 
 // Indexes
-reviewSchema.index({productId: 1, userId: 1}, {unique: true});
-reviewSchema.index({rating: 1});
-reviewSchema.set('toJSON', {versionKey: false});
+reviewSchema.index({ productId: 1, userId: 1 }, { unique: true });
+reviewSchema.index({ rating: 1 });
+reviewSchema.set("toJSON", { versionKey: false });
 // Virtual populate
-reviewSchema.virtual('users', {
-  ref: 'User',
-  foreignField: '_id',
-  localField: 'userId',
+reviewSchema.virtual("users", {
+  ref: "User",
+  foreignField: "_id",
+  localField: "userId",
   justOne: true,
 });
 
@@ -83,16 +89,17 @@ reviewSchema.virtual('users', {
 
 // Static Methods
 reviewSchema.statics.calcAverageRatings = async function (productId: string) {
-  const stats = await this.aggregate([
-    {$match: {productId: assignAsObjectId(productId)}},
-    {
-      $group: {
-        _id: '$productId',
-        nRating: {$sum: 1},
-        avgRating: {$avg: '$rating'},
+  const stats: { _id: string; nRating: number; avgRating: number }[] =
+    await this.aggregate([
+      { $match: { productId: assignAsObjectId(productId) } },
+      {
+        $group: {
+          _id: "$productId",
+          nRating: { $sum: 1 },
+          avgRating: { $avg: "$rating" },
+        },
       },
-    },
-  ]);
+    ]);
 
   await Product.findByIdAndUpdate(productId, {
     ratingsQuantity: stats[0]?.nRating || 0,
@@ -101,21 +108,27 @@ reviewSchema.statics.calcAverageRatings = async function (productId: string) {
 };
 
 // Document Middleware
-reviewSchema.post('save', async function (this: IReview) {
-  await (this.constructor as IReviewModel).calcAverageRatings(this.productId.toString());
+reviewSchema.post("save", async function (this: IReview) {
+  await (this.constructor as IReviewModel).calcAverageRatings(
+    this.productId.toString()
+  );
 });
 
 // Query Middleware for updates
 reviewSchema.pre<Query<IReview, IReview>>(/^findOneAnd/, async function (next) {
-  this.set({_r: await this.findOne().clone()});
+  this.set({ _r: await this.findOne().clone() });
   next();
 });
 
 reviewSchema.post<Query<IReview, IReview>>(/^findOneAnd/, async function () {
-  const doc = this.get('_r');
-  if (doc) await (doc.constructor as IReviewModel).calcAverageRatings(doc.productId.toString());
+  const doc = this.get("_r") as IReview;
+  if (doc) {
+    await (doc.constructor as IReviewModel).calcAverageRatings(
+      doc.productId.toString()
+    );
+  }
 });
 
 const ReviewModel = (models.Review ||
-  model<IReview, IReviewModel>('Review', reviewSchema)) as IReviewModel;
+  model<IReview, IReviewModel>("Review", reviewSchema)) as IReviewModel;
 export default ReviewModel;

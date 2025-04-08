@@ -16,6 +16,7 @@ const AdminRefundReview = () => {
         )
       );
     } catch (error) {
+      /* eslint-disable no-console */
       console.error("Error updating refund status:", error);
     }
   };

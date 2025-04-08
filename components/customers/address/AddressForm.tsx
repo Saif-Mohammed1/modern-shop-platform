@@ -1,21 +1,21 @@
 // AddressForm.tsx
-'use client';
+"use client";
 
-import {zodResolver} from '@hookform/resolvers/zod';
-import {useForm} from 'react-hook-form';
-import {z} from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import type {AddressType} from '@/app/lib/types/address.types';
-import {lang} from '@/app/lib/utilities/lang';
-import Spinner from '@/components/spinner/spinner';
-import Input from '@/components/ui/Input';
-import {addressTranslate} from '@/public/locales/client/(auth)/account/addressTranslate';
-import {AddressTranslate} from '@/public/locales/server/Address.Translate';
-import {getCities} from 'countries-cities';
+import type { AddressType } from "@/app/lib/types/address.types";
+import { lang } from "@/app/lib/utilities/lang";
+import Spinner from "@/components/spinner/spinner";
+import Input from "@/components/ui/Input";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
+import { AddressTranslate } from "@/public/locales/server/Address.Translate";
+import { getCities } from "countries-cities";
 
 // AddressForm.tsx
 
-const ukraineCities = getCities('Ukraine');
+const ukraineCities = getCities("Ukraine");
 
 // const addressSchema = z.object({
 //   street: z.string().min(1, AddressTranslate[lang].street.required),
@@ -27,7 +27,7 @@ const ukraineCities = getCities('Ukraine');
 // });
 const addressSchema = z.object({
   street: z
-    .string({required_error: AddressTranslate[lang].street.required})
+    .string({ required_error: AddressTranslate[lang].street.required })
     .trim()
     .min(1, AddressTranslate[lang].street.required),
   city: z
@@ -69,18 +69,23 @@ interface AddressFormProps {
   isEditing?: boolean;
 }
 
-const AddressForm = ({defaultValues, onSubmit, onCancel, isEditing = false}: AddressFormProps) => {
+const AddressForm = ({
+  defaultValues,
+  onSubmit,
+  onCancel,
+  isEditing = false,
+}: AddressFormProps) => {
   const {
     register,
     handleSubmit,
-    formState: {errors, isSubmitting},
+    formState: { errors, isSubmitting },
   } = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
     defaultValues: {
-      country: 'Ukraine',
+      country: "Ukraine",
       ...defaultValues,
     },
-    mode: 'onBlur',
+    mode: "onBlur",
   });
   return (
     <div className="mt-6 p-6 bg-white rounded-lg shadow">
@@ -90,12 +95,14 @@ const AddressForm = ({defaultValues, onSubmit, onCancel, isEditing = false}: Add
           : addressTranslate[lang].addAddress.title}
       </h3>
 
-      <form onSubmit={() => void handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label={addressTranslate[lang].addAddress.form.street.label}
-          {...register('street')}
+          {...register("street")}
           error={errors.street?.message}
-          placeholder={addressTranslate[lang].addAddress.form.street.placeholder}
+          placeholder={
+            addressTranslate[lang].addAddress.form.street.placeholder
+          }
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -104,43 +111,53 @@ const AddressForm = ({defaultValues, onSubmit, onCancel, isEditing = false}: Add
               {addressTranslate[lang].addAddress.form.city.label}
             </label>
             <select
-              {...register('city')}
+              {...register("city")}
               className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
             >
-              <option value="">{addressTranslate[lang].addAddress.form.city.option.select}</option>
+              <option value="">
+                {addressTranslate[lang].addAddress.form.city.option.select}
+              </option>
               {ukraineCities.map((city) => (
                 <option key={city} value={city}>
                   {city}
                 </option>
               ))}
             </select>
-            {errors.city ? <p className="text-red-500 text-sm mt-1">{errors.city.message}</p> : null}
+            {errors.city ? (
+              <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>
+            ) : null}
           </div>
 
           <Input
             label={addressTranslate[lang].addAddress.form.state.label}
-            {...register('state')}
+            {...register("state")}
             error={errors.state?.message}
-            placeholder={addressTranslate[lang].addAddress.form.state.placeholder}
+            placeholder={
+              addressTranslate[lang].addAddress.form.state.placeholder
+            }
           />
 
           <Input
             label={addressTranslate[lang].addAddress.form.postalCode.label}
-            {...register('postalCode')}
+            {...register("postalCode")}
             error={errors.postalCode?.message}
-            placeholder={addressTranslate[lang].addAddress.form.postalCode.placeholder}
+            placeholder={
+              addressTranslate[lang].addAddress.form.postalCode.placeholder
+            }
           />
 
           <Input
             label={addressTranslate[lang].addAddress.form.phone.label}
-            {...register('phone')}
+            {...register("phone")}
             error={errors.phone?.message}
-            placeholder={addressTranslate[lang].addAddress.form.phone.placeholder}
+            placeholder={
+              addressTranslate[lang].addAddress.form.phone.placeholder
+            }
           />
 
           <Input
             label={addressTranslate[lang].addAddress.form.country.label}
-            {...register('country')}
+            {...register("country")}
             readOnly
             disabled
           />
@@ -159,7 +176,11 @@ const AddressForm = ({defaultValues, onSubmit, onCancel, isEditing = false}: Add
             disabled={isSubmitting}
             className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
           >
-            {isSubmitting ? <Spinner /> : addressTranslate[lang].button.saveAddress}
+            {isSubmitting ? (
+              <Spinner />
+            ) : (
+              addressTranslate[lang].button.saveAddress
+            )}
           </button>
         </div>
       </form>

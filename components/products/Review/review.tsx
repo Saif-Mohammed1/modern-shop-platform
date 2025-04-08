@@ -51,9 +51,16 @@ const ReviewSection = ({
     try {
       setLoading(true);
       const newPage = page + 1;
-      const { data } = await api.get(
-        `/customers/reviews/${productId}/?page=${newPage}`
-      );
+      const {
+        data,
+      }: {
+        data: {
+          docs: ReviewsType[];
+          meta: {
+            hasNext: boolean;
+          };
+        };
+      } = await api.get(`/customers/reviews/${productId}/?page=${newPage}`);
       setMoreResults((prev) => [...prev, ...data.docs]);
       setPage(newPage);
       setShowMore(data.meta.hasNext);
@@ -191,7 +198,7 @@ const ReviewSection = ({
         {showMore ? (
           <div className="mt-8 flex justify-center">
             <button
-              onClick={() => void getMoreResults()}
+              onClick={getMoreResults}
               disabled={loading}
               className="px-6 py-2 bg-white border border-gray-300 rounded-full hover:bg-gray-50 disabled:opacity-50 transition-all"
             >

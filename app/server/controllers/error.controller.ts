@@ -1,35 +1,57 @@
-import {type NextRequest, NextResponse} from 'next/server';
-import {v4 as uuidv4} from 'uuid';
-import {z} from 'zod';
+import type mongoose from "mongoose";
+import { type NextRequest, NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 
-import {logRequestError, logtail} from '@/app/lib/logger/logs';
-import AppError from '@/app/lib/utilities/appError';
-import {lang} from '@/app/lib/utilities/lang';
-
-import {errorControllerTranslate} from '../../../public/locales/server/errorControllerTranslate';
+import logger, { logRequestError, logtail } from "@/app/lib/logger/logs";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { errorControllerTranslate } from "@/public/locales/server/errorControllerTranslate";
 
 // Type definitions
-interface CastError {
+// interface CastError {
+//   path: string;
+//   value: string;
+// }
+
+// interface DuplicateFieldsError {
+//   errmsg: string;
+// }
+
+// interface ValidationError {
+//   _message: string;
+//   errors: Record<
+//     string,
+//     { properties: { type: string; path: string; value: any } }
+//   >;
+// }
+interface CastError extends Error {
   path: string;
-  value: string;
+  value: any;
+  kind?: string;
+  reason?: Error;
 }
 
-interface DuplicateFieldsError {
-  errmsg: string;
+interface DuplicateFieldsError extends Error {
+  code?: number;
+  keyValue?: Record<string, any>;
+  errmsg?: string;
 }
 
-interface ValidationError {
+interface ValidationError extends Error {
   _message: string;
-  errors: Record<string, {properties: {type: string; path: string; value: any}}>;
+  errors: Record<
+    string,
+    mongoose.Error.ValidatorError //| mongoose.Error.CastError
+  >;
 }
-
 // Utility Type Export
 
 class ErrorHandler {
   private correlationId!: string;
   // Main Error Handler
-  main = (error: any, req: NextRequest): NextResponse => {
-    this.correlationId = req.headers.get('X-Correlation-ID') || uuidv4();
+  main = (error: unknown, req: NextRequest): NextResponse => {
+    this.correlationId = req.headers.get("X-Correlation-ID") || uuidv4();
 
     // Convert error to AppError
     let err = this.normalizeError(error);
@@ -37,21 +59,72 @@ class ErrorHandler {
     // Check if the error is an instance of AppError
     if (error instanceof z.ZodError) {
       err = this.handleZodValidationError(error);
-    }
-    if (error.name === 'JsonWebTokenError') err = this.handleJWTError();
-    if (error.name === 'TokenExpiredError') err = this.handleJWTExpiredError();
-    // Production error processing
-    if (process.env.NODE_ENV === 'production') {
-      if (error.name === 'CastError') err = this.handleCastErrorDB(error);
-      if (error.code === 11000) err = this.handleDuplicateFieldsDB(error);
-      if (error.name === 'ValidationError') err = this.handleValidationErrorDB(error);
+    } else if (error instanceof Error) {
+      if (error.name === "JsonWebTokenError") {
+        err = this.handleJWTError();
+      }
+      if (error.name === "TokenExpiredError") {
+        err = this.handleJWTExpiredError();
+      }
+      // Production error processing
+      if (process.env.NODE_ENV === "production") {
+        // CastError (Mongoose bad ID format)
+        if (error.name === "CastError" && "path" in error && "value" in error) {
+          const castError = error as CastError;
+          err = this.handleCastErrorDB({
+            ...castError,
+            path: castError.path || "unknown",
+            value: castError.value || "invalid",
+          });
+        }
+        // Check if 'code' exists before accessing it
+        // Duplicate key error (Mongoose unique constraint)
+        if ("code" in error && error.code === 11000) {
+          const keyValue =
+            "keyValue" in error && typeof error.keyValue === "object"
+              ? (error.keyValue as Record<string, any>)
+              : {};
 
-      // Log errors
-      // Enhanced logging with translation context
-      // logRequestError(err, req, this.correlationId);
+          const errmsg =
+            "errmsg" in error && typeof error.errmsg === "string"
+              ? error.errmsg
+              : `Duplicate value: ${JSON.stringify(keyValue)}`;
+
+          const dupError: DuplicateFieldsError = {
+            name: "DuplicateFieldError",
+            message: "Duplicate field value",
+            code: 11000,
+            keyValue,
+            errmsg,
+          };
+
+          err = this.handleDuplicateFieldsDB(dupError);
+        }
+
+        // ValidationError (Mongoose schema validation)
+        if (
+          error.name === "ValidationError" &&
+          "_message" in error &&
+          "errors" in error
+        ) {
+          const validationError = error as ValidationError;
+          err = this.handleValidationErrorDB({
+            ...validationError,
+            _message: validationError._message || "Validation failed",
+            errors: validationError.errors || {},
+          });
+        }
+
+        // Log errors
+        // Enhanced logging with translation context
+        // logRequestError(err, req, this.correlationId);
+      }
+    } else {
+      // Fallback for when error is not an Error (e.g., a string or other type)
+      err = new AppError("An unknown error occurred", 500); // Adjust based on your AppError class
     }
 
-    return process.env.NODE_ENV === 'development'
+    return process.env.NODE_ENV === "development"
       ? this.sendErrorDev(err, req)
       : this.sendErrorProd(err, req);
   };
@@ -65,30 +138,35 @@ class ErrorHandler {
 
       return issue.message;
     });
-    return new AppError(errors.join('; '), 400);
+    return new AppError(errors.join("; "), 400);
   };
-  private normalizeError = (error: any): AppError => {
-    if (error instanceof AppError) return error; // Already an AppError instance
+  private normalizeError = (error: unknown): AppError => {
+    if (error instanceof AppError) {
+      return error;
+    } // Already an AppError instance
     return new AppError(
-      error.message || errorControllerTranslate[lang].errors.globalError,
-
-      error.statusCode || 500,
+      error instanceof Error
+        ? error.message
+        : errorControllerTranslate[lang].errors.globalError,
+      (error instanceof AppError && error.statusCode) || 500
     );
   };
 
   // Database Error Handlers
   private handleCastErrorDB = (err: CastError): AppError => {
-    const message = errorControllerTranslate[lang].controllers.handleCastErrorDB(
-      err.path,
-      err.value,
-    ).message;
+    const { message } = errorControllerTranslate[
+      lang
+    ].controllers.handleCastErrorDB(err.path, err.value);
     return new AppError(message, 400);
   };
 
   private handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
-    const value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || 'unknown value';
-    const message =
-      errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(value).message;
+    let value = "unknown value";
+    if (err.errmsg) {
+      value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || "unknown value";
+    }
+    const { message } =
+      errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(value);
     return new AppError(message, 400);
   };
 
@@ -106,35 +184,52 @@ class ErrorHandler {
   //   return new AppError(errors.join("; "), 400);
   // };
   private handleValidationErrorDB = (err: ValidationError) => {
-    const schemaName = err._message.split(' ')[0].toLowerCase() ?? ' ';
-    const errors = Object.values(err.errors).map((el: any) => {
-      const type = el.properties.type; //u need to check this if exist in error object
-      const path = el.properties.path;
-
+    const schemaName = err._message.split(" ")[0].toLowerCase() ?? "validation";
+    const errors = Object.values(err.errors).map((el) => {
+      const { type } = el.properties; //u need to check this if exist in error object
+      const { path } = el.properties;
+      if (!path || !type) {
+        return new AppError(
+          errorControllerTranslate[lang].errors.validationError,
+          400
+        );
+      }
       // Add checks before accessing dynamic properties
-      const schemaErrors = (
-        errorControllerTranslate[lang].controllers.handleValidationErrorDB as any
+      const schemaErrors: Record<
+        string,
+        Record<string, Record<string, string>>
+      > = (
+        errorControllerTranslate[lang].controllers
+          .handleValidationErrorDB as Record<string, any>
       )[schemaName];
 
-      let message = 'An error occurred';
-
-      if (schemaErrors && schemaErrors[path] && schemaErrors[path][type]) {
-        message = schemaErrors[path][type];
+      let errormessage = String(errorControllerTranslate[lang].errors.message);
+      let message = errormessage;
+      if (schemaErrors?.[path]?.[type]) {
+        message =
+          typeof schemaErrors[path][type] === "string"
+            ? schemaErrors[path][type]
+            : errorControllerTranslate[lang].errors.validationError;
       }
 
       return message;
     });
 
-    return new AppError(errors.join(','), 400);
+    return new AppError(errors.join(","), 400);
   };
   // JWT Handlers
   private createAuthError = (
     // translationKey: keyof (typeof errorControllerTranslate)[typeof lang]["controllers"]
-    translationKey: 'handleJWTError' | 'handleJWTExpiredError',
-  ) => new AppError(errorControllerTranslate[lang].controllers[translationKey].message, 401);
+    translationKey: "handleJWTError" | "handleJWTExpiredError"
+  ) =>
+    new AppError(
+      errorControllerTranslate[lang].controllers[translationKey].message,
+      401
+    );
 
-  private handleJWTError = () => this.createAuthError('handleJWTError');
-  private handleJWTExpiredError = () => this.createAuthError('handleJWTExpiredError');
+  private handleJWTError = () => this.createAuthError("handleJWTError");
+  private handleJWTExpiredError = () =>
+    this.createAuthError("handleJWTExpiredError");
 
   // Error Response Formatters
   private createErrorResponse = (err: AppError, includeDetails: boolean) =>
@@ -142,15 +237,20 @@ class ErrorHandler {
       {
         status: err.status,
         message: err.message,
-        ...(includeDetails && {stack: err.stack}),
+        ...(includeDetails && { stack: err.stack }),
       },
-      {status: err.statusCode},
+      { status: err.statusCode }
     );
 
   // Environment-specific Handlers
   private sendErrorDev = (err: AppError, req: NextRequest) => {
-    if (err.name === 'ZodError') return this.createErrorResponse(err, true);
-    return this.createErrorResponse(err, req.nextUrl.pathname.startsWith('/api/'));
+    if (err.name === "ZodError") {
+      return this.createErrorResponse(err, true);
+    }
+    return this.createErrorResponse(
+      err,
+      req.nextUrl.pathname.startsWith("/api/")
+    );
   };
 
   private sendErrorProd = (err: AppError, req: NextRequest) => {
@@ -160,10 +260,10 @@ class ErrorHandler {
     logtail
       ?.flush()
       .then(() => {
-        console.log('Logs flushed successfully.');
+        logger.log({ level: "info", message: "Logs flushed successfully." });
       })
       .catch((err) => {
-        console.error('Error flushing logs:', err);
+        logger.error("Error flushing logs:", err);
       });
     // return NextResponse.json(
     //   {
@@ -186,10 +286,10 @@ class ErrorHandler {
       {
         status: err.statusCode,
         headers: {
-          'X-Correlation-ID': this.correlationId,
-          'Content-Type': 'application/problem+json', // RFC 7807 compliance
+          "X-Correlation-ID": this.correlationId,
+          "Content-Type": "application/problem+json", // RFC 7807 compliance
         },
-      },
+      }
     );
   };
 }

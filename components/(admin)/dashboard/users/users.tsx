@@ -118,7 +118,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
       </h1>
       {/* Mobile Filter Button */}
       <button
-        onClick={() => setIsMobileFiltersOpen(true)}
+        onClick={() => { setIsMobileFiltersOpen(true); }}
         className="md:hidden flex items-center gap-2 my-1 mb-4 p-3 bg-gray-100 rounded-lg shadow-md w-full "
       >
         <HiFilter className="text-xl" />
@@ -202,7 +202,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
         </p>
       </div>
       {isMobileFiltersOpen ? (
-        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+        <MobileFilter closeFilters={() => { setIsMobileFiltersOpen(false); }}>
           <div className="flex  flex-col items-center justify-between gap-4">
             <SearchBar
               className="w-full"

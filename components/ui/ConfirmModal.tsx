@@ -16,7 +16,7 @@ const ConfirmModal = ({ title, children, onConfirm }: ConfirmModalProps) => {
     <>
       <button
         type="button"
-        onClick={() => void setIsOpen(true)}
+        onClick={() => setIsOpen(true)}
         className="focus:outline-none"
       >
         {children}
@@ -36,7 +36,9 @@ const ConfirmModal = ({ title, children, onConfirm }: ConfirmModalProps) => {
               type="button"
               aria-label="Close"
               className="fixed inset-0 bg-black opacity-30"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+              }}
             />
           ) : null}
           <div className="relative bg-white rounded-lg p-6 mx-4 max-w-sm">
@@ -45,7 +47,12 @@ const ConfirmModal = ({ title, children, onConfirm }: ConfirmModalProps) => {
             </DialogTitle>
 
             <div className="flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setIsOpen(false)}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsOpen(false);
+                }}
+              >
                 Cancel
               </Button>
               <Button

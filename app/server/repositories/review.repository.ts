@@ -1,38 +1,46 @@
-import type {ClientSession} from 'mongoose';
-import type {Model} from 'mongoose';
+import type { Model, ClientSession } from "mongoose";
 
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
-} from '@/app/lib/types/queryBuilder.types';
-import {assignAsObjectId} from '@/app/lib/utilities/assignAsObjectId';
-import {QueryBuilder} from '@/app/lib/utilities/queryBuilder';
+} from "@/app/lib/types/queryBuilder.types";
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 
-import type {createReviewDto} from '../dtos/reviews.dto';
-import type {IReview} from '../models/Review.model';
+import type { createReviewDto } from "../dtos/reviews.dto";
+import type { IReview } from "../models/Review.model";
 
-import {BaseRepository} from './BaseRepository';
-
+import { BaseRepository } from "./BaseRepository";
+interface RatingDistribution {
+  "1": number;
+  "2": number;
+  "3": number;
+  "4": number;
+  "5": number;
+}
 export class ReviewRepository extends BaseRepository<IReview> {
   constructor(model: Model<IReview>) {
     super(model);
   }
-  override async create(data: createReviewDto, session?: ClientSession): Promise<IReview> {
-    const [review] = await this.model.create([data], {session});
+  override async create(
+    data: createReviewDto,
+    session?: ClientSession
+  ): Promise<IReview> {
+    const [review] = await this.model.create([data], { session });
     return review;
   }
 
-  override async findById(id: IReview['_id']): Promise<IReview | null> {
+  override async findById(id: IReview["_id"]): Promise<IReview | null> {
     return await this.model.findById(id).lean();
   }
 
   async findByProduct(
     productId: string,
-    options: QueryOptionConfig,
+    options: QueryOptionConfig
   ): Promise<QueryBuilderResult<IReview>> {
     const queryConfig: QueryBuilderConfig<IReview> = {
-      allowedFilters: ['userId', 'productId', 'createdAt'],
+      allowedFilters: ["userId", "productId", "createdAt"],
       //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
@@ -45,95 +53,86 @@ export class ReviewRepository extends BaseRepository<IReview> {
       // ...(options?.sort && { sort: options.sort }),
     });
 
-    const queryBuilder = new QueryBuilder<IReview>(this.model, searchParams, queryConfig);
+    const queryBuilder = new QueryBuilder<IReview>(
+      this.model,
+      searchParams,
+      queryConfig
+    );
 
     if (options?.populate) {
-      queryBuilder.populate([{path: 'productId', select: 'name slug'}]);
+      queryBuilder.populate([{ path: "productId", select: "name slug" }]);
     }
 
     return await queryBuilder.execute();
   }
   async findByProductAndUser(
-    productId: IReview['productId'],
-    userId: IReview['userId'],
+    productId: IReview["productId"],
+    userId: IReview["userId"]
   ): Promise<IReview | null> {
-    return await this.model.findOne({productId, userId}).lean();
+    return await this.model.findOne({ productId, userId }).lean();
   }
   override async update(
-    id: IReview['_id'],
+    id: IReview["_id"],
     input: Partial<IReview>,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<IReview | null> {
-    return await this.model.findByIdAndUpdate(id, input, {new: true, session}).lean();
+    return await this.model
+      .findByIdAndUpdate(id, input, { new: true, session })
+      .lean();
   }
 
-  async deleteReview(id: IReview['_id'], session?: ClientSession): Promise<void> {
-    await this.model.findByIdAndDelete(id, {session});
+  async deleteReview(
+    id: IReview["_id"],
+    session?: ClientSession
+  ): Promise<void> {
+    await this.model.findByIdAndDelete(id, { session });
   }
   async getRatingDistribution(): Promise<number[]> {
     const distribution = await this.model.aggregate([
       {
         $group: {
-          _id: {$round: ['$rating', 0]}, // Round rating to nearest int (1-5)
-          count: {$sum: 1}, // Count occurrences
+          _id: { $round: ["$rating", 0] }, // Round rating to nearest int (1-5)
+          count: { $sum: 1 }, // Count occurrences
         },
       },
       {
-        $sort: {_id: 1}, // Ensure sorting from 1-star to 5-star
+        $sort: { _id: 1 }, // Ensure sorting from 1-star to 5-star
       },
     ]);
 
     const ratings = [0, 0, 0, 0, 0]; // Default 0 for all ratings
 
-    distribution.forEach(({_id, count}) => {
+    distribution.forEach(({ _id, count }) => {
       ratings[_id - 1] = count; // Store count at correct index
     });
 
     return ratings;
   }
 
-  async getRatingDistributionByProductId(productId: string): Promise<{
-    [key: string]: number;
-  }> {
-    // const distribution = await this.model.aggregate([
-    //   {
-    //     $match: {
-    //       productId: assignAsObjectId(productId),
-    //       // rating: { $exists: true, $ne: null },
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: { $round: ["$rating", 0] }, // Round rating to nearest int (1-5)
-    //       count: { $sum: 1 }, // Count occurrences
-    //     },
-    //   },
-    //   {
-    //     $sort: { _id: 1 }, // Ensure sorting from 1-star to 5-star
-    //   },
-    // ]);
-    // const ratings = [0, 0, 0, 0, 0]; // Default 0 for all ratings
-    // distribution.forEach(({ _id, count }) => {
-    //   ratings[_id - 1] = count; // Store count at correct index
-    // });
-    // return ratings;
-    const distribution = await this.model.aggregate([
+  async getRatingDistributionByProductId(
+    productId: string
+  ): Promise<RatingDistribution> {
+    interface AggregationResult {
+      distribution?: RatingDistribution;
+    }
+
+    const distribution = await this.model.aggregate<AggregationResult>([
       {
-        $match: {productId: assignAsObjectId(productId)},
+        $match: { productId: assignAsObjectId(productId) },
       },
       {
         $group: {
-          _id: {$round: ['$rating', 0]}, // Round rating (1-5)
-          count: {$sum: 1}, // Count occurrences
+          _id: { $round: ["$rating", 0] }, // Round rating (1-5)
+          count: { $sum: 1 }, // Count occurrences
         },
       },
       {
-        $sort: {_id: 1}, // Sort from 1-star to 5-star
+        $sort: { _id: 1 }, // Sort from 1-star to 5-star
       },
       {
         $group: {
           _id: null,
-          ratings: {$push: {k: {$toString: '$_id'}, v: '$count'}}, // Convert _id to string keys
+          ratings: { $push: { k: { $toString: "$_id" }, v: "$count" } }, // Convert _id to string keys
         },
       },
       {
@@ -142,40 +141,39 @@ export class ReviewRepository extends BaseRepository<IReview> {
             $arrayToObject: {
               $concatArrays: [
                 [
-                  {k: '1', v: 0},
-                  {k: '2', v: 0},
-                  {k: '3', v: 0},
-                  {k: '4', v: 0},
-                  {k: '5', v: 0},
+                  { k: "1", v: 0 },
+                  { k: "2", v: 0 },
+                  { k: "3", v: 0 },
+                  { k: "4", v: 0 },
+                  { k: "5", v: 0 },
                 ],
-                '$ratings',
+                "$ratings",
               ],
             },
           },
         },
       },
       {
-        $project: {_id: 0, distribution: 1}, // Remove _id
+        $project: { _id: 0, distribution: 1 }, // Remove _id
       },
     ]);
 
-    return (
-      distribution[0]?.distribution || {
-        '1': 0,
-        '2': 0,
-        '3': 0,
-        '4': 0,
-        '5': 0,
-      }
-    );
-  }
+    const defaultDistribution: RatingDistribution = {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+    };
 
+    return distribution[0]?.distribution || defaultDistribution;
+  }
   async getMyReviews(
     userId: string,
-    options: QueryOptionConfig,
+    options: QueryOptionConfig
   ): Promise<QueryBuilderResult<IReview>> {
     const queryConfig: QueryBuilderConfig<IReview> = {
-      allowedFilters: ['userId', 'productId', 'createdAt'],
+      allowedFilters: ["userId", "productId", "createdAt"],
       //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
@@ -188,10 +186,14 @@ export class ReviewRepository extends BaseRepository<IReview> {
       // ...(options?.sort && { sort: options.sort }),
     });
 
-    const queryBuilder = new QueryBuilder<IReview>(this.model, searchParams, queryConfig);
+    const queryBuilder = new QueryBuilder<IReview>(
+      this.model,
+      searchParams,
+      queryConfig
+    );
 
     if (options?.populate) {
-      queryBuilder.populate([{path: 'productId', select: 'name slug'}]);
+      queryBuilder.populate([{ path: "productId", select: "name slug" }]);
     }
 
     return await queryBuilder.execute();

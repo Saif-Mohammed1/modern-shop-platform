@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
+import type { OrderType } from "@/app/lib/types/orders.types";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import ErrorHandler from "@/components/Error/errorHandler";
@@ -27,8 +28,17 @@ const page = async (props: Props) => {
   try {
     const queryString = url.toString();
 
-    const { data } = await api.get(
-      "/customers/orders" + (queryString ? `?${queryString}` : ""),
+    const {
+      data,
+    }: {
+      data: {
+        docs: OrderType[];
+        meta: {
+          hasNext: boolean;
+        };
+      };
+    } = await api.get(
+      `/customers/orders${queryString ? `?${queryString}` : ""}`,
       {
         headers: Object.fromEntries((await headers()).entries()), //convert headers to javascript object
       }
@@ -52,10 +62,9 @@ const page = async (props: Props) => {
         )}
       </div>
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error?.message} />;
-
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 export default page;

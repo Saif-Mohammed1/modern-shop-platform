@@ -26,7 +26,7 @@ const Pagination: FC<PaginationProps> = ({meta, onPageChange}) => {
   const {page: currentPage, totalPages, hasNext, hasPrev} = meta;
 
   // Don't render if there's only one page or no pages
-  if (totalPages <= 1) return null;
+  if (totalPages <= 1) {return null;}
 
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
@@ -34,7 +34,7 @@ const Pagination: FC<PaginationProps> = ({meta, onPageChange}) => {
     const sidePages = Math.floor(maxPagesToShow / 2);
 
     if (totalPages <= maxPagesToShow) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      for (let i = 1; i <= totalPages; i++) {pages.push(i);}
     } else {
       let startPage = Math.max(1, currentPage - sidePages);
       const endPage = Math.min(totalPages, currentPage + sidePages);
@@ -43,7 +43,7 @@ const Pagination: FC<PaginationProps> = ({meta, onPageChange}) => {
         startPage = 1;
       }
 
-      for (let i = startPage; i <= endPage; i++) pages.push(i);
+      for (let i = startPage; i <= endPage; i++) {pages.push(i);}
 
       if (startPage > 1) {
         pages.unshift('...');
@@ -59,8 +59,8 @@ const Pagination: FC<PaginationProps> = ({meta, onPageChange}) => {
     return pages;
   };
 
-  const handlePrevious = () => onPageChange(currentPage - 1);
-  const handleNext = () => onPageChange(currentPage + 1);
+  const handlePrevious = () => { onPageChange(currentPage - 1); };
+  const handleNext = () => { onPageChange(currentPage + 1); };
 
   return (
     <nav className="flex items-center justify-between gap-4 p-4" aria-label="Pagination">
@@ -87,7 +87,7 @@ const Pagination: FC<PaginationProps> = ({meta, onPageChange}) => {
             typeof page === 'number' ? (
               <button
                 key={page}
-                onClick={() => onPageChange(page)}
+                onClick={() => { onPageChange(page); }}
                 className={`px-4 py-2 min-w-[40px] rounded-md ${
                   page === currentPage
                     ? 'bg-blue-600 text-white'

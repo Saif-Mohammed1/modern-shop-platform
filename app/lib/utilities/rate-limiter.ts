@@ -1,9 +1,9 @@
 // import logger from "../logger/logs";
-import {redis} from './Redis';
+import { redis } from "./Redis";
 
 const WINDOW_IN_SECONDS = 60; // 1 minute window
 const MAX_REQUESTS = 30; // Maximum allowed requests per window
-const KEY_PREFIX = 'rate_limit:'; // Redis key prefix for better organization
+const KEY_PREFIX = "rate_limit:"; // Redis key prefix for better organization
 
 // Lua script for atomic rate limiting operations
 const RATE_LIMIT_SCRIPT = `
@@ -27,7 +27,7 @@ export const rateLimiter = {
       const [currentRequests, ttl] = (await redis.eval(
         RATE_LIMIT_SCRIPT,
         [key], // KEYS array
-        [WINDOW_IN_SECONDS.toString()], // ARGV array
+        [WINDOW_IN_SECONDS.toString()] // ARGV array
       )) as [number, number];
 
       // Calculate remaining requests
@@ -56,7 +56,8 @@ export const rateLimiter = {
 
       return response;
     } catch (error) {
-      console.error('Rate limiter error:', error);
+      /* eslint-disable no-console */
+      console.error("Rate limiter error:", error);
       // Fail open strategy with full allowance
       return {
         success: true,

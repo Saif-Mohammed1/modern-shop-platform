@@ -1,5 +1,12 @@
-import type {Document, Model, Types} from 'mongoose';
-import {Schema, model, models} from 'mongoose';
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Types,
+} from "mongoose";
+
 
 // import ReviewModel, { type IReview } from "./Review.model";
 import type {IUser} from './User.model';

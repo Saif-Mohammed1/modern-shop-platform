@@ -13,8 +13,12 @@ setInterval(() => {
   if (process.memoryUsage().heapUsed > 1e9) {
     const filename = `./config/heapdump-${Date.now()}.heapsnapshot`;
     heapdump.writeSnapshot(filename, (err) => {
-      if (err) console.error("Heap dump failed:", err);
-      else console.log(`Heap dump saved to: ${filename}`);
+      /* eslint-disable no-console */
+      if (err) {
+        console.error("Heap dump failed:", err);
+      } else {
+        console.log(`Heap dump saved to: ${filename}`);
+      }
     });
   }
 }, 10000);
@@ -42,7 +46,9 @@ app
       const parsedUrl = parse(req.url!, true);
       void handle(req, res, parsedUrl);
     }).listen(port, (err?: any) => {
-      if (err) throw err;
+      if (err) {
+        throw err;
+      }
       console.log(
         `> Server listening at https://localhost:${port} as ${
           dev ? "development" : process.env.NODE_ENV
@@ -50,7 +56,7 @@ app
       );
     });
   })
-  .catch((ex: any) => {
-    console.error(ex.stack);
+  .catch((ex) => {
+    console.error((ex as Error).stack);
     process.exit(1);
   });

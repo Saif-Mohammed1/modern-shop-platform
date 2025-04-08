@@ -92,10 +92,10 @@ export class QueryBuilder<T extends Document> {
     return this;
   }
   private parseValue(value: string): any {
-    if (/^\d+$/.test(value)) return parseInt(value, 10);
-    if (/^\d+\.\d+$/.test(value)) return parseFloat(value);
-    if (value.toLowerCase() === 'true') return true;
-    if (value.toLowerCase() === 'false') return false;
+    if (/^\d+$/.test(value)) {return parseInt(value, 10);}
+    if (/^\d+\.\d+$/.test(value)) {return parseFloat(value);}
+    if (value.toLowerCase() === 'true') {return true;}
+    if (value.toLowerCase() === 'false') {return false;}
     // if (Date.parse(value)) return new Date(value);
 
     // Handle date parsing explicitly
@@ -110,7 +110,7 @@ export class QueryBuilder<T extends Document> {
       const date = new Date(value);
       return isNaN(date.getTime()) ? value : date;
     }
-    if (value.includes(',')) return value.split(',').map(this.parseValue);
+    if (value.includes(',')) {return value.split(',').map(this.parseValue);}
     return value;
   }
 

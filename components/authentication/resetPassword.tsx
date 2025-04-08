@@ -1,12 +1,12 @@
-import {redirect} from 'next/navigation';
-import {z} from 'zod';
+import { redirect } from "next/navigation";
+import { z } from "zod";
 
-import {lang} from '@/app/lib/utilities/lang';
-import {resetPasswordTranslate} from '@/public/locales/client/(public)/auth/resetPasswordTranslate';
-import {userZodValidatorTranslate} from '@/public/locales/server/userControllerTranslate';
+import { lang } from "@/app/lib/utilities/lang";
+import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
+import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 
-import api from '../../app/lib/utilities/api';
-import SubmitButton from '../ui/SubmitButton';
+import api from "../../app/lib/utilities/api";
+import SubmitButton from "../ui/SubmitButton";
 
 const resetPasswordSchema = z
   .object({
@@ -26,7 +26,7 @@ const resetPasswordSchema = z
       .max(40, userZodValidatorTranslate[lang].password.maxLength)
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        userZodValidatorTranslate[lang].password.invalid,
+        userZodValidatorTranslate[lang].password.invalid
       ),
     confirmPassword: z.string({
       required_error: userZodValidatorTranslate[lang].confirmPassword.required,
@@ -34,7 +34,7 @@ const resetPasswordSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: userZodValidatorTranslate[lang].confirmPassword.invalid,
-    path: ['confirmPassword'],
+    path: ["confirmPassword"],
   });
 type Props = {
   email: string;
@@ -43,50 +43,52 @@ type Props = {
 };
 
 async function handleResetPassword(formData: FormData) {
-  'use server';
+  "use server";
 
   // Extract form data
   const data = {
-    token: formData.get('token') as string,
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-    confirmPassword: formData.get('confirmPassword') as string,
+    token: formData.get("token") as string,
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
+    confirmPassword: formData.get("confirmPassword") as string,
   };
 
   // 🔹 Validate using Zod
   const result = resetPasswordSchema.safeParse(data);
   if (!result.success) {
-    const firstError = result.error.errors[0]?.message || 'Validation failed';
+    const firstError = result.error.errors[0]?.message || "Validation failed";
     return redirect(
       `/auth/reset-password?email=${data.email}&token=${
         data.token
-      }&error=${encodeURIComponent(firstError)}`,
+      }&error=${encodeURIComponent(firstError)}`
     );
   }
   let redirectPath: string | null = null;
   try {
-    await api.post('/auth/reset-password', {
+    await api.post("/auth/reset-password", {
       email: data.email,
       confirmPassword: data.confirmPassword,
       token: data.token,
       password: data.password,
     });
 
-    redirectPath = '/auth';
+    redirectPath = "/auth";
     // redirect("/auth/");
   } catch (error) {
-    redirectPath = `/auth/reset-password?email=${data.email}&token=${data.token}&error=${encodeURIComponent((error as any)?.message)}`;
+    redirectPath = `/auth/reset-password?email=${data.email}&token=${data.token}&error=${encodeURIComponent((error as Error)?.message)}`;
     // redirect(
     //   `/auth/reset-password?email=${data.email}&token=${
     //     data.token
     //   }&error=${encodeURIComponent((error as any)?.message)}`
     // );
   } finally {
-    if (redirectPath) redirect(redirectPath);
+    if (redirectPath) {
+      redirect(redirectPath);
+    }
   }
 }
 
-const ResetPasswordPage = ({email, token, error}: Props) => {
+const ResetPasswordPage = ({ email, token, error }: Props) => {
   // const errorMessage = searchParams?.error
   //   ? resetPasswordTranslate[lang].errors[searchParams.error] ||
   //     searchParams.error
@@ -118,7 +120,9 @@ const ResetPasswordPage = ({email, token, error}: Props) => {
           <input
             type="password"
             name="password"
-            placeholder={resetPasswordTranslate[lang].form.newPassword.placeholder}
+            placeholder={
+              resetPasswordTranslate[lang].form.newPassword.placeholder
+            }
             required
             className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
@@ -130,7 +134,9 @@ const ResetPasswordPage = ({email, token, error}: Props) => {
           <input
             type="password"
             name="confirmPassword"
-            placeholder={resetPasswordTranslate[lang].form.confirmPassword.placeholder}
+            placeholder={
+              resetPasswordTranslate[lang].form.confirmPassword.placeholder
+            }
             required
             className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />

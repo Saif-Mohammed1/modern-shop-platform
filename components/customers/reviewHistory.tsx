@@ -26,7 +26,16 @@ const ReviewHistory = ({
     try {
       setLoading(true);
       const newPage = page + 1;
-      const { data } = await api.get(`/customers/reviews?page=${newPage}`);
+      const {
+        data,
+      }: {
+        data: {
+          docs: ReviewsType[];
+          meta: {
+            hasNext: boolean;
+          };
+        };
+      } = await api.get(`/customers/reviews?page=${newPage}`);
       setMoreResults([...moreResults, ...data.docs]);
       setPage(newPage);
       setShowMore(data.meta.hasNext);

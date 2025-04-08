@@ -45,7 +45,7 @@ const WishListCard = ({ product }: { product: ProductType }) => {
         accountWishlistTranslate[lang].WishListCard.functions
           .handleWishlistClick.loading
       );
-      await api.post("/customers/wishlist/" + product._id);
+      await api.post(`/customers/wishlist/${product._id}`);
       toast.success(
         accountWishlistTranslate[lang].WishListCard.functions
           .handleWishlistClick.removed
@@ -85,12 +85,12 @@ const WishListCard = ({ product }: { product: ProductType }) => {
         {" "}
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
-          onClick={() => void handelAddToCart()}
+          onClick={handelAddToCart}
         >
           <AiOutlineShoppingCart className="text-xl" /> {/* Cart Icon */}
         </button>
         <button
-          onClick={() => void handleWishlistClick()}
+          onClick={handleWishlistClick}
           // className="mt-2 flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg"
         >
           <AiFillHeart className="text-red-500 mr-2 text-3xl" />

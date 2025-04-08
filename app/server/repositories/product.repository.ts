@@ -1,26 +1,28 @@
 // product.repository.ts
-import type {Model} from 'mongoose';
-import {type ClientSession} from 'mongoose';
+import type { Model, ClientSession } from "mongoose";
 
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
-} from '@/app/lib/types/queryBuilder.types';
-import {generateSKU} from '@/app/lib/utilities/helpers';
-import {QueryBuilder} from '@/app/lib/utilities/queryBuilder';
+} from "@/app/lib/types/queryBuilder.types";
+import { generateSKU } from "@/app/lib/utilities/helpers";
+import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 
-import type {CreateProductDto, UpdateProductDto} from '../dtos/product.dto';
-import type {IProduct} from '../models/Product.model';
-import ReviewModel from '../models/Review.model';
+import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
+import type { IProduct } from "../models/Product.model";
+import ReviewModel from "../models/Review.model";
 
-import {BaseRepository} from './BaseRepository';
+import { BaseRepository } from "./BaseRepository";
 
 export class ProductRepository extends BaseRepository<IProduct> {
   constructor(model: Model<IProduct>) {
     super(model);
   }
-  override async create(dto: CreateProductDto, session?: ClientSession): Promise<IProduct> {
+  override async create(
+    dto: CreateProductDto,
+    session?: ClientSession
+  ): Promise<IProduct> {
     if (!dto.sku) {
       dto.sku = generateSKU(dto.category);
     }
@@ -34,8 +36,8 @@ export class ProductRepository extends BaseRepository<IProduct> {
   }
   override async update(
     slug: string,
-    dto: UpdateProductDto & {actorId?: IProduct['userId']},
-    session?: ClientSession,
+    dto: UpdateProductDto & { actorId?: IProduct["userId"] },
+    session?: ClientSession
   ): Promise<IProduct | null> {
     if (!dto.sku) {
       dto.sku = generateSKU(dto.category);
@@ -43,43 +45,47 @@ export class ProductRepository extends BaseRepository<IProduct> {
     const lastModifiedBy = dto.actorId;
     delete dto.actorId;
     return await this.model.findOneAndUpdate(
-      {slug},
-      {$set: dto, lastModifiedBy},
-      {new: true, session},
+      { slug },
+      { $set: dto, lastModifiedBy },
+      { new: true, session }
     );
   }
   override async delete(id: string, session?: ClientSession): Promise<boolean> {
-    const result = await this.model.findByIdAndDelete(id, {session});
+    const result = await this.model.findByIdAndDelete(id, { session });
     return result !== null;
   }
   async getProducts(
     options: QueryOptionConfig,
-    isAdmin?: boolean,
+    isAdmin?: boolean
   ): Promise<QueryBuilderResult<IProduct>> {
     const queryConfig: QueryBuilderConfig<IProduct> = {
       allowedFilters: [
-        'name',
-        'price',
-        'category',
-        'slug',
-        'createdAt', // Fixed typo from 'createAt'
-        'ratingsAverage',
-        'description',
-        isAdmin && 'active',
+        "name",
+        "price",
+        "category",
+        "slug",
+        "createdAt", // Fixed typo from 'createAt'
+        "ratingsAverage",
+        "description",
+        isAdmin && "active",
       ].filter(Boolean) as Array<keyof IProduct>,
       filterMap: {
-        rating: 'ratingsAverage',
+        rating: "ratingsAverage",
       },
-      searchFields: ['name', 'description'],
+      searchFields: ["name", "description"],
       enableTextSearch: true,
-      allowedSorts: ['createdAt', 'updatedAt', 'price', 'ratingsAverage'],
-      fixedFilters: !isAdmin ? {active: true} : undefined,
+      allowedSorts: ["createdAt", "updatedAt", "price", "ratingsAverage"],
+      fixedFilters: !isAdmin ? { active: true } : undefined,
     };
 
     //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
     //   maxLimit: 100,
 
-    const queryBuilder = new QueryBuilder<IProduct>(this.model, options.query, queryConfig);
+    const queryBuilder = new QueryBuilder<IProduct>(
+      this.model,
+      options.query,
+      queryConfig
+    );
     // this work around is to prevent non-admin users from seeing inactive products
     // and this work too
     //  fixedFilters: !isAdmin ? { active: true } : undefined,
@@ -87,15 +93,15 @@ export class ProductRepository extends BaseRepository<IProduct> {
     // if (!isAdmin) queryBuilder.filter.active = true;
 
     if (options?.populate) {
-      queryBuilder.populate([{path: 'userId', select: 'name '}]);
+      queryBuilder.populate([{ path: "userId", select: "name " }]);
     }
 
     return await queryBuilder.execute();
   }
   async getProductBySlug(
     slug: string,
-    options?: {populate?: boolean; select?: string},
-    session?: ClientSession,
+    options?: { populate?: boolean; select?: string },
+    session?: ClientSession
   ): Promise<IProduct | null> {
     // return await this.model
     //   .findOne({ slug, active: true })
@@ -107,19 +113,19 @@ export class ProductRepository extends BaseRepository<IProduct> {
     //   })
     //   .session(session ?? null);
     // // .lean({ virtuals: true }); // This ensures virtuals are included
-    const query = this.model.findOne({slug, active: true});
+    const query = this.model.findOne({ slug, active: true });
     if (options?.populate) {
       query.populate([
         {
-          path: 'reviews',
+          path: "reviews",
           select: options.select,
-          options: {sort: {createdAt: -1}, limit: 5}, // Ensure sorting & limiting
+          options: { sort: { createdAt: -1 }, limit: 5 }, // Ensure sorting & limiting
 
           model: ReviewModel,
           populate: {
-            path: 'userId',
-            model: 'User', // Your user model name
-            select: 'name -_id', // Select only the name field
+            path: "userId",
+            model: "User", // Your user model name
+            select: "name -_id", // Select only the name field
           },
         },
       ]);
@@ -129,54 +135,61 @@ export class ProductRepository extends BaseRepository<IProduct> {
 
   async updateProductImages(
     id: string,
-    images: IProduct['images'],
-    actorId: IProduct['userId'],
-    session?: ClientSession,
+    images: IProduct["images"],
+    actorId: IProduct["userId"],
+    session?: ClientSession
   ): Promise<IProduct | null> {
     return await this.model.findByIdAndUpdate(
       id,
-      {$set: {images}, lastModifiedBy: actorId},
-      {new: true, session},
+      { $set: { images }, lastModifiedBy: actorId },
+      { new: true, session }
     );
   }
   async getProductMetaDataBySlug(slug: string): Promise<IProduct | null> {
-    return await this.model.findOne({slug, active: true});
+    return await this.model.findOne({ slug, active: true });
 
     // .lean(); // This ensures virtuals are included
   }
-  async toggleProductActivity(slug: string, actorId: IProduct['userId'], session?: ClientSession) {
+  async toggleProductActivity(
+    slug: string,
+    actorId: IProduct["userId"],
+    session?: ClientSession
+  ) {
     return await this.model.findOneAndUpdate(
-      {slug},
-      {$bit: {active: {xor: 1}}, $set: {lastModifiedBy: actorId}}, // Toggles true <-> false
-      {new: true, session},
+      { slug },
+      { $bit: { active: { xor: 1 } }, $set: { lastModifiedBy: actorId } }, // Toggles true <-> false
+      { new: true, session }
     );
   }
 
   async getProductsByCategory(category: string): Promise<IProduct[]> {
-    return await this.model.find({category, active: true}).limit(10); //.lean();
+    return await this.model.find({ category, active: true }).limit(10); //.lean();
   }
 
   async startSession() {
     return await this.model.db.startSession();
   }
   async getCategoryList(): Promise<string[]> {
-    return await this.model.distinct('category');
+    return await this.model.distinct("category");
   }
-  async getTopOffersAndNewProducts() {
-    return await this.model.aggregate([
+  async getTopOffersAndNewProducts(): Promise<{
+    topOfferProducts: IProduct[];
+    newProducts: IProduct[];
+    topRating: IProduct[];
+  }> {
+    const result = await this.model.aggregate([
       {
         $facet: {
           // Top Offer Products - Sorted by highest discount and rating, filtered by stock and minimum rating
           topOfferProducts: [
             {
               $match: {
-                discount: {$gt: 0}, // Ensure there's a discount
-                stock: {$gt: 0}, // Ensure the product is in stock
-                // ratingsAverage: { $gte: .0 }, // Minimum rating of 4.0
+                discount: { $gt: 0 }, // Ensure there's a discount
+                stock: { $gt: 0 }, // Ensure the product is in stock
               },
             },
             {
-              $sort: {discount: -1}, //ratingsAverage: -1 }, // Sort by discount first, then rating
+              $sort: { discount: -1 }, // Sort by discount first
             },
             {
               $limit: 20, // Limit to top 20 offer products
@@ -186,12 +199,11 @@ export class ProductRepository extends BaseRepository<IProduct> {
           newProducts: [
             {
               $match: {
-                stock: {$gt: 0}, // Only show products in stock
-                // ratingsAverage: { $gte: 4.0 }, // Optional: Minimum rating of 4.0
+                stock: { $gt: 0 }, // Only show products in stock
               },
             },
             {
-              $sort: {createdAt: -1}, //ratingsAverage: -1 }, // Sort by creation date, then rating
+              $sort: { createdAt: -1 }, // Sort by creation date
             },
             {
               $limit: 20, // Limit to 20 new products
@@ -201,12 +213,12 @@ export class ProductRepository extends BaseRepository<IProduct> {
           topRating: [
             {
               $match: {
-                ratingsAverage: {$gte: 3.0}, // Minimum rating of 3.0
-                stock: {$gt: 0}, // Only show products in stock
+                ratingsAverage: { $gte: 3.0 }, // Minimum rating of 3.0
+                stock: { $gt: 0 }, // Only show products in stock
               },
             },
             {
-              $sort: {ratingsAverage: -1}, // Sort by rating (highest to lowest)
+              $sort: { ratingsAverage: -1 }, // Sort by rating (highest to lowest)
             },
             {
               $limit: 20, // Limit to top 20 products with the best ratings
@@ -215,5 +227,11 @@ export class ProductRepository extends BaseRepository<IProduct> {
         },
       },
     ]);
+
+    return result[0] as {
+      topOfferProducts: IProduct[];
+      newProducts: IProduct[];
+      topRating: IProduct[];
+    };
   }
 }

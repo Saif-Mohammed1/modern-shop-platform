@@ -1,4 +1,5 @@
-import type {FilterQuery, Query} from 'mongoose';
+/* eslint-disable */
+import type { FilterQuery, Query } from "mongoose";
 
 class APIFeatures<
   T extends {
@@ -29,14 +30,17 @@ class APIFeatures<
 
     if (this.searchParams) {
       for (const [key, value] of this.searchParams) {
-        if (value && value !== 'undefined') {
+        if (value && value !== "undefined") {
           // Check if the key is a range query (e.g., 'price[gte]')
-          const isRangeQuery = key.includes('[') && key.endsWith(']');
+          const isRangeQuery = key.includes("[") && key.endsWith("]");
 
           if (isRangeQuery) {
             // Extract the operator and field name from the key
-            const operator = key.substring(key.indexOf('[') + 1, key.indexOf(']'));
-            const field = key.substring(0, key.indexOf('['));
+            const operator = key.substring(
+              key.indexOf("[") + 1,
+              key.indexOf("]")
+            );
+            const field = key.substring(0, key.indexOf("["));
 
             // Handle range queries (e.g., 'price[gte]')
             if (!query[field]) {
@@ -55,18 +59,18 @@ class APIFeatures<
     return query;
   }
   filter(): this {
-    const queryObj = {...this.queryString};
-    const excludedFields = ['page', 'sort', 'limit', 'fields', 'category'];
+    const queryObj = { ...this.queryString };
+    const excludedFields = ["page", "sort", "limit", "fields", "category"];
     // excludedFields.forEach((el) => delete queryObj[el]);
     excludedFields.forEach((el) => delete queryObj[el]);
     // Check if name or email is provided in the query parameters
     if (queryObj.name) {
       // Use regular expression to match name
-      queryObj.name = {$regex: queryObj.name.trim(), $options: 'i'};
+      queryObj.name = { $regex: queryObj.name.trim(), $options: "i" };
     }
     if (queryObj.email) {
       // Use regular expression to match email
-      queryObj.email = {$regex: queryObj.email.trim(), $options: 'i'};
+      queryObj.email = { $regex: queryObj.email.trim(), $options: "i" };
     }
 
     if (queryObj.date) {
@@ -83,18 +87,18 @@ class APIFeatures<
     if (queryObj.rating) {
       const rating = queryObj.rating * 1;
       if (rating <= 1) {
-        queryObj.ratingsAverage = {$gte: 0, $lte: 1.9};
+        queryObj.ratingsAverage = { $gte: 0, $lte: 1.9 };
       } else if (rating < 5) {
         const maxRating = rating + 0.9;
-        queryObj.ratingsAverage = {$gte: rating, $lte: maxRating};
+        queryObj.ratingsAverage = { $gte: rating, $lte: maxRating };
       } else {
-        queryObj.ratingsAverage = {$gte: rating};
+        queryObj.ratingsAverage = { $gte: rating };
       }
       delete queryObj.rating;
     }
     this.query = this.query.find(
       //JSON.parse(queryStr)
-      queryObj,
+      queryObj
     );
     this.page = this.queryString.page * 1 || 1;
     this.limit = this.queryString.limit * 1 || 15;
@@ -102,13 +106,15 @@ class APIFeatures<
   }
   category(): this {
     if (this.queryString.category) {
-      let fields: string[] = this.queryString.category.split(',');
-      fields = fields.filter((item: string) => item !== 'all');
+      let fields: string[] = this.queryString.category.split(",");
+      fields = fields.filter((item: string) => item !== "all");
       if (fields.length >= 1) {
         // Create a regular expression for the category values
-        const categoryRegex = fields.map((category: string) => new RegExp(category, 'i'));
+        const categoryRegex = fields.map(
+          (category: string) => new RegExp(category, "i")
+        );
         // Use the $in operator with the regular expression array
-        const query: FilterQuery<T> = {category: {$in: categoryRegex}};
+        const query: FilterQuery<T> = { category: { $in: categoryRegex } };
         this.query = this.query.find(query);
       }
     }
@@ -117,21 +123,21 @@ class APIFeatures<
 
   sort(): this {
     if (this.queryString.sort) {
-      const sortBy = this.queryString.sort.split(',').join(' ');
+      const sortBy = this.queryString.sort.split(",").join(" ");
 
       this.query = this.query.sort(sortBy);
     } else {
-      this.query = this.query.sort('-createdAt');
+      this.query = this.query.sort("-createdAt");
     }
     return this;
   }
 
   limitFields(): this {
     if (this.queryString.fields) {
-      const fields = this.queryString.fields.split(',').join(' ');
+      const fields = this.queryString.fields.split(",").join(" ");
       this.query = this.query.select(fields);
     } else {
-      this.query = this.query.select('-__v');
+      this.query = this.query.select("-__v");
     }
     return this;
   }

@@ -39,7 +39,7 @@ export default function Slider() {
       >
         {images.map((image, index) => (
           <SwiperSlide key={uuidv4()}>
-            <Image src={image} alt={'Slide ' + index + 1} width={600} height={600} priority />
+            <Image src={image} alt={`Slide ${  index  }${1}`} width={600} height={600} priority />
           </SwiperSlide>
         ))}
       </Swiper>

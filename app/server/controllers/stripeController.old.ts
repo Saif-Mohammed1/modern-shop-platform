@@ -1,3 +1,5 @@
+// disable eslint checks
+/* eslint-disable */
 import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
 import Stripe from "stripe";
@@ -47,7 +49,7 @@ export const createStripeProduct = async (req: NextRequest) => {
   if (!taxRate) {
     taxRate = await stripe.taxRates.create({
       display_name: "Standard Tax",
-      description: feePercentage + "% Sales Tax",
+      description: `${feePercentage}% Sales Tax`,
       jurisdiction: countryCode,
 
       percentage: feePercentage,

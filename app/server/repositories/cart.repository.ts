@@ -1,14 +1,13 @@
-import type {ClientSession} from 'mongoose';
-import type {Model} from 'mongoose';
+import type { Model, ClientSession } from "mongoose";
 
-import type {CartItemsType} from '@/app/lib/types/cart.types';
-import {assignAsObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import type { CartItemsType } from "@/app/lib/types/cart.types";
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
-import type {localCartDto} from '../dtos/cart.dto';
-import type {ICart} from '../models/Cart.model';
-import type {IProduct} from '../models/Product.model';
+import type { localCartDto } from "../dtos/cart.dto";
+import type { ICart } from "../models/Cart.model";
+import type { IProduct } from "../models/Product.model";
 
-import {BaseRepository} from './BaseRepository';
+import { BaseRepository } from "./BaseRepository";
 
 // Repository Service Pattern
 export class CartRepository extends BaseRepository<ICart> {
@@ -20,16 +19,20 @@ export class CartRepository extends BaseRepository<ICart> {
    * Check if item exists in cart
    */
   async existingItem(productId: string, userId: string): Promise<ICart | null> {
-    return await this.model.findOne({productId, userId}).lean();
+    return await this.model.findOne({ productId, userId }).lean();
   }
   /**
    * Add item to user's cart
    */
-  async addToCart(userId: string, productId: string, session?: ClientSession): Promise<void> {
+  async addToCart(
+    userId: string,
+    productId: string,
+    session?: ClientSession
+  ): Promise<void> {
     await this.model.updateOne(
-      {userId, productId},
-      {$inc: {quantity: 1}},
-      {upsert: true, session, setDefaultsOnInsert: true},
+      { userId, productId },
+      { $inc: { quantity: 1 } },
+      { upsert: true, session, setDefaultsOnInsert: true }
     );
   }
   /**
@@ -38,21 +41,21 @@ export class CartRepository extends BaseRepository<ICart> {
   // Optimized cart population with lean data
   async getUserCart(userId: string): Promise<CartItemsType[]> {
     const cartItems = await this.model
-      .find({userId})
-      .populate<{productId: IProduct}>({
-        path: 'productId',
-        select: 'name price images stock slug category discountExpire discount',
+      .find({ userId })
+      .populate<{ productId: IProduct }>({
+        path: "productId",
+        select: "name price images stock slug category discountExpire discount",
         match: {
           active: true,
-          stock: {$gte: 1},
+          stock: { $gte: 1 },
         },
-        options: {lean: true},
+        options: { lean: true },
       })
       .lean();
 
     return cartItems
       .filter((item) => item.productId !== null)
-      .map(({productId, quantity, expiresAt}) => ({
+      .map(({ productId, quantity, expiresAt }) => ({
         ...productId,
         _id: productId!._id.toString(),
         expiresAt,
@@ -61,24 +64,24 @@ export class CartRepository extends BaseRepository<ICart> {
   }
   async getCartWithProducts(userId: string): Promise<ICart[]> {
     return await this.model.aggregate([
-      {$match: {userId: assignAsObjectId(userId)}},
+      { $match: { userId: assignAsObjectId(userId) } },
       {
         $lookup: {
-          from: 'Product',
-          localField: 'productId',
-          foreignField: '_id',
-          as: 'product',
+          from: "Product",
+          localField: "productId",
+          foreignField: "_id",
+          as: "product",
           pipeline: [
-            {$match: {isActive: true}},
-            {$project: {name: 1, price: 1, images: 1, stock: 1, slug: 1}},
+            { $match: { isActive: true } },
+            { $project: { name: 1, price: 1, images: 1, stock: 1, slug: 1 } },
           ],
         },
       },
-      {$unwind: '$product'},
+      { $unwind: "$product" },
       {
         $project: {
           _id: 0,
-          product: '$product',
+          product: "$product",
           quantity: 1,
         },
       },
@@ -91,12 +94,12 @@ export class CartRepository extends BaseRepository<ICart> {
     userId: string,
     productId: string,
     newQuantity: number,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
     await this.model.updateOne(
-      {userId, productId},
-      {$set: {quantity: newQuantity}},
-      {session, upsert: true, setDefaultsOnInsert: true},
+      { userId, productId },
+      { $set: { quantity: newQuantity } },
+      { session, upsert: true, setDefaultsOnInsert: true }
     );
   }
   /**
@@ -105,41 +108,51 @@ export class CartRepository extends BaseRepository<ICart> {
   async decreaseQuantity(
     userId: string,
     productId: string,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
-    await this.model.updateOne({userId, productId}, {$inc: {quantity: -1}}, {session});
+    await this.model.updateOne(
+      { userId, productId },
+      { $inc: { quantity: -1 } },
+      { session }
+    );
   }
   /**
    * Remove item from cart
    */
-  async removeProductFromCart(userId: string, productId: string): Promise<void> {
-    await this.model.deleteOne({userId, productId});
+  async removeProductFromCart(
+    userId: string,
+    productId: string
+  ): Promise<void> {
+    await this.model.deleteOne({ userId, productId });
   }
 
   /**
    * Clear user's entire cart
    */
   async clearCart(userId: string, session?: ClientSession): Promise<boolean> {
-    const cart = await this.model.deleteMany({userId}, {session});
+    const cart = await this.model.deleteMany({ userId }, { session });
     return cart.deletedCount !== 0;
   }
   async saveLocalCartToDB(
     userId: string,
     products: localCartDto,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<void> {
-    const bulkOps = products.map(({_id, quantity}) => ({
+    const bulkOps = products.map(({ _id, quantity }) => ({
       updateOne: {
-        filter: {userId, productId: _id},
-        update: {quantity},
+        filter: { userId, productId: _id },
+        update: { quantity },
         upsert: true,
         setDefaultsOnInsert: true,
       },
     }));
-    await this.model.bulkWrite(bulkOps, {session});
+    await this.model.bulkWrite(bulkOps, { session });
   }
-  async deleteManyByProductId(userId: string, productIds: string[]): Promise<void> {
-    await this.model.deleteMany({userId, productId: {$in: productIds}});
+  async deleteManyByProductId(
+    userId: string,
+    productIds: string[]
+  ): Promise<void> {
+    await this.model.deleteMany({ userId, productId: { $in: productIds } });
   }
   async startSession(): Promise<ClientSession> {
     return await this.model.db.startSession();

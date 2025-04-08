@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import {useRouter} from 'next/navigation';
-import {useSession} from 'next-auth/react';
-import {useRef, useState} from 'react';
-import toast from 'react-hot-toast';
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useRef, useState } from "react";
+import toast from "react-hot-toast";
 
-import api from '@/app/lib/utilities/api';
-import {lang} from '@/app/lib/utilities/lang';
-import {VerifyEmailTranslate} from '@/public/locales/client/(auth)/VerifyEmail.Translate';
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { VerifyEmailTranslate } from "@/public/locales/client/(auth)/VerifyEmail.Translate";
 
-import Input from './Input';
-import SubmitButton from './SubmitButton';
+import Input from "./Input";
+import SubmitButton from "./SubmitButton";
 
 const VerifyEmail = () => {
   // const [code, setCode] = useState<string[]>([..." ".repeat(8)]);// not work
-  const [code, setCode] = useState<string[]>(Array(8).fill(''));
+  const [code, setCode] = useState<string[]>(Array(8).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
-  const {data: session, update} = useSession();
+  const { data: session, update } = useSession();
   const router = useRouter();
   const handleChange = (index: number, value: string) => {
     // if (!/^[a-zA-Z0-9]{8}$/.test(value)) return;
@@ -31,13 +31,15 @@ const VerifyEmail = () => {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text/plain').slice(0, code.length);
+    const pastedData = e.clipboardData
+      .getData("text/plain")
+      .slice(0, code.length);
 
     if (/^[a-zA-Z0-9]+$/.test(pastedData)) {
       // Allow alphanumeric
-      const pastedArray = pastedData.split('').slice(0, code.length);
-      const newCode = Array.from({length: code.length}, (_, i) =>
-        i < pastedArray.length ? pastedArray[i] : '',
+      const pastedArray = pastedData.split("").slice(0, code.length);
+      const newCode = Array.from({ length: code.length }, (_, i) =>
+        i < pastedArray.length ? pastedArray[i] : ""
       );
 
       setCode(newCode);
@@ -54,9 +56,9 @@ const VerifyEmail = () => {
 
     try {
       const {
-        data: {message},
-      } = await api.put('/customers/update-data/verify-email', {
-        code: code.join(''),
+        data: { message },
+      } = await api.put("/customers/update-data/verify-email", {
+        code: code.join(""),
       });
       await update({
         ...session,
@@ -70,26 +72,28 @@ const VerifyEmail = () => {
         },
       });
       toast.success(message || VerifyEmailTranslate[lang].VerifyEmail.success);
-      router.push('/');
+      router.push("/");
     } catch (error) {
-      toast.error((error as any).message || VerifyEmailTranslate[lang].VerifyEmail.fail);
+      toast.error(
+        (error as Error)?.message || VerifyEmailTranslate[lang].VerifyEmail.fail
+      );
     }
   };
   // handel key backspace or delete to remove the value
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' || e.key === 'Delete') {
+    if (e.key === "Backspace" || e.key === "Delete") {
       e.preventDefault();
       const newCode = [...code];
 
-      if (newCode[index] === '') {
+      if (newCode[index] === "") {
         // Delete previous field if current is empty
         if (index > 0) {
-          newCode[index - 1] = '';
+          newCode[index - 1] = "";
           inputs.current[index - 1]?.focus();
         }
       } else {
         // Clear current field but keep focus
-        newCode[index] = '';
+        newCode[index] = "";
         inputs.current[index]?.focus();
       }
 
@@ -98,10 +102,13 @@ const VerifyEmail = () => {
   };
   const onResend = async (): Promise<void> => {
     try {
-      await api.get('/customers/update-data/verify-email');
+      await api.get("/customers/update-data/verify-email");
       toast.success(VerifyEmailTranslate[lang].VerifyEmail.resendCodeSuccess);
     } catch (error) {
-      toast.error((error as any).message || VerifyEmailTranslate[lang].VerifyEmail.resendCodeFail);
+      toast.error(
+        (error as Error)?.message ||
+          VerifyEmailTranslate[lang].VerifyEmail.resendCodeFail
+      );
     }
   };
   return (
@@ -114,7 +121,7 @@ const VerifyEmail = () => {
       </p>
 
       <form
-        onSubmit={(e) => void handleSubmit(e)}
+        onSubmit={handleSubmit}
         className="flex flex-col justify-center gap-2 mb-6"
       >
         <div className="flex justify-center gap-2 mb-6">
@@ -128,9 +135,13 @@ const VerifyEmail = () => {
               inputMode="numeric"
               maxLength={1}
               value={digit}
-              onChange={(e) => handleChange(index, e.target.value)}
+              onChange={(e) => {
+                handleChange(index, e.target.value);
+              }}
               onPaste={handlePaste}
-              onKeyDown={(e) => handleKeyDown(index, e)}
+              onKeyDown={(e) => {
+                handleKeyDown(index, e);
+              }}
               className="w-12 h-12 text-2xl text-center border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               // disabled={isLoading}
             />
@@ -139,7 +150,7 @@ const VerifyEmail = () => {
         <SubmitButton
           title={VerifyEmailTranslate[lang].VerifyEmail.VerifyCode}
           // onClick={() => handleSubmit()}
-          disabled={code.some((c) => c === '')}
+          disabled={code.some((c) => c === "")}
           className="#verifyCode w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg disabled:opacity-50"
         ></SubmitButton>
       </form>
@@ -152,7 +163,7 @@ const VerifyEmail = () => {
 
       <div className="mt-4 text-center space-y-2">
         <button
-          onClick={() => void onResend()}
+          onClick={onResend}
           className="text-sm text-blue-600 hover:text-blue-700"
         >
           {VerifyEmailTranslate[lang].VerifyEmail.ResendCode}

@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import {useRouter} from 'next/navigation';
-import {signOut} from 'next-auth/react';
-import {useEffect, useState} from 'react';
-import toast from 'react-hot-toast';
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
-import api from '@/app/lib/utilities/api';
-import {deleteCookies} from '@/app/lib/utilities/cookies';
-import {sessionExpiredOverlayTranslate} from '@/public/locales/client/(public)/sessionExpiredOverlayTranslate';
+import api from "@/app/lib/utilities/api";
+import { deleteCookies } from "@/app/lib/utilities/cookies";
+import { sessionExpiredOverlayTranslate } from "@/public/locales/client/(public)/sessionExpiredOverlayTranslate";
 
-import {lang} from '../../app/lib/utilities/lang';
+import { lang } from "../../app/lib/utilities/lang";
 
 const SessionExpiredOverlay = () => {
   const router = useRouter();
@@ -21,24 +21,25 @@ const SessionExpiredOverlay = () => {
       setIsSessionExpired(true);
     };
 
-    window.addEventListener('sessionExpired', handleSessionExpired);
+    window.addEventListener("sessionExpired", handleSessionExpired);
 
     // Clean up event listener on component unmount
     return () => {
-      window.removeEventListener('sessionExpired', handleSessionExpired);
+      window.removeEventListener("sessionExpired", handleSessionExpired);
     };
   }, []);
 
   const handleLogin = async () => {
     try {
       await signOut();
-      await deleteCookies('refreshAccessToken');
+      await deleteCookies("refreshAccessToken");
 
-      await api.post('/auth/logout');
+      await api.post("/auth/logout");
       // Handle login logic here
-      router.push('/auth');
+      router.push("/auth");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to logout';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to logout";
       toast.error(errorMessage);
     }
   };
@@ -58,9 +59,7 @@ const SessionExpiredOverlay = () => {
         </p>
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-          onClick={() => {
-            void handleLogin();
-          }}
+          onClick={handleLogin}
         >
           {sessionExpiredOverlayTranslate[lang].sessionExpired.login}
         </button>

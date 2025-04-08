@@ -97,7 +97,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           {shopPageTranslate[lang].RelatedProducts.off}
         </div>
       )}
-      <Link href={"/shop/" + product.slug}>
+      <Link href={`/shop/${product.slug}`}>
         <div className="imgParent">
           <Image
             src={imageSrc(product)}
@@ -133,12 +133,12 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         </div>
         {/* <button
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
-          onClick={() => void handelAddToCart()}
+          onClick={ handelAddToCart}
         >
           {shopPageTranslate[lang].content.addToCart}
         </button> */}
         <button
-          onClick={() => void handelAddToCart()}
+          onClick={handelAddToCart}
           // className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
           className="p-2 rounded-lg hover:border-1 transition-colors flex items-center justify-center hover:bg-red-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer"
           aria-label="Add to cart"
@@ -175,7 +175,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
             <button
               className="text-red-500 text-2xl focus:outline-none cursor-pointer"
               aria-label="Add to Wishlist"
-              onClick={() => void toggleWishlistHandler()}
+              onClick={toggleWishlistHandler}
             >
               {isInWishlist(product._id) ? (
                 <AiFillHeart />
@@ -187,7 +187,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           <button
             className="text-gray-500 hover:text-gray-600 transition-colors cursor-pointer"
             aria-label="Share Product"
-            onClick={() => void copyProductLink()}
+            onClick={copyProductLink}
           >
             <FaShareAlt size={20} />
           </button>

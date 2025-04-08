@@ -38,7 +38,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     if (session && session?.user) {
       updateUser(session.user);
       if (session?.user?.accessToken)
-        tokenManager.setAccessToken(session?.user?.accessToken);
+        {tokenManager.setAccessToken(session?.user?.accessToken);}
     } else {
       updateUser(null);
     }

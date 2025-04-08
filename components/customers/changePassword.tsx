@@ -30,7 +30,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
   const revokeUserTokens = (deviceId: string) => {
     setDevicesList((prevDevices) =>
       prevDevices.map((device) =>
-        device._id == deviceId
+        String(device._id) === String(deviceId)
           ? { ...device, status: RefreshTokenStatus.Revoked }
           : device
       )
@@ -151,7 +151,9 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
     }
   };
   useEffect(() => {
-    if (devices) setDevicesList(devices);
+    if (devices) {
+      setDevicesList(devices);
+    }
   }, [devices]);
   return (
     <div className="w-full max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg min-h-screen overflow-hidden">
@@ -185,11 +187,13 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
                   accountSettingsTranslate[lang].form.oldPassword.placeholder
                 }
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
                 className="border rounded px-3 py-2 w-full mt-1"
               />
               <button
-                onClick={() => void setShowPassword(!showPassword)}
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer"
               >
                 {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
@@ -203,11 +207,13 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
                   accountSettingsTranslate[lang].form.newPassword.placeholder
                 }
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                }}
                 className="border rounded px-3 py-2 w-full mt-1"
               />
               <button
-                onClick={() => void setShowNewPassword(!showNewPassword)}
+                onClick={() => setShowNewPassword(!showNewPassword)}
                 className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer"
               >
                 {showNewPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
@@ -222,20 +228,20 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
                     .placeholder
                 }
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                }}
                 className="border rounded px-3 py-2 w-full mt-1"
               />
               <button
-                onClick={() =>
-                  void setShowConfirmPassword(!showConfirmPassword)
-                }
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer"
               >
                 {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
               </button>
             </div>
             <button
-              onClick={() => void handlePasswordUpdate}
+              onClick={handlePasswordUpdate}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               {accountSettingsTranslate[lang].button.update}
@@ -246,7 +252,9 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
 
       {/* Delete Account Button */}
       <button
-        onClick={() => setShowDeleteModal(true)}
+        onClick={() => {
+          setShowDeleteModal(true);
+        }}
         className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
       >
         {accountSettingsTranslate[lang].button.deleteAccount}
@@ -264,13 +272,15 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
             </p>
             <div className="flex justify-center space-x-4">
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                }}
                 className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
               >
                 {accountSettingsTranslate[lang].showDeleteModal.cancel}
               </button>
               <button
-                onClick={() => void handleDeleteAccount}
+                onClick={handleDeleteAccount}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               >
                 {accountSettingsTranslate[lang].showDeleteModal.delete}
@@ -291,7 +301,9 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
               <DeviceInfoSection
                 key={device._id}
                 session={device}
-                revokeUserTokens={() => revokeUserTokens(device._id)}
+                revokeUserTokens={() => {
+                  revokeUserTokens(device._id);
+                }}
               />
             ))
           ) : (
@@ -301,7 +313,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
           )}
         </div>
         <button
-          onClick={() => void handleSignoutAll}
+          onClick={handleSignoutAll}
           className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
         >
           {accountSettingsTranslate[lang].devices.button.signoutAll}
