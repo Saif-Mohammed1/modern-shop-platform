@@ -30,12 +30,14 @@ const registerSchema = z
       .string({
         required_error: userZodValidatorTranslate[lang].name.required,
       })
+      .trim()
       .min(3, userZodValidatorTranslate[lang].name.minLength)
       .max(50, userZodValidatorTranslate[lang].name.maxLength),
     email: z
       .string({
         required_error: userZodValidatorTranslate[lang].email.required,
       })
+      .trim()
       .email(userZodValidatorTranslate[lang].email.invalid)
       .refine(
         (email) => allowedEmailDomains.includes(email.split("@")[1]),
@@ -45,6 +47,7 @@ const registerSchema = z
       .string({
         // required_error: userZodValidatorTranslate[lang].phone.required,
       })
+      .trim()
       .regex(
         /^\+?[1-9]\d{1,14}$/,
         userZodValidatorTranslate[lang].phone.invalid
@@ -55,15 +58,19 @@ const registerSchema = z
       .string({
         required_error: userZodValidatorTranslate[lang].password.required,
       })
+      .trim()
       .min(10, userZodValidatorTranslate[lang].password.minLength)
       .max(40, userZodValidatorTranslate[lang].password.maxLength)
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
         userZodValidatorTranslate[lang].password.invalid
       ),
-    confirmPassword: z.string({
-      required_error: userZodValidatorTranslate[lang].confirmPassword.required,
-    }),
+    confirmPassword: z
+      .string({
+        required_error:
+          userZodValidatorTranslate[lang].confirmPassword.required,
+      })
+      .trim(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: userZodValidatorTranslate[lang].confirmPassword.invalid,

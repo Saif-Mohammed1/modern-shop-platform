@@ -175,7 +175,7 @@ const LoginPage = () => {
                 placeholder={loginTranslate[lang].form.email.placeholder}
                 value={email}
                 onChange={(e) => {
-                  setEmail(e.target.value);
+                  setEmail(e.target.value.trim());
                 }}
                 required
                 className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -192,7 +192,7 @@ const LoginPage = () => {
                   placeholder={loginTranslate[lang].form.password.placeholder}
                   value={password}
                   onChange={(e) => {
-                    setPassword(e.target.value);
+                    setPassword(e.target.value.trim());
                   }}
                   className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
@@ -242,7 +242,6 @@ const LoginPage = () => {
             </Link>
           </div> */}
           <div className="text-center mt-4 flex flex-col justify-center">
-            <p className="text-gray-500">use this email for testing website</p>
             <p className="text-gray-500 font-bold">
               email: moderator@gmail.com
             </p>

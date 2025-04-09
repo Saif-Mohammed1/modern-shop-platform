@@ -2,6 +2,15 @@ const BadExamples = () => {
   const logIt = async () => {
     // console.log("Logging...");
   };
+  const Button = () => {
+    return <button>Button</button>;
+  };
+  // const IconButton = () => {
+  //   return <button>IconButton</button>;
+  // };
+  const MyCustomButton = () => {
+    return <button>MyCustomButton</button>;
+  };
 
   return (
     <>
@@ -19,6 +28,19 @@ const BadExamples = () => {
       <button onClick={() => void logIt().then((res) => res)}>Good</button>
       <button onClick={() => void logIt()}>Good</button> {/* ✅ */}{" "}
       {/* ✅ Correct: Proper handler */}
+      // Should error
+      {/* <Button >
+        <IconButton />
+      </Button> */}
+      // Should error
+      <button>
+        <MyCustomButton />
+      </button>
+      // Valid
+      <div>
+        <Button />
+        <Button />
+      </div>
       {/* <p>
         <div>Invalid</div>
       </p> */}

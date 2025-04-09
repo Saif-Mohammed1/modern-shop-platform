@@ -9,7 +9,7 @@ import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import validateJSXNestingPlugin from "eslint-plugin-validate-jsx-nesting";
-// import customeRule from "./eslint-plugin-no-void-jsx/dist/index.js";
+import customRule from "./eslint-plugin-no-void-jsx/dist/index.js";
 import globals from "globals";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -38,7 +38,7 @@ export default [
       "**/__test__/**",
       //ignore any file contain .old.*
       "**/*.old.*",
-      "config"
+      "config",
     ],
   },
   eslintJS.configs.recommended,
@@ -54,7 +54,7 @@ export default [
       import: importPlugin,
       "jsx-a11y": jsxA11yPlugin,
       "validate-jsx-nesting": validateJSXNestingPlugin,
-      // "event-handlers": customeRule,
+      "event-handlers": customRule,
 
       // "no-void-jsx": saveEventHandelPlugin,
     },
@@ -86,8 +86,6 @@ export default [
 
   // Shared rules for all JS/TS files
   {
-  
-
     files: ["**/*.{js,jsx,ts,tsx}"],
     rules: {
       "no-console": "warn",
@@ -209,14 +207,15 @@ export default [
         },
       ],
 
+      "react-hooks/exhaustive-deps": "error",
+      "react-hooks/rules-of-hooks": "error",
+
       "jsx-a11y/alt-text": "warn",
       "jsx-a11y/anchor-has-content": "warn",
       "jsx-a11y/no-noninteractive-element-interactions": "error",
       "jsx-a11y/heading-has-content": "warn",
       "jsx-a11y/no-aria-hidden-on-focusable": "warn",
       "jsx-a11y/anchor-is-valid": "warn",
-      "react-hooks/exhaustive-deps": "error",
-      "react-hooks/rules-of-hooks": "error",
       "jsx-a11y/no-static-element-interactions": [
         "error",
         {
@@ -224,6 +223,15 @@ export default [
         },
       ],
       "jsx-a11y/click-events-have-key-events": "warn",
+      "jsx-a11y/no-redundant-roles": [
+        "error",
+        {
+          button: [],
+          nav: ["navigation"],
+        },
+      ],
+      "jsx-a11y/aria-role": ["error", { allowedInvalidRoles: ["text"] }],
+
       "import/order": [
         "error",
         {
@@ -252,6 +260,7 @@ export default [
       "@next/next/no-page-custom-font": "warn",
       "validate-jsx-nesting/no-invalid-jsx-nesting": "error",
       // "event-handlers/no-bad-event-handlers": "error",
+      // "event-handlers/no-nested-buttons": "error",
     },
   },
 

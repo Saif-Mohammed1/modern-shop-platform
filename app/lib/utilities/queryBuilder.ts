@@ -23,14 +23,14 @@ import type {
   Query,
   // QueryOptions,
   SortOrder,
-} from 'mongoose';
+} from "mongoose";
 
-import logger from '../logger/logs';
+import logger from "../logger/logs";
 import type {
   PaginationMeta,
   QueryBuilderConfig,
   QueryBuilderResult,
-} from '../types/queryBuilder.types';
+} from "../types/queryBuilder.types";
 
 export class QueryBuilder<T extends Document> {
   private populateOptions: PopulateOptions[] = [];
@@ -43,7 +43,11 @@ export class QueryBuilder<T extends Document> {
   limit: number = 15;
   filter: FilterQuery<T> = {};
 
-  constructor(model: Model<T>, searchParams: URLSearchParams, config: QueryBuilderConfig<T>) {
+  constructor(
+    model: Model<T>,
+    searchParams: URLSearchParams,
+    config: QueryBuilderConfig<T>
+  ) {
     this.originalParams = new URLSearchParams(searchParams);
     this.config = {
       maxLimit: 15,
@@ -53,7 +57,7 @@ export class QueryBuilder<T extends Document> {
       searchFields: [],
       // allowedFilters: [], // Default empty array
       allowedSorts: [], // Default empty array
-      defaultSort: '-createdAt',
+      defaultSort: "-createdAt",
       fixedFilters: {},
       excludeFields: [],
       ...config,
@@ -80,10 +84,10 @@ export class QueryBuilder<T extends Document> {
   //   );
   // }
   private isValidParam(key: string): boolean {
-    if (['page', 'limit', 'sort', 'search', 'fields'].includes(key)) {
+    if (["page", "limit", "sort", "search", "fields"].includes(key)) {
       return true;
     }
-    const baseKey = key.replace(/\[.*\]/, '');
+    const baseKey = key.replace(/\[.*\]/, "");
     const dbField = this.config.filterMap[baseKey] || baseKey;
     return this.config.allowedFilters.includes(dbField as keyof T);
   }
@@ -92,16 +96,24 @@ export class QueryBuilder<T extends Document> {
     return this;
   }
   private parseValue(value: string): any {
-    if (/^\d+$/.test(value)) {return parseInt(value, 10);}
-    if (/^\d+\.\d+$/.test(value)) {return parseFloat(value);}
-    if (value.toLowerCase() === 'true') {return true;}
-    if (value.toLowerCase() === 'false') {return false;}
+    if (/^\d+$/.test(value)) {
+      return parseInt(value, 10);
+    }
+    if (/^\d+\.\d+$/.test(value)) {
+      return parseFloat(value);
+    }
+    if (value.toLowerCase() === "true") {
+      return true;
+    }
+    if (value.toLowerCase() === "false") {
+      return false;
+    }
     // if (Date.parse(value)) return new Date(value);
 
     // Handle date parsing explicitly
     if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
       // MM-DD-YYYY format
-      const [month, day, year] = value.split('-').map(Number);
+      const [month, day, year] = value.split("-").map(Number);
       return new Date(Date.UTC(year, month - 1, day));
     }
 
@@ -110,7 +122,9 @@ export class QueryBuilder<T extends Document> {
       const date = new Date(value);
       return isNaN(date.getTime()) ? value : date;
     }
-    if (value.includes(',')) {return value.split(',').map(this.parseValue);}
+    if (value.includes(",")) {
+      return value.split(",").map(this.parseValue);
+    }
     return value;
   }
 
@@ -138,7 +152,7 @@ export class QueryBuilder<T extends Document> {
       const aliasKey = this.config.paramAliases[baseKey] || baseKey;
       const dbField = this.config.filterMap[aliasKey] || aliasKey;
       let parsedValue = this.parseValue(value);
-      if (aliasKey === 'search') {
+      if (aliasKey === "search") {
         this.handleTextSearch(parsedValue);
         continue;
       }
@@ -158,7 +172,11 @@ export class QueryBuilder<T extends Document> {
         parsedValue = this.adjustDateForOperator(parsedValue, operator);
       }
       if (operator) {
-        if (!['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'nin'].includes(operator)) {
+        if (
+          !["eq", "ne", "gt", "gte", "lt", "lte", "in", "nin"].includes(
+            operator
+          )
+        ) {
           logger.warn(`Invalid operator: ${operator}`);
           continue; // Skip invalid operators
         }
@@ -169,7 +187,7 @@ export class QueryBuilder<T extends Document> {
             [`$${operator}`]: parsedValue,
           };
         } else {
-          filter[dbField as string] = {[`$${operator}`]: parsedValue};
+          filter[dbField as string] = { [`$${operator}`]: parsedValue };
         }
       } else {
         filter[dbField as string] = parsedValue;
@@ -198,28 +216,29 @@ export class QueryBuilder<T extends Document> {
 
   private handleTextSearch(searchTerm: string): void {
     if (this.config.enableTextSearch) {
-      this.filter.$text = {$search: searchTerm};
+      this.filter.$text = { $search: searchTerm };
     } else if (this.config.searchFields?.length) {
       this.filter.$or = this.config.searchFields.map((field) => ({
-        [field]: {$regex: searchTerm, $options: 'i'},
+        [field]: { $regex: searchTerm, $options: "i" },
       })) as FilterQuery<T>[];
     }
   }
 
   private buildSort(): this {
-    const sortParam = this.originalParams.get('sort') || this.config.defaultSort;
+    const sortParam =
+      this.originalParams.get("sort") || this.config.defaultSort;
 
-    const sortFields = sortParam.split(',').reduce(
+    const sortFields = sortParam.split(",").reduce(
       (acc, field) => {
         let direction = 1; // Default ascending
         let rawField = field.trim();
 
-        if (rawField.includes(':')) {
+        if (rawField.includes(":")) {
           // Handle case like price:desc
-          const [key, order] = rawField.split(':');
-          direction = order === 'desc' ? -1 : 1;
+          const [key, order] = rawField.split(":");
+          direction = order === "desc" ? -1 : 1;
           rawField = key;
-        } else if (rawField.startsWith('-')) {
+        } else if (rawField.startsWith("-")) {
           // Handle case like -price
           direction = -1;
           rawField = rawField.substring(1);
@@ -234,7 +253,7 @@ export class QueryBuilder<T extends Document> {
 
         return acc;
       },
-      {} as Record<string, SortOrder>,
+      {} as Record<string, SortOrder>
     );
 
     if (Object.keys(sortFields).length) {
@@ -245,23 +264,23 @@ export class QueryBuilder<T extends Document> {
   }
 
   private buildPagination(): this {
-    this.page = Math.max(1, parseInt(this.originalParams.get('page') || '1'));
+    this.page = Math.max(1, parseInt(this.originalParams.get("page") || "1"));
 
     this.limit = Math.min(
       this.config.maxLimit,
-      parseInt(this.originalParams.get('limit') || String(this.config.maxLimit)),
+      parseInt(this.originalParams.get("limit") || String(this.config.maxLimit))
     );
     return this;
   }
 
   private buildProjection(): this {
-    if (this.originalParams.has('fields')) {
+    if (this.originalParams.has("fields")) {
       const fields = this.originalParams
-        .get('fields')!
-        .split(',')
+        .get("fields")!
+        .split(",")
         .map((f) => this.config.filterMap[f] || f)
         .filter((f) => this.config.allowedFilters.includes(f as keyof T))
-        .join(' ');
+        .join(" ");
       this.query = this.query.select(fields);
     }
     return this;
@@ -271,20 +290,20 @@ export class QueryBuilder<T extends Document> {
     const links: Record<string, string> = {};
     const params = new URLSearchParams(this.originalParams);
 
-    if (params.has('userId')) {
-      params.delete('userId');
+    if (params.has("userId")) {
+      params.delete("userId");
     }
     if (this.page > 1) {
-      params.set('page', '1');
+      params.set("page", "1");
       links.first = `?${params}`;
-      params.set('page', String(this.page - 1));
+      params.set("page", String(this.page - 1));
       links.prev = `?${params}`;
     }
 
     if (this.page < totalPages) {
-      params.set('page', String(this.page + 1));
+      params.set("page", String(this.page + 1));
       links.next = `?${params}`;
-      params.set('page', String(totalPages));
+      params.set("page", String(totalPages));
       links.last = `?${params}`;
     }
 
@@ -295,16 +314,16 @@ export class QueryBuilder<T extends Document> {
     // Clone to avoid mutating original date
     const adjustedDate = new Date(date);
     switch (operator) {
-      case 'gte':
+      case "gte":
         adjustedDate.setUTCHours(0, 0, 0, 0); // Start of day
         break;
-      case 'lte':
+      case "lte":
         adjustedDate.setUTCHours(23, 59, 59, 999); // End of day
         break;
-      case 'gt':
+      case "gt":
         adjustedDate.setUTCHours(23, 59, 59, 999); // Treat as end of day
         break;
-      case 'lt':
+      case "lt":
         adjustedDate.setUTCHours(0, 0, 0, 0); // Treat as start of day
         break;
     }
@@ -348,7 +367,8 @@ export class QueryBuilder<T extends Document> {
         links: this.buildLinks(totalPages),
       };
     } catch (error) {
-      throw new QueryBuilderError('Failed to execute query', error);
+      logger.error("QueryBuilder Error:", error);
+      throw new QueryBuilderError("Failed to execute query", error);
     }
   }
 }
@@ -357,10 +377,10 @@ class QueryBuilderError extends Error {
   constructor(
     public override message: string,
     public originalError: unknown,
-    public context?: Record<string, any>,
+    public context?: Record<string, any>
   ) {
     super(message);
-    this.name = 'QueryBuilderError';
+    this.name = "QueryBuilderError";
     Error.captureStackTrace(this, QueryBuilderError);
   }
 }
