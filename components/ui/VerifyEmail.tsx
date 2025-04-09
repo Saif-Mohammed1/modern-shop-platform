@@ -52,6 +52,9 @@ const VerifyEmail = () => {
     }
   };
   const handleSubmit = async (e: React.FormEvent) => {
+    if (!session?.user) {
+      throw new Error(VerifyEmailTranslate[lang].VerifyEmail.userNotFound);
+    }
     e.preventDefault();
 
     try {

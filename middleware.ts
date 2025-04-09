@@ -69,7 +69,7 @@ const authMiddleware = async (req: NextRequest) => {
       isAuth &&
       !pathname.startsWith("/api") &&
       !pathname.startsWith("/verify-email") &&
-      !user!.verification?.emailVerified
+      !user?.verification?.emailVerified
     ) {
       return NextResponse.redirect(new URL("/verify-email", req.url));
     }

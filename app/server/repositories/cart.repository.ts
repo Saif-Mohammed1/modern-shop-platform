@@ -57,7 +57,7 @@ export class CartRepository extends BaseRepository<ICart> {
       .filter((item) => item.productId !== null)
       .map(({ productId, quantity, expiresAt }) => ({
         ...productId,
-        _id: productId!._id.toString(),
+        _id: productId?._id.toString(),
         expiresAt,
         quantity,
       }));

@@ -1,6 +1,6 @@
 import noBadEventHandlers from "./rules/no-bad-event-handlers";
 
-export = {
+export default {
   rules: {
     "no-bad-event-handlers": noBadEventHandlers,
   },

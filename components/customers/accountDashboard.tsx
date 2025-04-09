@@ -78,10 +78,15 @@ const AccountDashboard = () => {
   const handleApplyChanges = async () => {
     let loadingToast;
     let updatedData: Partial<FormDataType> = {};
+    if (!session?.user) {
+      toast.error(accountDashboardTranslate[lang].errors.global);
+      return;
+    }
     if (changesApplied) {
       Object.entries(formData).forEach(([key, value]) => {
-        if (formData[key as Field] !== session?.user[key as Field]) {
-          updatedData[key as Field] = value;
+        const keyType = key as Field;
+        if (session?.user && formData[keyType] !== session?.user[keyType]) {
+          updatedData[keyType] = value;
         }
       });
 
@@ -186,6 +191,10 @@ const AccountDashboard = () => {
 
   const handleVerifyToken = async () => {
     let loadingToast;
+    if (!session?.user) {
+      toast.error(accountDashboardTranslate[lang].errors.global);
+      return;
+    }
     try {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleVerifyToken.loading

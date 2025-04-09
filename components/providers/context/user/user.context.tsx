@@ -35,10 +35,16 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       updateUser(null);
       tokenManager.clearAccessToken();
     };
-    if (session && session?.user) {
-      updateUser(session.user);
-      if (session?.user?.accessToken)
-        {tokenManager.setAccessToken(session?.user?.accessToken);}
+    if (session && session.user) {
+      const user = {
+        ...session.user,
+        name: session.user.name || "",
+        email: session.user.email || "",
+      };
+      updateUser(user);
+      if (session?.user?.accessToken) {
+        tokenManager.setAccessToken(session?.user?.accessToken);
+      }
     } else {
       updateUser(null);
     }

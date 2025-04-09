@@ -947,8 +947,8 @@ export class StripeService {
             const productId = op.updateOne.filter._id.toString();
             return {
               _id: op.updateOne.filter._id,
-              quantity: productMap.get(productId)!.totalQuantity,
-              name: productMap.get(productId)!.name,
+              quantity: productMap.get(productId)?.totalQuantity ?? 0,
+              name: productMap.get(productId)?.name ?? "",
             };
           });
 
@@ -979,8 +979,8 @@ export class StripeService {
         );
         const failedProducts = failedIds.map((id) => ({
           _id: assignAsObjectId(id),
-          quantity: productMap.get(id)!.totalQuantity,
-          name: productMap.get(id)!.name,
+          quantity: productMap.get(id)?.totalQuantity ?? 0,
+          name: productMap.get(id)?.name ?? "",
         }));
 
         await this.handlePartialReservationFailure(user, failedProducts, logs);
