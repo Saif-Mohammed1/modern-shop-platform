@@ -1,7 +1,7 @@
 import { Schema, model, models, type Document, type Model } from "mongoose";
 
-import type { IProduct } from "./Product.model";
-import type { IUser } from "./User.model";
+import _ProductModel, { type IProduct } from "./Product.model";
+import _UserModel, { type IUser } from "./User.model";
 
 // Interface for Cart document
 export interface ICart extends Document {

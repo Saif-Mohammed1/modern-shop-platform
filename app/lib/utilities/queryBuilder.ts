@@ -367,7 +367,7 @@ export class QueryBuilder<T extends Document> {
         links: this.buildLinks(totalPages),
       };
     } catch (error) {
-      logger.error("QueryBuilder Error:", error);
+      // logger.error("QueryBuilder Error:", error);
       throw new QueryBuilderError("Failed to execute query", error);
     }
   }

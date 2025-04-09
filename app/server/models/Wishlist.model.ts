@@ -8,7 +8,7 @@ import {
   type Types,
 } from "mongoose";
 
-import { type IProduct } from "./Product.model";
+import _ProductModel, { type IProduct } from "./Product.model";
 import { type IUser } from "./User.model";
 
 export interface IWishlist extends Document {

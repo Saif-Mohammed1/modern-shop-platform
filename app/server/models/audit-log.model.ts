@@ -14,7 +14,7 @@ import {
   EntityType,
 } from "@/app/lib/types/audit.types";
 
-import type { IUser } from "./User.model";
+import _UserModel, { type IUser } from "./User.model";
 
 export interface IAuditLog extends Document {
   actor: Types.ObjectId | IUser;

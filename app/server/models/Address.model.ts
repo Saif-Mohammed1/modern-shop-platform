@@ -1,7 +1,6 @@
 import { Schema, model, models, type Document, type Model } from "mongoose";
 
-import type { IUser } from "./User.model";
-
+import _UserModel, { type IUser } from "./User.model";
 export interface IAddress extends Document {
   street: string;
   city: string;

@@ -16,7 +16,7 @@ import {
 } from "@/app/lib/types/orders.types";
 import { UserCurrency } from "@/app/lib/types/users.types";
 
-import type { IUser } from "./User.model";
+import _UserModel, { type IUser } from "./User.model";
 
 export interface IOrder extends Document {
   _id: Types.ObjectId;
