@@ -42,8 +42,8 @@ next-env.d.ts
 **/test/
 **/tests/
 **/**test**/
-# ignore any file contine .old*
-**/*.old*
+# # ignore any file contine .old*
+# **/*.old*
 # ignore any file contine .bak*
 **/*.bak*
 # ignore any file contine .swp*
