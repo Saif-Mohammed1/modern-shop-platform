@@ -1,6 +1,6 @@
-import type {IProduct} from '../../server/models/Product.model';
+import type { IProduct } from "../../server/models/Product.model";
 
-import type {UserAuthType} from './users.types';
+import type { UserAuthType } from "./users.types";
 
 // import Address from "./address.model";
 // export type status = "pending" | "completed" | "refunded" | "processing" | "cancelled";
@@ -22,7 +22,7 @@ export interface IShippingInfo {
 //   discountExpire: Date;
 // }
 export interface IOrderItem {
-  productId: IProduct['_id'];
+  productId: IProduct["_id"];
   name: string;
   price: number;
   discount: number;
@@ -40,22 +40,22 @@ export interface IOrderItem {
   finalPrice: number;
 }
 export enum OrderStatus {
-  Pending = 'pending', // Order placed, waiting for confirmation/payment
-  Processing = 'processing', // Payment confirmed, preparing order
-  Shipped = 'shipped', // Order has been shipped
-  Delivered = 'delivered', // Order delivered to customer
-  Completed = 'completed', // Order successfully completed
-  Cancelled = 'cancelled', // Order cancelled before shipment
-  Refunded = 'refunded', // Order refunded to customer
-  Failed = 'failed', // Payment failed or issue occurred
-  OnHold = 'on_hold', // Order put on hold for verification/issues
-  PartiallyRefunded = 'partially_refunded', // Part of the order refunded
-  Disputed = 'disputed', // Customer has raised a dispute
+  Pending = "pending", // Order placed, waiting for confirmation/payment
+  Processing = "processing", // Payment confirmed, preparing order
+  Shipped = "shipped", // Order has been shipped
+  Delivered = "delivered", // Order delivered to customer
+  Completed = "completed", // Order successfully completed
+  Cancelled = "cancelled", // Order cancelled before shipment
+  Refunded = "refunded", // Order refunded to customer
+  Failed = "failed", // Payment failed or issue occurred
+  OnHold = "on_hold", // Order put on hold for verification/issues
+  PartiallyRefunded = "partially_refunded", // Part of the order refunded
+  Disputed = "disputed", // Customer has raised a dispute
 }
 // ["credit_card", "paypal", "crypto"],
 export enum PaymentsMethod {
-  Credit_card = 'credit_card',
-  Paypal = 'paypal',
+  Credit_card = "credit_card",
+  Paypal = "paypal",
   // Credit_card=""
 }
 export type OrderType = {
@@ -67,6 +67,10 @@ export type OrderType = {
   invoiceId: string;
   invoiceLink: string;
   subtotal: number;
+  payment: {
+    method: string;
+    transactionId: string;
+  };
   // shippingCost: number;
   tax: number;
   total: number;

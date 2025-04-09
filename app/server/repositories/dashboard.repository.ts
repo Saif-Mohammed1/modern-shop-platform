@@ -869,7 +869,10 @@ export class DashboardRepository implements BaseDashboardRepository {
         avgStock: c.avgStock,
       })),
 
-      recentChanges: result.recentActivity ?? [],
+      recentChanges: (result.recentActivity ?? []).map((c) => ({
+        ...c,
+        _id: c._id.toString(),
+      })),
 
       shipping: {
         avgWeight: this.getFirstNumber(result.shippingMetrics, "avgWeight"),
@@ -1409,7 +1412,10 @@ export class DashboardRepository implements BaseDashboardRepository {
         revenue: l.totalRevenue,
       })),
 
-      recentOrders: result.recentOrders ?? [],
+      recentOrders: (result.recentOrders ?? []).map((o) => ({
+        ...o,
+        _id: o._id.toString(),
+      })),
     };
   }
 
@@ -1953,13 +1959,18 @@ export class DashboardRepository implements BaseDashboardRepository {
         frequency: r.count,
         financialImpact: r.totalAmount,
       })),
-      recentRefunds: result.recentRefunds,
+      recentRefunds: (result.recentRefunds ?? []).map((curr) => ({
+        ...curr,
+        _id: curr._id.toString(),
+      })),
       weeklyGrowth: result.weeklyGrowth.map((wg) => ({
         ...wg,
         amountGrowth: `${wg.amountGrowth.toFixed(1)}%`,
         countGrowth: `${wg.countGrowth.toFixed(1)}%`,
       })),
-      highRiskRefunds: this.getFirstNumber(result.highRiskRefunds, "count"),
+      highRiskRefunds: {
+        count: this.getFirstNumber(result.highRiskRefunds, "count"),
+      },
       financialImpact: {
         totalRefunded: this.getFirstNumber(
           result.financialImpact,

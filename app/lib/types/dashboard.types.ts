@@ -1,4 +1,6 @@
-import type { IOrder } from "@/app/server/models/Order.model";
+import type { Types } from "mongoose";
+
+import type { OrderType } from "./orders.types";
 interface FrequentlyProductsPurchased {
   _id: string;
   count: number;
@@ -194,7 +196,7 @@ interface OrderAnalytics {
     orderCount: number;
     revenue: number;
   }>;
-  recentOrders: IOrder[];
+  recentOrders: OrderType[];
   weeklyGrowth: Array<{
     label: string;
     orderGrowth: number;
@@ -259,12 +261,12 @@ interface RefundAnalytics {
     currentAmount: number;
     currentCount: number;
   }>;
-  highRiskRefunds: Array<{ count: number }>;
-  financialImpact: Array<{
+  highRiskRefunds: { count: number };
+  financialImpact: {
     totalRefunded: number;
     avgRefund: number;
     maxRefund: number;
-  }>;
+  };
   // weeklyGrowth: Array<{
   //   week: string;
   //   year: number;
@@ -293,7 +295,7 @@ interface UserInterestProducts {
     }>;
   };
   conversionMetrics: Array<{
-    productId: string;
+    productId: Types.ObjectId;
     weeks: {
       week: number;
       cartAdds: number;

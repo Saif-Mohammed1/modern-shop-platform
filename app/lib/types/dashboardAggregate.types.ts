@@ -1,5 +1,7 @@
 import type { Types } from "mongoose";
 
+import type { OrderType } from "./orders.types";
+
 interface AggregationResultItem<T = unknown> {
   [key: string]: T;
 }
@@ -84,7 +86,8 @@ interface ProductAnalyticsResult {
   recentActivity?: Array<{
     _id: Types.ObjectId;
     name: string;
-    type: string;
+    type: "New Product" | "Updated Product";
+
     modifiedBy: string;
   }>;
   shippingMetrics?: Array<{
@@ -155,7 +158,9 @@ interface OrderAnalyticsResult {
     previousWeek: number;
     growthRate: number;
   }>;
-  recentOrders?: any[]; // Replace with proper type if possible
+  recentOrders?: (Omit<OrderType, "_id"> & {
+    _id: Types.ObjectId;
+  })[]; // Replace with proper type if possible
   weeklyGrowth?: Array<{
     label: string;
     orderGrowth: number;
