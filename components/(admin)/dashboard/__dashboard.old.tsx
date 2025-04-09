@@ -1,207 +1,26 @@
 "use client";
 
-import { type FC, useState } from "react";
-import {
-  FiUsers,
-  FiDollarSign,
-  FiPackage,
-  FiAlertCircle,
-  FiShoppingCart,
-  FiRefreshCw,
-  FiChevronRight,
-  FiChevronLeft,
-  FiGrid,
-  FiBarChart2,
-  FiMapPin,
-  FiGlobe,
-  FiShield,
-  FiPieChart,
-} from "react-icons/fi";
-import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
-import type { DashboardData } from "@/app/lib/types/dashboard.types";
+import { type FC, useState } from "react";
+import Chart from "react-apexcharts";
+import {
+  FiAlertCircle,
+  FiBarChart2,
+  FiChevronLeft,
+  FiChevronRight,
+  FiDollarSign,
+  FiGlobe,
+  FiGrid,
+  FiMapPin,
+  FiPackage,
+  FiPieChart,
+  FiRefreshCw,
+  FiShield,
+  FiShoppingCart,
+  FiUsers,
+} from "react-icons/fi";
 
-const AdminDashboard = ({
-  dashboardData,
-}: {
-  dashboardData: DashboardData | null;
-}) => {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  if (!dashboardData)
-    return <div className="text-gray-500 p-6">Loading dashboard data...</div>;
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors"
-          >
-            {showAdvanced ? (
-              <>
-                <FiGrid className="w-5 h-5" />
-                Basic View
-                <FiChevronLeft className="w-5 h-5" />
-              </>
-            ) : (
-              <>
-                <FiBarChart2 className="w-5 h-5" />
-                Advanced View
-                <FiChevronRight className="w-5 h-5" />
-              </>
-            )}
-          </button>
-        </div>
-
-        {showAdvanced ? (
-          <AdvancedView data={dashboardData} />
-        ) : (
-          <BasicView data={dashboardData} />
-        )}
-      </div>
-    </div>
-  );
-};
-
-const BasicView = ({ data }: { data: DashboardData }) => {
-  const categoryDistribution = data.products.categories.reduce(
-    (acc, category) => {
-      acc[category.name] = category.sales;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-  return (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <MetricCard
-          icon={<FiUsers className="h-6 w-6" />}
-          title="Total Users"
-          value={data.users.totalUsers}
-          growth={parseFloat(
-            data.users.weeklyGrowth[0]?.growthPercentage || "0"
-          )}
-        />
-        <MetricCard
-          icon={<FiDollarSign className="h-6 w-6" />}
-          title="Total Revenue"
-          value={data.orders.summary.totalRevenue}
-          isCurrency
-          growth={data.orders.weeklyGrowth[0]?.revenueGrowth}
-        />
-        <MetricCard
-          icon={<FiPackage className="h-6 w-6" />}
-          title="Low Stock Items"
-          value={data.products.inventory.lowStock}
-          isAlert
-        />
-        <MetricCard
-          icon={<FiAlertCircle className="h-6 w-6" />}
-          title="Pending Reports"
-          value={data.reports.total}
-        />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <ChartCard title="Revenue Trends">
-          <RevenueTrendChart weeklyGrowth={data.orders.weeklyGrowth} />
-        </ChartCard>
-        <ChartCard title="Sales Distribution">
-          <CategoryChart distribution={categoryDistribution} />
-        </ChartCard>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentActivities
-          title="Recent Orders"
-          data={data.orders.recentOrders.map((order) => ({
-            ...order,
-            _id: order._id.toString(),
-            type: "order",
-            amount: order.total,
-          }))}
-          icon={<FiShoppingCart className="w-5 h-5" />}
-        />
-        <SecurityOverview security={data.users.security} />
-      </div>
-
-      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <ChartCard title="Revenue Trends">
-        <RevenueTrendChart weeklyGrowth={data.orders.weeklyGrowth} />
-      </ChartCard>
-      <ChartCard title="Top Categories">
-        <CategorySalesChart categories={data.products.categories} />
-      </ChartCard>
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <RecentOrders orders={data.orders.recentOrders} />
-      <SecurityOverview security={data.users.security} />
-    </div> */}
-    </>
-  );
-};
-
-const AdvancedView = ({ data }: { data: DashboardData }) => (
-  <>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-      <MetricCard
-        icon={<FiGlobe className="h-6 w-6" />}
-        title="Active Cities"
-        value={data.users.geographicalInsights.totalCities}
-      />
-      <MetricCard
-        icon={<FiShield className="h-6 w-6" />}
-        title="2FA Enabled"
-        value={data.users.security.twoFactorAdoption}
-        unit="%"
-      />
-      <MetricCard
-        icon={<FiShoppingCart className="h-6 w-6" />}
-        title="Avg Order Value"
-        value={data.orders.summary.avgOrderValue}
-        isCurrency
-      />
-      <MetricCard
-        icon={<FiPieChart className="h-6 w-6" />}
-        title="Repeat Customers"
-        value={data.orders.customerBehavior.repeatRate}
-        unit="%"
-      />
-      <MetricCard
-        icon={<FiMapPin className="h-6 w-6" />}
-        title="Top Country"
-        value={
-          data.users.geographicalInsights.topLocations[0]?.country || "N/A"
-        }
-      />
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <ChartCard title="Device Distribution">
-        <DeviceDistributionChart
-          devices={data.users.geographicalInsights.deviceDistribution}
-        />
-      </ChartCard>
-      <ChartCard title="Inventory Value">
-        <InventoryValueChart inventory={data.products.inventory} />
-      </ChartCard>
-      <ChartCard title="User Locations">
-        <GeographicalMap
-          locations={data.users.geographicalInsights.topLocations}
-        />
-      </ChartCard>
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <TopProductsTable products={data.orders.topProducts} />
-      <UserActivityAnalysis userInterest={data.userInterestProducts} />
-    </div>
-  </>
-);
-
+import type { DashboardDataApi } from "@/app/lib/types/dashboard.types";
 // Updated MetricCard with unit support
 interface MetricCardProps {
   icon: React.JSX.Element;
@@ -212,6 +31,26 @@ interface MetricCardProps {
   isAlert?: boolean;
   unit?: string;
 }
+// Type-safe GrowthBadge component
+interface GrowthBadgeProps {
+  value: number;
+}
+
+const GrowthBadge: FC<GrowthBadgeProps> = ({ value }) => {
+  const isPositive = value >= 0;
+  return (
+    <span
+      className={`flex items-center px-2 py-1 rounded-md text-sm ${
+        isPositive
+          ? "bg-green-900/50 text-green-400"
+          : "bg-red-900/50 text-red-400"
+      }`}
+    >
+      {isPositive ? "↑" : "↓"}
+      {Math.abs(value).toFixed(1)}%
+    </span>
+  );
+};
 
 const MetricCard: FC<MetricCardProps> = ({
   icon,
@@ -238,7 +77,7 @@ const MetricCard: FC<MetricCardProps> = ({
             className={`text-2xl font-bold ${isAlert ? "text-yellow-400" : ""}`}
           >
             {formattedValue}
-            {unit && <span className="text-sm ml-1">{unit}</span>}
+            {unit ? <span className="text-sm ml-1">{unit}</span> : null}
           </p>
         </div>
         <div className="bg-gray-700 p-3 rounded-lg">{icon}</div>
@@ -250,27 +89,6 @@ const MetricCard: FC<MetricCardProps> = ({
         </div>
       )}
     </div>
-  );
-};
-
-// Type-safe GrowthBadge component
-interface GrowthBadgeProps {
-  value: number;
-}
-
-const GrowthBadge: FC<GrowthBadgeProps> = ({ value }) => {
-  const isPositive = value >= 0;
-  return (
-    <span
-      className={`flex items-center px-2 py-1 rounded-md text-sm ${
-        isPositive
-          ? "bg-green-900/50 text-green-400"
-          : "bg-red-900/50 text-red-400"
-      }`}
-    >
-      {isPositive ? "↑" : "↓"}
-      {Math.abs(value).toFixed(1)}%
-    </span>
   );
 };
 
@@ -292,14 +110,16 @@ const ChartCard: FC<ChartCardProps> = ({
   <div className={`bg-gray-800 p-6 rounded-xl ${className}`}>
     <div className="flex justify-between items-start mb-4">
       <div>
-        {title && <h2 className="text-xl font-semibold">{title}</h2>}{" "}
-        {subtitle && <p className="text-sm text-gray-400 mt-1">{subtitle}</p>}
+        {title ? <h2 className="text-xl font-semibold">{title}</h2> : null}{" "}
+        {subtitle ? (
+          <p className="text-sm text-gray-400 mt-1">{subtitle}</p>
+        ) : null}
       </div>
-      {helpText && (
+      {helpText ? (
         <div className="tooltip" data-tip={helpText}>
           <FiAlertCircle className="w-5 h-5 text-gray-400 hover:text-gray-300 cursor-help" />
         </div>
-      )}
+      ) : null}
     </div>
     <div className="relative min-h-[300px]">{children}</div>
   </div>
@@ -431,7 +251,7 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
     {error ? (
       <div className="text-center py-4">
         <p className="text-red-400 mb-2">Error loading activities</p>
-        {onRetry && (
+        {onRetry ? (
           <button
             onClick={onRetry}
             className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300"
@@ -439,7 +259,7 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
             <FiRefreshCw className="w-4 h-4" />
             Try Again
           </button>
-        )}
+        ) : null}
       </div>
     ) : loading ? (
       <div className="space-y-4">
@@ -471,7 +291,7 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
               </p>
             </div>
             <div className="text-right">
-              {(activity.amount || activity.totalPrice) && (
+              {activity.amount || activity.totalPrice ? (
                 <p
                   className={`font-semibold ${
                     activity.type === "refund"
@@ -482,7 +302,7 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
                   {activity.type === "refund" ? "-" : "+"}$
                   {(activity.amount || activity.totalPrice)?.toFixed(2)}
                 </p>
-              )}
+              ) : null}
               <p className="text-sm text-gray-400 capitalize">
                 {activity.status}
               </p>
@@ -502,7 +322,7 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
 );
 // Revenue Trend Chart Component
 const RevenueTrendChart: FC<{
-  weeklyGrowth: DashboardData["orders"]["weeklyGrowth"];
+  weeklyGrowth: DashboardDataApi["orders"]["weeklyGrowth"];
 }> = ({ weeklyGrowth }) => {
   const options: ApexOptions = {
     chart: { type: "area", toolbar: { show: false } },
@@ -530,7 +350,7 @@ const RevenueTrendChart: FC<{
 
 // Category Sales Chart Component
 // const CategorySalesChart: FC<{
-//   categories: DashboardData["products"]["categories"];
+//   categories: DashboardDataApi["products"]["categories"];
 // }> = ({ categories }) => {
 //   const options: ApexOptions = {
 //     chart: { type: "donut" },
@@ -550,7 +370,7 @@ const RevenueTrendChart: FC<{
 // };
 
 // Recent Orders Component
-// const RecentOrders: FC<{ orders: DashboardData["orders"]["recentOrders"] }> = ({
+// const RecentOrders: FC<{ orders: DashboardDataApi["orders"]["recentOrders"] }> = ({
 //   orders,
 // }) => (
 //   <ChartCard title="Recent Orders">
@@ -578,7 +398,7 @@ const RevenueTrendChart: FC<{
 
 // Security Overview Component
 const SecurityOverview: FC<{
-  security: DashboardData["users"]["security"];
+  security: DashboardDataApi["users"]["security"];
 }> = ({ security }) => (
   <ChartCard title="Security Overview">
     <div className="grid grid-cols-2 gap-4">
@@ -596,7 +416,7 @@ const SecurityOverview: FC<{
 
 // Device Distribution Chart Component
 const DeviceDistributionChart: FC<{
-  devices: DashboardData["users"]["geographicalInsights"]["deviceDistribution"];
+  devices: DashboardDataApi["users"]["geographicalInsights"]["deviceDistribution"];
 }> = ({ devices }) => {
   const options: ApexOptions = {
     chart: { type: "polarArea" },
@@ -617,7 +437,7 @@ const DeviceDistributionChart: FC<{
 
 // Inventory Value Chart Component
 const InventoryValueChart: FC<{
-  inventory: DashboardData["products"]["inventory"];
+  inventory: DashboardDataApi["products"]["inventory"];
 }> = ({ inventory }) => {
   const options: ApexOptions = {
     chart: { type: "radialBar" },
@@ -644,7 +464,7 @@ const InventoryValueChart: FC<{
 
 // Geographical Map Component (Simplified)
 const GeographicalMap: FC<{
-  locations: DashboardData["users"]["geographicalInsights"]["topLocations"];
+  locations: DashboardDataApi["users"]["geographicalInsights"]["topLocations"];
 }> = ({ locations }) => (
   <ChartCard>
     <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -667,7 +487,7 @@ const GeographicalMap: FC<{
 
 // Top Products Table Component
 const TopProductsTable: FC<{
-  products: DashboardData["orders"]["topProducts"];
+  products: DashboardDataApi["orders"]["topProducts"];
 }> = ({ products }) => (
   <ChartCard title="Top Selling Products">
     <div className="overflow-x-auto">
@@ -695,7 +515,7 @@ const TopProductsTable: FC<{
 
 // User Activity Analysis Component
 const UserActivityAnalysis: FC<{
-  userInterest: DashboardData["userInterestProducts"];
+  userInterest: DashboardDataApi["userInterestProducts"];
 }> = ({ userInterest }) => (
   <ChartCard title="User Activity Analysis">
     <div className="grid grid-cols-2 gap-4">
@@ -740,4 +560,187 @@ const UserActivityAnalysis: FC<{
     </div>
   </ChartCard>
 );
+const BasicView = ({ data }: { data: DashboardDataApi }) => {
+  const categoryDistribution = data.products.categories.reduce(
+    (acc, category) => {
+      acc[category.name] = category.sales;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <MetricCard
+          icon={<FiUsers className="h-6 w-6" />}
+          title="Total Users"
+          value={data.users.totalUsers}
+          growth={parseFloat(
+            data.users.weeklyGrowth[0]?.growthPercentage || "0"
+          )}
+        />
+        <MetricCard
+          icon={<FiDollarSign className="h-6 w-6" />}
+          title="Total Revenue"
+          value={data.orders.summary.totalRevenue}
+          isCurrency
+          growth={data.orders.weeklyGrowth[0]?.revenueGrowth}
+        />
+        <MetricCard
+          icon={<FiPackage className="h-6 w-6" />}
+          title="Low Stock Items"
+          value={data.products.inventory.lowStock}
+          isAlert
+        />
+        <MetricCard
+          icon={<FiAlertCircle className="h-6 w-6" />}
+          title="Pending Reports"
+          value={data.reports.total}
+        />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <ChartCard title="Revenue Trends">
+          <RevenueTrendChart weeklyGrowth={data.orders.weeklyGrowth} />
+        </ChartCard>
+        <ChartCard title="Sales Distribution">
+          <CategoryChart distribution={categoryDistribution} />
+        </ChartCard>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RecentActivities
+          title="Recent Orders"
+          data={data.orders.recentOrders.map((order) => ({
+            ...order,
+            _id: order._id.toString(),
+            type: "order",
+            amount: order.total,
+          }))}
+          icon={<FiShoppingCart className="w-5 h-5" />}
+        />
+        <SecurityOverview security={data.users.security} />
+      </div>
+
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <ChartCard title="Revenue Trends">
+        <RevenueTrendChart weeklyGrowth={data.orders.weeklyGrowth} />
+      </ChartCard>
+      <ChartCard title="Top Categories">
+        <CategorySalesChart categories={data.products.categories} />
+      </ChartCard>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <RecentOrders orders={data.orders.recentOrders} />
+      <SecurityOverview security={data.users.security} />
+    </div> */}
+    </>
+  );
+};
+
+const AdvancedView = ({ data }: { data: DashboardDataApi }) => (
+  <>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <MetricCard
+        icon={<FiGlobe className="h-6 w-6" />}
+        title="Active Cities"
+        value={data.users.geographicalInsights.totalCities}
+      />
+      <MetricCard
+        icon={<FiShield className="h-6 w-6" />}
+        title="2FA Enabled"
+        value={data.users.security.twoFactorAdoption}
+        unit="%"
+      />
+      <MetricCard
+        icon={<FiShoppingCart className="h-6 w-6" />}
+        title="Avg Order Value"
+        value={data.orders.summary.avgOrderValue}
+        isCurrency
+      />
+      <MetricCard
+        icon={<FiPieChart className="h-6 w-6" />}
+        title="Repeat Customers"
+        value={data.orders.customerBehavior.repeatRate}
+        unit="%"
+      />
+      <MetricCard
+        icon={<FiMapPin className="h-6 w-6" />}
+        title="Top Country"
+        value={
+          data.users.geographicalInsights.topLocations[0]?.country || "N/A"
+        }
+      />
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <ChartCard title="Device Distribution">
+        <DeviceDistributionChart
+          devices={data.users.geographicalInsights.deviceDistribution}
+        />
+      </ChartCard>
+      <ChartCard title="Inventory Value">
+        <InventoryValueChart inventory={data.products.inventory} />
+      </ChartCard>
+      <ChartCard title="User Locations">
+        <GeographicalMap
+          locations={data.users.geographicalInsights.topLocations}
+        />
+      </ChartCard>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <TopProductsTable products={data.orders.topProducts} />
+      <UserActivityAnalysis userInterest={data.userInterestProducts} />
+    </div>
+  </>
+);
+const AdminDashboard = ({
+  dashboardData,
+}: {
+  dashboardData: DashboardDataApi | null;
+}) => {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  if (!dashboardData) {
+    return <div className="text-gray-500 p-6">Loading dashboard data...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <button
+            onClick={() => {
+              setShowAdvanced(!showAdvanced);
+            }}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors"
+          >
+            {showAdvanced ? (
+              <>
+                <FiGrid className="w-5 h-5" />
+                Basic View
+                <FiChevronLeft className="w-5 h-5" />
+              </>
+            ) : (
+              <>
+                <FiBarChart2 className="w-5 h-5" />
+                Advanced View
+                <FiChevronRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+        </div>
+
+        {showAdvanced ? (
+          <AdvancedView data={dashboardData} />
+        ) : (
+          <BasicView data={dashboardData} />
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default AdminDashboard;

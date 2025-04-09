@@ -1,5 +1,12 @@
-// @ts-ignore
-import { Document, Model, Query, Schema, model, models } from "mongoose";
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Query,
+} from "mongoose";
+
 import User, { type IUser } from "./User.model";
 
 export interface IRefundSchema extends Document {
@@ -53,7 +60,7 @@ const RefundSchema = new Schema<IRefundSchema>(
 // Add indexes for common queries
 RefundSchema.index({ status: 1, amount: -1 });
 
-RefundSchema.path("status").validate(function (value) {
+RefundSchema.path("status").validate((value) => {
   return ["pending", "approved", "rejected"].includes(value);
 }, "Invalid refund status");
 
@@ -75,7 +82,7 @@ RefundSchema.virtual("isSuspicious").get(function () {
   return this.amount > 500 && this.status === "pending";
 });
 
-RefundSchema.post(/^find/, function (docs, next) {
+RefundSchema.post(/^find/, (docs: IRefundSchema[] | IRefundSchema, next) => {
   // Ensure `docs` is an array (it should be for `find`)
   if (Array.isArray(docs)) {
     // Filter out documents where `product` is null

@@ -1,10 +1,12 @@
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import EditProduct from "@/components/(admin)/dashboard/products/EditProductForm";
-import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/utilities/api";
-import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import EditProduct from "@/components/(admin)/dashboard/products/EditProductForm";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
 // export const metadata = {
 //   title: "Edit Product",
 //   description: "Edit product for the admin",
@@ -19,19 +21,23 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const { slug } = params;
 
   try {
-    const { data: product } = await api.get(
-      `/admin/dashboard/products/${slug}`,
-      {
-        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
-      }
-    );
+    const {
+      data: product,
+    }: {
+      data: {
+        name: string;
+        description: string;
+      };
+    } = await api.get(`/admin/dashboard/products/${slug}`, {
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
+    });
 
     return {
       title: `${productsTranslate.products[lang].editProduct.metadata.title} - ${product.name}`,
       description: `${productsTranslate.products[lang].editProduct.metadata.description} ${product.name}. ${product.description}`,
       keywords: `${productsTranslate.products[lang].editProduct.metadata.keywords}, ${product.name}, ${product.description}`,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       title: productsTranslate.products[lang].editProduct.metadata.title,
       description:
@@ -49,8 +55,9 @@ const page = async (props: Props) => {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return <EditProduct defaultValues={data} />;
-  } catch (error: any) {
-    return <ErrorHandler message={error?.message} />;
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

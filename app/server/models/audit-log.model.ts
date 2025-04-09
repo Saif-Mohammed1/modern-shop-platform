@@ -1,13 +1,20 @@
 // audit-log.model.ts
-import { Document, Schema, model, models, Types } from "mongoose";
-import type { IUser } from "./User.model";
-// import type { IProduct } from "./Product.model";
-import { Model } from "mongoose";
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Types,
+  type Model,
+} from "mongoose";
+
 import {
   AuditAction,
   AuditSource,
   EntityType,
 } from "@/app/lib/types/audit.types";
+
+import _UserModel, { type IUser } from "./User.model";
 
 export interface IAuditLog extends Document {
   actor: Types.ObjectId | IUser;
@@ -107,9 +114,7 @@ AuditLogSchema.index({ action: 1, createdAt: -1 });
 // Middleware example: Auto-add correlation ID for API requests
 AuditLogSchema.pre("save", function (next) {
   if (this.source === "API" && !this.correlationId) {
-    this.correlationId = `CORR-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    this.correlationId = `CORR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
   next();
 });

@@ -1,8 +1,10 @@
 "use client";
+
 import { signOut, useSession } from "next-auth/react";
 import { createContext, use, useEffect, useState } from "react";
-import tokenManager from "@/app/lib/utilities/TokenManager";
+
 import type { UserAuthType } from "@/app/lib/types/users.types";
+import tokenManager from "@/app/lib/utilities/TokenManager";
 
 type User = UserAuthType | null;
 type UserContextType = {
@@ -33,15 +35,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       updateUser(null);
       tokenManager.clearAccessToken();
     };
-    if (session && session?.user) {
-      updateUser(session.user);
-      if (session?.user?.accessToken)
+    if (session && session.user) {
+      const user = {
+        ...session.user,
+        name: session.user.name || "",
+        email: session.user.email || "",
+      };
+      updateUser(user);
+      if (session?.user?.accessToken) {
         tokenManager.setAccessToken(session?.user?.accessToken);
+      }
     } else {
       updateUser(null);
     }
     if (session?.error === "RefreshAccessTokenError") {
-      logOutUser();
+      void (async () => {
+        await logOutUser();
+      })();
     }
   }, [session, status]);
   // Provide the user context value to the children components

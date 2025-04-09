@@ -1,26 +1,29 @@
 "use client";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
-import RelatedProducts from "@/components/ui/relatedProducts";
-import ReviewSection from "@/components/products/Review/review";
+
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import {
-  AiOutlineHeart,
   AiFillHeart,
+  AiOutlineHeart,
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { BsArrowLeftCircle, BsArrowRightCircle } from "react-icons/bs";
 import StarRatings from "react-star-ratings";
+
 import type { ProductType } from "@/app/lib/types/products.types";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 // import type { ReviewsType } from "@/app/lib/types/reviews.types";
-import { useUser } from "@/components/providers/context/user/user.context";
 import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import ReviewSection from "@/components/products/Review/review";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { useUser } from "@/components/providers/context/user/user.context";
+import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
 import ComponentLoading from "@/components/spinner/componentLoading";
 import Input from "@/components/ui/Input";
+import RelatedProducts from "@/components/ui/relatedProducts";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
 
@@ -41,7 +44,7 @@ const ProductDetail = ({
   // };
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState<ProductType[]>([]);
   const [quantity, setQuantity] = useState(1);
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCartItems } = useCartItems();
@@ -103,17 +106,31 @@ const ProductDetail = ({
   useEffect(() => {
     const getrelatedProducts = async () => {
       try {
-        const { data } = await api.get(
-          `/shop/?category=${product.category}&limit=8`
-        );
+        const {
+          data,
+        }: {
+          data: {
+            products: {
+              docs: ProductType[];
+            };
+          };
+        } = await api.get(`/shop/?category=${product.category}&limit=8`);
 
         setRelatedProducts(data.products.docs);
-      } catch (error) {
+      } catch (_error) {
         setRelatedProducts([]);
         // console.error(error);
       }
     };
-    getrelatedProducts();
+    // Immediately invoke and handle promise properly
+    void (async () => {
+      try {
+        await getrelatedProducts();
+      } catch (error) {
+        /* eslint-disable no-console */
+        console.error("Error fetching related products:", error);
+      }
+    })();
   }, [product.category]);
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -136,22 +153,22 @@ const ProductDetail = ({
             {product.images.length > 1 && (
               <div className="absolute top-1/2 transform -translate-y-1/2 w-full flex justify-between px-4">
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     handleImageChange(
                       (currentImageIndex - 1 + product.images.length) %
                         product.images.length
-                    )
-                  }
+                    );
+                  }}
                   className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
                 >
                   <BsArrowLeftCircle className="w-6 h-6" />
                 </button>
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     handleImageChange(
                       (currentImageIndex + 1) % product.images.length
-                    )
-                  }
+                    );
+                  }}
                   className="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors"
                 >
                   <BsArrowRightCircle className="w-6 h-6" />
@@ -164,7 +181,9 @@ const ProductDetail = ({
             {product.images.map((image, index) => (
               <button
                 key={index}
-                onClick={() => handleImageChange(index)}
+                onClick={() => {
+                  handleImageChange(index);
+                }}
                 className={`aspect-square rounded-lg overflow-hidden border-2 ${
                   index === currentImageIndex
                     ? "border-blue-500"
@@ -204,7 +223,7 @@ const ProductDetail = ({
                 </span>
               </div>
             </div>
-            {user && (
+            {user ? (
               <button
                 onClick={toggleWishlistHandaler}
                 className="p-2 hover:bg-gray-100 rounded-full"
@@ -220,7 +239,7 @@ const ProductDetail = ({
                   <AiOutlineHeart className="w-8 h-8 text-gray-400" />
                 )}
               </button>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-4">
@@ -242,9 +261,7 @@ const ProductDetail = ({
 
             <div className="flex items-center space-x-2">
               <span
-                className={`text-sm font-medium ${
-                  stock > 0 ? "text-green-600" : "text-red-600"
-                }`}
+                className={`text-sm font-medium ${stock > 0 ? "text-green-600" : "text-red-600"}`}
               >
                 {stock > 0
                   ? `${shopPageTranslate[lang].content.inStock}`
@@ -261,7 +278,9 @@ const ProductDetail = ({
             <div className="flex items-center space-x-4">
               <div className="flex items-center border rounded-lg">
                 <button
-                  onClick={() => handleQuantityChange(quantity - 1)}
+                  onClick={() => {
+                    handleQuantityChange(quantity - 1);
+                  }}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   disabled={quantity <= 1}
                 >
@@ -272,13 +291,15 @@ const ProductDetail = ({
                   value={quantity}
                   min={1}
                   max={stock}
-                  onChange={(e) =>
-                    handleQuantityChange(parseInt(e.target.value))
-                  }
+                  onChange={(e) => {
+                    handleQuantityChange(parseInt(e.target.value));
+                  }}
                   className="w-16 text-center border-0 focus:ring-0"
                 />
                 <button
-                  onClick={() => handleQuantityChange(quantity + 1)}
+                  onClick={() => {
+                    handleQuantityChange(quantity + 1);
+                  }}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   disabled={quantity >= stock}
                 >
@@ -302,7 +323,7 @@ const ProductDetail = ({
               </button>
             </div>
 
-            {product.discountExpire && (
+            {product.discountExpire ? (
               <div className="bg-yellow-50 p-3 rounded-lg">
                 <p className="text-sm text-yellow-700">
                   {shopPageTranslate[lang].content.discountExpires}{" "}
@@ -314,7 +335,7 @@ const ProductDetail = ({
                   {/* {formatDateTime(product.discountExpire)} */}
                 </p>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Product Specifications */}
@@ -323,13 +344,14 @@ const ProductDetail = ({
               {shopPageTranslate[lang].content.specifications}
             </h3>
             <dl className="grid grid-cols-2 gap-4">
-              {product.attributes &&
-                Object.entries(product.attributes).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <dt className="text-gray-600 capitalize">{key}</dt>
-                    <dd className="text-gray-900 font-medium">{value}</dd>
-                  </div>
-                ))}
+              {product.attributes
+                ? Object.entries(product.attributes).map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <dt className="text-gray-600 capitalize">{key}</dt>
+                      <dd className="text-gray-900 font-medium">{value}</dd>
+                    </div>
+                  ))
+                : null}
               <div className="flex justify-between">
                 <dt className="text-gray-600">
                   {shopPageTranslate[lang].content.category}

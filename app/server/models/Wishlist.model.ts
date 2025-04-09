@@ -1,7 +1,15 @@
 // favorite.model.ts
-import { Document, Model, Schema, Types, model, models } from "mongoose";
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Types,
+} from "mongoose";
+
+import _ProductModel, { type IProduct } from "./Product.model";
 import { type IUser } from "./User.model";
-import { type IProduct } from "./Product.model";
 
 export interface IWishlist extends Document {
   _id: Types.ObjectId;

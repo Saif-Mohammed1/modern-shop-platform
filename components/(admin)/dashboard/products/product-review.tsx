@@ -1,11 +1,13 @@
 // product-review.tsx
+import Image from "next/image";
 import { useFormContext } from "react-hook-form";
 import { FaInfoCircle } from "react-icons/fa";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import Image from "next/image";
-import type { PreviewFile } from "./addProduct";
+
 import type { OldImage } from "@/app/lib/types/products.types";
+import { lang } from "@/app/lib/utilities/lang";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
+import type { FormData, PreviewFile } from "./addProduct";
 
 export default function ProductReview({
   editMode = false,
@@ -13,7 +15,7 @@ export default function ProductReview({
   editMode?: boolean;
 }) {
   const { getValues } = useFormContext();
-  const values = getValues();
+  const values = getValues() as FormData;
 
   const reviewSections = [
     {
@@ -128,11 +130,11 @@ export default function ProductReview({
   return (
     <div className="space-y-8">
       {" "}
-      {editMode && (
+      {editMode ? (
         <div className="bg-yellow-100 p-3 rounded-lg mb-4">
           {productsTranslate.products[lang].editMode}
         </div>
-      )}
+      ) : null}
       <div className="bg-blue-50 p-4 rounded-lg flex items-center gap-3">
         <FaInfoCircle className="text-blue-600 text-xl" />
         <p className="text-blue-800">

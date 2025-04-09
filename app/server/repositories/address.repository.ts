@@ -1,18 +1,20 @@
 // address.repository.ts
+import type { Model, ClientSession } from "mongoose";
 
 import type {
+  QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
-  QueryBuilderConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { type ClientSession, Model } from "mongoose";
-import { BaseRepository } from "./BaseRepository";
-import type { IAddress } from "../models/Address.model";
+
 import {
   type CreateAddressDtoType,
   // UpdateAddressDtoType,
 } from "../dtos/address.dto";
+import type { IAddress } from "../models/Address.model";
+
+import { BaseRepository } from "./BaseRepository";
 
 export class AddressRepository extends BaseRepository<IAddress> {
   constructor(model: Model<IAddress>) {

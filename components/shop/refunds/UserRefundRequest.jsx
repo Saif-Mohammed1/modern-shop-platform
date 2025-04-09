@@ -1,24 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import moment from "moment";
 
-const UserRefundRequest = ({ userId }) => {
-  const [refunds, setRefunds] = useState([]);
+import { useState } from "react";
+
+import api from "@/app/lib/utilities/api";
+
+const UserRefundRequest = ({ userId, initialRefunds = [] }) => {
+  const [refunds, setRefunds] = useState(initialRefunds);
   const [issue, setIssue] = useState("");
   const [reason, setReason] = useState("");
   const [invoiceId, setInvoiceId] = useState("");
 
-  useEffect(() => {
-    // Fetch user's refunds from API
-    axios.get(`/api/refunds?user=${userId}`).then((response) => {
-      setRefunds(response.data);
-    });
-  }, [userId]);
-
   const handleRefundSubmit = () => {
-    axios
-      .post("/api/refunds", { issue, reason, invoiceId, user: userId })
+    api
+      .post("/refunds", { issue, reason, invoiceId, user: userId })
       .then((response) => {
         setRefunds([...refunds, response.data]);
         setIssue("");
@@ -84,8 +78,8 @@ const UserRefundRequest = ({ userId }) => {
                   refund.status === "pending"
                     ? "bg-yellow-500 text-white"
                     : refund.status === "accepted"
-                    ? "bg-green-500 text-white"
-                    : "bg-red-500 text-white"
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
                 }`}
               >
                 {refund.status}
@@ -98,7 +92,8 @@ const UserRefundRequest = ({ userId }) => {
               <strong>Reason:</strong> {refund.reason}
             </p>
             <p className="text-sm text-gray-500">
-              Requested on: {moment(refund.createdAt).format("LL")}
+              Requested on:{" "}
+              {new Date(refund.createdAt).toLocaleDateString("en-US")}
             </p>
           </div>
         ))

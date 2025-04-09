@@ -4,18 +4,19 @@
 //       headers: newHeaders,
 //     },
 //   });
-
-import { NextResponse, type NextRequest } from "next/server";
+import { ipAddress } from "@vercel/functions";
+import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { v4 as uuidv4 } from "uuid";
+
+import { allowedRoles, type UserAuthType } from "./app/lib/types/users.types";
+import AppError from "./app/lib/utilities/appError";
+import { lang } from "./app/lib/utilities/lang";
 // import { rateLimitIp } from "./components/util/rateLimitIp";
 import { rateLimiter } from "./app/lib/utilities/rate-limiter";
-import { UserRole } from "./app/lib/types/users.types";
-import AppError from "./app/lib/utilities/appError";
 import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
-import { lang } from "./app/lib/utilities/lang";
-import { ipAddress } from "@vercel/functions";
+
 // import { createRequestLogger } from "./app/lib/logger/logs";
 const PROTECTED_ROUTES = [
   "/account",
@@ -29,7 +30,6 @@ const DEFAULT_LANGUAGE = "uk";
 const AUTH_PATH = "/auth";
 const DASHBOARD_PATH = "/dashboard";
 const NOT_FOUND_PATH = "/not-found";
-
 export const config = {
   matcher: [
     /*
@@ -44,9 +44,10 @@ export const config = {
 };
 
 const authMiddleware = async (req: NextRequest) => {
-  const pathname = req.nextUrl.pathname;
+  const { pathname } = req.nextUrl;
   const isAuth = await getToken({ req });
-  const isAdmin = isAuth?.user?.role === UserRole.ADMIN;
+  const user = isAuth?.user as UserAuthType;
+  const isAuthorizedUser = allowedRoles.includes(user?.role);
   const response = NextResponse.next();
   const correlationId = uuidv4();
 
@@ -67,7 +68,7 @@ const authMiddleware = async (req: NextRequest) => {
       isAuth &&
       !pathname.startsWith("/api") &&
       !pathname.startsWith("/verify-email") &&
-      !isAuth.user.verification?.emailVerified
+      !user?.verification?.emailVerified
     ) {
       return NextResponse.redirect(new URL("/verify-email", req.url));
     }
@@ -124,7 +125,7 @@ const authMiddleware = async (req: NextRequest) => {
       if (!isAuth) {
         return NextResponse.redirect(new URL(AUTH_PATH, req.url));
       }
-      if (isAuth.user?.verification?.emailVerified) {
+      if (user?.verification?.emailVerified) {
         return NextResponse.redirect(new URL("/", req.url));
       }
       return NextResponse.next();
@@ -141,7 +142,7 @@ const authMiddleware = async (req: NextRequest) => {
       }
 
       // Admin dashboard protection
-      if (pathname.startsWith(DASHBOARD_PATH) && !isAdmin) {
+      if (pathname.startsWith(DASHBOARD_PATH) && !isAuthorizedUser) {
         return NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url));
       }
     } else {
@@ -156,6 +157,7 @@ const authMiddleware = async (req: NextRequest) => {
 
     return response;
   } catch (error) {
+    /* eslint-disable no-console */
     console.error("Middleware error:", error);
     return NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url));
   }

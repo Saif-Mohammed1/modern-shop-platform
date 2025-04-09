@@ -1,6 +1,7 @@
-import type { Event } from "@/app/lib/types/products.types";
-import type { FC } from "react";
-import { HiOutlineSearch } from "react-icons/hi";
+import type {FC} from 'react';
+import {HiOutlineSearch} from 'react-icons/hi';
+
+import type {Event} from '@/app/lib/types/products.types';
 
 // Search Bar Component
 type SearchBarProps = {
@@ -15,12 +16,10 @@ const SearchBar: FC<SearchBarProps> = ({
   placeholder,
   handleSearch,
   isMobile = false,
-  className = "",
+  className = '',
   ...props
 }) => (
-  <div
-    className={`${isMobile ? "mt-4" : ""} relative flex-grow max-w-[500px] ${className}`}
-  >
+  <div className={`${isMobile ? 'mt-4' : ''} relative flex-grow max-w-[500px] ${className}`}>
     <input
       {...props}
       type="text"

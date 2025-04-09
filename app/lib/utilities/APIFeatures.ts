@@ -1,4 +1,5 @@
-import type { Query, FilterQuery } from "mongoose";
+/* eslint-disable */
+import type { FilterQuery, Query } from "mongoose";
 
 class APIFeatures<
   T extends {

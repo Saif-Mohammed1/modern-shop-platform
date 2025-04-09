@@ -1,14 +1,15 @@
-import AppError from "@/app/lib/utilities/appError";
-import type { createReviewDto, updateReviewDto } from "../dtos/reviews.dto";
-import ReviewModel from "../models/Review.model";
-import { ReviewRepository } from "../repositories/review.repository";
-import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
-import { OrderRepository } from "../repositories/order.repository";
-import OrderModel from "../models/Order.model";
-import { reviewControllerTranslate } from "@/public/locales/server/reviewControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import { OrderStatus } from "@/app/lib/types/orders.types";
+import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import AppError from "@/app/lib/utilities/appError";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
+import { reviewControllerTranslate } from "@/public/locales/server/reviewControllerTranslate";
+
+import type { createReviewDto, updateReviewDto } from "../dtos/reviews.dto";
+import OrderModel from "../models/Order.model";
+import ReviewModel from "../models/Review.model";
+import { OrderRepository } from "../repositories/order.repository";
+import { ReviewRepository } from "../repositories/review.repository";
 
 export class ReviewService {
   constructor(
@@ -84,11 +85,12 @@ export class ReviewService {
 
   async updateReview(reviewId: string, dto: updateReviewDto) {
     const review = await this.reviewRepository.findById(reviewId);
-    if (!review)
+    if (!review) {
       throw new AppError(
         reviewControllerTranslate[lang].errors.noDocumentsFound,
         404
       );
+    }
     if (review.userId.toString() !== dto.userId.toString()) {
       throw new AppError(
         reviewControllerTranslate[lang].errors.unauthorized.update,
@@ -101,11 +103,12 @@ export class ReviewService {
 
   async deleteReview(reviewId: string, userId: string) {
     const review = await this.reviewRepository.findById(reviewId);
-    if (!review)
+    if (!review) {
       throw new AppError(
         reviewControllerTranslate[lang].errors.noDocumentsFound,
         404
       );
+    }
     if (review.userId.toString() !== userId.toString()) {
       throw new AppError(
         reviewControllerTranslate[lang].errors.unauthorized.delete,
@@ -122,9 +125,7 @@ export class ReviewService {
   async getRatingDistribution(): Promise<number[]> {
     return await this.reviewRepository.getRatingDistribution();
   }
-  async getRatingDistributionByProductId(id: string): Promise<{
-    [key: string]: number;
-  }> {
+  async getRatingDistributionByProductId(id: string) {
     return await this.reviewRepository.getRatingDistributionByProductId(id);
   }
   async getMyReviews(userId: string, options: QueryOptionConfig) {

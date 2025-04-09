@@ -3,114 +3,114 @@ export const orderControllerTranslate = {
     model: {
       schema: {
         user: {
-          required: "Order must belong to a user.",
+          required: 'Order must belong to a user.',
         },
         shippingInfo: {
           street: {
-            required: "Please add a street",
+            required: 'Please add a street',
           },
           city: {
-            required: "Please add a city",
+            required: 'Please add a city',
           },
           state: {
-            required: "Please add a state",
+            required: 'Please add a state',
           },
           postalCode: {
-            required: "Please add a postalCode",
+            required: 'Please add a postalCode',
           },
           phone: {
-            required: "Please add a phone",
+            required: 'Please add a phone',
           },
           country: {
-            required: "Please add a country",
+            required: 'Please add a country',
           },
         },
         items: {
           _id: {
-            required: "Please add a product id",
+            required: 'Please add a product id',
           },
           name: {
-            required: "Please add a product name",
+            required: 'Please add a product name',
           },
           quantity: {
-            required: "Please add a product quantity",
+            required: 'Please add a product quantity',
           },
           price: {
-            required: "Please add a product price",
+            required: 'Please add a product price',
           },
           finalPrice: {
-            required: "Please add a product finalPrice",
+            required: 'Please add a product finalPrice',
           },
         },
         status: {
-          enum: "Invalid status",
+          enum: 'Invalid status',
         },
         invoiceId: {
-          required: "Invoice ID field is required.",
+          required: 'Invoice ID field is required.',
         },
         invoiceLink: {
-          required: "Invoice Link field is required.",
+          required: 'Invoice Link field is required.',
         },
         totalPrice: {
-          required: "totalPrice field is required.",
+          required: 'totalPrice field is required.',
         },
       },
     },
     controllers: {
       createUserOrder: {
-        notEnoughData: "You Need to provide  data",
+        notEnoughData: 'You Need to provide  data',
       },
     },
     errors: {
-      userNotFound: "user is invalid ",
-      noDocFound: "No order found",
+      userNotFound: 'user is invalid ',
+      noDocFound: 'No order found',
     },
   },
   uk: {
     model: {
       schema: {
         user: {
-          required: "Замовлення повинно належати користувачеві.",
+          required: 'Замовлення повинно належати користувачеві.',
         },
         shippingInfo: {
           street: {
-            required: "Будь ласка, додайте вулицю",
+            required: 'Будь ласка, додайте вулицю',
           },
           city: {
-            required: "Будь ласка, додайте місто",
+            required: 'Будь ласка, додайте місто',
           },
           state: {
-            required: "Будь ласка, додайте штат",
+            required: 'Будь ласка, додайте штат',
           },
           postalCode: {
-            required: "Будь ласка, додайте поштовий індекс",
+            required: 'Будь ласка, додайте поштовий індекс',
           },
           phone: {
-            required: "Будь ласка, додайте телефон",
+            required: 'Будь ласка, додайте телефон',
           },
           country: {
-            required: "Будь ласка, додайте країну",
+            required: 'Будь ласка, додайте країну',
           },
         },
         items: {
           _id: {
-            required: "Будь ласка, додайте ідентифікатор продукту",
+            required: 'Будь ласка, додайте ідентифікатор продукту',
           },
           name: {
-            required: "Будь ласка, додайте назву продукту",
+            required: 'Будь ласка, додайте назву продукту',
           },
           quantity: {
-            required: "Будь ласка, додайте кількість продукту",
+            required: 'Будь ласка, додайте кількість продукту',
           },
           price: {
-            required: "Будь ласка, додайте ціну продукту",
+            required: 'Будь ласка, додайте ціну продукту',
           },
           finalPrice: {
-            required: "Будь ласка, додайте кінцеву ціну продукту",
+            required: 'Будь ласка, додайте кінцеву ціну продукту',
           },
         },
         status: {
-          enum: "Недійсний статус",
+          enum: 'Недійсний статус',
         },
         invoiceId: {
           required: "Поле ідентифікатора рахунку обов'язкове.",
@@ -125,12 +125,12 @@ export const orderControllerTranslate = {
     },
     controllers: {
       createUserOrder: {
-        notEnoughData: "Вам потрібно надати дані",
+        notEnoughData: 'Вам потрібно надати дані',
       },
     },
     errors: {
-      userNotFound: "користувач недійсний",
-      noDocFound: "Замовлення не знайдено",
+      userNotFound: 'користувач недійсний',
+      noDocFound: 'Замовлення не знайдено',
     },
   },
 } as const;

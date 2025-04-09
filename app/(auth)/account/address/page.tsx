@@ -1,12 +1,15 @@
-export const dynamic = "force-dynamic";
-import AddressBook from "@/components/customers/address/addressBook";
-import api from "@/app/lib/utilities/api";
-// import AppError from "@/components/util/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
+import { headers } from "next/headers";
+
+import type { AddressType } from "@/app/lib/types/address.types";
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+// import AppError from "@/components/util/appError";
+import AddressBook from "@/components/customers/address/addressBook";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: addressTranslate[lang].metadata.title,
@@ -16,7 +19,16 @@ export const metadata: Metadata = {
 
 const page = async () => {
   try {
-    const { data } = await api.get("/customers/address", {
+    const {
+      data,
+    }: {
+      data: {
+        docs: AddressType[];
+        meta: {
+          hasNext: boolean;
+        };
+      };
+    } = await api.get("/customers/address", {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     const address = data.docs;
@@ -24,10 +36,9 @@ const page = async () => {
     return (
       <AddressBook initialAddresses={address} hasNextPage={data.meta.hasNext} />
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error?.message} />;
-
-    //   throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

@@ -1,99 +1,98 @@
 export const loginTranslate = {
   en: {
     Metadata: {
-      title: "Shop - Login Page",
-      description: "Login to access your account on the Shop app",
-      keywords: "login, account, shop",
+      title: 'Shop - Login Page',
+      description: 'Login to access your account on the Shop app',
+      keywords: 'login, account, shop',
     },
     functions: {
       handleLogin: {
-        requiredFields: "Please fill all fields",
-        success: "Login success 👌",
-        termsAgreement: "By logging in, you agree to our Terms of Service and Privacy Policy."
+        requiredFields: 'Please fill all fields',
+        success: 'Login success 👌',
+        termsAgreement: 'By logging in, you agree to our Terms of Service and Privacy Policy.',
       },
       handelVerify2fa: {
-        requiredFields: "Please fill all fields",
-        success: "Verification success 👌",
+        requiredFields: 'Please fill all fields',
+        success: 'Verification success 👌',
       },
       handelBackup2fa: {
-        requiredFields: "Please fill all fields",
-        success:
-          "Backup success please check your email for temporary password",
+        requiredFields: 'Please fill all fields',
+        success: 'Backup success please check your email for temporary password',
       },
       handelResend2fa: {
-        requiredFields: "Please fill all fields",
-        success: "Resend success 👌",
+        requiredFields: 'Please fill all fields',
+        success: 'Resend success 👌',
       },
     },
     form: {
-      title: "Login to Your Account",
+      title: 'Login to Your Account',
       email: {
-        label: "Email Address",
-        placeholder: "Enter Your Email Address",
+        label: 'Email Address',
+        placeholder: 'Enter Your Email Address',
       },
       password: {
-        label: "Password",
-        placeholder: "Enter Your Password",
+        label: 'Password',
+        placeholder: 'Enter Your Password',
       },
       showPassword: {
-        show: "Show",
-        hide: "Hide",
+        show: 'Show',
+        hide: 'Hide',
       },
-      forgotPassword: "Forgot Password?",
-      login: "Login",
+      forgotPassword: 'Forgot Password?',
+      login: 'Login',
       signUp: "Don't have an account? Sign up",
     },
     errors: {
-      global: "An unexpected error occurred, please try again later.",
+      global: 'An unexpected error occurred, please try again later.',
     },
   },
   uk: {
     Metadata: {
-      title: "Магазин - Сторінка входу",
-      description:
-        "Увійдіть, щоб отримати доступ до свого облікового запису в додатку Магазин",
-      keywords: "вхід, обліковий запис, магазин",
+      title: 'Магазин - Сторінка входу',
+      description: 'Увійдіть, щоб отримати доступ до свого облікового запису в додатку Магазин',
+      keywords: 'вхід, обліковий запис, магазин',
     },
     functions: {
       handleLogin: {
-        requiredFields: "Будь ласка, заповніть усі поля",
-        success: "Вхід успішний 👌",
-        termsAgreement: "Увійшовши, ви погоджуєтеся з нашими Умовами використання та Політикою конфіденційності."
+        requiredFields: 'Будь ласка, заповніть усі поля',
+        success: 'Вхід успішний 👌',
+        termsAgreement:
+          'Увійшовши, ви погоджуєтеся з нашими Умовами використання та Політикою конфіденційності.',
       },
       handelVerify2fa: {
-        requiredFields: "Будь ласка, заповніть усі поля",
-        success: "Успішна перевірка 👌",
+        requiredFields: 'Будь ласка, заповніть усі поля',
+        success: 'Успішна перевірка 👌',
       },
       handelBackup2fa: {
-        requiredFields: "Будь ласка, заповніть усі поля",
+        requiredFields: 'Будь ласка, заповніть усі поля',
         success:
-          "Резервне копіювання успішне, будь ласка, перевірте свою електронну пошту для тимчасового пароля",
+          'Резервне копіювання успішне, будь ласка, перевірте свою електронну пошту для тимчасового пароля',
       },
       handelResend2fa: {
-        requiredFields: "Будь ласка, заповніть усі поля",
-        success: "Успішне повторне надсилання 👌",
+        requiredFields: 'Будь ласка, заповніть усі поля',
+        success: 'Успішне повторне надсилання 👌',
       },
     },
     form: {
-      title: "Увійдіть в свій обліковий запис",
+      title: 'Увійдіть в свій обліковий запис',
       email: {
-        label: "Адреса електронної пошти",
-        placeholder: "Введіть свою адресу електронної пошти",
+        label: 'Адреса електронної пошти',
+        placeholder: 'Введіть свою адресу електронної пошти',
       },
       password: {
-        label: "Пароль",
-        placeholder: "Введіть свій пароль",
+        label: 'Пароль',
+        placeholder: 'Введіть свій пароль',
       },
       showPassword: {
-        show: "Показати",
-        hide: "Приховати",
+        show: 'Показати',
+        hide: 'Приховати',
       },
-      forgotPassword: "Забули пароль?",
-      login: "Увійти",
-      signUp: "Ще не маєте облікового запису? Зареєструватися",
+      forgotPassword: 'Забули пароль?',
+      login: 'Увійти',
+      signUp: 'Ще не маєте облікового запису? Зареєструватися',
     },
     errors: {
-      global: "Виникла непередбачувана помилка, спробуйте ще раз пізніше.",
+      global: 'Виникла непередбачувана помилка, спробуйте ще раз пізніше.',
     },
   },
 } as const;

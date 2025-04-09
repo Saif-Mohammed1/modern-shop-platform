@@ -1,9 +1,9 @@
-import type { Event } from "@/app/lib/types/products.types";
-import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { getCities } from "countries-cities";
-import Input from "@/components/ui/Input";
 import type { AddressType } from "@/app/lib/types/address.types";
+import type { Event } from "@/app/lib/types/products.types";
+import { lang } from "@/app/lib/utilities/lang";
+import Input from "@/components/ui/Input";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
+import { getCities } from "countries-cities";
 
 type AddAddressComponentProps = {
   newAddress: Omit<AddressType, "_id">;
@@ -132,7 +132,7 @@ const AddAddressComponent = ({
           <input
             name="country"
             type="text"
-            value={"Ukraine"}
+            value="Ukraine"
             readOnly
             className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
             placeholder={

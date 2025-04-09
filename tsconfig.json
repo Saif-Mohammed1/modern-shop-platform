@@ -32,7 +32,7 @@
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     "typeRoots": [
       "./node_modules/@types",
-      "./types"
+      "./@types"
     ] /* Specify multiple folders that act like './node_modules/@types'. */,
     "types": [
       "node"
@@ -82,7 +82,7 @@
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */ /* Type Checking */,
     "strict": true /* Enable all strict type-checking options. */, // "noImplicitAny": true,                            /* Enable error reporting for expressions and declarations with an implied 'any' type. */
     // "strictNullChecks": true,                         /* When type checking, take into account 'null' and 'undefined'. */
-    // "strictFunctionTypes": true,                      /* When assigning functions, check to ensure parameters and the return values are subtype-compatible. */
+    "strictFunctionTypes": true /* When assigning functions, check to ensure parameters and the return values are subtype-compatible. */,
     // "strictBindCallApply": true,                      /* Check that the arguments for 'bind', 'call', and 'apply' methods match the original function. */
     // "strictPropertyInitialization": true,             /* Check for class properties that are declared but not set in the constructor. */
     // "strictBuiltinIteratorReturn": true,              /* Built-in iterators are instantiated with a 'TReturn' type of 'undefined' instead of 'any'. */
@@ -92,7 +92,7 @@
     "noUnusedLocals": true /* Enable error reporting when local variables aren't read. */,
     "noUnusedParameters": true /* Raise an error when a function parameter isn't read. */,
     // "exactOptionalPropertyTypes": true,               /* Interpret optional property types as written, rather than adding 'undefined'. */
-    // "noImplicitReturns": true,                        /* Enable error reporting for codepaths that do not explicitly return in a function. */
+    "noImplicitReturns": true /* Enable error reporting for codepaths that do not explicitly return in a function. */,
     "noFallthroughCasesInSwitch": true /* Enable error reporting for fallthrough cases in switch statements. */,
     // "noUncheckedIndexedAccess": true,                 /* Add 'undefined' to a type when accessed using an index. */
     "noImplicitOverride": true /* Ensure overriding members in derived classes are marked with an override modifier. */,
@@ -114,7 +114,15 @@
     "**/*.tsx",
     "@types/**/*.d.ts",
     "next-env.d.ts", // Include all declaration files in the @types directory
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "./eslint-plugin-no-void-jsx/**/*",
+    "eslint.config.mjs",
+    "./components/(admin)/dashboard/refunds/adminRefundReview.jsx",
+    "./components/shop/refunds/refundsForm.jsx",
+    "./components/shop/refunds/refundsViewer.jsx",
+    "./components/shop/refunds/UserRefundRequest.jsx",
+    "next.config.mjs",
+    "postcss.config.mjs"
   ],
   "exclude": [
     "node_modules",
@@ -123,6 +131,7 @@
     ".next",
     "dist",
     "**/**test.tsx",
-    "**/**test**/**"
+    "**/**test**/**",
+    "**/*.old.*"
   ]
 }

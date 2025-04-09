@@ -1,3 +1,33 @@
-{
-  "cSpell.words": ["vaildtintion"]
+
+  {
+    "cSpell.words": ["vaildtintion"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  // "prettier.requireConfig": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+     "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.documentSelectors": ["**/*.{js,jsx,ts,tsx,json,css,scss,md}"]
+  // "typescript.suggest.autoImports": true,
+  // "typescript.suggest.completeFunctionCalls": true,
+  // "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+  // "typescript.suggest.includeCompletionsForImportStatements": true,
+  // "typescript.suggest.includeCompletionsForModuleExports": true,
+  // "typescript.suggest.includeCompletionsForObjectLiteralMethodSnippets": true,
+  // "typescript.suggest.includeCompletionsForParameterSnippets": true,
+  // "typescript.suggest.includeCompletionsForPropertySnippets": true,
+  // "typescript.suggest.includeCompletionsForRenames": true,
+  // "typescript.suggest.includeCompletionsForUnresolvedImports": true,
+  // "typescript.suggest.includeCompletionsWithInsertText": true,
+  // "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+  // "typescript.suggest.includeCompletionsForObjectLiteralMethodSnippets": true,
+  // "typescript.suggest.includeCompletionsForPropertySnippets": true,
+  // "typescript.suggest.includeCompletionsForRenames": true,
+  // "typescript.suggest.includeCompletionsForUnresolvedImports": true,
 }

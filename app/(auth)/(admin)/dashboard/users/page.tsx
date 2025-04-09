@@ -1,11 +1,12 @@
-import AdminUsers from "@/components/(admin)/dashboard/users/users";
-import api from "@/app/lib/utilities/api";
-import AppError from "@/app/lib/utilities/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
+import { headers } from "next/headers";
+
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+import AdminUsers from "@/components/(admin)/dashboard/users/users";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
+
 export const metadata: Metadata = {
   title: usersTranslate.metadata[lang].title,
   description: usersTranslate.metadata[lang].description,
@@ -40,20 +41,17 @@ const queryParams = async (searchParams: SearchParams) => {
   }
 
   const queryString = url.toString();
-  try {
-    const {
-      data: { docs, meta, links },
-    } = await api.get(
-      "/admin/dashboard/users" + (queryString ? `?${queryString}` : ""),
-      {
-        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
-      }
-    );
 
-    return { users: docs, pagination: { meta, links } };
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+  const {
+    data: { docs, meta, links },
+  } = await api.get(
+    `/admin/dashboard/users${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
+    }
+  );
+
+  return { users: docs, pagination: { meta, links } };
 };
 type PageProps = {
   searchParams: Promise<SearchParams>;
@@ -91,10 +89,9 @@ const page = async (props: PageProps) => {
         }
       />
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error?.message} />;
-
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

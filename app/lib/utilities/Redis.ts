@@ -1,14 +1,12 @@
-import AppError from "@/app/lib/utilities/appError";
-import { Redis } from "@upstash/redis";
+import {Redis} from '@upstash/redis';
+
+import AppError from '@/app/lib/utilities/appError';
 
 const existingEnv = () => {
-  if (
-    !process.env.UPSTASH_REDIS_REST_URL ||
-    !process.env.UPSTASH_REDIS_REST_TOKEN
-  ) {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     throw new AppError(
-      "Please provide UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in the environment variables",
-      500
+      'Please provide UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in the environment variables',
+      500,
     );
   }
   return {

@@ -1,19 +1,24 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { createServer } from "https";
-import { parse } from "url";
-import next from "next";
 import fs from "fs";
+import type { IncomingMessage, ServerResponse } from "http";
+import { createServer } from "https";
 import path from "path";
+import { parse } from "url";
+
 // Add to server.ts
 import heapdump from "heapdump";
+import next from "next";
 
 // Take a heap dump when memory exceeds 1GB
 setInterval(() => {
   if (process.memoryUsage().heapUsed > 1e9) {
     const filename = `./config/heapdump-${Date.now()}.heapsnapshot`;
     heapdump.writeSnapshot(filename, (err) => {
-      if (err) console.error("Heap dump failed:", err);
-      else console.log(`Heap dump saved to: ${filename}`);
+      /* eslint-disable no-console */
+      if (err) {
+        console.error("Heap dump failed:", err);
+      } else {
+        console.log(`Heap dump saved to: ${filename}`);
+      }
     });
   }
 }, 10000);
@@ -32,18 +37,26 @@ const httpsOptions = {
   cert: fs.readFileSync(path.join(__dirname, "config/localhost.pem")),
 };
 
-app.prepare().then(() => {
-  // Add to server.ts
+app
+  .prepare()
+  .then(() => {
+    // Add to server.ts
 
-  createServer(httpsOptions, (req: IncomingMessage, res: ServerResponse) => {
-    const parsedUrl = parse(req.url!, true);
-    handle(req, res, parsedUrl);
-  }).listen(port, (err?: any) => {
-    if (err) throw err;
-    console.log(
-      `> Server listening at https://localhost:${port} as ${
-        dev ? "development" : process.env.NODE_ENV
-      }`
-    );
+    createServer(httpsOptions, (req: IncomingMessage, res: ServerResponse) => {
+      const parsedUrl = parse(req.url!, true);
+      void handle(req, res, parsedUrl);
+    }).listen(port, (err?: any) => {
+      if (err) {
+        throw err;
+      }
+      console.log(
+        `> Server listening at https://localhost:${port} as ${
+          dev ? "development" : process.env.NODE_ENV
+        }`
+      );
+    });
+  })
+  .catch((ex) => {
+    console.error((ex as Error).stack);
+    process.exit(1);
   });
-});

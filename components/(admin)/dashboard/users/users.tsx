@@ -1,29 +1,33 @@
 // export default AdminUsers;
 "use client";
-import React, { useEffect, useState } from "react";
+
 import Link from "next/link";
-import api from "@/app/lib/utilities/api";
-import toast from "react-hot-toast";
-import Pagination, {
-  type PaginationType,
-} from "@/components/pagination/Pagination";
-import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { FiCheckSquare, FiEdit, FiTrash2, FiUser } from "react-icons/fi";
+import { HiFilter } from "react-icons/hi";
+
+import type { Event } from "@/app/lib/types/products.types";
 import {
   type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
-import SearchBar from "@/components/ui/SearchBar";
-import type { Event } from "@/app/lib/types/products.types";
-import Select from "@/components/ui/Select";
-import { FiCheckSquare, FiEdit, FiTrash2, FiUser } from "react-icons/fi";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import { statusStyles } from "@/app/lib/utilities/status-style";
-import { HiFilter } from "react-icons/hi";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import MobileFilter from "@/components/ui/MobileFilter";
+import Pagination, {
+  type PaginationType,
+} from "@/components/pagination/Pagination";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import MobileFilter from "@/components/ui/MobileFilter";
+import SearchBar from "@/components/ui/SearchBar";
+import Select from "@/components/ui/Select";
+import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
+// export default AdminUsers;
 
 type Props = {
   users: UserAuthType[];
@@ -53,7 +57,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );
   const onPaginationChange = (page: number) => {
-    setCurrentPage(page);
+    void setCurrentPage(page);
   };
   // const handleDelete = async (id: string) => {
   //   if (confirm(usersTranslate.users[lang].functions.handleDelete.confirm)) {
@@ -101,7 +105,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
   };
 
   const handleSearchChanges = (e: Event) => {
-    setSearch(e.target.value);
+    void setSearch(e.target.value);
   };
   useEffect(() => {
     window.scrollTo({ top: 1, behavior: "smooth" });
@@ -114,7 +118,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
       </h1>
       {/* Mobile Filter Button */}
       <button
-        onClick={() => setIsMobileFiltersOpen(true)}
+        onClick={() => { setIsMobileFiltersOpen(true); }}
         className="md:hidden flex items-center gap-2 my-1 mb-4 p-3 bg-gray-100 rounded-lg shadow-md w-full "
       >
         <HiFilter className="text-xl" />
@@ -144,7 +148,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
             label: usersTranslate.users[lang].addUsers.form.roles[role],
           }))}
           value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
+          onChange={(e) => void setRoleFilter(e.target.value)}
           placeholder={usersTranslate.users[lang].addUsers.form.role.label}
           icon={<FiUser />}
         />
@@ -157,7 +161,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
             label: usersTranslate.users[lang].addUsers.form.statuses[status],
           }))}
           value={activityFilter}
-          onChange={(e) => setActivityFilter(e.target.value)}
+          onChange={(e) => void setActivityFilter(e.target.value)}
           placeholder={usersTranslate.users[lang].filter.select.activity.title}
           icon={<FiCheckSquare />}
         />
@@ -197,8 +201,8 @@ const AdminUsers = ({ users, pagination }: Props) => {
           </Link>
         </p>
       </div>
-      {isMobileFiltersOpen && (
-        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+      {isMobileFiltersOpen ? (
+        <MobileFilter closeFilters={() => { setIsMobileFiltersOpen(false); }}>
           <div className="flex  flex-col items-center justify-between gap-4">
             <SearchBar
               className="w-full"
@@ -215,7 +219,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
                 label: usersTranslate.users[lang].addUsers.form.roles[role],
               }))}
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              onChange={(e) => void setRoleFilter(e.target.value)}
               placeholder={
                 usersTranslate.users[lang].filter.select.activity.all
               }
@@ -234,7 +238,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
                   usersTranslate.users[lang].addUsers.form.statuses[status],
               }))}
               value={activityFilter}
-              onChange={(e) => setActivityFilter(e.target.value)}
+              onChange={(e) => void setActivityFilter(e.target.value)}
               placeholder={
                 usersTranslate.users[lang].filter.select.activity.all
               }
@@ -252,7 +256,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
             </Link>
           </div>
         </MobileFilter>
-      )}
+      ) : null}
       <div className="overflow-x-auto rounded-lg shadow">
         <table className="w-full bg-white">
           <thead className="bg-gray-50">
@@ -309,7 +313,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
                     title={
                       usersTranslate.users[lang].editUsers.actions.deleteConfirm
                     }
-                    onConfirm={() => handleDeleteUser(user._id)}
+                    onConfirm={() => void handleDeleteUser(user._id)}
                     // confirmVariant="destructive"
                   >
                     <button className="text-red-600 hover:text-red-800 transition-colors">

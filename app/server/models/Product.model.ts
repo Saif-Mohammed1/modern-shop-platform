@@ -1,6 +1,15 @@
-import { Schema, model, models, Document, Model, Types } from "mongoose";
-// import ReviewModel, { type IReview } from "./Review.model";
-import type { IUser } from "./User.model";
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Types,
+} from "mongoose";
+
+import _ReviewModel, { type IReview as _IReview } from "./Review.model";
+import _UserModel, { type IUser } from "./User.model";
+
 export interface IProduct extends Document {
   _id: Types.ObjectId;
   name: string;

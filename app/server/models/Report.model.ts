@@ -1,7 +1,7 @@
-// @ts-ignore
-import { Document, Model, Query, Schema, model, models } from "mongoose";
-import { type IUser } from "./User.model";
+import { Schema, model, models, type Document, type Model } from "mongoose";
+
 import { type IProduct } from "./Product.model";
+import { type IUser } from "./User.model";
 
 export interface IReportSchema extends Document {
   _id: Schema.Types.ObjectId;
@@ -75,7 +75,7 @@ ReportSchema.set("toJSON", { versionKey: false });
 ReportSchema.index({ status: 1, createdAt: -1 });
 
 // Add validation for enum values
-ReportSchema.path("status").validate(function (value) {
+ReportSchema.path("status").validate((value) => {
   return ["pending", "resolved", "rejected"].includes(value);
 }, "Invalid report status");
 
@@ -106,7 +106,7 @@ ReportSchema.virtual("predictedResolution").get(function () {
     ? "24h"
     : "72h";
 });
-ReportSchema.post(/^find/, function (docs, next) {
+ReportSchema.post(/^find/, (docs: IReportSchema[] | IReportSchema, next) => {
   // Ensure `docs` is an array (it should be for `find`)
   if (Array.isArray(docs)) {
     // Filter out documents where `product` is null

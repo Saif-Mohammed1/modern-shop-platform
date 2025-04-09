@@ -1,17 +1,19 @@
 "use client";
 
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import api from "@/app/lib/utilities/api";
-import imageSrc from "@/app/lib/utilities/productImageHandler";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import dynamic from "next/dynamic";
-import type { Event } from "@/app/lib/types/products.types";
-import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { AddressFormValues } from "@/components/customers/address/AddressForm";
+
 import type { AddressType } from "@/app/lib/types/address.types";
+import type { Event } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
+import type { AddressFormValues } from "@/components/customers/address/AddressForm";
+import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
+
 const AddressForm = dynamic(
   () => import("@/components/customers/address/AddressForm")
 );
@@ -73,7 +75,10 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
         checkoutPageTranslate[lang].functions.handleAddNewAddress.loading
       );
       const { data: newAddress } = await api.post("/customers/address", data);
-      setAddresses((prevAddresses) => [...prevAddresses, newAddress]);
+      setAddresses((prevAddresses) => [
+        ...prevAddresses,
+        newAddress as AddressType,
+      ]);
       toast.success(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.success
       );
@@ -112,14 +117,16 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handelCheckout.loading
       );
-      const { data } = await api.post("/customers/orders", {
+      const {
+        data: { url },
+      } = await api.post("/customers/orders", {
         shippingInfo: selectedAddress,
         // products: cartItems,
       });
       toast.success(
         checkoutPageTranslate[lang].functions.handelCheckout.success
       );
-      window.open(data.url, "_blank");
+      window.open(url, "_blank");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -166,12 +173,16 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
         {showAddressForm ? (
           <AddressForm
             onSubmit={handleFormSubmit}
-            onCancel={() => setShowAddressForm(false)}
+            onCancel={() => {
+              setShowAddressForm(false);
+            }}
             // defaultValues={
           />
         ) : (
           <button
-            onClick={() => setShowAddressForm(true)}
+            onClick={() => {
+              setShowAddressForm(true);
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded-md"
           >
             {checkoutPageTranslate[lang].button.addNewAddress}

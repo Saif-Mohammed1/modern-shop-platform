@@ -4,12 +4,19 @@ export const dashboardTranslate = {
       title: "Dashboard",
       description: "Dashboard for the admin",
       keywords: "admin, dashboard, admin dashboard",
+      errors: {
+        global: "Something went wrong please try again",
+      },
     },
+
     uk: {
       title: "Панель керування",
       description: "Панель керування для адміністратора",
       keywords:
         "адміністратор, панель керування, адміністраторська панель керування",
+      errors: {
+        global: "Щось пішло не так, спробуйте ще раз",
+      },
     },
   },
   layout: {

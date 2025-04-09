@@ -1,11 +1,14 @@
+import type { ClientSession } from "mongoose";
+
 import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { CartTranslate } from "@/public/locales/server/Cart.Translate";
+
+import type { localCartDto } from "../dtos/cart.dto";
 import CartModel from "../models/Cart.model";
 import { CartRepository } from "../repositories/cart.repository";
+
 import { ProductService } from "./product.service";
-import { CartTranslate } from "@/public/locales/server/Cart.Translate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { localCartDto } from "../dtos/cart.dto";
-import type { ClientSession } from "mongoose";
 
 export class CartService {
   constructor(
@@ -22,8 +25,9 @@ export class CartService {
       await this.repository.removeProductFromCart(userId, productId);
       throw new AppError(CartTranslate[lang].errors.productNotFound, 404);
     }
-    if (quantity == 1) {
-      return await this.repository.addToCart(userId, productId);
+    if (quantity === 1) {
+      await this.repository.addToCart(userId, productId);
+      return;
     }
     if (existingProduct.stock < quantity) {
       throw new AppError(
@@ -31,7 +35,7 @@ export class CartService {
         400
       );
     }
-    return await this.repository.increaseQuantity(userId, productId, quantity);
+    await this.repository.increaseQuantity(userId, productId, quantity);
   }
   /**
    * Decrease quantity of product in cart
@@ -44,9 +48,10 @@ export class CartService {
       throw new AppError(CartTranslate[lang].errors.productNotFound, 404);
     }
     if (existingItem.quantity === 1) {
-      return await this.repository.removeProductFromCart(userId, productId);
+      await this.repository.removeProductFromCart(userId, productId);
+      return;
     }
-    return await this.repository.decreaseQuantity(userId, productId);
+    await this.repository.decreaseQuantity(userId, productId);
   }
   /**
    *
@@ -58,7 +63,7 @@ export class CartService {
    * this delete one product from cart no need to check quantity
    */
   async removeProductFromCart(userId: string, productId: string) {
-    return await this.repository.removeProductFromCart(userId, productId);
+    await this.repository.removeProductFromCart(userId, productId);
   }
 
   /**
@@ -80,10 +85,10 @@ export class CartService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
   async deleteManyByProductId(userId: string, productId: string[]) {
-    return await this.repository.deleteManyByProductId(userId, productId);
+    await this.repository.deleteManyByProductId(userId, productId);
   }
 }

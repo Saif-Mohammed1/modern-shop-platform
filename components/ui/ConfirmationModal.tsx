@@ -11,7 +11,7 @@ const ConfirmationModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
   title: string;
   message: string;
   confirmText: string;
@@ -19,7 +19,7 @@ const ConfirmationModal = ({
 }) => {
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -49,7 +49,7 @@ const ConfirmationModal = ({
             </div>
           </motion.div>
         </motion.div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 };

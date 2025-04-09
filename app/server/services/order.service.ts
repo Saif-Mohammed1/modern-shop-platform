@@ -1,21 +1,14 @@
-import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
-import type {
-  CreateOrderDto,
-  UpdateOrderDto,
-  UpdateOrderStatusDto,
-} from "../dtos/order.dto";
-import OrderModel from "../models/Order.model";
-import { OrderRepository } from "../repositories/order.repository";
-import AppError from "@/app/lib/utilities/appError";
-import { OrderTranslate } from "@/public/locales/server/Order.Translate";
-import { lang } from "@/app/lib/utilities/lang";
+import type {QueryOptionConfig} from '@/app/lib/types/queryBuilder.types';
+import AppError from '@/app/lib/utilities/appError';
+import {lang} from '@/app/lib/utilities/lang';
+import {OrderTranslate} from '@/public/locales/server/Order.Translate';
+
+import type {CreateOrderDto, UpdateOrderDto, UpdateOrderStatusDto} from '../dtos/order.dto';
+import OrderModel from '../models/Order.model';
+import {OrderRepository} from '../repositories/order.repository';
 
 export class OrderService {
-  constructor(
-    private readonly repository: OrderRepository = new OrderRepository(
-      OrderModel
-    )
-  ) {}
+  constructor(private readonly repository: OrderRepository = new OrderRepository(OrderModel)) {}
   async createOrder(dto: CreateOrderDto) {
     const session = await this.repository.startSession();
     session.startTransaction();
@@ -28,7 +21,7 @@ export class OrderService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 
@@ -56,7 +49,7 @@ export class OrderService {
   async updateOrderStatus(
     orderId: string,
 
-    status: UpdateOrderStatusDto["status"]
+    status: UpdateOrderStatusDto['status'],
   ) {
     const order = await this.repository.updateStatus(orderId, status);
     if (!order) {
@@ -79,7 +72,7 @@ export class OrderService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 

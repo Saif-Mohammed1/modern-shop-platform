@@ -1,21 +1,4 @@
-import { cn } from "@/app/lib/utilities/cn";
-
-import {
-  FiClock, // ⏰ Clock (Feather)
-  FiShield, // 🛡️ Shield (Feather) - No direct "ShieldAlert"
-  FiLock, // 🔒 Lock (Feather) - No "LockKeyhole"
-  FiMail, // 📧 Mail (Feather) - No "MailWarning"
-  FiGlobe, // 🌍 Globe (Feather)
-  FiBellOff,
-  FiSettings,
-  FiActivity,
-  FiMonitor, // 🔕 BellOff (Feather)
-} from "react-icons/fi";
-import {
-  MdSmartphone, // 📱 MonitorSmartphone (Material Icons)
-  MdLanguage,
-  MdAlignHorizontalCenter, // 🌐 Languages (Material Icons)
-} from "react-icons/md";
+import { DateTime } from "luxon";
 import {
   AiOutlineCheckCircle, // ✅ BadgeCheck (Ant Design)
 } from "react-icons/ai";
@@ -25,25 +8,61 @@ import {
   FaUserPlus,
   FaWallet, // 👛 Wallet (FontAwesome)
 } from "react-icons/fa";
-import { DateTime } from "luxon";
-import { UserStatus } from "@/app/lib/types/users.types";
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: string;
-  createdAt: string;
-  verification: {
-    emailVerified: boolean;
-    phoneVerified: boolean;
-  };
-  authMethods: string[];
-  security: Security;
-  preferences: UserPreferencesProps["preferences"];
-  status: UserStatus;
+import {
+  FiActivity,
+  // 🌍 Globe (Feather)
+  FiBellOff,
+  FiClock,
+  // 📧 Mail (Feather) - No "MailWarning"
+  FiGlobe,
+  // 🛡️ Shield (Feather) - No direct "ShieldAlert"
+  FiLock,
+  // 🔒 Lock (Feather) - No "LockKeyhole"
+  FiMail,
+  FiMonitor, // 🔕 BellOff (Feather)
+  FiSettings,
+  // ⏰ Clock (Feather)
+  FiShield,
+} from "react-icons/fi";
+import {
+  MdAlignHorizontalCenter, // 🌐 Languages (Material Icons)
+  // 📱 MonitorSmartphone (Material Icons)
+  MdLanguage,
+  MdSmartphone,
+} from "react-icons/md";
+
+import type { UserStatus } from "@/app/lib/types/users.types";
+import { cn } from "@/app/lib/utilities/cn";
+
+interface LoginHistory {
+  timestamp: string;
+  browser: string;
+  os: string;
+  device: string;
+  location?: string;
+  success: boolean;
+  ip: string;
+}
+interface Details {
+  device: LoginHistory;
+  newEmail: string;
+}
+interface AuditLog {
+  timestamp: string;
+  action: string;
+  details: Details;
 }
 
+interface UserPreferencesProps {
+  preferences: {
+    // theme: string;
+    // notifications: boolean;
+    // language: string;
+    language: string;
+    currency: string;
+    marketingOptIn: boolean;
+  };
+}
 interface Security {
   twoFactorEnabled: boolean;
   rateLimits: {
@@ -83,39 +102,47 @@ interface Security {
   lastLogin: string;
   passwordChangedAt: string;
 }
-interface Details {
-  device: LoginHistory;
-  newEmail: string;
-}
-interface AuditLog {
-  timestamp: string;
-  action: string;
-  details: Details;
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: string;
+  createdAt: string;
+  verification: {
+    emailVerified: boolean;
+    phoneVerified: boolean;
+  };
+  authMethods: string[];
+  security: Security;
+  preferences: UserPreferencesProps["preferences"];
+  status: UserStatus;
 }
 
-interface LoginHistory {
-  timestamp: string;
-  browser: string;
-  os: string;
-  device: string;
-  location?: string;
-  success: boolean;
-  ip: string;
-}
-interface UserPreferencesProps {
-  preferences: {
-    // theme: string;
-    // notifications: boolean;
-    // language: string;
-    language: string;
-    currency: string;
-    marketingOptIn: boolean;
-  };
-}
 // interface StatusBadgeProps {
 //   status: "ACTIVE" | "SUSPENDED" | "PENDING";
 // }
 
+// Add these to your utils
+const languageNames: Record<string, string> = {
+  uk: "Ukrainian",
+  en: "English",
+};
+
+const currencySymbols: Record<string, string> = {
+  UAH: "₴",
+  USD: "$",
+  EUR: "€",
+};
+
+const actionTitles: Record<string, string> = {
+  REGISTRATION: "Account Created",
+  PASSWORD_RESET_REQUEST: "Password Reset Requested",
+  PASSWORD_RESET: "Password Changed",
+  EMAIL_CHANGE_REQUEST: "Email Change Requested",
+  VERIFICATION_EMAIL_REQUEST: "Verification Email Sent",
+  VERIFICATION_EMAIL_FAILURE: "Verification Failed",
+};
 const statusColors: Record<UserStatus, string> = {
   active: "bg-green-500", // Green for active users
   suspended: "bg-red-500", // Red for suspended users
@@ -124,7 +151,9 @@ const statusColors: Record<UserStatus, string> = {
   deleted: "bg-gray-500", // Darker gray for deleted users
 };
 export default function UserAdminPage({ user }: { user: User }) {
-  if (!user) return <p className="text-red-500">User not found</p>;
+  if (!user) {
+    return <p className="text-red-500">User not found</p>;
+  }
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -207,12 +236,12 @@ function UserProfileCard({ user }: { user: User }) {
                   {method.toLowerCase()}
                 </span>
               ))}
-              {user.security.twoFactorEnabled && (
+              {user.security.twoFactorEnabled ? (
                 <span className="badge badge-success">
                   <FiLock size={14} className="mr-1" />
                   2FA Enabled
                 </span>
-              )}
+              ) : null}
             </div>
           }
         />
@@ -228,7 +257,7 @@ function UserProfileCard({ user }: { user: User }) {
                   <FiMail className="text-yellow-600 " size={16} />
                 )}
               </div>
-              {user.phone && (
+              {user.phone ? (
                 <div className="flex items-center gap-1.5">
                   {user.phone}
                   {user.verification.phoneVerified ? (
@@ -242,7 +271,7 @@ function UserProfileCard({ user }: { user: User }) {
                     </span>
                   )}
                 </div>
-              )}
+              ) : null}
             </div>
           }
         />
@@ -344,18 +373,18 @@ function ActivityFeed({ logs }: { logs: AuditLog[] }) {
                   </div>
                   <div className="text-xs text-muted-foreground">
                     <RelativeTime date={log.timestamp} />
-                    {log.details?.device?.location && (
+                    {log.details?.device?.location ? (
                       <span className="ml-2">
                         <FiGlobe size={12} className="inline mr-1" />
                         {log.details.device.location}
                       </span>
-                    )}
+                    ) : null}
                   </div>
-                  {log.details?.newEmail && (
+                  {log.details?.newEmail ? (
                     <div className="text-xs text-blue-600">
                       New email: {log.details?.newEmail}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -399,12 +428,12 @@ function SessionHistory({ sessions }: { sessions: LoginHistory[] }) {
               </div>
               <div className="text-xs text-muted-foreground">
                 <RelativeTime date={session.timestamp} />
-                {session.location && (
+                {session.location ? (
                   <span className="ml-2">
                     <FiGlobe size={12} className="inline mr-1" />
                     {session.location}
                   </span>
-                )}
+                ) : null}
               </div>
               <div className="text-xs font-mono text-muted-foreground truncate">
                 {truncateHash(session.ip)}
@@ -511,27 +540,6 @@ export function RelativeTime({ date }: { date: string }) {
   );
 }
 
-// Add these to your utils
-const languageNames: Record<string, string> = {
-  uk: "Ukrainian",
-  en: "English",
-};
-
-const currencySymbols: Record<string, string> = {
-  UAH: "₴",
-  USD: "$",
-  EUR: "€",
-};
-
-const actionTitles: Record<string, string> = {
-  REGISTRATION: "Account Created",
-  PASSWORD_RESET_REQUEST: "Password Reset Requested",
-  PASSWORD_RESET: "Password Changed",
-  EMAIL_CHANGE_REQUEST: "Email Change Requested",
-  VERIFICATION_EMAIL_REQUEST: "Verification Email Sent",
-  VERIFICATION_EMAIL_FAILURE: "Verification Failed",
-};
-
 function ActivityIcon({ action }: { action: string }) {
   const iconProps = { size: 16 };
   switch (action) {
@@ -552,8 +560,12 @@ function ActivityIcon({ action }: { action: string }) {
 
 function DeviceIcon({ device }: { device: string }) {
   const iconProps = { size: 20 };
-  if (device.includes("Mobile")) return <MdSmartphone {...iconProps} />;
-  if (device.includes("Tablet")) return <FaTableTennis {...iconProps} />;
+  if (device.includes("Mobile")) {
+    return <MdSmartphone {...iconProps} />;
+  }
+  if (device.includes("Tablet")) {
+    return <FaTableTennis {...iconProps} />;
+  }
   return <FiMonitor {...iconProps} />;
 }
 
@@ -565,14 +577,16 @@ function groupLogsByDate(logs: AuditLog[]) {
   return logs.reduce(
     (acc, log) => {
       const date = new Date(log.timestamp).toLocaleDateString();
-      if (!acc[date]) acc[date] = [];
+      if (!acc[date]) {
+        acc[date] = [];
+      }
       acc[date].push(log);
       return acc;
     },
     {} as Record<string, AuditLog[]>
   );
 }
-const StatusBadge = ({ status }: { status: UserStatus }) => {
+function StatusBadge({ status }: { status: UserStatus }) {
   return (
     <span
       className={`px-2 py-1 text-xs font-bold text-white rounded-lg ${statusColors[status]}`}
@@ -580,4 +594,4 @@ const StatusBadge = ({ status }: { status: UserStatus }) => {
       {status}
     </span>
   );
-};
+}

@@ -3,7 +3,7 @@ type SkeletonTableProps = {
   rows: number;
 };
 
-const SkeletonTable = ({ columns, rows }: SkeletonTableProps) => (
+const SkeletonTable = ({columns, rows}: SkeletonTableProps) => (
   <>
     {[...Array(rows)].map((_, rowIndex) => (
       <tr key={rowIndex}>

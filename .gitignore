@@ -42,6 +42,11 @@ next-env.d.ts
 **/test/
 **/tests/
 **/**test**/
-# **/**test*/
+# # ignore any file contine .old*
+# **/*.old*
+# ignore any file contine .bak*
+**/*.bak*
+# ignore any file contine .swp*
+**/*.swp*
 
 certificates

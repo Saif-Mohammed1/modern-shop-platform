@@ -1,41 +1,42 @@
 "use client";
 
-import { type FC, useEffect, useRef, useState } from "react";
-import {
-  FaTag,
-  FaCalendarAlt,
-  FaStar,
-  FaCheckCircle,
-  FaArchive,
-  FaEdit,
-  FaTrash,
-  FaTimesCircle,
-  FaWeightHanging,
-  FaRulerCombined,
-  FaUserEdit,
-} from "react-icons/fa";
+import { DateTime } from "luxon";
 import Image from "next/image";
-// import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { type FC, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import {
+  FaArchive,
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaEdit,
+  FaRulerCombined,
+  FaStar,
+  FaTag,
+  FaTimesCircle,
+  FaTrash,
+  FaUserEdit,
+  FaWeightHanging,
+} from "react-icons/fa";
+import { HiFilter } from "react-icons/hi";
+import { MdHistory } from "react-icons/md";
+import { TfiReload } from "react-icons/tfi";
+
+import type { Event, ProductType } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Pagination, {
   type PaginationType,
 } from "@/components/pagination/Pagination";
-import toast from "react-hot-toast";
-import api from "@/app/lib/utilities/api";
-import imageSrc from "@/app/lib/utilities/productImageHandler";
 // import { updateQueryParams } from "@/components/util/updateQueryParams";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import Link from "next/link";
-import type { Event, ProductType } from "@/app/lib/types/products.types";
-import { TfiReload } from "react-icons/tfi";
-import { HiFilter } from "react-icons/hi";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import MobileFilter from "@/components/ui/MobileFilter";
 import SearchBar from "@/components/ui/SearchBar";
 import Select from "@/components/ui/Select";
-import { DateTime } from "luxon";
-import MobileFilter from "@/components/ui/MobileFilter";
-import { MdHistory } from "react-icons/md";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
 type Category = string;
 type ProductListProps = {
   products: ProductType[];
@@ -71,23 +72,23 @@ const ProductList: FC<ProductListProps> = ({
   const productsContainerRef = useRef<HTMLDivElement>(null);
 
   const handleCategoryFilterChange = (event: Event) => {
-    const value = event.target.value;
-    setCategoryFilter(value);
+    const { value } = event.target;
+    void setCategoryFilter(value);
   };
   const handleSortFilterChange = (event: Event) => {
-    const value = event.target.value;
-    setSortOrder(value);
+    const { value } = event.target;
+    void setSortOrder(value);
     // updateQueryParams({ sort: value }, searchParamsReadOnly, router, pathName);
   };
 
   const handleSearch = (event: Event) => {
-    const value = event.target.value;
-    setSearchQuery(value);
+    const { value } = event.target;
+    void setSearchQuery(value);
   };
 
   const onPaginationChange = (page: number) => {
     // const paramsSearch = new URLSearchParams(searchParamsReadOnly.toString());
-    setCurrentPage(page);
+    void setCurrentPage(page);
 
     // if (page === 1) {
     //   paramsSearch.delete("page");
@@ -168,7 +169,9 @@ const ProductList: FC<ProductListProps> = ({
     <div className="p-2 bg-gray-100 /max-h-screen /overflow-hidden">
       {/* Mobile Filter Button */}
       <button
-        onClick={() => setIsMobileFiltersOpen(true)}
+        onClick={() => {
+          setIsMobileFiltersOpen(true);
+        }}
         className="md:hidden flex w-full  items-center gap-2 p-3 bg-white rounded-lg shadow-md"
       >
         <HiFilter className="text-xl" />
@@ -240,8 +243,12 @@ const ProductList: FC<ProductListProps> = ({
         </Link>
       </div>
       {/* Mobile Filters */}
-      {isMobileFiltersOpen && (
-        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+      {isMobileFiltersOpen ? (
+        <MobileFilter
+          closeFilters={() => {
+            setIsMobileFiltersOpen(false);
+          }}
+        >
           <div className="flex flex-col  items-center mb-6 gap-2">
             {/* Search Section */}
             <SearchBar
@@ -316,7 +323,7 @@ const ProductList: FC<ProductListProps> = ({
             </Link>
           </div>
         </MobileFilter>
-      )}
+      ) : null}
       <div ref={productsContainerRef} className="max-h-[70dvh] overflow-y-auto">
         <div
           className="grid col gap-4 p-4"
@@ -463,14 +470,14 @@ const ProductList: FC<ProductListProps> = ({
                           {product.active ? <FaCheckCircle /> : <FaArchive />}
                           <span>{product.active ? "Active" : "Archived"}</span>
                         </div>
-                        {product.lastModifiedBy && (
+                        {product.lastModifiedBy ? (
                           <div className="flex items-center gap-1 text-gray-400 text-sm">
                             <FaUserEdit />
                             <span className="truncate max-w-[120px]">
                               {product.lastModifiedBy.name}
                             </span>
                           </div>
-                        )}
+                        ) : null}
                       </div>
 
                       <div className="flex items-center gap-2">

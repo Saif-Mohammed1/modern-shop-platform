@@ -1,11 +1,12 @@
-import { confirmEmailChangeTranslate } from "@/public/locales/client/(public)/confirmEmailChangeTranslate";
-import ConfirmEmailChange from "@/components/customers/emailUpdatedStatus";
-
-import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import api from "@/app/lib/utilities/api";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import ConfirmEmailChange from "@/components/customers/emailUpdatedStatus";
+import { confirmEmailChangeTranslate } from "@/public/locales/client/(public)/confirmEmailChangeTranslate";
+
 export const metadata: Metadata = {
   title: confirmEmailChangeTranslate[lang].metadata.title,
   description: confirmEmailChangeTranslate[lang].metadata.description,
@@ -19,17 +20,22 @@ const page = async (props: { searchParams: Promise<searchParams> }) => {
   const searchParams = await props.searchParams;
   const token = searchParams.token || undefined;
   const error = searchParams.error || undefined;
-  if (!token) notFound();
+  if (!token) {
+    notFound();
+  }
   try {
-    const { data } = await api.get(
-      `/customers/update-data/confirm-email-change?token=` + token,
+    const {
+      data: { message },
+    } = await api.get(
+      `/customers/update-data/confirm-email-change?token=${token}`,
       {
         headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
       }
     );
-    return <ConfirmEmailChange error={error} message={data.message} />;
-  } catch (error: any) {
-    return <ConfirmEmailChange error={error} />;
+    return <ConfirmEmailChange error={error} message={message} />;
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ConfirmEmailChange error={message} />;
   }
 };
 export default page;

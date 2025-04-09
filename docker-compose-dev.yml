@@ -7,4 +7,4 @@ services:
     volumes:
       - ./app:/app:ro
     ports:
-      - "3000:3000"
+      - '3000:3000'

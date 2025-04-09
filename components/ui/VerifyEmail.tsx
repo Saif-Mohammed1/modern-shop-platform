@@ -1,13 +1,16 @@
 "use client";
-import { useRef, useState } from "react";
-import SubmitButton from "./SubmitButton";
-import { VerifyEmailTranslate } from "@/public/locales/client/(auth)/VerifyEmail.Translate";
-import { lang } from "@/app/lib/utilities/lang";
-import api from "@/app/lib/utilities/api";
-import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
-import Input from "./Input";
+
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useRef, useState } from "react";
+import toast from "react-hot-toast";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { VerifyEmailTranslate } from "@/public/locales/client/(auth)/VerifyEmail.Translate";
+
+import Input from "./Input";
+import SubmitButton from "./SubmitButton";
 
 const VerifyEmail = () => {
   // const [code, setCode] = useState<string[]>([..." ".repeat(8)]);// not work
@@ -49,6 +52,9 @@ const VerifyEmail = () => {
     }
   };
   const handleSubmit = async (e: React.FormEvent) => {
+    if (!session?.user) {
+      throw new Error(VerifyEmailTranslate[lang].VerifyEmail.userNotFound);
+    }
     e.preventDefault();
 
     try {
@@ -72,7 +78,7 @@ const VerifyEmail = () => {
       router.push("/");
     } catch (error) {
       toast.error(
-        (error as any).message || VerifyEmailTranslate[lang].VerifyEmail.fail
+        (error as Error)?.message || VerifyEmailTranslate[lang].VerifyEmail.fail
       );
     }
   };
@@ -103,7 +109,7 @@ const VerifyEmail = () => {
       toast.success(VerifyEmailTranslate[lang].VerifyEmail.resendCodeSuccess);
     } catch (error) {
       toast.error(
-        (error as any).message ||
+        (error as Error)?.message ||
           VerifyEmailTranslate[lang].VerifyEmail.resendCodeFail
       );
     }
@@ -132,9 +138,13 @@ const VerifyEmail = () => {
               inputMode="numeric"
               maxLength={1}
               value={digit}
-              onChange={(e) => handleChange(index, e.target.value)}
+              onChange={(e) => {
+                handleChange(index, e.target.value);
+              }}
               onPaste={handlePaste}
-              onKeyDown={(e) => handleKeyDown(index, e)}
+              onKeyDown={(e) => {
+                handleKeyDown(index, e);
+              }}
               className="w-12 h-12 text-2xl text-center border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               // disabled={isLoading}
             />

@@ -1,5 +1,13 @@
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Types,
+} from "mongoose";
+
 import type { DeviceInfo } from "@/app/lib/types/session.types";
-import { Schema, model, models, Document, Model, Types } from "mongoose";
 
 export interface ISession extends Document {
   // _id: Schema.Types.ObjectId;

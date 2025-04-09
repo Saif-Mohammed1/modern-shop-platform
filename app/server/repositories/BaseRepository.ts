@@ -1,5 +1,4 @@
-import type { ClientSession } from "mongoose";
-import { Model, Document, type FilterQuery } from "mongoose";
+import type { ClientSession, Document, FilterQuery, Model } from "mongoose";
 
 // type id = Schema.Types.ObjectId;
 export interface Repository<T> {

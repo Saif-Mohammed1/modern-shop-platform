@@ -56,6 +56,7 @@ export const rateLimiter = {
 
       return response;
     } catch (error) {
+      /* eslint-disable no-console */
       console.error("Rate limiter error:", error);
       // Fail open strategy with full allowance
       return {

@@ -1,9 +1,11 @@
 // import { AuditSource } from "@/app/lib/types/audit.types";
-import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { lang } from "@/app/lib/utilities/lang";
-import { ProductTranslate } from "@/public/locales/server/Product.Translate";
+import {z} from 'zod';
+
+import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import {lang} from '@/app/lib/utilities/lang';
+import {ProductTranslate} from '@/public/locales/server/Product.Translate';
+
 // import type{ IpVersion } from "zod";
-import { z } from "zod";
 export class ProductValidation {
   private static imageObjectSchema = z.object({
     link: z
@@ -22,7 +24,7 @@ export class ProductValidation {
       .array(
         z.string({
           required_error: ProductTranslate[lang].dto.images.required,
-        })
+        }),
       )
       .min(1, {
         message: ProductTranslate[lang].dto.images.required,
@@ -86,7 +88,7 @@ export class ProductValidation {
 
         {
           message: ProductTranslate[lang].dto.discount.min,
-        }
+        },
       )
       .optional(),
     // .max(100, "Discount cannot exceed 100"),
@@ -169,6 +171,4 @@ export class ProductValidation {
 }
 
 export type CreateProductDto = z.infer<typeof ProductValidation.productSchema>;
-export type UpdateProductDto = z.infer<
-  typeof ProductValidation.updateProductSchema
->;
+export type UpdateProductDto = z.infer<typeof ProductValidation.updateProductSchema>;

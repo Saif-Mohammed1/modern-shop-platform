@@ -1,25 +1,29 @@
 // src/app/lib/features/2fa/2fa.service.ts
-import speakeasy from "speakeasy";
 import qrcode from "qrcode";
+import speakeasy from "speakeasy";
+
 import { SECURITY_CONFIG } from "@/app/lib/config/security.config";
-import { TwoFactorRepository } from "../repositories/2fa.repository";
-import { UserService } from "./user.service";
-import { CryptoService } from "./crypto.service";
-import AppError from "@/app/lib/utilities/appError";
-import type {
-  AuditLog,
-  ITwoFactorAuth,
-  SecurityMetadata,
-} from "../models/2fa.model";
-import TwoFactorAuthModel from "../models/2fa.model";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { TwoFactorTranslate } from "@/public/locales/server/TwoFactor.Translate";
-import { lang } from "@/app/lib/utilities/lang";
 import logger from "@/app/lib/logger/logs";
-import { SessionService } from "./session.service";
-import type { DeviceInfo } from "@/app/lib/types/session.types";
 import { SecurityAuditAction } from "@/app/lib/types/audit.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
+import AppError from "@/app/lib/utilities/appError";
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
 import { SecurityAlertType } from "@/app/server/services/email.service";
+import { TwoFactorTranslate } from "@/public/locales/server/TwoFactor.Translate";
+
+// import TwoFactorAuthModel from '../models/2fa.model';
+import TwoFactorAuthModel, {
+  type AuditLog,
+  type ITwoFactorAuth,
+  type SecurityMetadata,
+} from "../models/2fa.model";
+import { TwoFactorRepository } from "../repositories/2fa.repository";
+
+import { CryptoService } from "./crypto.service";
+import { SessionService } from "./session.service";
+import { UserService } from "./user.service";
+
 import { emailService } from ".";
 
 export class TwoFactorService {
@@ -30,15 +34,21 @@ export class TwoFactorService {
     private readonly userService: UserService = new UserService(),
     private readonly cryptoService: CryptoService = new CryptoService(),
     private readonly sessionService: SessionService = new SessionService()
-  ) {}
+  ) {
+    this.repository = repository;
+    this.userService = userService;
+    this.cryptoService = cryptoService;
+    this.sessionService = sessionService;
+  }
 
   async initialize2FA(userId: string, metadata: SecurityMetadata) {
     const existing2FA = await this.repository.findOne({ userId });
-    if (existing2FA)
+    if (existing2FA) {
       throw new AppError(
         TwoFactorTranslate[lang].error.alreadyInitialized,
         400
       );
+    }
 
     const secret = speakeasy.generateSecret({
       name: `${process.env.APP_NAME}:${userId}`,
@@ -66,12 +76,13 @@ export class TwoFactorService {
 
   async verify2FA(userId: string, token: string, metadata: SecurityMetadata) {
     const twoFA = await this.repository.findOne({ userId });
-    if (!twoFA)
+    if (!twoFA) {
       throw new AppError(
         TwoFactorTranslate[lang].error.notConfigured,
 
         404
       );
+    }
 
     this.checkLockoutStatus(twoFA);
 
@@ -101,8 +112,9 @@ export class TwoFactorService {
     metadata: SecurityMetadata
   ) {
     const twoFA = await this.repository.findOne({ userId });
-    if (!twoFA)
+    if (!twoFA) {
       throw new AppError(TwoFactorTranslate[lang].error.notConfigured, 404);
+    }
 
     this.checkLockoutStatus(twoFA);
 
@@ -135,13 +147,13 @@ export class TwoFactorService {
   }
 
   async disable2FA(userId: string, metadata: SecurityMetadata) {
-    const [_user, twoFA] = await Promise.all([
+    const [user, twoFA] = await Promise.all([
       this.userService.findUserById(userId),
       this.repository.findOne({ userId }),
     ]);
-
-    if (!twoFA)
+    if (!twoFA || !user) {
       throw new AppError(TwoFactorTranslate[lang].error.notConfigured, 400);
+    }
 
     await Promise.all([
       this.userService.disable2FA(userId),
@@ -266,6 +278,7 @@ export class TwoFactorService {
           success: true,
           codesUsed: usedCodes,
           remainingCodes: updatedCodes.length,
+          device: deviceInfo,
         },
         session
       );
@@ -281,11 +294,7 @@ export class TwoFactorService {
           },
           timestamp: new Date(),
           ipAddress: deviceInfo.ip,
-          device: {
-            browser: deviceInfo.browser,
-            os: deviceInfo.os,
-            model: deviceInfo.model,
-          },
+          device: deviceInfo,
           location: `${deviceInfo.location.city}, ${deviceInfo.location.country}`,
         });
       }
@@ -305,14 +314,15 @@ export class TwoFactorService {
         SecurityAuditAction.BACKUP_CODE_RECOVERY,
         {
           success: false,
-          error: (error as any).message,
+          error: (error as Error)?.message || undefined,
+          device: deviceInfo,
         }
       );
 
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
   //   async validateBackupCodes(email: string, codes: string[]) {

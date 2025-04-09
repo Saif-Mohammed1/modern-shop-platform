@@ -1,19 +1,19 @@
-import type { ProductType } from "./products.types";
-import type { UserAuthType } from "./users.types";
+import type {ProductType} from './products.types';
+import type {UserAuthType} from './users.types';
 
 export type UserInCart = Partial<UserAuthType> | undefined;
 // Alias the picked fields from ProductType
 export type ProductCartPick = Pick<
   ProductType,
-  | "_id"
-  | "name"
-  | "price"
-  | "images"
-  | "stock"
-  | "slug"
-  | "category"
-  | "discount"
-  | "discountExpire"
+  | '_id'
+  | 'name'
+  | 'price'
+  | 'images'
+  | 'stock'
+  | 'slug'
+  | 'category'
+  | 'discount'
+  | 'discountExpire'
 >;
 
 export type CartItemsType = {
@@ -34,8 +34,8 @@ export type CartContextType = {
   isCartOpen: boolean;
   toggleCartStatus: () => void;
   cartItems: CartItemsType[];
-  addToCartItems: (product: ProductCartPick, quantity?: number) => void;
-  removeCartItem: (product: ProductCartPick) => void;
+  addToCartItems: (product: ProductCartPick, quantity?: number) => Promise<void>;
+  removeCartItem: (product: ProductCartPick) => Promise<void>;
   setIsCartOpen: (status: boolean) => void;
-  clearProductFromCartItem: (product: ProductCartPick) => void;
+  clearProductFromCartItem: (product: ProductCartPick) => Promise<void>;
 };

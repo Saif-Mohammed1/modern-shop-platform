@@ -1,5 +1,5 @@
 // @types/crypto.d.ts
-declare module "crypto" {
+declare module 'crypto' {
   interface ScryptOptions {
     cost?: number;
     blockSize?: number;
@@ -11,6 +11,6 @@ declare module "crypto" {
     password: BinaryLike,
     salt: BinaryLike,
     keylen: number,
-    options?: ScryptOptions
+    options?: ScryptOptions,
   ): Buffer;
 }

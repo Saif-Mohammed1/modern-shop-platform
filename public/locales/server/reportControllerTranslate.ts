@@ -3,37 +3,37 @@ export const reportUsControllerTranslate = {
     model: {
       schema: {
         user: {
-          required: "Report must belong to a user.",
+          required: 'Report must belong to a user.',
         },
         product: {
-          required: "Report must belong to a product.",
+          required: 'Report must belong to a product.',
         },
         status: {
-          required: "Status field is required.",
+          required: 'Status field is required.',
         },
         name: {
-          required: "Name field is required.",
+          required: 'Name field is required.',
         },
         issue: {
-          required: "Issue field is required.",
+          required: 'Issue field is required.',
         },
         message: {
-          required: "Message field is required.",
+          required: 'Message field is required.',
         },
       },
     },
     errors: {
-      notFound: "No reports found",
+      notFound: 'No reports found',
     },
   },
   uk: {
     model: {
       schema: {
         user: {
-          required: "Повідомлення повинно належати користувачеві.",
+          required: 'Повідомлення повинно належати користувачеві.',
         },
         product: {
-          required: "Повідомлен надіслано на продукт.",
+          required: 'Повідомлен надіслано на продукт.',
         },
         status: {
           required: "Поле статусу обов'язкове.",
@@ -50,7 +50,7 @@ export const reportUsControllerTranslate = {
       },
     },
     errors: {
-      notFound: "Повідомлення не знайдено",
+      notFound: 'Повідомлення не знайдено',
     },
   },
 } as const;

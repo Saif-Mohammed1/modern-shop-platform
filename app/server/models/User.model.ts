@@ -1,20 +1,33 @@
-import { Document, Model, Schema, models, model, Types } from "mongoose";
-import validator from "validator";
-import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import type { DeviceInfo, GeoLocation } from "@/app/lib/types/session.types";
-import { SecurityAuditAction } from "@/app/lib/types/audit.types";
-import AppError from "@/app/lib/utilities/appError";
-import { SecurityAlertType } from "@/app/server/services/email.service";
+
+import bcrypt from "bcryptjs";
 import {
-  type accountAction,
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Types,
+} from "mongoose";
+import validator from "validator";
+
+import {
+  SecurityAuditAction,
+  type AuditLogDetails,
+} from "@/app/lib/types/audit.types";
+import type { DeviceInfo, GeoLocation } from "@/app/lib/types/session.types";
+import {
   AuthMethod,
   UserCurrency,
   UserRole,
   UserStatus,
+  type accountAction,
 } from "@/app/lib/types/users.types";
-import { TokensService } from "@/app/server/services/tokens.service";
+import AppError from "@/app/lib/utilities/appError";
 import { obfuscateEmail } from "@/app/lib/utilities/helpers";
+import { SecurityAlertType } from "@/app/server/services/email.service";
+import { TokensService } from "@/app/server/services/tokens.service";
+
 // import { emailService } from "../services";
 interface ILoginHistory extends DeviceInfo {
   timestamp: Date;
@@ -25,7 +38,8 @@ interface ILoginHistory extends DeviceInfo {
 interface IAuditLog {
   timestamp: Date;
   action: SecurityAuditAction;
-  details: Object;
+  // details: Object;
+  details: AuditLogDetails;
 }
 interface IRateLimits {
   login: {
@@ -67,10 +81,10 @@ interface ISecurity {
   rateLimits: IRateLimits;
   behavioralFlags: IBehavioralFlags;
   auditLog: IAuditLog[];
-  lastLogin?: Date;
+  lastLogin?: Date | string;
   loginHistory: ILoginHistory[];
   previousPasswords: string[];
-  passwordChangedAt?: Date;
+  passwordChangedAt?: Date | string;
 }
 
 interface IVerification {
@@ -88,7 +102,26 @@ interface IPreferences {
   currency: string;
   marketingOptIn: boolean;
 }
-
+// Type for toJSON transform
+interface IUserJSON {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  phone?: string;
+  password?: string;
+  role: UserRole;
+  status: UserStatus;
+  authMethods: AuthMethod[];
+  preferences: IPreferences;
+  loginNotificationSent: boolean;
+  security?: Partial<ISecurity>;
+  verification: IVerification;
+  socialProfiles?: Map<string, string>;
+  createdAt: Date | string;
+  updatedAt?: Date | string;
+  __v?: number;
+  twoFactorEnabled?: boolean;
+}
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -123,10 +156,67 @@ export interface IUser extends Document {
   checkRateLimit(action: accountAction): void;
   incrementRateLimit(action: accountAction): Promise<void>;
   detectAnomalies(deviceInfo: DeviceInfo): void;
-  anonymizeSecurityData(securityData: any): any;
+  anonymizeSecurityData(securityData: Partial<ISecurity>): Partial<ISecurity>;
   filterForRole(requesterRole?: UserRole): object;
 }
+// Define common subschemas first
+const LocationSchema = new Schema(
+  {
+    city: { type: String, required: true },
+    country: { type: String, required: true },
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
+    source: { type: String, required: true },
+  },
+  { _id: false }
+);
 
+const DeviceInfoSchema = new Schema(
+  {
+    os: { type: String, required: true },
+    browser: { type: String, required: true },
+    device: { type: String, required: true },
+    brand: { type: String },
+    model: { type: String },
+    isBot: { type: Boolean, required: true },
+    ip: { type: String, required: true },
+    location: LocationSchema,
+    fingerprint: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    success: { type: Boolean, required: true },
+  },
+  { _id: false }
+);
+
+const RateLimitSchema = new Schema(
+  {
+    attempts: { type: Number, default: 0 },
+    lastAttempt: Date,
+    lockUntil: Date,
+  },
+  { _id: false }
+);
+
+const AuditEntrySchema = new Schema(
+  {
+    timestamp: { type: Date, default: Date.now },
+    action: {
+      type: String,
+      enum: Object.values(SecurityAuditAction),
+      required: true,
+    },
+    details: {
+      success: { type: Boolean, required: true },
+      message: {
+        type: String, //required: true
+      },
+      device: DeviceInfoSchema,
+    },
+  },
+  { _id: false }
+);
+
+// Main user schema
 const UserSchema = new Schema<IUser>(
   {
     name: {
@@ -164,7 +254,6 @@ const UserSchema = new Schema<IUser>(
           "Password must contain at least one uppercase, one lowercase, one number, and one special character",
       },
     },
-
     role: {
       type: String,
       enum: Object.values(UserRole),
@@ -180,7 +269,6 @@ const UserSchema = new Schema<IUser>(
       enum: Object.values(AuthMethod),
       default: [AuthMethod.EMAIL],
     },
-
     preferences: {
       language: {
         type: String,
@@ -201,37 +289,16 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-
     security: {
       twoFactorSecret: { type: String, select: false },
       twoFactorSecretExpiry: Date,
       twoFactorEnabled: { type: Boolean, default: false },
       rateLimits: {
-        login: {
-          attempts: { type: Number, default: 0 },
-          lastAttempt: Date,
-          lockUntil: Date,
-        },
-        passwordReset: {
-          attempts: { type: Number, default: 0 },
-          lastAttempt: Date,
-          lockUntil: Date,
-        },
-        verification: {
-          attempts: { type: Number, default: 0 },
-          lastAttempt: Date,
-          lockUntil: Date,
-        },
-        "2fa": {
-          attempts: { type: Number, default: 0 },
-          lastAttempt: Date,
-          lockUntil: Date,
-        },
-        backup_recovery: {
-          attempts: { type: Number, default: 0 },
-          lastAttempt: Date,
-          lockUntil: Date,
-        },
+        login: RateLimitSchema,
+        passwordReset: RateLimitSchema,
+        verification: RateLimitSchema,
+        "2fa": RateLimitSchema,
+        backup_recovery: RateLimitSchema,
       },
       behavioralFlags: {
         suspiciousDeviceChange: { type: Boolean, default: false },
@@ -239,57 +306,17 @@ const UserSchema = new Schema<IUser>(
         requestVelocity: { type: Number, default: 0 },
       },
       lastLogin: Date,
-      auditLog: [
-        {
-          timestamp: { type: Date, default: Date.now },
-
-          action: {
-            type: String,
-            enum: Object.values(SecurityAuditAction),
-            required: true,
-          },
-          details: { type: Object, required: true },
-
-          _id: false,
-        },
-      ],
-      loginHistory: [
-        {
-          os: { type: String, required: true },
-          browser: { type: String, required: true },
-          device: { type: String, required: true },
-          brand: { type: String },
-          model: { type: String },
-          isBot: { type: Boolean, required: true },
-          ip: { type: String, required: true },
-          location: {
-            city: { type: String, required: true },
-            country: { type: String, required: true },
-            latitude: { type: Number, required: true },
-            longitude: { type: Number, required: true },
-            source: { type: String, required: true },
-          },
-          fingerprint: { type: String, required: true },
-          timestamp: { type: Date, default: Date.now },
-          success: { type: Boolean, required: true },
-          _id: false,
-        },
-      ],
+      auditLog: [AuditEntrySchema],
+      loginHistory: [DeviceInfoSchema],
       previousPasswords: [String],
       passwordChangedAt: Date,
     },
     verification: {
-      emailVerified: {
-        type: Boolean,
-        default: false,
-      },
+      emailVerified: { type: Boolean, default: false },
       emailChangeToken: String,
       emailChangeExpires: Date,
       emailChange: String,
-      phoneVerified: {
-        type: Boolean,
-        default: false,
-      },
+      phoneVerified: { type: Boolean, default: false },
       verificationToken: String,
       verificationExpires: Date,
     },
@@ -305,17 +332,21 @@ const UserSchema = new Schema<IUser>(
       virtuals: true,
       transform: function (_, ret) {
         // Remove universally sensitive fields for all roles
-        delete ret.verification?.emailChangeExpires;
-        delete ret.verification?.verificationExpires;
-        delete ret.verification?.emailChangeToken;
-        delete ret.verification?.verificationToken;
-        delete ret.password;
-        delete ret.__v;
-        delete ret.security?.twoFactorSecret;
-        delete ret.security?.previousPasswords;
-        delete ret.verification?.emailChangeToken;
-        delete ret.verification?.verificationToken;
 
+        const userRet = ret as IUserJSON;
+
+        if (userRet.verification) {
+          delete userRet.verification.emailChangeExpires;
+          delete userRet.verification.verificationExpires;
+          delete userRet.verification.emailChangeToken;
+          delete userRet.verification.verificationToken;
+        }
+        delete userRet.password;
+        delete userRet.__v;
+        if (userRet.security) {
+          delete userRet.security.twoFactorSecret;
+          delete userRet.security.previousPasswords;
+        }
         ["createdAt", "updatedAt"].forEach((field) => {
           if (ret[field]) {
             ret[field] = new Date(ret[field]).toISOString().split("T")[0];
@@ -383,7 +414,8 @@ UserSchema.pre<IUser>("save", async function (next) {
         ? undefined
         : new Date(Date.now() - 1000);
     } catch (error) {
-      return next(error as Error);
+      next(error as Error);
+      return;
     }
   }
 
@@ -412,10 +444,26 @@ UserSchema.pre<IUser>("save", async function (next) {
       this.security.behavioralFlags.requestVelocity > 10
     ) {
       loginLimits.lockUntil = new Date(Date.now() + 24 * 3600000); // 24h lock
+      const lastIndex = this.security.loginHistory.length - 1 || 0;
       this.security.auditLog.push({
         timestamp: new Date(),
         action: SecurityAuditAction.ACCOUNT_LOCKED,
-        details: `Automatic lockdown due to ${loginLimits.attempts} failed attempts`,
+        details: {
+          success: false,
+          device: {
+            ip: this.security.loginHistory[lastIndex]?.ip,
+            fingerprint: this.security.loginHistory[lastIndex]?.fingerprint,
+            location: this.security.loginHistory[lastIndex]?.location,
+
+            os: this.security.loginHistory[lastIndex]?.os,
+            browser: this.security.loginHistory[lastIndex]?.browser,
+            device: this.security.loginHistory[lastIndex]?.device,
+            brand: this.security.loginHistory[lastIndex]?.brand,
+            model: this.security.loginHistory[lastIndex]?.model,
+            isBot: this.security.loginHistory[lastIndex]?.isBot,
+          },
+          message: `Automatic lockdown due to ${loginLimits.attempts} failed attempts`,
+        },
       });
     }
 
@@ -439,13 +487,13 @@ UserSchema.pre<IUser>("save", async function (next) {
   next();
 });
 
-UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
+UserSchema.methods.anonymizeSecurityData = function (securityData: ISecurity) {
   const tokensService = new TokensService();
 
   return {
     ...securityData,
     loginHistory:
-      securityData.loginHistory?.map((entry: any) => ({
+      securityData.loginHistory?.map((entry) => ({
         ...entry,
         timestamp: entry?.timestamp.toISOString().split("T")[0],
         ip: tokensService.hashIpAddress(entry.ip),
@@ -453,7 +501,7 @@ UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
       })) || [],
 
     auditLog:
-      securityData.auditLog?.map((entry: any) => ({
+      securityData.auditLog?.map((entry) => ({
         ...entry,
         timestamp: entry?.timestamp.toISOString().split("T")[0],
 
@@ -478,7 +526,10 @@ UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
     rateLimits: securityData.rateLimits
       ? Object.fromEntries(
           Object.entries(securityData.rateLimits).map(
-            ([key, val]: [string, any]) => [
+            ([key, val]: [
+              string,
+              { attempts: number; lastAttempt: Date; lockUntil: Date },
+            ]) => [
               key,
               {
                 locked: !!val.lockUntil && new Date(val.lockUntil) > new Date(),
@@ -493,53 +544,73 @@ UserSchema.methods.anonymizeSecurityData = function (securityData: any) {
       : {},
   };
 };
-
-UserSchema.methods.filterForRole = function (
-  currentUserRole: UserRole = UserRole.CUSTOMER
-): object {
-  const userObject = this.toJSON();
-  // Remove universally sensitive fields for all roles
-  delete userObject.verification?.emailChangeExpires;
-  delete userObject.verification?.verificationExpires;
-  delete userObject.verification?.emailChangeToken;
-  delete userObject.verification?.verificationToken;
+/** if (userObject.verification) {
+    delete userObject.verification.emailChangeExpires;
+    delete userObject.verification.verificationExpires;
+    delete userObject.verification.emailChangeToken;
+    delete userObject.verification.verificationToken;
+  }
   delete userObject.password;
   delete userObject.__v;
-  delete userObject.security?.twoFactorSecret;
-  delete userObject.security?.previousPasswords;
-  delete userObject.verification?.emailChangeToken;
-  delete userObject.verification?.verificationToken;
+  if (userObject.security) {
+    delete userObject.security.twoFactorSecret;
+    delete userObject.security.previousPasswords;
+  } */
+UserSchema.methods.filterForRole = function (
+  this: IUser,
+  currentUserRole: UserRole = UserRole.CUSTOMER
+): object {
+  const userObject = this.toJSON() as IUserJSON;
+  // Remove universally sensitive fields for all roles
+  if (userObject.verification) {
+    delete userObject.verification.emailChangeExpires;
+    delete userObject.verification.verificationExpires;
+    delete userObject.verification.emailChangeToken;
+    delete userObject.verification.verificationToken;
+  }
+  delete userObject.password;
+  delete userObject.__v;
+  if (userObject.security) {
+    delete userObject.security.twoFactorSecret;
+    delete userObject.security.previousPasswords;
+  }
   userObject.twoFactorEnabled = userObject.security?.twoFactorEnabled || false;
 
   // Apply role-specific transformations
   if ([UserRole.ADMIN, UserRole.MODERATOR].includes(currentUserRole)) {
-    // Add to filterForRole() for admins
-
-    userObject.lastLogin = userObject.lastLogin?.toISOString().split("T")[0]; // Truncate timestamp
     // Anonymize security data for admin view
     if (userObject.security) {
-      userObject.security.passwordChangedAt =
-        userObject.security.passwordChangedAt?.toISOString().split("T")[0];
-      userObject.security.lastLogin = userObject.security.lastLogin
-        ?.toISOString()
-        .split("T")[0];
+      if (userObject.security.passwordChangedAt) {
+        userObject.security.passwordChangedAt = new Date(
+          userObject.security.passwordChangedAt
+        )
+          ?.toISOString()
+          .split("T")[0];
+      }
+      if (userObject.security.lastLogin) {
+        userObject.security.lastLogin = new Date(userObject.security.lastLogin)
+          ?.toISOString()
+          .split("T")[0]; // Truncate timestamp
+      }
 
       userObject.security = this.anonymizeSecurityData(userObject.security);
     }
   } else {
+    // Non-admin/moderator view
     delete userObject.security;
     userObject.email = obfuscateEmail(userObject.email);
+    if (userObject.verification) {
+      delete userObject.verification.emailChange;
+    }
     delete userObject.updatedAt;
-    delete userObject.verification?.emailChange;
   }
 
-  // userObject.email =
-  // currentUserRole === UserRole.ADMIN
-  //   ? userObject.email
-  //   : obfuscateEmail(userObject.email);
-  // Common transformations for all non-admin roles
+  // Remove sensitive fields from social profiles
 
-  if (Object.keys(userObject.socialProfiles).length === 0) {
+  if (
+    userObject.socialProfiles &&
+    Object.keys(userObject.socialProfiles).length === 0
+  ) {
     delete userObject.socialProfiles;
   }
 
@@ -548,9 +619,11 @@ UserSchema.methods.filterForRole = function (
 
 // Enhanced Methods
 UserSchema.methods.checkRateLimit = function (
+  this: IUser,
   action: "login" | "passwordReset" | "verification" | "2fa" | "backup_recovery"
 ) {
   const now = new Date();
+
   const rateLimit = this.security.rateLimits[action];
 
   // Check if still in lock period
@@ -575,6 +648,7 @@ UserSchema.methods.checkRateLimit = function (
 };
 
 UserSchema.methods.incrementRateLimit = async function (
+  this: IUser,
   action: "login" | "passwordReset" | "verification" | "2fa" | "backup_recovery"
 ) {
   const rateLimit = this.security.rateLimits[action];
@@ -587,7 +661,11 @@ UserSchema.methods.incrementRateLimit = async function (
   }
 };
 
-UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
+UserSchema.methods.detectAnomalies = async function (
+  this: IUser,
+
+  deviceInfo: DeviceInfo
+) {
   const MAX_LOGIN_HISTORY = 5; // Check last 5 logins
   const IMPOSSIBLE_TRAVEL_THRESHOLD = 800; // km/h
   const NEW_DEVICE_GRACE_PERIOD = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -612,7 +690,11 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
       this.security.auditLog.push({
         timestamp: new Date(),
         action: SecurityAuditAction.IMPOSSIBLE_TRAVEL,
-        details: `Detected travel speed of ${Math.round(maxSpeed)}km/h from ${recentLogins[0].location.country}`,
+        details: {
+          success: true,
+          device: deviceInfo,
+          message: `Detected travel speed of ${Math.round(maxSpeed)}km/h from ${recentLogins[0].location.country}`,
+        },
       });
     }
   }
@@ -636,11 +718,7 @@ UserSchema.methods.detectAnomalies = async function (deviceInfo: DeviceInfo) {
 
       await emailService.sendSecurityAlertEmail(this.email, {
         type: SecurityAlertType.NEW_DEVICE,
-        device: {
-          model: deviceInfo.model,
-          os: deviceInfo.os,
-          browser: deviceInfo.browser,
-        },
+        device: deviceInfo,
         ipAddress: deviceInfo.ip,
         location: `${deviceInfo.location.city}, ${deviceInfo.location.country} 
           ${recentLogins[0]?.location.city}, ${recentLogins[0]?.location.country}`,
@@ -713,11 +791,14 @@ function calculateDistance(loc1: GeoLocation, loc2: GeoLocation): number {
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
-  if (!this.password) return false;
+  if (!this.password) {
+    return false;
+  }
 
   return bcrypt.compare(candidatePassword, this.password);
 };
 UserSchema.methods.isPreviousPassword = async function (
+  this: IUser,
   candidatePassword: string
 ): Promise<boolean> {
   // Compare against all hashed versions in history
@@ -728,7 +809,7 @@ UserSchema.methods.isPreviousPassword = async function (
   }
   return false;
 };
-UserSchema.methods.createPasswordResetToken = function (): string {
+UserSchema.methods.createPasswordResetToken = function (this: IUser): string {
   const resetToken = crypto.randomBytes(32).toString("hex");
   const hashedToken = crypto
     .createHash("sha256")
@@ -741,13 +822,14 @@ UserSchema.methods.createPasswordResetToken = function (): string {
   return resetToken;
 };
 
-UserSchema.methods.generateTwoFactorSecret = function (): void {
+UserSchema.methods.generateTwoFactorSecret = function (this: IUser): void {
   const secret = crypto.randomBytes(32).toString("base64");
   this.security.twoFactorSecret = secret;
   this.security.twoFactorEnabled = true;
 };
 
 UserSchema.methods.isAccountLocked = function (
+  this: IUser,
   action: "login" | "passwordReset" | "verification" | "2fa" | "backup_recovery"
 ): boolean {
   return !!(

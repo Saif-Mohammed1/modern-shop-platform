@@ -1,21 +1,24 @@
 // src/repositories/impl/dashboard.repo.ts
 import { DateTime } from "luxon";
-import { Model, Types } from "mongoose";
-import type { BaseDashboardRepository } from "./BaseDashboardRepository";
-import UserModel from "../models/User.model";
-import OrderModel from "../models/Order.model";
-import ProductModel from "../models/Product.model";
+import type { Model, Types } from "mongoose";
+
+// import { SecurityDashboardData } from "@/app/lib/types/security.types";
+import type { DashboardDataAggregate } from "@/app/lib/types/dashboardAggregate.types";
+import { OrderStatus } from "@/app/lib/types/orders.types";
+import { UserStatus } from "@/app/lib/types/users.types";
 
 import CartModel from "../models/Cart.model";
-import WishlistModel from "../models/Wishlist.model";
-// import { SecurityDashboardData } from "@/app/lib/types/security.types";
-import { UserStatus } from "@/app/lib/types/users.types";
-import { OrderStatus } from "@/app/lib/types/orders.types";
+import OrderModel from "../models/Order.model";
+import ProductModel from "../models/Product.model";
 import RefundModel from "../models/Refund.model";
 import ReportModel from "../models/Report.model";
+import UserModel from "../models/User.model";
+import WishlistModel from "../models/Wishlist.model";
 
-interface AggregationResult {
-  [key: string]: any[];
+import type { BaseDashboardRepository } from "./BaseDashboardRepository";
+
+interface AggregationResultItem<T = unknown> {
+  [key: string]: T;
 }
 
 export class DashboardRepository implements BaseDashboardRepository {
@@ -29,7 +32,9 @@ export class DashboardRepository implements BaseDashboardRepository {
     // const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     // const lastWeekDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const [result] = await UserModel.aggregate([
+    const [result] = await UserModel.aggregate<
+      DashboardDataAggregate["userAnalytics"]
+    >([
       {
         $facet: {
           // User Analytics
@@ -242,6 +247,7 @@ export class DashboardRepository implements BaseDashboardRepository {
                 _id: {
                   device: "$security.loginHistory.device",
                   os: "$security.loginHistory.os",
+                  // browser: "$security.loginHistory.browser",
                 },
                 count: { $sum: 1 },
                 cities: { $addToSet: "$security.loginHistory.location.city" },
@@ -252,106 +258,13 @@ export class DashboardRepository implements BaseDashboardRepository {
                 _id: 0, // 👈 This removes the _id from the output
                 device: "$_id.device",
                 os: "$_id.os",
+                // browser: "$_id.browser",
                 count: 1,
                 citiesCoverage: { $size: "$cities" },
               },
             },
             { $sort: { count: -1 } },
           ],
-          // weeklyGrowth: [
-          //   {
-          //     $match: {
-          //       "security.loginHistory.timestamp": {
-          //         $gte: last8WeekDate,
-          //       },
-          //     },
-          //   },
-          //   {
-          //     $unwind: "$security.loginHistory",
-          //   },
-          //   {
-          //     $group: {
-          //       _id: {
-          //         year: { $isoWeekYear: "$security.loginHistory.timestamp" },
-          //         week: { $isoWeek: "$security.loginHistory.timestamp" },
-          //       },
-          //       currentWeekLogins: { $sum: 1 },
-          //       previousWeekLogins: {
-          //         $first: "$security.loginHistory.prevWeekCount",
-          //       },
-          //     },
-          //   },
-          //   {
-          //     $sort: { "_id.year": 1, "_id.week": 1 },
-          //   },
-          //   {
-          //     $group: {
-          //       _id: null,
-          //       weeks: {
-          //         $push: {
-          //           week: "$_id.week",
-          //           year: "$_id.year",
-          //           logins: "$currentWeekLogins",
-          //         },
-          //       },
-          //     },
-          //   },
-          //   {
-          //     $project: {
-          //       weeklyGrowth: {
-          //         $map: {
-          //           input: "$weeks",
-          //           as: "week",
-          //           in: {
-          //             week: "$$week.week",
-          //             year: "$$week.year",
-          //             currentLogins: "$$week.logins",
-          //             previousLogins: {
-          //               $ifNull: [
-          //                 {
-          //                   $arrayElemAt: [
-          //                     "$weeks.logins",
-          //                     {
-          //                       $subtract: [
-          //                         { $indexOfArray: ["$weeks", "$$week"] },
-          //                         1,
-          //                       ],
-          //                     },
-          //                   ],
-          //                 },
-          //                 0,
-          //               ],
-          //             },
-          //             growthPercentage: {
-          //               $cond: [
-          //                 { $eq: [{ $indexOfArray: ["$weeks", "$$week"] }, 0] },
-          //                 0,
-          //                 {
-          //                   $multiply: [
-          //                     {
-          //                       $divide: [
-          //                         {
-          //                           $subtract: [
-          //                             "$$week.logins",
-          //                             "$$prev.logins",
-          //                           ],
-          //                         },
-          //                         "$$prev.logins",
-          //                       ],
-          //                     },
-          //                     100,
-          //                   ],
-          //                 },
-          //               ],
-          //             },
-          //           },
-          //         },
-          //       },
-          //     },
-          //   },
-          //   { $unwind: "$weeklyGrowth" },
-          //   { $replaceRoot: { newRoot: "$weeklyGrowth" } },
-          // ],
           weeklyGrowth: [
             {
               $match: {
@@ -477,16 +390,25 @@ export class DashboardRepository implements BaseDashboardRepository {
         },
       },
     ]);
+
+    const defaultDistribution: Record<string, number> = {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+    };
+
     return {
-      // User Analytics
-      totalUsers: this.getFirstNumber(result.total, "total"),
-      activeUsers: this.getFirstNumber(result.active, "active"),
-      recentSignups: this.getFirstNumber(result.recent, "recent"),
-      languageDistribution: this.mapToObject(result.demographics),
+      totalUsers: this.getFirstNumber(result.total ?? [], "total"),
+      activeUsers: this.getFirstNumber(result.active ?? [], "active"),
+      recentSignups: this.getFirstNumber(result.recent ?? [], "recent"),
+      languageDistribution: result.demographics
+        ? this.mapToObject(result.demographics)
+        : defaultDistribution,
       geographicalInsights: {
-        // topLocations: result.trafficSources,
         topLocations: await Promise.all(
-          result.trafficSources.map(async (city: any) => ({
+          (result.trafficSources ?? []).map(async (city) => ({
             ...city,
             growthPercentage: await this.calculateCityGrowth(
               city.city,
@@ -494,108 +416,93 @@ export class DashboardRepository implements BaseDashboardRepository {
             ),
           }))
         ),
-        deviceDistribution: result.deviceUsage,
+        deviceDistribution: result.deviceUsage ?? [],
         totalCities: new Set(
-          result.trafficSources.flatMap((t: any) => `${t.city}, ${t.country}`)
+          (result.trafficSources ?? []).flatMap(
+            (t) => `${t.city}, ${t.country}`
+          )
         ).size,
       },
-      // Security Insights
       security: {
         twoFactorAdoption: this.getFirstNumber(
-          result.securitySummary,
+          result.securitySummary ?? [],
           "twoFactorAdoption"
         ),
         lockedAccounts: this.getFirstNumber(
-          result.securitySummary,
+          result.securitySummary ?? [],
           "lockedAccounts"
         ),
         highRiskUsers: this.getFirstNumber(
-          result.securitySummary,
+          result.securitySummary ?? [],
           "highRiskUsers"
         ),
-
         authActivity: {
-          loginsLast24h: this.getFirstNumber(result.authActivity, "logins"),
-          failedAttempts: this.getFirstNumber(result.authActivity, "failures"),
-          uniqueLocations: result.authActivity[0]?.locations?.length || 0,
+          loginsLast24h: this.getFirstNumber(
+            result.authActivity ?? [],
+            "logins"
+          ),
+          failedAttempts: this.getFirstNumber(
+            result.authActivity ?? [],
+            "failures"
+          ),
+          uniqueLocations: result.authActivity?.[0]?.locations?.length ?? 0,
         },
-
         threats: {
           impossibleTravel: this.getFirstNumber(
-            result.threatAnalysis,
+            result.threatAnalysis ?? [],
             "impossibleTravel"
           ),
           suspiciousDevices: this.getFirstNumber(
-            result.threatAnalysis,
+            result.threatAnalysis ?? [],
             "suspiciousDevices"
           ),
           botAttempts: this.getFirstNumber(
-            result.threatAnalysis,
+            result.threatAnalysis ?? [],
             "botAttempts"
           ),
         },
-
         rateLimits: {
           activeLockouts: this.getFirstNumber(
-            result.rateLimits,
+            result.rateLimits ?? [],
             "loginLockouts"
           ),
           passwordResetAttempts: this.getFirstNumber(
-            result.rateLimits,
+            result.rateLimits ?? [],
             "passwordResets"
           ),
         },
-
-        // trends: result.activityTrends.map((t: any) => ({
-        //   date: t._id,
-        //   attempts: t.attempts,
-        //   successRate:
-        //     (((t.attempts - t.failures) / t.attempts) * 100).toFixed(1) + "%",
-        // })),
-        trends: result.activityTrends.map((t: any) => ({
+        trends: (result.activityTrends ?? [])?.map((t) => ({
           date: t._id,
           attempts: t.attempts,
           successRate:
             t.attempts > 0
-              ? (((t.attempts - t.failures) / t.attempts) * 100).toFixed(1) +
-                "%"
+              ? `${(((t.attempts - (t.failures ?? 0)) / t.attempts) * 100).toFixed(1)}%`
               : "0%",
         })),
       },
-
-      // System Health
       deviceDiversity: {
         totalDevices: [
-          ...new Set(result.demographics.flatMap((d: any) => d.devices)),
+          ...new Set(
+            (result.demographics ?? []).flatMap((d) => d.devices ?? [])
+          ),
         ].length,
       },
-      // cityGrowth: await Promise.all(
-      //   result.trafficSources.map(async (city: any) => ({
-      //     ...city,
-      //     growthPercentage: await this.calculateCityGrowth(
-      //       city.city,
-      //       city.country
-      //     ),
-      //   }))
-      // ),
-      // weeklyGrowth: result.weeklyGrowth.map((week: any) => ({
-      //   label: week.label,
-      //   // label: `Week ${week.week} ${week.year}`,
-      //   currentLogins: week.currentLogins,
-      //   previousLogins: week.previousLogins,
-      //   growthPercentage: week.growthPercentage.toFixed(1) + "%",
-      // })),
-      // trends:{
-      //   weeklyGrowth: result.weeklyGrowth
-      // }
-      weeklyGrowth: result.weeklyGrowth,
+      weeklyGrowth: (result.weeklyGrowth ?? []).map((wg) => ({
+        label: wg.label,
+        currentLogins: wg.currentLogins,
+        previousLogins: wg.previousLogins,
+        growthPercentage: `${wg.growthPercentage.toFixed(1)}%`,
+      })),
     };
-  } // Product Analytics
+  }
+  // Product Analytics
   async getProductAnalytics() {
     const lastWeekDate = DateTime.now().minus({ weeks: 1 }).toJSDate();
     const last30d = DateTime.now().minus({ days: 30 }).toJSDate();
 
-    const [result] = await ProductModel.aggregate([
+    const [result] = await ProductModel.aggregate<
+      DashboardDataAggregate["productAnalytics"]
+    >([
       {
         $facet: {
           // Core Inventory Metrics
@@ -899,9 +806,12 @@ export class DashboardRepository implements BaseDashboardRepository {
     ]);
 
     return {
-      weeklyGrowth: result.weeklyGrowth,
+      weeklyGrowth: (result.weeklyGrowth ?? []).map((wg) => ({
+        ...wg,
+        salesGrowth: Number(wg.salesGrowth.toFixed(1)),
+        revenueGrowth: Number(wg.revenueGrowth.toFixed(1)),
+      })),
 
-      // Core Metrics
       inventory: {
         total: this.getFirstNumber(result.stockInfo, "total"),
         outOfStock: this.getFirstNumber(result.stockInfo, "outOfStock"),
@@ -917,7 +827,6 @@ export class DashboardRepository implements BaseDashboardRepository {
         ),
       },
 
-      // Sales Insights
       sales: {
         totalSold: this.getFirstNumber(result.salesMetrics, "totalSold"),
         totalRevenue: this.getFirstNumber(result.salesMetrics, "totalRevenue"),
@@ -928,7 +837,6 @@ export class DashboardRepository implements BaseDashboardRepository {
         topSelling: this.getFirstNumber(result.salesMetrics, "topSelling"),
       },
 
-      // Promotions
       discounts: {
         active: this.getFirstNumber(result.discountAnalysis, "activeDiscounts"),
         expiringSoon: this.getFirstNumber(
@@ -941,7 +849,6 @@ export class DashboardRepository implements BaseDashboardRepository {
         ),
       },
 
-      // Customer Engagement
       engagement: {
         avgRating: this.getFirstNumber(result.engagementMetrics, "avgRating"),
         totalReviews: this.getFirstNumber(
@@ -954,8 +861,7 @@ export class DashboardRepository implements BaseDashboardRepository {
         ),
       },
 
-      // Category Breakdown
-      categories: result.categoryDistribution.map((c: any) => ({
+      categories: (result.categoryDistribution ?? []).map((c) => ({
         name: c._id,
         count: c.count,
         sales: c.totalSales,
@@ -963,15 +869,16 @@ export class DashboardRepository implements BaseDashboardRepository {
         avgStock: c.avgStock,
       })),
 
-      // Recent Changes
-      recentChanges: result.recentActivity,
+      recentChanges: (result.recentActivity ?? []).map((c) => ({
+        ...c,
+        _id: c._id.toString(),
+      })),
 
-      // Logistics
       shipping: {
         avgWeight: this.getFirstNumber(result.shippingMetrics, "avgWeight"),
         totalVolume: this.getFirstNumber(result.shippingMetrics, "totalVolume"),
       },
-      // Risk Analysis
+
       risk: {
         stockConflicts: this.getFirstNumber(
           result.riskAnalysis,
@@ -990,7 +897,9 @@ export class DashboardRepository implements BaseDashboardRepository {
       yearlyStart: now.minus({ years: 1 }).toJSDate(),
     };
 
-    const [result] = await OrderModel.aggregate([
+    const [result] = await OrderModel.aggregate<
+      DashboardDataAggregate["orderAnalytics"]
+    >([
       {
         $facet: {
           // Core Metrics
@@ -1400,8 +1309,11 @@ export class DashboardRepository implements BaseDashboardRepository {
     ]);
 
     return {
-      // Core Business Health
-      weeklyGrowth: result.weeklyGrowth,
+      weeklyGrowth: (result.weeklyGrowth ?? []).map((wg) => ({
+        ...wg,
+        orderGrowth: Number(wg.orderGrowth.toFixed(1)),
+        revenueGrowth: Number(wg.revenueGrowth.toFixed(1)),
+      })),
 
       summary: {
         totalOrders: this.getFirstNumber(result.summary, "totalOrders"),
@@ -1414,7 +1326,6 @@ export class DashboardRepository implements BaseDashboardRepository {
         ),
       },
 
-      // Financial Insights
       financialHealth: {
         netRevenue: this.getFirstNumber(result.financials, "netRevenue"),
         totalTax: this.getFirstNumber(result.financials, "totalTax"),
@@ -1428,22 +1339,21 @@ export class DashboardRepository implements BaseDashboardRepository {
             this.getFirstNumber(result.financials, "avgProcessingCost")
           ),
         },
-        refundRate:
-          (this.getFirstNumber(result.financials, "refunds") /
-            this.getFirstNumber(result.summary, "totalRevenue")) *
-            100 || 0,
+        refundRate: this.calculateRefundRate(
+          this.getFirstNumber(result.financials, "refunds"),
+          this.getFirstNumber(result.summary, "totalRevenue")
+        ),
         weeklyGrowth: this.getFirstNumber(
           result.weeklyComparison,
           "growthRate"
         ),
       },
 
-      // Customer Insights
       customerBehavior: {
-        repeatRate:
-          (this.getFirstNumber(result.customerInsights, "repeatCustomers") /
-            this.getFirstNumber(result.summary, "totalOrders")) *
-            100 || 0,
+        repeatRate: this.calculateRepeatRate(
+          this.getFirstNumber(result.customerInsights, "repeatCustomers"),
+          this.getFirstNumber(result.summary, "totalOrders")
+        ),
         avgLTV: this.getFirstNumber(
           result.customerInsights,
           "avgLifetimeValue"
@@ -1451,24 +1361,22 @@ export class DashboardRepository implements BaseDashboardRepository {
         topSpender: this.getFirstNumber(result.customerInsights, "topSpender"),
       },
 
-      // Product Performance
-      topProducts: result.productAnalytics.map((p: any) => ({
+      topProducts: (result.productAnalytics ?? []).map((p) => ({
         productId: p._id,
         name: p.productName,
         unitsSold: p.totalSold,
         revenue: p.totalRevenue,
       })),
 
-      // Trends & Forecasting
       trends: {
-        monthly: result.timeSeries.map((t: any) => ({
+        monthly: (result.timeSeries ?? []).map((t) => ({
           period: `${t._id.year}-${String(t._id.month).padStart(2, "0")}`,
           orders: t.count,
           revenue: t.revenue,
           aov: t.avgOrderValue,
         })),
-        yoyGrowth: this.calculateGrowthRate(result.timeSeries),
-        weeklyBreakdown: result.weeklyComparison.map((w: any) => ({
+        yoyGrowth: this.calculateGrowthRate(result.timeSeries ?? []),
+        weeklyBreakdown: (result.weeklyComparison ?? []).map((w) => ({
           week: w.week,
           current: w.currentWeek,
           previous: w.previousWeek,
@@ -1476,36 +1384,38 @@ export class DashboardRepository implements BaseDashboardRepository {
         })),
       },
 
-      // Operational Efficiency
       fulfillment: {
-        statusDistribution: result.fulfillment.reduce(
-          (acc: any, curr: any) => ({
+        statusDistribution: (result.fulfillment ?? []).reduce(
+          (acc, curr) => ({
             ...acc,
             [curr._id]: {
               count: curr.count,
               avgHours: curr.avgFulfillmentTime,
             },
           }),
-          {}
+          {} as Record<string, { count: number; avgHours: number }>
         ),
-        slaCompliance: this.calculateSLACompliance(result.fulfillment),
+        slaCompliance: this.calculateSLACompliance(result.fulfillment ?? []),
       },
 
-      // Payment & Geo Insights
-      paymentMethods: result.paymentMethods.map((m: any) => ({
+      paymentMethods: (result.paymentMethods ?? []).map((m) => ({
         method: m._id,
         usageCount: m.count,
         totalProcessed: m.totalAmount,
       })),
 
-      topLocations: result.geographicInsights.map((l: any) => ({
+      topLocations: (result.geographicInsights ?? []).map((l) => ({
         city: l._id,
         state: l.state,
         country: l.country,
         orderCount: l.orderCount,
         revenue: l.totalRevenue,
       })),
-      recentOrders: result.recentOrders,
+
+      recentOrders: (result.recentOrders ?? []).map((o) => ({
+        ...o,
+        _id: o._id.toString(),
+      })),
     };
   }
 
@@ -1513,7 +1423,9 @@ export class DashboardRepository implements BaseDashboardRepository {
   async getReportAnalytics() {
     const lastWeekDate = DateTime.now().minus({ weeks: 1 }).toJSDate();
     const last8WeeksDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
-    const [result] = await ReportModel.aggregate([
+    const [result] = await ReportModel.aggregate<
+      DashboardDataAggregate["reportAnalytics"]
+    >([
       {
         $facet: {
           summary: [
@@ -1743,26 +1655,26 @@ export class DashboardRepository implements BaseDashboardRepository {
     return {
       total: this.getFirstNumber(result.summary, "total"),
       resolved: this.getFirstNumber(result.summary, "resolved"),
-      resolutionRate:
-        (this.getFirstNumber(result.summary, "resolved") /
-          this.getFirstNumber(result.summary, "total")) *
-          100 || 0,
+      resolutionRate: this.calculatePercentage(
+        this.getFirstNumber(result.summary, "resolved"),
+        this.getFirstNumber(result.summary, "total")
+      ),
       avgResolutionTime: this.getFirstNumber(
         result.summary,
         "avgResolutionHours"
       ),
-      statusBreakdown: this.mapToObject(result.statusDistribution),
-      trendingIssues: result.commonIssues.map((i: any) => ({
+      statusBreakdown: this.mapToObject(result.statusDistribution ?? []),
+      trendingIssues: (result.commonIssues ?? []).map((i) => ({
         issue: i._id,
         count: i.count,
         affectedProducts: i.products,
       })),
-      recentReports: result.recentReports,
-      dailyTrend: result.trendAnalysis.map((t: any) => ({
+      recentReports: result.recentReports ?? [],
+      dailyTrend: (result.trendAnalysis ?? []).map((t) => ({
         date: t._id,
         reports: t.count,
       })),
-      weeklyTrends: result.weeklyGrowth.map((week: any) => ({
+      weeklyTrends: (result.weeklyGrowth ?? []).map((week) => ({
         ...week,
         resolutionGrowth: `${week.resolutionGrowth.toFixed(1)}%`,
         reportGrowth: `${week.reportGrowth.toFixed(1)}%`,
@@ -1774,7 +1686,9 @@ export class DashboardRepository implements BaseDashboardRepository {
   async getRefundAnalytics() {
     const lastMonthDate = DateTime.now().minus({ months: 1 }).toJSDate();
     const last8WeeksDate = DateTime.now().minus({ weeks: 8 }).toJSDate();
-    const [result] = await RefundModel.aggregate([
+    const [result] = await RefundModel.aggregate<
+      DashboardDataAggregate["refundAnalytics"]
+    >([
       {
         $facet: {
           summary: [
@@ -1854,88 +1768,6 @@ export class DashboardRepository implements BaseDashboardRepository {
               },
             },
           ],
-          // weeklyGrowth: [
-          //   {
-          //     $match: {
-          //       createdAt: { $gte: last8WeeksDate },
-          //       status: "approved", // Track only approved refunds for growth
-          //     },
-          //   },
-          //   {
-          //     $group: {
-          //       _id: {
-          //         year: { $isoWeekYear: "$createdAt" },
-          //         week: { $isoWeek: "$createdAt" },
-          //       },
-          //       totalAmount: { $sum: "$amount" },
-          //       count: { $sum: 1 },
-          //     },
-          //   },
-          //   { $sort: { "_id.year": 1, "_id.week": 1 } },
-          //   {
-          //     $group: {
-          //       _id: null,
-          //       weeks: {
-          //         $push: {
-          //           week: { $concat: ["Week ", { $toString: "$_id.week" }] },
-          //           year: "$_id.year",
-          //           totalAmount: 1,
-          //           count: 1,
-          //         },
-          //       },
-          //     },
-          //   },
-          //   {
-          //     $project: {
-          //       weeklyGrowth: {
-          //         $map: {
-          //           input: "$weeks",
-          //           as: "week",
-          //           in: {
-          //             week: "$$week.week",
-          //             year: "$$week.year",
-          //             totalAmount: "$$week.totalAmount",
-          //             count: "$$week.count",
-          //             growthPercentage: {
-          //               $cond: [
-          //                 { $eq: ["$$week.week", 1] }, // First week has no previous
-          //                 0,
-          //                 {
-          //                   $multiply: [
-          //                     {
-          //                       $divide: [
-          //                         {
-          //                           $subtract: [
-          //                             "$$week.totalAmount",
-          //                             {
-          //                               $arrayElemAt: [
-          //                                 "$weeks.totalAmount",
-          //                                 { $subtract: ["$$week.week", 2] },
-          //                               ],
-          //                             },
-          //                           ],
-          //                         },
-          //                         {
-          //                           $arrayElemAt: [
-          //                             "$weeks.totalAmount",
-          //                             { $subtract: ["$$week.week", 2] },
-          //                           ],
-          //                         },
-          //                       ],
-          //                     },
-          //                     100,
-          //                   ],
-          //                 },
-          //               ],
-          //             },
-          //           },
-          //         },
-          //       },
-          //     },
-          //   },
-          //   { $unwind: "$weeklyGrowth" },
-          //   { $replaceRoot: { newRoot: "$weeklyGrowth" } },
-          // ],
           weeklyGrowth: [
             {
               $match: {
@@ -2111,26 +1943,51 @@ export class DashboardRepository implements BaseDashboardRepository {
         result.summary,
         "avgProcessingHours"
       ),
-      weeklyTrend: result.statusTrend.reduce((acc: any, curr: any) => {
-        const week = `Week ${curr._id.week}`;
-        if (!acc[week]) acc[week] = {};
-        acc[week][curr._id.status] = curr.count;
-        return acc;
-      }, {}),
-      commonReasons: result.commonReasons.map((r: any) => ({
+      weeklyTrend: result.statusTrend.reduce(
+        (acc: Record<string, Record<string, number>>, curr) => {
+          const week = `Week ${curr._id.week}`;
+          if (!acc[week]) {
+            acc[week] = {};
+          }
+          acc[week][curr._id.status] = curr.count;
+          return acc;
+        },
+        {}
+      ),
+      commonReasons: result.commonReasons.map((r) => ({
         reason: r._id,
         frequency: r.count,
         financialImpact: r.totalAmount,
       })),
-      recentRefunds: result.recentRefunds,
-      weeklyGrowth: result.weeklyGrowth,
+      recentRefunds: (result.recentRefunds ?? []).map((curr) => ({
+        ...curr,
+        _id: curr._id.toString(),
+      })),
+      weeklyGrowth: result.weeklyGrowth.map((wg) => ({
+        ...wg,
+        amountGrowth: `${wg.amountGrowth.toFixed(1)}%`,
+        countGrowth: `${wg.countGrowth.toFixed(1)}%`,
+      })),
+      highRiskRefunds: {
+        count: this.getFirstNumber(result.highRiskRefunds, "count"),
+      },
+      financialImpact: {
+        totalRefunded: this.getFirstNumber(
+          result.financialImpact,
+          "totalRefunded"
+        ),
+        avgRefund: this.getFirstNumber(result.financialImpact, "avgRefund"),
+        maxRefund: this.getFirstNumber(result.financialImpact, "maxRefund"),
+      },
     };
   }
   async getUserInterestAnalytics() {
     // const lastMonth = DateTime.now().minus({ months: 1 }).toJSDate();
 
     const [cartInsights, wishlistInsights, combinedData] = await Promise.all([
-      CartModel.aggregate([
+      CartModel.aggregate<
+        DashboardDataAggregate["userInterestAnalytics"]["cart"]
+      >([
         // { $match: { expiresAt: { $gt: new Date() } } }, // Only active carts
         // { $unwind: "$items" },
         {
@@ -2155,7 +2012,9 @@ export class DashboardRepository implements BaseDashboardRepository {
         { $sort: { totalItems: -1 } },
       ]),
 
-      WishlistModel.aggregate([
+      WishlistModel.aggregate<
+        DashboardDataAggregate["userInterestAnalytics"]["wishlist"]
+      >([
         {
           $lookup: {
             from: "products",
@@ -2181,7 +2040,9 @@ export class DashboardRepository implements BaseDashboardRepository {
         { $sort: { totalItems: -1 } },
       ]),
 
-      CartModel.aggregate([
+      CartModel.aggregate<
+        DashboardDataAggregate["userInterestAnalytics"]["CombinedData"]
+      >([
         // { $match: { createdAt: { $gte: lastMonth } } },
         // { $unwind: "$items" },
         {
@@ -2231,34 +2092,44 @@ export class DashboardRepository implements BaseDashboardRepository {
           priceSensitivity: w.priceSensitivity,
         })),
       },
-      conversionMetrics: combinedData.reduce((acc, curr) => {
-        const existing:
-          | { productId: Types.ObjectId; weeks: any[] }
-          | undefined = acc.find((i: { productId: Types.ObjectId }) =>
-          i.productId.equals(curr.productId)
-        );
-        if (existing) {
-          existing.weeks.push({
-            week: curr.week,
-            cartAdds: curr.cartAdds,
-            purchases: curr.purchases,
-            conversionRate: curr.conversionRate,
-          });
-        } else {
-          acc.push({
-            productId: curr.productId,
-            weeks: [
-              {
-                week: curr.week,
-                cartAdds: curr.cartAdds,
-                purchases: curr.purchases,
-                conversionRate: curr.conversionRate,
-              },
-            ],
-          });
-        }
-        return acc;
-      }, []),
+      conversionMetrics: combinedData.reduce(
+        (
+          acc: Array<{
+            productId: Types.ObjectId;
+            weeks: Array<{
+              week: number;
+              cartAdds: number;
+              purchases: number;
+              conversionRate: number;
+            }>;
+          }>,
+          curr
+        ) => {
+          const existing = acc.find((i) => i.productId.equals(curr.productId));
+          if (existing) {
+            existing.weeks.push({
+              week: curr.week,
+              cartAdds: curr.cartAdds,
+              purchases: curr.purchases,
+              conversionRate: curr.conversionRate,
+            });
+          } else {
+            acc.push({
+              productId: curr.productId,
+              weeks: [
+                {
+                  week: curr.week,
+                  cartAdds: curr.cartAdds,
+                  purchases: curr.purchases,
+                  conversionRate: curr.conversionRate,
+                },
+              ],
+            });
+          }
+          return acc;
+        },
+        []
+      ),
       highInterestProducts: {
         frequentlyCartAdded: await this.getTopProducts(CartModel, 10),
         frequentlyWishlisted: await this.getTopProducts(WishlistModel, 10),
@@ -2319,348 +2190,18 @@ export class DashboardRepository implements BaseDashboardRepository {
       },
     ]);
   }
-  // User Interest
-  // async getUserInterest() {
-  //   const [cartProducts, wishlistProducts] = await Promise.all([
-  //     CartModel.aggregate<{ productId: Types.ObjectId; count: number }>([
-  //       { $unwind: "$items" },
-  //       {
-  //         $group: { _id: "$items.product", count: { $sum: "$items.quantity" } },
-  //       },
-  //       { $project: { productId: "$_id", count: 1, _id: 0 } },
-  //     ]),
-  //     WishlistModel.aggregate<{ productId: Types.ObjectId; count: number }>([
-  //       { $unwind: "$items" },
-  //       { $group: { _id: "$items.product", count: { $sum: 1 } } },
-  //       { $project: { productId: "$_id", count: 1, _id: 0 } },
-  //     ]),
-  //   ]);
-
-  //   return {
-  //     cartProducts: cartProducts.map((p) => ({
-  //       productId: p.productId,
-  //       count: p.count,
-  //     })),
-  //     wishlistProducts: wishlistProducts.map((p) => ({
-  //       productId: p.productId,
-  //       count: p.count,
-  //     })),
-  //   };
-  // }
-
-  // Product Performance
-  // async getProductPerformance() {
-  //   const [topOrdered, dailyOrders] = await Promise.all([
-  //     OrderModel.aggregate<{
-  //       productId: Types.ObjectId;
-  //       name: string;
-  //       totalQuantity: number;
-  //       totalOrders: number;
-  //     }>([
-  //       { $unwind: "$items" },
-  //       {
-  //         $lookup: {
-  //           from: "products",
-  //           localField: "items.product",
-  //           foreignField: "_id",
-  //           as: "product",
-  //         },
-  //       },
-  //       { $unwind: "$product" },
-  //       {
-  //         $group: {
-  //           _id: "$items.product",
-  //           name: { $first: "$product.name" },
-  //           totalQuantity: { $sum: "$items.quantity" },
-  //           totalOrders: { $sum: 1 },
-  //         },
-  //       },
-  //       { $sort: { totalQuantity: -1 } },
-  //       { $limit: 10 },
-  //       {
-  //         $project: {
-  //           productId: "$_id",
-  //           name: 1,
-  //           totalQuantity: 1,
-  //           totalOrders: 1,
-  //           _id: 0,
-  //         },
-  //       },
-  //     ]),
-  //     OrderModel.countDocuments({
-  //       createdAt: { $gte: DateTime.now().startOf("day").toJSDate() },
-  //     }),
-  //   ]);
-
-  //   return {
-  //     topOrdered,
-  //     dailyOrders,
-  //   };
-  // }
-  // async getSecurityAnalytics(): Promise<SecurityDashboardData> {
-  //   const now = new Date();
-  //   const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  //   const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-  //   const [summary, activity, threats, rateLimits, trends] = await Promise.all([
-  //     // Summary Aggregation
-  //     UserModel.aggregate([
-  //       {
-  //         $facet: {
-  //           totalUsers: [{ $count: "count" }],
-  //           lockedAccounts: [
-  //             {
-  //               $match: { "security.rateLimits.login.lockUntil": { $gt: now } },
-  //             },
-  //             { $count: "count" },
-  //           ],
-  //           twoFactorAdoption: [
-  //             { $match: { "security.twoFactorEnabled": true } },
-  //             { $count: "count" },
-  //           ],
-  //         },
-  //       },
-  //     ]),
-
-  //     // Activity Aggregation
-  //     UserModel.aggregate([
-  //       { $unwind: "$security.loginHistory" },
-  //       { $match: { "security.loginHistory.timestamp": { $gte: last24h } } },
-  //       {
-  //         $group: {
-  //           _id: null,
-  //           logins: {
-  //             $sum: { $cond: ["$security.loginHistory.success", 1, 0] },
-  //           },
-  //           failures: {
-  //             $sum: { $cond: ["$security.loginHistory.success", 0, 1] },
-  //           },
-  //           passwordResets: {
-  //             $sum: "$security.rateLimits.passwordReset.attempts",
-  //           },
-  //           verifications: {
-  //             $sum: "$security.rateLimits.verification.attempts",
-  //           },
-  //         },
-  //       },
-  //     ]),
-
-  //     // Threat Detection
-  //     UserModel.aggregate([
-  //       {
-  //         $group: {
-  //           _id: null,
-  //           impossibleTravel: {
-  //             $sum: {
-  //               $cond: ["$security.behavioralFlags.impossibleTravel", 1, 0],
-  //             },
-  //           },
-  //           suspiciousDevices: {
-  //             $sum: {
-  //               $cond: [
-  //                 "$security.behavioralFlags.suspiciousDeviceChange",
-  //                 1,
-  //                 0,
-  //               ],
-  //             },
-  //           },
-  //           highVelocity: {
-  //             $sum: {
-  //               $cond: [
-  //                 { $gt: ["$security.behavioralFlags.requestVelocity", 10] },
-  //                 1,
-  //                 0,
-  //               ],
-  //             },
-  //           },
-  //           botAttempts: {
-  //             $sum: { $cond: ["$security.loginHistory.isBot", 1, 0] },
-  //           },
-  //         },
-  //       },
-  //     ]),
-
-  //     // Rate Limits
-  //     UserModel.aggregate([
-  //       {
-  //         $facet: {
-  //           loginLockouts: [
-  //             {
-  //               $match: { "security.rateLimits.login.lockUntil": { $gt: now } },
-  //             },
-  //             { $count: "count" },
-  //           ],
-  //           passwordResetLockouts: [
-  //             {
-  //               $match: {
-  //                 "security.rateLimits.passwordReset.lockUntil": { $gt: now },
-  //               },
-  //             },
-  //             { $count: "count" },
-  //           ],
-  //           verificationLockouts: [
-  //             {
-  //               $match: {
-  //                 "security.rateLimits.verification.lockUntil": { $gt: now },
-  //               },
-  //             },
-  //             { $count: "count" },
-  //           ],
-  //         },
-  //       },
-  //     ]),
-
-  //     // Trends
-  //     UserModel.aggregate([
-  //       { $unwind: "$security.loginHistory" },
-  //       { $match: { "security.loginHistory.timestamp": { $gte: last7d } } },
-  //       {
-  //         $group: {
-  //           _id: {
-  //             $dateToString: {
-  //               format: "%Y-%m-%d",
-  //               date: "$security.loginHistory.timestamp",
-  //             },
-  //           },
-  //           attempts: { $sum: 1 },
-  //           failures: {
-  //             $sum: { $cond: ["$security.loginHistory.success", 0, 1] },
-  //           },
-  //         },
-  //       },
-  //       { $sort: { _id: 1 } },
-  //     ]),
-  //   ]);
-
-  //   return this.transformSecurityData(
-  //     summary,
-  //     activity,
-  //     threats,
-  //     rateLimits,
-  //     trends
-  //   );
-  // }
-  // private async transformSecurityData(
-  //   ...results: any[]
-  // ): Promise<SecurityDashboardData> {
-  //   const [summary, activity, threats, rateLimits, trends] = results;
-  //   const [recentEvents, activeSessions] = await Promise.all([
-  //     this.getRecentSecurityEvents(),
-  //     this.getActiveSessionsCount(),
-  //   ]);
-
-  //   return {
-  //     summary: {
-  //       totalUsers: summary[0]?.totalUsers[0]?.count || 0,
-  //       activeSessions,
-  //       lockedAccounts: summary[0]?.lockedAccounts[0]?.count || 0,
-  //       recentThreats:
-  //         (threats[0]?.impossibleTravel || 0) +
-  //         (threats[0]?.suspiciousDevices || 0),
-  //       twoFactorAdoption: summary[0]?.twoFactorAdoption[0]?.count || 0,
-  //     },
-  //     activity: {
-  //       loginsLast24h: activity[0]?.logins || 0,
-  //       failedAttempts: activity[0]?.failures || 0,
-  //       passwordResets: activity[0]?.passwordResets || 0,
-  //       accountVerifications: activity[0]?.verifications || 0,
-  //     },
-  //     threatDetection: {
-  //       impossibleTravelCases: threats[0]?.impossibleTravel || 0,
-  //       suspiciousDevices: threats[0]?.suspiciousDevices || 0,
-  //       highVelocityRequests: threats[0]?.highVelocity || 0,
-  //       botAttempts: threats[0]?.botAttempts || 0,
-  //     },
-  //     rateLimits: {
-  //       loginLockouts: rateLimits[0]?.loginLockouts[0]?.count || 0,
-  //       passwordResetLockouts:
-  //         rateLimits[0]?.passwordResetLockouts[0]?.count || 0,
-  //       verificationLockouts:
-  //         rateLimits[0]?.verificationLockouts[0]?.count || 0,
-  //     },
-  //     trends: {
-  //       loginAttempts: trends.map((t: any) => ({
-  //         date: t._id,
-  //         attempts: t.attempts,
-  //       })),
-  //       securityEvents: trends.map((t: any) => ({
-  //         date: t._id,
-  //         count: t.failures,
-  //       })),
-  //     },
-  //     recentEvents,
-  //   };
-  // }
-
-  // private async getActiveSessionsCount(): Promise<number> {
-  //   const result = await UserModel.aggregate([
-  //     {
-  //       $match: {
-  //         "security.lastLogin": {
-  //           $gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-  //         },
-  //       },
-  //     },
-  //     { $count: "count" },
-  //   ]);
-
-  //   return result[0]?.count || 0;
-  // }
-  // private async getRecentSecurityEvents() {
-  //   return UserModel.aggregate([
-  //     { $unwind: "$security.auditLog" },
-  //     { $sort: { "security.auditLog.timestamp": -1 } },
-  //     { $limit: 20 },
-  //     {
-  //       $project: {
-  //         _id: 0,
-  //         timestamp: "$security.auditLog.timestamp",
-  //         type: "$security.auditLog.action",
-  //         user: "$email",
-  //         location: "$security.loginHistory.location",
-  //         details: "$security.auditLog.details",
-  //       },
-  //     },
-  //   ]);
-  // }
-
-  // Helper methods
-
-  private getFirstNumber(result: AggregationResult, field = "total"): number {
-    return (result as any)?.[0]?.[field] || 0;
+  private getFirstNumber(
+    result: AggregationResultItem[] = [],
+    field: string = "total"
+  ): number {
+    return (result[0]?.[field] as number) ?? 0;
   }
-  // private sumStatusCounts(
-  //   statusCounts: Array<{ _id: string; count: number }>
-  // ): number {
-  //   return statusCounts.reduce((sum, { count }) => sum + count, 0);
-  // }
-  // private statusCounts(
-  //   statusCounts: Array<{ _id: string; count: number }>
-  // ): Record<string, number> {
-  //   return {
-  //     ...statusCounts.reduce(
-  //       (
-  //         acc: Record<string, number>,
-  //         { _id, count }: { _id: string; count: number }
-  //       ) => ({ ...acc, [_id]: count }),
-  //       {}
-  //     ),
-  //     total: statusCounts.reduce((sum, { count }) => sum + count, 0),
-  //   };
-  // }
-
-  // private getStatusCount(
-  //   statusCounts: Array<{ _id: string; count: number }>,
-  //   status: string
-  // ): number {
-  //   return statusCounts.find((s) => s._id === status)?.count || 0;
-  // }
 
   private mapToObject(
     items: Array<{ _id: string; count: number }>
   ): Record<string, number> {
-    return items.reduce(
-      (acc, { _id, count }) => ({ ...acc, [_id]: count }),
+    return (
+      items?.reduce((acc, { _id, count }) => ({ ...acc, [_id]: count }), {}) ??
       {}
     );
   }
@@ -2668,35 +2209,100 @@ export class DashboardRepository implements BaseDashboardRepository {
     return revenue > 0 ? ((revenue - costs) / revenue) * 100 : 0;
   }
 
-  private calculateGrowthRate(timeSeries: any[]): number {
-    if (timeSeries.length < 2) return 0;
+  // private calculateGrowthRate(
+  //   timeSeries: DashboardDataAggregate["orderAnalytics"]["timeSeries"][]
+  // ): number {
+  //   if (timeSeries.length < 2) {
+  //     return 0;
+  //   }
 
-    const current = timeSeries[timeSeries.length - 1]?.revenue || 0;
-    const previous = timeSeries[timeSeries.length - 2]?.revenue || 0;
+  //   const current = timeSeries[timeSeries.length - 1]?.revenue || 0;
+  //   const previous = timeSeries[timeSeries.length - 2]?.revenue || 0;
 
-    return previous !== 0
-      ? ((current - previous) / previous) * 100
-      : current > 0
-        ? 100
-        : 0;
+  //   return previous !== 0
+  //     ? ((current - previous) / previous) * 100
+  //     : current > 0
+  //       ? 100
+  //       : 0;
+  // }
+  private calculateGrowthRate(
+    timeSeries: DashboardDataAggregate["orderAnalytics"]["timeSeries"]
+  ): number {
+    // Validate input structure and length
+    if (!Array.isArray(timeSeries) || timeSeries.length < 2) {
+      return 0;
+    }
+
+    // Safe value extraction with type checking
+    const getRevenue = (item: {
+      _id: { year: number; month: number };
+      count: number;
+      revenue: number;
+      avgOrderValue: number;
+    }) => (typeof item.revenue === "number" ? item.revenue : 0);
+
+    const current = getRevenue(timeSeries[timeSeries.length - 1]);
+    const previous = getRevenue(timeSeries[timeSeries.length - 2]);
+
+    // Handle edge cases explicitly
+    if (previous === 0) {
+      return current > 0 ? 100 : 0;
+    }
+    if (current === previous) {
+      return 0;
+    }
+
+    const growth = ((current - previous) / previous) * 100;
+    return Number(growth.toFixed(2)); // Precision control
   }
+  // private calculateSLACompliance(
+  //   fulfillmentData: DashboardDataAggregate['orderAnalytics']['fulfillment'][],
+  //   targetHours = 48
+  // ): number {
+  //   if (!Array.isArray(fulfillmentData)) {
+  //     return 0;
+  //   }
+  //   const totalOrders = fulfillmentData.reduce(
+  //     (sum, item) => sum + item.count,
+  //     0
+  //   );
+  //   const compliantOrders = fulfillmentData.reduce((sum, item) => {
+  //     return item._id === OrderStatus.Completed &&
+  //       item.avgFulfillmentTime <= targetHours
+  //       ? sum + item.count
+  //       : sum;
+  //   }, 0);
 
+  //   return totalOrders > 0 ? (compliantOrders / totalOrders) * 100 : 0;
+  // }
+  // 2. Revised SLA Compliance Calculator
   private calculateSLACompliance(
-    fulfillmentData: any[],
+    fulfillmentData: DashboardDataAggregate["orderAnalytics"]["fulfillment"],
     targetHours = 48
   ): number {
-    const totalOrders = fulfillmentData.reduce(
-      (sum, item) => sum + item.count,
-      0
-    );
-    const compliantOrders = fulfillmentData.reduce((sum, item) => {
-      return item._id === OrderStatus.Completed &&
-        item.avgFulfillmentTime <= targetHours
-        ? sum + item.count
-        : sum;
-    }, 0);
+    // Validate input structure
+    if (!Array.isArray(fulfillmentData)) {
+      return 0;
+    }
 
-    return totalOrders > 0 ? (compliantOrders / totalOrders) * 100 : 0;
+    // Type-safe accumulation with fallbacks
+    const { total, compliant } = fulfillmentData.reduce(
+      (acc, item) => {
+        const count = typeof item.count === "number" ? item.count : 0;
+        const isCompliant =
+          item._id === OrderStatus.Completed &&
+          typeof item.avgFulfillmentTime === "number" &&
+          item.avgFulfillmentTime <= targetHours;
+
+        return {
+          total: acc.total + count,
+          compliant: acc.compliant + (isCompliant ? count : 0),
+        };
+      },
+      { total: 0, compliant: 0 }
+    );
+
+    return total > 0 ? Number(((compliant / total) * 100).toFixed(2)) : 0;
   }
   private async calculateCityGrowth(
     city: string,
@@ -2729,5 +2335,19 @@ export class DashboardRepository implements BaseDashboardRepository {
     return Number(
       (((currentCount - previousCount) / previousCount) * 100).toFixed(1)
     );
+  }
+  private calculateRefundRate(refunds: number, totalRevenue: number): number {
+    return totalRevenue > 0 ? (refunds / totalRevenue) * 100 : 0;
+  }
+
+  private calculateRepeatRate(
+    repeatCustomers: number,
+    totalOrders: number
+  ): number {
+    return totalOrders > 0 ? (repeatCustomers / totalOrders) * 100 : 0;
+  }
+
+  private calculatePercentage(numerator: number, denominator: number): number {
+    return denominator > 0 ? (numerator / denominator) * 100 : 0;
   }
 }

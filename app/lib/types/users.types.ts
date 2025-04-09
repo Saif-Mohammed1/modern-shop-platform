@@ -60,3 +60,4 @@ export interface UserAuthType {
   accessToken?: string;
   accessTokenExpires?: number;
 }
+export const allowedRoles: string[] = [UserRole.ADMIN, UserRole.MODERATOR];

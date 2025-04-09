@@ -1,26 +1,29 @@
 // pages/wishlist.js
-"use client";
+'use client';
 
-import WishListCard from "./wishListCard";
-import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { WishlistType } from "@/app/lib/types/wishList.types";
-import Pagination, {
-  type PaginationType,
-} from "@/components/pagination/Pagination";
-import { parseAsInteger, useQueryState } from "nuqs";
+import {parseAsInteger, useQueryState} from 'nuqs';
+
+import type {WishlistType} from '@/app/lib/types/wishList.types';
+import {lang} from '@/app/lib/utilities/lang';
+import Pagination, {type PaginationType} from '@/components/pagination/Pagination';
+import {accountWishlistTranslate} from '@/public/locales/client/(auth)/account/wishlistTranslate';
+
+import WishListCard from './wishListCard';
+
+// pages/wishlist.js
+
 type WishlistPageProps = {
   wishlistProduct: WishlistType[];
 
   pagination: PaginationType;
 };
-const WishlistPage = ({ wishlistProduct, pagination }: WishlistPageProps) => {
+const WishlistPage = ({wishlistProduct, pagination}: WishlistPageProps) => {
   const [_currentPage, setCurrentPage] = useQueryState(
-    "page",
-    parseAsInteger.withDefault(1).withOptions({ shallow: false })
+    'page',
+    parseAsInteger.withDefault(1).withOptions({shallow: false}),
   );
   const onPaginationChange = (page: number) => {
-    setCurrentPage(page);
+    void setCurrentPage(page);
   };
   // const { wishlist } = useWishlist();
   // const [wishlistProduct, setWishlistProduct] = useState<WishlistType[]>([]);
@@ -35,9 +38,7 @@ const WishlistPage = ({ wishlistProduct, pagination }: WishlistPageProps) => {
       </h1>
       <div className="max-h-screen overflow-y-auto">
         {wishlistProduct.length === 0 ? (
-          <p className="empty">
-            {accountWishlistTranslate[lang].wishlistPage.emptyWhishlist}
-          </p>
+          <p className="empty">{accountWishlistTranslate[lang].wishlistPage.emptyWhishlist}</p>
         ) : (
           <div className="grid col gap-4">
             {wishlistProduct.map((product) => {

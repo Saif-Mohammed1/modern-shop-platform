@@ -1,10 +1,10 @@
 // lib/logger.ts
-import { type NextRequest } from "next/server";
-import { ipAddress } from "@vercel/functions";
-import winston from "winston";
-import { Logtail } from "@logtail/node";
-import { LogtailTransport } from "@logtail/winston";
-import { v4 as uuidv4 } from "uuid";
+import {Logtail} from '@logtail/node';
+import {LogtailTransport} from '@logtail/winston';
+import {ipAddress} from '@vercel/functions';
+import {type NextRequest} from 'next/server';
+import {v4 as uuidv4} from 'uuid';
+import winston from 'winston';
 
 // Initialize Logtail
 const logtail =
@@ -14,8 +14,8 @@ const logtail =
       })
     : null;
 // Environment detection
-const isVercel = process.env.VERCEL === "1";
-const isProduction = process.env.NODE_ENV === "production";
+const isVercel = process.env.VERCEL === '1';
+const isProduction = process.env.NODE_ENV === 'production';
 
 interface AppLogMeta {
   statusCode?: number;
@@ -28,30 +28,28 @@ interface AppLogMeta {
 }
 
 const logger = winston.createLogger({
-  level: isProduction ? "info" : "debug",
+  level: isProduction ? 'info' : 'debug',
   defaultMeta: {
-    service: process.env.APP_NAME || "app",
-    environment: process.env.NODE_ENV || "development",
+    service: process.env.APP_NAME || 'app',
+    environment: process.env.NODE_ENV || 'development',
   },
   format: winston.format.combine(
-    winston.format.timestamp({ format: "ISO8601" }),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.timestamp({format: 'ISO8601'}),
+    winston.format.errors({stack: true}),
+    winston.format.json(),
   ),
   transports: [
     ...(logtail && isProduction ? [new LogtailTransport(logtail)] : []),
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.timestamp({ format: "ISO8601" }), // Add this
-        winston.format.errors({ stack: true }), // Add this
+        winston.format.timestamp({format: 'ISO8601'}), // Add this
+        winston.format.errors({stack: true}), // Add this
         winston.format.colorize(),
-        winston.format.printf(
-          ({ timestamp, level, message, correlationId, ...meta }) => {
-            return `[${timestamp}] [${correlationId || "no-id"}] ${level}: ${message} ${
-              Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""
-            }`;
-          }
-        )
+        winston.format.printf(({timestamp, level, message, correlationId, ...meta}) => {
+          return `[${timestamp}] [${correlationId || 'no-id'}] ${level}: ${message} ${
+            Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''
+          }`;
+        }),
       ),
     }),
   ],
@@ -67,21 +65,21 @@ const logger = winston.createLogger({
 
 // Add correlation ID support
 function createRequestLogger(correlationId: string = uuidv4()) {
-  return logger.child({ correlationId });
+  return logger.child({correlationId});
 }
 
 // Enhanced request error logging
 function logRequestError(
-  err: Error & { statusCode?: number },
+  err: Error & {statusCode?: number},
   req: NextRequest,
-  correlationId?: string
+  correlationId?: string,
 ) {
   const clientIp =
-    req.headers.get("x-client-ip") ||
+    req.headers.get('x-client-ip') ||
     ipAddress(req) ||
-    req.headers.get("x-forwarded-for") ||
-    req.headers.get("x-real-ip") ||
-    "Unknown IP";
+    req.headers.get('x-forwarded-for') ||
+    req.headers.get('x-real-ip') ||
+    'Unknown IP';
   const meta: AppLogMeta = {
     statusCode: err.statusCode,
     path: req.nextUrl.pathname,
@@ -91,13 +89,13 @@ function logRequestError(
     error: {
       name: err.name,
       message: err.message,
-      stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
-      ...(err.statusCode && { statusCode: err.statusCode }),
+      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+      ...(err.statusCode && {statusCode: err.statusCode}),
     },
     correlationId,
   };
 
-  const logLevel = err.statusCode && err.statusCode >= 500 ? "error" : "warn";
+  const logLevel = err.statusCode && err.statusCode >= 500 ? 'error' : 'warn';
   // const log = (req as any).logger || logger;
   // log.log(logLevel, err.message, meta);
   logger.log(logLevel, err.message, meta);
@@ -105,45 +103,44 @@ function logRequestError(
 
 // Vercel-specific cleanup
 if (isVercel) {
-  process.on("SIGTERM", async () => {
-    logger.info("Received SIGTERM - flushing logs");
-    await Promise.allSettled([
+  process.on('SIGTERM', () => {
+    logger.info('Received SIGTERM - flushing logs');
+    void Promise.allSettled([
       logtail?.flush(),
       new Promise((resolve) => setTimeout(resolve, 2000)),
-    ]);
-    process.exit(0);
+    ]).finally(() => process.exit(0));
   });
 }
-process.on("uncaughtException", (err) => {
-  logger.error("Uncaught Exception:", err);
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception:', err);
   // logtail?.error(err);
   // Flush logs before exiting
   if (logtail) {
     logtail
       .flush()
       .then(() => {
-        logger.info("Flushed logs before exiting");
+        logger.info('Flushed logs before exiting');
       })
       .catch((flushErr) => {
-        logger.error("Error flushing logs before exiting:", flushErr);
+        logger.error('Error flushing logs before exiting:', flushErr);
       });
   }
   // Exit the process
   process.exit(1);
 });
 
-process.on("unhandledRejection", (reason, promise) => {
-  logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   // logtail?.error(reason);
   // Flush logs before exiting
   if (logtail) {
     logtail
       .flush()
       .then(() => {
-        logger.info("Flushed logs before exiting");
+        logger.info('Flushed logs before exiting');
       })
       .catch((flushErr) => {
-        logger.error("Error flushing logs before exiting:", flushErr);
+        logger.error('Error flushing logs before exiting:', flushErr);
       });
   }
   // Exit the process
@@ -151,4 +148,4 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 export default logger;
-export { logtail, logRequestError, createRequestLogger };
+export {logtail, logRequestError, createRequestLogger};

@@ -1,12 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
 
-import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import api from "@/app/lib/utilities/api";
+import { signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+
+import api from "@/app/lib/utilities/api";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { sessionExpiredOverlayTranslate } from "@/public/locales/client/(public)/sessionExpiredOverlayTranslate";
+
 import { lang } from "../../app/lib/utilities/lang";
 
 const SessionExpiredOverlay = () => {

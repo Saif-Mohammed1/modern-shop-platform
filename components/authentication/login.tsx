@@ -1,23 +1,28 @@
 "use client";
-import { type FormEvent, useState } from "react";
+
 import Link from "next/link";
-import { signIn } from "next-auth/react";
-import toast from "react-hot-toast";
-import Spinner from "../spinner/spinner";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { type FormEvent, useState } from "react";
+import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+
 import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTranslate";
+import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
+
+import api from "../../app/lib/utilities/api";
 import { lang } from "../../app/lib/utilities/lang";
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
-import api from "../../app/lib/utilities/api";
 import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
-import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
+import Spinner from "../spinner/spinner";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoading2fa, setIsLoading2fa] = useState(false);
+  const [error, setError] = useState("");
   const [requiredTwoFactor, setRequiredTwoFactor] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
@@ -76,7 +81,7 @@ const LoginPage = () => {
     }
   };
   const handleTotpVerify = async (code: string) => {
-    // setIsLoading(true);
+    setIsLoading2fa(true);
     try {
       const result = await signIn("credentials", {
         email,
@@ -92,33 +97,38 @@ const LoginPage = () => {
 
       router.push("/");
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message || loginTranslate[lang].errors.global);
-      } else {
-        toast.error(loginTranslate[lang].errors.global);
-      }
+      const message =
+        (error as Error)?.message || loginTranslate[lang].errors.global;
+      setError(message);
+      toast.error(message);
+    } finally {
+      setIsLoading2fa(false);
     }
   };
 
   const handleBackupVerify = async (codes: string[]) => {
     // setIsLoading(true);
+    setIsLoading2fa(true);
     try {
       ///auth/2fa/backup/validate
 
-      const { data } = await api.post("/auth/2fa/backup/validate", {
+      const {
+        data: { message },
+      } = await api.post("/auth/2fa/backup/validate", {
         email,
         codes,
       });
 
       toast.success(
-        data.message || loginTranslate[lang].functions.handelBackup2fa.success
+        message || loginTranslate[lang].functions.handelBackup2fa.success
       );
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message || loginTranslate[lang].errors.global);
-      } else {
-        toast.error(loginTranslate[lang].errors.global);
-      }
+      const message =
+        (error as Error)?.message || loginTranslate[lang].errors.global;
+      setError(message);
+      toast.error(message);
+    } finally {
+      setIsLoading2fa(false);
     }
   };
   // const handleResend = async () => {
@@ -142,9 +152,13 @@ const LoginPage = () => {
       {requiredTwoFactor ? (
         <TwoFactorForm
           onVerify={handleTotpVerify}
+          error={error}
+          isLoading={isLoading2fa}
           onBackupVerify={handleBackupVerify}
           // onResend={handleResend}
-          back={() => setRequiredTwoFactor(false)}
+          back={() => {
+            setRequiredTwoFactor(false);
+          }}
         />
       ) : (
         <>
@@ -160,7 +174,9 @@ const LoginPage = () => {
                 type="email"
                 placeholder={loginTranslate[lang].form.email.placeholder}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value.trim());
+                }}
                 required
                 className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
@@ -175,15 +191,17 @@ const LoginPage = () => {
                   name="password"
                   placeholder={loginTranslate[lang].form.password.placeholder}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value.trim());
+                  }}
                   className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
-                <span
+                <button
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-2 flex items-center font-medium text-lg cursor-pointer text-gray-500"
                 >
                   {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
-                </span>
+                </button>
               </div>
               <div className="text-right mt-2">
                 <Link
@@ -224,7 +242,6 @@ const LoginPage = () => {
             </Link>
           </div> */}
           <div className="text-center mt-4 flex flex-col justify-center">
-            <p className="text-gray-500">use this email for testing website</p>
             <p className="text-gray-500 font-bold">
               email: moderator@gmail.com
             </p>

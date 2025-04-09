@@ -1,17 +1,20 @@
-import { NextRequest } from "next/server";
-import { connectDB } from "@/app/server/db/db";
-import NextAuth, { type AuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies, headers } from "next/headers";
-import AppError from "@/app/lib/utilities/appError";
-import twoFactorController from "@/app/server/controllers/2fa.controller";
-import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import { NextRequest } from "next/server";
+import NextAuth, { type AuthOptions, type User, type Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
+import CredentialsProvider from "next-auth/providers/credentials";
 
+import type { UserAuthType } from "@/app/lib/types/users.types";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
 import tokenManager from "@/app/lib/utilities/TokenManager";
-import sessionController from "@/app/server/controllers/session.controller";
+import twoFactorController from "@/app/server/controllers/2fa.controller";
 import authController from "@/app/server/controllers/auth.controller";
 import ErrorHandler from "@/app/server/controllers/error.controller";
+import sessionController from "@/app/server/controllers/session.controller";
+import { connectDB } from "@/app/server/db/db";
+import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
+
 const REFRESH_THRESHOLD = 3 * 60 * 1000; // Refresh 3 minutes before expiration
 const authOptions: AuthOptions = {
   session: {
@@ -48,7 +51,7 @@ const authOptions: AuthOptions = {
               );
             }
             req = new NextRequest(
-              new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth"),
+              new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth`),
               {
                 headers: headerStore,
                 method: "POST",
@@ -61,13 +64,14 @@ const authOptions: AuthOptions = {
 
             const result = await authController.login(req);
             const statusCode = result.status;
-            const { user } = await result.json(); // Extract JSON data
+            const {
+              user,
+            }: {
+              user: UserAuthType;
+            } = await result.json(); // Extract JSON data
             // Use a type guard to check if `user` has `requires2FA`
 
-            if (
-              statusCode === 202 ||
-              ("requires2FA" in user && user.requires2FA)
-            ) {
+            if (statusCode === 202) {
               throw new AppError(
                 authControllerTranslate[lang].functions.logIn.twoFactorRequired,
                 401
@@ -84,44 +88,46 @@ const authOptions: AuthOptions = {
             if ("_id" in user) {
               return {
                 ...user,
+                accessToken: user.accessToken || "",
+
                 id: String(user._id),
               };
             }
-            // return null;
-          } else {
-            req = new NextRequest(
-              new URL(
-                process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/2fa/verify"
-              ),
-              {
-                headers: headerStore,
-                method: "PUT",
-                body: JSON.stringify({
-                  code: code,
-                  email,
-                }),
-              }
-            );
-            const result = await twoFactorController.verify2FALogin(req);
-            const { user } = await result.json(); // Extract JSON data
-
-            if (!user) {
-              throw new AppError(
-                authControllerTranslate[lang].errors.notFoundUser,
-                400
-              );
-            }
-            return {
-              ...user,
-              id: String(user._id),
-              accessToken: user.accessToken,
-              accessTokenExpires:
-                Date.now() +
-                Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
-                  60 *
-                  1000,
-            };
+            return null;
           }
+          req = new NextRequest(
+            new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/2fa/verify`),
+            {
+              headers: headerStore,
+              method: "PUT",
+              body: JSON.stringify({
+                code: code,
+                email,
+              }),
+            }
+          );
+          const result = await twoFactorController.verify2FALogin(req);
+          const {
+            user,
+          }: {
+            user: UserAuthType;
+          } = await result.json(); // Extract JSON data
+
+          if (!user) {
+            throw new AppError(
+              authControllerTranslate[lang].errors.notFoundUser,
+              400
+            );
+          }
+          return {
+            ...user,
+            id: String(user._id),
+            accessTokenExpires:
+              Date.now() +
+              Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
+                60 *
+                1000,
+          };
         } catch (error) {
           if (req instanceof NextRequest) {
             const err = ErrorHandler(error, req);
@@ -134,11 +140,19 @@ const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({
+      token,
+      user,
+      trigger,
+      session,
+    }: {
+      token: JWT;
+      user?: User;
+      trigger?: "signIn" | "signUp" | "update";
+      session?: Session;
+    }) {
       // Initial login
       if (user) {
-        // token.user = user as UserAuthType;
-
         // convert accessTokenExpires to readable time
         const exp = user.accessTokenExpires
           ? Math.floor(user.accessTokenExpires / 1000)
@@ -151,40 +165,31 @@ const authOptions: AuthOptions = {
       }
 
       // Session update
-      if (trigger === "update") {
+      if (trigger === "update" && session?.user) {
         // token.user = session.user;
         // token.accessToken = session.accessToken;
         // token.accessTokenExpires = session.;
         token.user = session.user;
       }
 
-      // // Handle token refresh
-      // if (
-      //   token.user?.accessTokenExpires &&
-      //   Date.now() > token.user.accessTokenExpires - REFRESH_THRESHOLD
-      // ) {
-      //
-      //   const refreshedToken = await refreshAccessTokenHandler(token);
-      //   return refreshedToken;
-      // }
-      // Handle token refresh before expiration
-      if (token.user?.accessTokenExpires) {
-        const remainingTime = token.user.accessTokenExpires - Date.now();
-
-        // Refresh if within threshold or already expired
-        if (remainingTime < REFRESH_THRESHOLD) {
-          try {
+      // Only proceed with token refresh or access if no error
+      if (!token.error && token.user) {
+        const user = token.user as User;
+        // Handle token refresh before expiration
+        if (user.accessTokenExpires) {
+          const remainingTime = user.accessTokenExpires - Date.now();
+          if (remainingTime < REFRESH_THRESHOLD) {
             return await refreshAccessTokenHandler(token);
-          } catch (error) {
-            return { ...token, error: "RefreshAccessTokenError" };
           }
         }
-      }
-      if (token.user.accessToken) {
-        tokenManager.setAccessToken(token.user.accessToken);
+
+        if (user.accessToken) {
+          tokenManager.setAccessToken(user.accessToken);
+        }
       }
       return token;
     },
+
     async session({ session, token }) {
       if (token.error) {
         session.error =
@@ -206,18 +211,22 @@ const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 // this is next-auth jwt function what shoud be the right type for this
-async function refreshAccessTokenHandler(token: any) {
+async function refreshAccessTokenHandler(token: JWT): Promise<JWT> {
   try {
     const headerStore = await headers();
     const req = new NextRequest(
-      new URL(process.env.NEXT_PUBLIC_API_ENDPOINT + "/auth/refresh-token"),
+      new URL(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/refresh-token`),
       {
         headers: headerStore,
         method: "GET",
       }
     );
     const result = await sessionController.refreshAccessToken(req);
-    const { accessToken } = await result.json();
+    const {
+      accessToken,
+    }: {
+      accessToken: string;
+    } = await result.json();
     tokenManager.setAccessToken(accessToken);
     return {
       ...token,
@@ -234,13 +243,9 @@ async function refreshAccessTokenHandler(token: any) {
         Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60
       ), // Set JWT expiration
     };
-  } catch (error) {
+  } catch (_error) {
     (await cookies()).delete("refreshAccessToken");
-    // return {
-    //   ...token,
-    //   error: "RefreshAccessTokenError",
-    // };
-    throw error;
+    return { ...token, error: "RefreshAccessTokenError" };
   }
 }
 const handler = NextAuth(authOptions);

@@ -1,15 +1,19 @@
 // AddressForm.tsx
 "use client";
-import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { getCities } from "countries-cities";
+
+import type { AddressType } from "@/app/lib/types/address.types";
+import { lang } from "@/app/lib/utilities/lang";
+import Spinner from "@/components/spinner/spinner";
 import Input from "@/components/ui/Input";
 import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import { AddressTranslate } from "@/public/locales/server/Address.Translate";
-import Spinner from "@/components/spinner/spinner";
-import type { AddressType } from "@/app/lib/types/address.types";
+import { getCities } from "countries-cities";
+
+// AddressForm.tsx
 
 const ukraineCities = getCities("Ukraine");
 
@@ -119,9 +123,9 @@ const AddressForm = ({
                 </option>
               ))}
             </select>
-            {errors.city && (
+            {errors.city ? (
               <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>
-            )}
+            ) : null}
           </div>
 
           <Input

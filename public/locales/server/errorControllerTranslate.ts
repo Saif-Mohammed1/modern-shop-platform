@@ -683,6 +683,8 @@ export const errorControllerTranslate = {
       },
     },
     errors: {
+      message: "An error occurred",
+      validationError: "Invalid input data",
       globalError:
         "Something went very wrong!. If the error persists, please let us know. ",
     },
@@ -714,6 +716,8 @@ export const errorControllerTranslate = {
       },
     },
     errors: {
+      message: "Сталася помилка",
+      validationError: "Недійсні дані введення",
       globalError:
         "Щось пішло не так!. Якщо помилка повторюється, будь ласка, дайте нам знати. ",
     },

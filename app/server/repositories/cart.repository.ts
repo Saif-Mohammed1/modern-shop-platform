@@ -1,11 +1,14 @@
-import type { ClientSession } from "mongoose";
-import { BaseRepository } from "./BaseRepository";
+import type { Model, ClientSession } from "mongoose";
+
 import type { CartItemsType } from "@/app/lib/types/cart.types";
-import { Model } from "mongoose";
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+
+import type { localCartDto } from "../dtos/cart.dto";
 import type { ICart } from "../models/Cart.model";
 import type { IProduct } from "../models/Product.model";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import type { localCartDto } from "../dtos/cart.dto";
+
+import { BaseRepository } from "./BaseRepository";
+
 // Repository Service Pattern
 export class CartRepository extends BaseRepository<ICart> {
   constructor(model: Model<ICart>) {
@@ -54,7 +57,7 @@ export class CartRepository extends BaseRepository<ICart> {
       .filter((item) => item.productId !== null)
       .map(({ productId, quantity, expiresAt }) => ({
         ...productId,
-        _id: productId!._id.toString(),
+        _id: productId?._id.toString(),
         expiresAt,
         quantity,
       }));

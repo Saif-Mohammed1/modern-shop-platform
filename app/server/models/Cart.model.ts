@@ -1,7 +1,7 @@
-// @ts-ignore
-import { Document, Model, model, models, Schema } from "mongoose";
-import type { IUser } from "./User.model";
-import type { IProduct } from "./Product.model";
+import { Schema, model, models, type Document, type Model } from "mongoose";
+
+import _ProductModel, { type IProduct } from "./Product.model";
+import _UserModel, { type IUser } from "./User.model";
 
 // Interface for Cart document
 export interface ICart extends Document {

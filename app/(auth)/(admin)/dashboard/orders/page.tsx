@@ -1,12 +1,13 @@
-import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
-import AdminOrdersDashboard from "@/components/(admin)/dashboard/orders/orderMangement";
-import ErrorHandler from "@/components/Error/errorHandler";
-import AppError from "@/app/lib/utilities/appError";
-import api from "@/app/lib/utilities/api";
-import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import type { FC } from "react";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import AdminOrdersDashboard from "@/components/(admin)/dashboard/orders/orderMangement";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
+
 export const metadata: Metadata = {
   title: ordersTranslate.metadata[lang].title,
   description: ordersTranslate.metadata[lang].description,
@@ -49,23 +50,20 @@ const queryParams = async (searchParams: SearchParams) => {
   }
 
   const queryString = url.toString();
-  try {
-    // const {
-    //   orders, pageCount
-    // }
-    const {
-      data: { docs, meta, links },
-    } = await api.get(
-      "/admin/dashboard/orders" + (queryString ? `?${queryString}` : ""),
-      {
-        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
-      }
-    );
 
-    return { orders: docs, pagination: { meta, links } };
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+  // const {
+  //   orders, pageCount
+  // }
+  const {
+    data: { docs, meta, links },
+  } = await api.get(
+    `/admin/dashboard/orders${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
+    }
+  );
+
+  return { orders: docs, pagination: { meta, links } };
 };
 type PageProps = {
   searchParams: Promise<SearchParams>;
@@ -102,10 +100,9 @@ const page: FC<PageProps> = async (props) => {
         }
       />
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error.message} />;
-
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

@@ -2,37 +2,35 @@
 export const emailUpdatedStatusTranslate = {
   en: {
     functions: {
-      onPending: "Pending",
-      redirectNotice: "Redirecting...",
+      onPending: 'Pending',
+      redirectNotice: 'Redirecting...',
       useEffect: {
-        loading: "Processing your request...",
-        invalidOrMissingToken: "Invalid or missing token.",
-        confirmingRequest: "confirming your request...",
-        errorOccurred: "An error occurred while confirming your email.",
+        loading: 'Processing your request...',
+        invalidOrMissingToken: 'Invalid or missing token.',
+        confirmingRequest: 'confirming your request...',
+        errorOccurred: 'An error occurred while confirming your email.',
       },
-      onSuccess: "success",
-      onFail: "Error",
+      onSuccess: 'success',
+      onFail: 'Error',
       errors: {
-        global: "An error occurred while confirming your email.",
+        global: 'An error occurred while confirming your email.',
       },
     },
   },
   uk: {
     functions: {
-      onPending: "В очікуванні",
-      redirectNotice: "Перенаправлення...",
+      onPending: 'В очікуванні',
+      redirectNotice: 'Перенаправлення...',
       useEffect: {
-        loading: "Обробка вашого запиту...",
-        invalidOrMissingToken: "Недійсний або відсутній токен.",
-        confirmingRequest: "підтвердження вашого запиту...",
-        errorOccurred:
-          "Під час підтвердження вашої електронної пошти виникла помилка.",
+        loading: 'Обробка вашого запиту...',
+        invalidOrMissingToken: 'Недійсний або відсутній токен.',
+        confirmingRequest: 'підтвердження вашого запиту...',
+        errorOccurred: 'Під час підтвердження вашої електронної пошти виникла помилка.',
       },
-      onSuccess: "успішно",
-      onFail: "Помилка",
+      onSuccess: 'успішно',
+      onFail: 'Помилка',
       errors: {
-        global:
-          "Під час підтвердження вашої електронної пошти виникла помилка.",
+        global: 'Під час підтвердження вашої електронної пошти виникла помилка.',
       },
     },
   },

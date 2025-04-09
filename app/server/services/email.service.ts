@@ -1,8 +1,11 @@
 // src/lib/services/email.service.ts
 import nodemailer from "nodemailer";
-import type { DeviceInfo } from "../../lib/types/session.types";
-import { UserRepository } from "@/app/server/repositories/user.repository";
+
 import logger from "@/app/lib/logger/logs";
+import type { UserRepository } from "@/app/server/repositories/user.repository";
+
+import type { DeviceInfo } from "../../lib/types/session.types";
+
 interface EmailConfig {
   service: string;
   auth: {
@@ -44,28 +47,25 @@ export enum SecurityAlertType {
 //   timestamp?: Date;
 //   ipAddress?: string;
 // }
+interface AdditionalInfo {
+  changedSetting?: string;
+  recoveryMethods?: string[];
+  locations?: string[];
+  affectedService?: string;
+  detectedLocation?: string;
+  sourceLocation?: string;
+  remainingCodes?: number; // Add this
+  attempts?: number; // Add this
+  codesGenerated?: number;
+  codesRemaining?: number;
+}
 interface SecurityAlertEmailParams {
   type: SecurityAlertType;
   timestamp?: Date;
   ipAddress?: string;
   location?: string;
-  device?: {
-    os?: string;
-    browser?: string;
-    model?: string;
-  };
-  additionalInfo?: {
-    changedSetting?: string;
-    recoveryMethods?: string[];
-    locations?: string[];
-    affectedService?: string;
-    detectedLocation?: string;
-    sourceLocation?: string;
-    remainingCodes?: number; // Add this
-    attempts?: number; // Add this
-    codesGenerated?: number;
-    codesRemaining?: number;
-  };
+  device?: DeviceInfo;
+  additionalInfo?: AdditionalInfo;
 }
 // Add type definition
 export interface AdminInventoryNotification {
@@ -394,7 +394,9 @@ export class EmailService {
       device,
       additionalInfo
     );
-
+    if (!device) {
+      return;
+    }
     try {
       await this.sendEmail(userEmail, {
         subject,
@@ -405,10 +407,8 @@ export class EmailService {
 
       await this.userRepo.logSecurityAlert(userEmail, type, {
         success: true,
-
-        ipAddress,
-        location,
-        ...device,
+        device: device,
+        message: `Security alert sent: ${type}`,
       });
     } catch (error) {
       logger.error(`Failed to send ${type} alert:`, error);
@@ -421,8 +421,8 @@ export class EmailService {
     timestamp: Date,
     ipAddress?: string,
     location?: string,
-    device?: { os?: string; browser?: string; model?: string },
-    additionalInfo?: any
+    device?: DeviceInfo | null,
+    additionalInfo?: AdditionalInfo
   ) {
     const formattedTime = timestamp.toLocaleString();
     const deviceDetails = device
@@ -456,7 +456,7 @@ export class EmailService {
 
   private getAlertSpecificContent(
     type: SecurityAlertType,
-    additionalInfo?: any
+    additionalInfo?: AdditionalInfo
   ): string {
     switch (type) {
       case SecurityAlertType.IMPOSSIBLE_TRAVEL:

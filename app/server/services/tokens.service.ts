@@ -1,8 +1,9 @@
-import { sign } from "jsonwebtoken";
 import crypto from "crypto";
-import { promisify } from "util";
-import jwt from "jsonwebtoken";
+// import { promisify } from "util";
+
+import jwt, { sign } from "jsonwebtoken";
 import { cookies } from "next/headers";
+
 export class TokensService {
   private readonly COOKIE_NAME;
   private readonly RefreshExpiresAt;
@@ -47,13 +48,27 @@ export class TokensService {
       } as jwt.SignOptions // 3. Explicit type casting
     );
   }
+  // async decodedAccessToken(accessToken: string): Promise<{ userId: string }> {
+  //   return (await promisify<string, jwt.Secret>(jwt.verify)(
+  //     accessToken,
+  //     process.env.JWT_ACCESS_TOKEN_SECRET!
+  //   )) as unknown as { userId: string };
+  // }
   async decodedAccessToken(accessToken: string): Promise<{ userId: string }> {
-    return (await promisify<string, jwt.Secret>(jwt.verify)(
-      accessToken,
-      process.env.JWT_ACCESS_TOKEN_SECRET!
-    )) as unknown as { userId: string };
+    return new Promise((resolve, reject) => {
+      jwt.verify(
+        accessToken,
+        process.env.JWT_ACCESS_TOKEN_SECRET!,
+        (err, decoded) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(decoded as { userId: string });
+          }
+        }
+      );
+    });
   }
-
   // private createRefreshToken(userId: string): string {
   //   const refreshToken = sign(
   //     { userId },
@@ -75,11 +90,26 @@ export class TokensService {
     return refreshToken;
   }
   async decodedRefreshToken(refreshToken: string): Promise<{ userId: string }> {
-    return (await promisify<string, jwt.Secret>(jwt.verify)(
-      refreshToken,
-      process.env.JWT_REFRESH_TOKEN_SECRET!
-    )) as unknown as { userId: string };
+    return new Promise((resolve, reject) => {
+      jwt.verify(
+        refreshToken,
+        process.env.JWT_REFRESH_TOKEN_SECRET!,
+        (err, decoded) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(decoded as { userId: string });
+          }
+        }
+      );
+    });
   }
+  // async decodedRefreshToken(refreshToken: string): Promise<{ userId: string }> {
+  //   return (await promisify<string, jwt.Secret>(jwt.verify)(
+  //     refreshToken,
+  //     process.env.JWT_REFRESH_TOKEN_SECRET!
+  //   )) as unknown as { userId: string };
+  // }
   hashRefreshToken = (token: string): string => {
     return crypto
       .createHmac("sha256", process.env.HASHED_REFRESH_TOKEN_SECRET!)

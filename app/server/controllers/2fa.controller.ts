@@ -1,19 +1,20 @@
 // src/app/lib/features/2fa/2fa.controller.ts
+import { ipAddress } from "@vercel/functions";
+import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import type { z } from "zod";
 
-import { z } from "zod";
 import AppError from "@/app/lib/utilities/appError";
-import { TwoFactorValidation } from "../dtos/2fa.dto";
-import { TwoFactorService } from "../services/2fa.service";
-import { UserService } from "../services/user.service";
 import {
   generateDeviceFingerprint,
   getDeviceFingerprint,
 } from "@/app/lib/utilities/DeviceFingerprint.utility";
-import type { SecurityMetadata } from "../models/2fa.model";
-import { cookies } from "next/headers";
+
+import { TwoFactorValidation } from "../dtos/2fa.dto";
 import { UserValidation } from "../dtos/user.dto";
-import { ipAddress } from "@vercel/functions";
+import type { SecurityMetadata } from "../models/2fa.model";
+import { TwoFactorService } from "../services/2fa.service";
+import { UserService } from "../services/user.service";
 
 class TwoFactorController {
   constructor(
@@ -22,153 +23,104 @@ class TwoFactorController {
   ) {}
 
   async initialize2FA(req: NextRequest) {
-    try {
-      const userId = this.getAuthenticatedUserId(req);
-      const metadata = this.collectSecurityMetadata(req);
-      const result = await this.twoFactorService.initialize2FA(
-        userId,
-        metadata
-      );
-      return this.successResponse(result);
-    } catch (error) {
-      // // return this.errorResponse(error);
-
-      throw error;
-    }
+    const userId = this.getAuthenticatedUserId(req);
+    const metadata = this.collectSecurityMetadata(req);
+    const result = await this.twoFactorService.initialize2FA(userId, metadata);
+    return this.successResponse(result);
   }
 
   async verify2FA(req: NextRequest) {
-    try {
-      const userId = this.getAuthenticatedUserId(req);
-      const metadata = this.collectSecurityMetadata(req);
-      const { token } = await this.validateRequest(
-        TwoFactorValidation.TwoFactorVerifySchema,
-        req
-      );
-      const result = await this.twoFactorService.verify2FA(
-        userId,
-        token,
-        metadata
-      );
-      return this.successResponse(result);
-    } catch (error) {
-      // // return this.errorResponse(error);
-      throw error;
-    }
+    const userId = this.getAuthenticatedUserId(req);
+    const metadata = this.collectSecurityMetadata(req);
+    const { token } = await this.validateRequest(
+      TwoFactorValidation.TwoFactorVerifySchema,
+      req
+    );
+    const result = await this.twoFactorService.verify2FA(
+      userId,
+      token,
+      metadata
+    );
+    return this.successResponse(result);
   }
   async verify2FALogin(req: NextRequest) {
-    try {
-      let cookieTempToken =
-        (await cookies()).get("tempToken")?.value ||
-        req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
-      const body = await req.json();
-      if (!cookieTempToken)
-        cookieTempToken = await this.generateSessionToken(body.email);
-      const { tempToken, code } = TwoFactorValidation.validateTwoFactorLogin({
-        tempToken: cookieTempToken,
-        ...body,
-      });
-
-      const deviceInfo = await getDeviceFingerprint(req);
-
-      const metadata = this.collectSecurityMetadata(req);
-
-      const user = await this.twoFactorService.verifyLogin2FA(
-        tempToken,
-        code,
-        metadata
-      );
-
-      //   const user = await this.userService.validateTempToken(tempToken);
-      const finalResult = await this.userService.finalizeLogin(
-        user,
-        deviceInfo
-      );
-      return this.successResponse(finalResult);
-    } catch (error) {
-      // return this.errorResponse(error);
-      throw error;
+    let cookieTempToken =
+      (await cookies()).get("tempToken")?.value ||
+      req.cookies.get("tempToken")?.value; // Get temporary token from cookies;
+    const { email, code } = await req.json();
+    if (!cookieTempToken) {
+      cookieTempToken = await this.generateSessionToken(email);
     }
+    const results = TwoFactorValidation.validateTwoFactorLogin({
+      tempToken: cookieTempToken,
+      code,
+    });
+
+    const deviceInfo = await getDeviceFingerprint(req);
+
+    const metadata = this.collectSecurityMetadata(req);
+
+    const user = await this.twoFactorService.verifyLogin2FA(
+      results.tempToken,
+      results.code,
+      metadata
+    );
+
+    //   const user = await this.userService.validateTempToken(tempToken);
+    const finalResult = await this.userService.finalizeLogin(user, deviceInfo);
+    return this.successResponse(finalResult);
   }
   async verifyBackupCode(req: NextRequest) {
-    try {
-      const userId = this.getAuthenticatedUserId(req);
-      const metadata = this.collectSecurityMetadata(req);
-      const { code } = await this.validateRequest(
-        TwoFactorValidation.BackupCodeVerifySchema,
-        req
-      );
-      const result = await this.twoFactorService.verifyBackupCode(
-        userId,
-        code,
-        metadata
-      );
-      return this.successResponse(result);
-    } catch (error) {
-      // // return this.errorResponse(error);
-      throw error;
-    }
+    const userId = this.getAuthenticatedUserId(req);
+    const metadata = this.collectSecurityMetadata(req);
+    const { code } = await this.validateRequest(
+      TwoFactorValidation.BackupCodeVerifySchema,
+      req
+    );
+    const result = await this.twoFactorService.verifyBackupCode(
+      userId,
+      code,
+      metadata
+    );
+    return this.successResponse(result);
   }
 
   async disable2FA(req: NextRequest) {
-    try {
-      const userId = this.getAuthenticatedUserId(req);
-      const metadata = this.collectSecurityMetadata(req);
-      await this.validateRequest(
-        TwoFactorValidation.TwoFactorDisableSchema,
-        req
-      );
-      const result = await this.twoFactorService.disable2FA(userId, metadata);
-      return this.successResponse(result);
-    } catch (error) {
-      // return this.errorResponse(error);
-      throw error;
-    }
+    const userId = this.getAuthenticatedUserId(req);
+    const metadata = this.collectSecurityMetadata(req);
+    await this.validateRequest(TwoFactorValidation.TwoFactorDisableSchema, req);
+    const result = await this.twoFactorService.disable2FA(userId, metadata);
+    return this.successResponse(result);
   }
 
   async regenerateBackupCodes(req: NextRequest) {
-    try {
-      const userId = this.getAuthenticatedUserId(req);
-      const metadata = this.collectSecurityMetadata(req);
-      const result = await this.twoFactorService.regenerateBackupCodes(
-        userId,
-        metadata
-      );
-      return this.successResponse(result);
-    } catch (error) {
-      // return this.errorResponse(error);
-      throw error;
-    }
+    const userId = this.getAuthenticatedUserId(req);
+    const metadata = this.collectSecurityMetadata(req);
+    const result = await this.twoFactorService.regenerateBackupCodes(
+      userId,
+      metadata
+    );
+    return this.successResponse(result);
   }
 
   async getAuditLogs(req: NextRequest) {
-    try {
-      const userId = this.getAuthenticatedUserId(req);
-      const result = await this.twoFactorService.getAuditLogs(userId);
-      return this.successResponse({ logs: result });
-    } catch (error) {
-      // return this.errorResponse(error);
-      throw error;
-    }
+    const userId = this.getAuthenticatedUserId(req);
+    const result = await this.twoFactorService.getAuditLogs(userId);
+    return this.successResponse({ logs: result });
   }
 
   async validateBackupCodes(req: NextRequest) {
-    try {
-      const { codes, email } = await this.validateRequest(
-        TwoFactorValidation.BackupCodeValidationSchema,
-        req
-      );
-      const deviceInfo = await getDeviceFingerprint(req);
-      const result = await this.twoFactorService.validateBackupCodes(
-        email,
-        codes,
-        deviceInfo
-      );
-      return this.successResponse(result);
-    } catch (error) {
-      // return this.errorResponse(error);
-      throw error;
-    }
+    const { codes, email } = await this.validateRequest(
+      TwoFactorValidation.BackupCodeValidationSchema,
+      req
+    );
+    const deviceInfo = await getDeviceFingerprint(req);
+    const result = await this.twoFactorService.validateBackupCodes(
+      email,
+      codes,
+      deviceInfo
+    );
+    return this.successResponse(result);
   }
 
   private async validateRequest<T>(schema: z.ZodSchema<T>, req: NextRequest) {
@@ -210,7 +162,9 @@ class TwoFactorController {
 
   private getAuthenticatedUserId(req: NextRequest) {
     const userId = req.user?._id.toString();
-    if (!userId) throw new AppError("Unauthorized", 401);
+    if (!userId) {
+      throw new AppError("Unauthorized", 401);
+    }
     return userId;
   }
   private collectSecurityMetadata(req: NextRequest): SecurityMetadata {

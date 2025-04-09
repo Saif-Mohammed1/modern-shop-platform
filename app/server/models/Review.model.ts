@@ -1,7 +1,16 @@
-import { Document, Model, Query, Schema, model, models } from "mongoose";
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Query,
+} from "mongoose";
+
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+
 import Product, { type IProduct } from "./Product.model";
 import { type IUser } from "./User.model";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
 export interface IReview extends Document {
   // _id: Schema.Types.ObjectId; // makes error
@@ -80,16 +89,17 @@ reviewSchema.virtual("users", {
 
 // Static Methods
 reviewSchema.statics.calcAverageRatings = async function (productId: string) {
-  const stats = await this.aggregate([
-    { $match: { productId: assignAsObjectId(productId) } },
-    {
-      $group: {
-        _id: "$productId",
-        nRating: { $sum: 1 },
-        avgRating: { $avg: "$rating" },
+  const stats: { _id: string; nRating: number; avgRating: number }[] =
+    await this.aggregate([
+      { $match: { productId: assignAsObjectId(productId) } },
+      {
+        $group: {
+          _id: "$productId",
+          nRating: { $sum: 1 },
+          avgRating: { $avg: "$rating" },
+        },
       },
-    },
-  ]);
+    ]);
 
   await Product.findByIdAndUpdate(productId, {
     ratingsQuantity: stats[0]?.nRating || 0,
@@ -98,8 +108,8 @@ reviewSchema.statics.calcAverageRatings = async function (productId: string) {
 };
 
 // Document Middleware
-reviewSchema.post("save", function (this: IReview) {
-  (this.constructor as IReviewModel).calcAverageRatings(
+reviewSchema.post("save", async function (this: IReview) {
+  await (this.constructor as IReviewModel).calcAverageRatings(
     this.productId.toString()
   );
 });
@@ -111,11 +121,12 @@ reviewSchema.pre<Query<IReview, IReview>>(/^findOneAnd/, async function (next) {
 });
 
 reviewSchema.post<Query<IReview, IReview>>(/^findOneAnd/, async function () {
-  const doc = this.get("_r");
-  if (doc)
+  const doc = this.get("_r") as IReview;
+  if (doc) {
     await (doc.constructor as IReviewModel).calcAverageRatings(
       doc.productId.toString()
     );
+  }
 });
 
 const ReviewModel = (models.Review ||

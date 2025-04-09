@@ -1,12 +1,14 @@
-export const dynamic = "force-dynamic";
-import CheckoutPage from "@/components/shop/checkout/checkout";
-import api from "@/app/lib/utilities/api";
-// import AppError from "@/components/util/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
+import { headers } from "next/headers";
+
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+import ErrorHandler from "@/components/Error/errorHandler";
+import CheckoutPage from "@/components/shop/checkout/checkout";
+import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
+
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: checkoutPageTranslate[lang].metadata.title,
   description: checkoutPageTranslate[lang].metadata.description,
@@ -20,9 +22,9 @@ const Page = async () => {
     return <CheckoutPage address={data || []} />;
 
     //
-  } catch (error: any) {
-    return <ErrorHandler message={error.message} />;
-    //     throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

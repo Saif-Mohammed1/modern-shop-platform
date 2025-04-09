@@ -1,56 +1,41 @@
 "use client";
-import { useState } from "react";
+
 import { useRouter } from "next/navigation";
-import api from "@/app/lib/utilities/api";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import {
+  FiKey,
+  FiLock,
+  FiShield,
+  // FiActivity,
+  FiTrash2,
+  FiUnlock,
+} from "react-icons/fi";
+
+import {
+  type ClientAuditLogDetails,
+  SecurityAuditAction,
+} from "@/app/lib/types/audit.types";
 import {
   type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
-import {
-  FiLock,
-  FiUnlock,
-  FiTrash2,
-  FiKey,
-  FiShield,
-  // FiActivity,
-} from "react-icons/fi";
-import { SecurityActionsModal } from "./SecurityActionsModal";
-import AuditLogTable from "./AuditLogTable";
-import { SecurityAuditAction } from "@/app/lib/types/audit.types";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
 
-export interface AuditLog {
-  timestamp: Date;
-  action: SecurityAuditAction;
-  details: {
-    device: {
-      browser: string;
-      os: string;
-      device: string;
-      ip: string;
-      location: {
-        city: string;
-        country: string;
-        latitude: number;
-        longitude: number;
-        source: string;
-      };
-      fingerprint: string;
-    };
-  };
-}
+import AuditLogTable from "./AuditLogTable";
+import { SecurityActionsModal } from "./SecurityActionsModal";
 
 interface UserEditPageProps {
   user: UserAuthType & {
     security: {
-      auditLog: AuditLog[];
+      auditLog: ClientAuditLogDetails[];
     };
   };
 }
@@ -94,9 +79,10 @@ export default function UserEditPage({ user }: UserEditPageProps) {
       // rest updating fields
       setUpdatingFields(new Set());
       toast.success(usersTranslate.users[lang].editUsers.form.success);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(
-        error.message || usersTranslate.users[lang].editUsers.form.failed
+        (error as Error)?.message ||
+          usersTranslate.users[lang].editUsers.form.failed
       );
     } finally {
       setLoading(false);
@@ -129,9 +115,9 @@ export default function UserEditPage({ user }: UserEditPageProps) {
         usersTranslate.users[lang].editUsers.handleSecurityAction[action]
           .success
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(
-        error.message ||
+        (error as Error)?.message ||
           usersTranslate.users[lang].editUsers.handleSecurityAction[action]
             .error
       );
@@ -146,8 +132,11 @@ export default function UserEditPage({ user }: UserEditPageProps) {
         usersTranslate.users[lang].editUsers.handleDeleteUser.success
       );
       router.push("/dashboard/users");
-    } catch (error) {
-      toast.error(usersTranslate.users[lang].editUsers.handleDeleteUser.failed);
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          usersTranslate.users[lang].editUsers.handleDeleteUser.failed
+      );
     }
   };
 
@@ -192,7 +181,9 @@ export default function UserEditPage({ user }: UserEditPageProps) {
             label={usersTranslate.users[lang].editUsers.form.name.label}
             value={userData.name}
             onChange={
-              (e) => handleUpdate("name", e.target.value)
+              (e) => {
+                handleUpdate("name", e.target.value);
+              }
               // debouncedUpdate(handleUpdate, "name", e.target.value)
             }
           />
@@ -201,7 +192,9 @@ export default function UserEditPage({ user }: UserEditPageProps) {
             label={usersTranslate.users[lang].editUsers.form.email.label}
             value={userData.email}
             type="email"
-            onChange={(e) => handleUpdate("email", e.target.value)}
+            onChange={(e) => {
+              handleUpdate("email", e.target.value);
+            }}
           />
 
           <Select
@@ -211,7 +204,9 @@ export default function UserEditPage({ user }: UserEditPageProps) {
                 usersTranslate.users[lang].editUsers.form.role.options[role],
             }))}
             value={userData.role}
-            onChange={(e) => handleUpdate("role", e.target.value)}
+            onChange={(e) => {
+              handleUpdate("role", e.target.value);
+            }}
           />
 
           <Select
@@ -220,7 +215,9 @@ export default function UserEditPage({ user }: UserEditPageProps) {
               label: usersTranslate.users[lang].editUsers.form.statuses[status],
             }))}
             value={userData.status}
-            onChange={(e) => handleUpdate("status", e.target.value)}
+            onChange={(e) => {
+              handleUpdate("status", e.target.value);
+            }}
           />
           {updatingFields.size > 0 && (
             <Button
@@ -267,7 +264,9 @@ export default function UserEditPage({ user }: UserEditPageProps) {
 
             <Button
               variant="secondary"
-              onClick={() => setShowSecurityModal(true)}
+              onClick={() => {
+                setShowSecurityModal(true);
+              }}
               className="w-full"
             >
               <FiLock className="mr-2" />
@@ -296,21 +295,23 @@ export default function UserEditPage({ user }: UserEditPageProps) {
       {/* Modals */}
       <SecurityActionsModal
         open={showSecurityModal}
-        onClose={() => setShowSecurityModal(false)}
+        onClose={() => {
+          setShowSecurityModal(false);
+        }}
         actions={[
           {
             label:
               usersTranslate.users[lang].editUsers.handleSecurityAction
                 .lockAccount.label,
             icon: <FiLock />,
-            handler: () => handleSecurityAction("lockAccount"),
+            handler: () => void handleSecurityAction("lockAccount"),
           },
           {
             label:
               usersTranslate.users[lang].editUsers.handleSecurityAction
                 .unlockAccount.label,
             icon: <FiUnlock />,
-            handler: () => handleSecurityAction("unlockAccount"),
+            handler: () => void handleSecurityAction("unlockAccount"),
           },
         ]}
       />
@@ -325,7 +326,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
       /> */}
       <ConfirmModal
         title={usersTranslate.users[lang].editUsers.actions.deleteConfirm}
-        onConfirm={handleDeleteUser}
+        onConfirm={() => void handleDeleteUser()}
         // confirmVariant="destructive"
       >
         <Button variant="destructive" size="sm" icon={<FiTrash2 />} danger />

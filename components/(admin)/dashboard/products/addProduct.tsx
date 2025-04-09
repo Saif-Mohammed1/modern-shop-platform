@@ -1,22 +1,28 @@
 // add-product.tsx (main form component)
 "use client";
-import { useState, useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import ProductDetails from "./product-details";
-import ProductShipping from "./product-shipping";
-import FormProgress from "./form-progress";
-import ProductImages from "./product-images";
-import ProductReview from "./product-review";
-import ProductPricing from "./product-pricing";
-import ProductInventory from "./product-inventory";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import type { ProductType } from "@/app/lib/types/products.types";
 import toast from "react-hot-toast";
+
+import type { ProductType } from "@/app/lib/types/products.types";
 import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
+import FormProgress from "./form-progress";
+import ProductDetails from "./product-details";
+import ProductImages from "./product-images";
+import ProductInventory from "./product-inventory";
+import ProductPricing from "./product-pricing";
+import ProductReview from "./product-review";
+import ProductShipping from "./product-shipping";
+
+// add-product.tsx (main form component)
+
 export type PreviewFile = string;
 // export type PreviewFile = File & { preview: string };
-interface FormData
+export interface FormData
   extends Omit<
     ProductType,
     "_id" | "slug" | "ratingsAverage" | "ratingsQuantity" | "active" | "images"
@@ -40,8 +46,12 @@ export default function AddProduct() {
   const [step, setStep] = useState(1);
   const totalSteps = 6;
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, totalSteps));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+  const nextStep = () => {
+    setStep((prev) => Math.min(prev + 1, totalSteps));
+  };
+  const prevStep = () => {
+    setStep((prev) => Math.max(prev - 1, 1));
+  };
 
   const saveDraft = () => {
     const formData = methods.getValues();

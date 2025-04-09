@@ -1,171 +1,18 @@
-// import React, { useState, useEffect } from "react";
-// import { useRouter } from "next/navigation";
-// import { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
-// import api from "@/app/lib/utilities/api";
-// import toast from "react-hot-toast";
-// import StatusBadge from "@/components/ui/StatusBadge";
-// import Button from "@/components/ui/Button";
-// import { Card, CardContent, CardHeader } from "@/components/ui/card";
-// import Select from "@/components/ui/Select";
-// import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
-// import { lang } from "@/app/lib/utilities/lang";
-// import { formatUAH } from "@/app/lib/utilities/formatCurrency";
-
-// interface AdminOrderDetailsProps {
-//   order: OrderType;
-// }
-
-// export const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
-//   const router = useRouter();
-//   const [status, setStatus] = useState<OrderStatus>(order.status);
-//   const [isUpdating, setIsUpdating] = useState(false);
-
-//   useEffect(() => {
-//     setStatus(order.status);
-//   }, [order.status]);
-
-//   const handleStatusUpdate = async () => {
-//     try {
-//       setIsUpdating(true);
-//       await api.put(`/api/orders/${order._id}`, { status });
-//       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
-//       router.refresh();
-//     } catch (error: any) {
-//       toast.error(error.message || ordersTranslate.functions[lang].error);
-//     } finally {
-//       setIsUpdating(false);
-//     }
-//   };
-
-//   return (
-//     <div className="space-y-6">
-//       <div className="flex justify-between items-center">
-//         <div>
-//           <h1 className="text-2xl font-bold">Order #{order._id}</h1>
-//           <StatusBadge status={order.status} />
-//         </div>
-//         <Button onClick={() => router.push("/dashboard/orders")}>
-//           Back to Orders
-//         </Button>
-//       </div>
-
-//       <Card>
-//         <CardHeader className="text-lg font-semibold">
-//           Shipping Information
-//         </CardHeader>
-//         <CardContent className="grid grid-cols-2 gap-4">
-//           <div>
-//             <p className="font-medium">Contact</p>
-//             <p>{order.shippingInfo.phone}</p>
-//           </div>
-//           <div>
-//             <p className="font-medium">Address</p>
-//             <p>
-//               {order.shippingInfo.street}, {order.shippingInfo.city}
-//               <br />
-//               {order.shippingInfo.state} {order.shippingInfo.postalCode}
-//               <br />
-//               {order.shippingInfo.country}
-//             </p>
-//           </div>
-//         </CardContent>
-//       </Card>
-
-//       <Card>
-//         <CardHeader className="text-lg font-semibold">Order Items</CardHeader>
-//         <CardContent className="space-y-4">
-//           {order.items.map((item, index) => (
-//             <div
-//               key={index}
-//               className="flex justify-between items-center border-b pb-2"
-//             >
-//               <div>
-//                 <p className="font-medium">{item.name}</p>
-//                 <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
-//                 {item.variant && (
-//                   <p className="text-sm text-muted-foreground">
-//                     Variant: {item.variant}
-//                   </p>
-//                 )}
-//               </div>
-//               <div className="text-right">
-//                 <p>
-//                   {item.quantity} × {formatUAH(item.finalPrice)}
-//                 </p>
-//                 <p className="text-sm text-muted-foreground">
-//                   {formatUAH(item.quantity * item.finalPrice)}
-//                 </p>
-//               </div>
-//             </div>
-//           ))}
-//         </CardContent>
-//       </Card>
-
-//       <Card>
-//         <CardHeader className="text-lg font-semibold">Order Summary</CardHeader>
-//         <CardContent className="space-y-2">
-//           <div className="flex justify-between">
-//             <span>Subtotal</span>
-//             <span>{formatUAH(order.subtotal)}</span>
-//           </div>
-//           <div className="flex justify-between">
-//             <span>Shipping</span>
-//             <span>{formatUAH(order.shippingCost)}</span>
-//           </div>
-//           <div className="flex justify-between">
-//             <span>Tax</span>
-//             <span>{formatUAH(order.tax)}</span>
-//           </div>
-//           <div className="flex justify-between font-bold">
-//             <span>Total</span>
-//             <span>{formatUAH(order.total)}</span>
-//           </div>
-//         </CardContent>
-//       </Card>
-
-//       <Card>
-//         <CardHeader className="text-lg font-semibold">Order Status</CardHeader>
-//         <CardContent className="flex items-center gap-4">
-//           <Select
-//             options={[
-//               {
-//                 label: ordersTranslate.orders[lang].filter.select.options.all,
-//                 value: "",
-//               },
-//               ...Object.values(OrderStatus).map((status) => ({
-//                 label:
-//                   ordersTranslate.orders[lang].filter.select.options[status],
-//                 value: status,
-//               })),
-//             ]}
-//             value={status}
-//             onChange={(e) => setStatus(e.target.value as OrderStatus)}
-//             placeholder="Select Status"
-//           />
-//           <Button
-//             onClick={handleStatusUpdate}
-//             disabled={isUpdating || status === order.status}
-//           >
-//             {isUpdating ? "Updating..." : "Update Status"}
-//           </Button>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// };
 "use client";
-import React, { useState, useEffect } from "react";
+
 import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+
 import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
 import api from "@/app/lib/utilities/api";
-import toast from "react-hot-toast";
-import StatusBadge from "@/components/ui/StatusBadge";
+import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
+import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Select from "@/components/ui/Select";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
 
 interface AdminOrderDetailsProps {
   order: OrderType;
@@ -186,8 +33,10 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
       await api.put(`/admin/dashboard/orders/${order._id}`, { status });
       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || ordersTranslate.functions[lang].error);
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error).message || ordersTranslate.functions[lang].error
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -200,7 +49,11 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
           <h1 className="text-2xl font-bold">Order #{order.invoiceId}</h1>
           <StatusBadge status={order.status as OrderStatus} />
         </div>
-        <Button onClick={() => router.push("/dashboard/orders")}>
+        <Button
+          onClick={() => {
+            router.push("/dashboard/orders");
+          }}
+        >
           Back to Orders
         </Button>
       </div>
@@ -243,13 +96,14 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
                     Attributes: {JSON.stringify(item.attributes)}
                   </p>
                 )} */}
-                {item.attributes &&
-                  Object.entries(item.attributes).map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <dt className="text-gray-600 capitalize">{key}</dt>
-                      <dd className="text-gray-900 font-medium">{value}</dd>
-                    </div>
-                  ))}
+                {item.attributes
+                  ? Object.entries(item.attributes).map(([key, value]) => (
+                      <div key={key} className="flex justify-between">
+                        <dt className="text-gray-600 capitalize">{key}</dt>
+                        <dd className="text-gray-900 font-medium">{value}</dd>
+                      </div>
+                    ))
+                  : null}
               </div>
               <div className="text-right">
                 <p>
@@ -296,7 +150,7 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
             <p className="text-sm text-muted-foreground">
               Invoice ID: {order.invoiceId}
             </p>
-            {order.invoiceLink && (
+            {order.invoiceLink ? (
               <a
                 href={order.invoiceLink}
                 target="_blank"
@@ -305,7 +159,7 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
               >
                 View Invoice
               </a>
-            )}
+            ) : null}
           </div>
         </CardContent>
       </Card>
@@ -319,7 +173,9 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
               value: status,
             }))}
             value={status}
-            onChange={(e) => setStatus(e.target.value as OrderStatus)}
+            onChange={(e) => {
+              setStatus(e.target.value as OrderStatus);
+            }}
             placeholder="Select Status"
           />
           <Button
@@ -331,7 +187,7 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
         </CardContent>
       </Card>
 
-      {order.orderNotes && order.orderNotes.length > 0 && (
+      {order.orderNotes && order.orderNotes.length > 0 ? (
         <Card>
           <CardHeader className="text-lg font-semibold">Order Notes</CardHeader>
           <CardContent className="space-y-2">
@@ -342,7 +198,7 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
             ))}
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   );
 };

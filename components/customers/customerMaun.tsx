@@ -1,66 +1,71 @@
 // components/AccountMenu.js
-"use client";
-import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+'use client';
+
+
+import Link from 'next/link';
+import {usePathname, useRouter} from 'next/navigation';
+import {useEffect, useState} from 'react';
 import {
-  FaTachometerAlt,
-  FaUser,
-  FaHeart,
   FaAddressBook,
-  FaStar,
+  FaHeart,
   FaListAlt,
+  FaStar,
+  FaTachometerAlt,
   FaTicketAlt,
-} from "react-icons/fa";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Event } from "@/app/lib/types/products.types";
-import { RiShieldUserLine } from "react-icons/ri";
+  FaUser,
+} from 'react-icons/fa';
+import {RiShieldUserLine} from 'react-icons/ri';
+
+import type {Event} from '@/app/lib/types/products.types';
+import {lang} from '@/app/lib/utilities/lang';
+import {addressTranslate} from '@/public/locales/client/(auth)/account/addressTranslate';
+
+// components/AccountMenu.js
 
 const AccountMenuV2 = () => {
   const router = useRouter();
   const pathName = usePathname();
-  const [selectedOption, setSelectedOption] = useState("/account/dashboard");
+  const [selectedOption, setSelectedOption] = useState('/account/dashboard');
 
   const accountOptions = [
     {
       label: addressTranslate[lang].layout.navBar.options.accountDashboard,
-      href: "/account/dashboard",
+      href: '/account/dashboard',
       icon: <FaTachometerAlt />,
     },
     {
       label: addressTranslate[lang].layout.navBar.options.accountSettings,
       //Information",
-      href: "/account/settings",
+      href: '/account/settings',
       icon: <FaUser />,
     },
     {
       label: addressTranslate[lang].layout.navBar.options.twoFactor,
       //Information",
-      href: "/account/two-factor",
+      href: '/account/two-factor',
       icon: <RiShieldUserLine />,
       // icon: <RiShieldUserLine className="w-6 h-6 text-blue-600" />,
     },
     {
       label: addressTranslate[lang].layout.navBar.options.myWishlist,
 
-      href: "/account/wishlist",
+      href: '/account/wishlist',
       icon: <FaHeart />,
     },
     {
       label: addressTranslate[lang].layout.navBar.options.addressBook,
-      href: "/account/address",
+      href: '/account/address',
       icon: <FaAddressBook />,
     },
     {
       label: addressTranslate[lang].layout.navBar.options.myProductReviews,
 
-      href: "/account/reviews",
+      href: '/account/reviews',
       icon: <FaStar />,
     },
     {
       label: addressTranslate[lang].layout.navBar.options.myOrders,
-      href: "/account/orders",
+      href: '/account/orders',
       icon: <FaListAlt />,
     },
     // {
@@ -77,7 +82,7 @@ const AccountMenuV2 = () => {
     {
       label: addressTranslate[lang].layout.navBar.options.myTickets,
 
-      href: "/account/tickets",
+      href: '/account/tickets',
       icon: <FaTicketAlt />,
     },
     // { label: "Log Out", href: "/account/logout", icon: <FaSignOutAlt /> },
@@ -108,9 +113,7 @@ const AccountMenuV2 = () => {
           onChange={handleNavigation}
           className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
         >
-          <option value="">
-            {addressTranslate[lang].layout.navBar.options.title}
-          </option>
+          <option value="">{addressTranslate[lang].layout.navBar.options.title}</option>
           {accountOptions.map((option) => (
             <option key={option.label} value={option.href}>
               {option.label}
@@ -130,8 +133,8 @@ const AccountMenuV2 = () => {
                 href={option.href}
                 className={`flex items-center justify-between p-4 rounded-lg shadow ${
                   isActive
-                    ? "bg-blue-50 text-blue-600"
-                    : "bg-gray-50 hover:bg-gray-100 text-gray-500"
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'bg-gray-50 hover:bg-gray-100 text-gray-500'
                 }`}
               >
                 <p className="text-base font-normal text-gray-500 flex space-x-2 items-center justify-center ">

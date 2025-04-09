@@ -1,10 +1,11 @@
-import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
-import WishlistPage from "@/components/shop/wishList/wishlist";
-import { lang } from "@/app/lib/utilities/lang";
-import api from "@/app/lib/utilities/api";
 import { headers } from "next/headers";
-import AppError from "@/app/lib/utilities/appError";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import ErrorHandler from "@/components/Error/errorHandler";
+import WishlistPage from "@/components/shop/wishList/wishlist";
+import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
+
 export const metadata = {
   title: accountWishlistTranslate[lang].metadata.title,
   description: accountWishlistTranslate[lang].metadata.description,
@@ -37,25 +38,22 @@ const queryParams = async (searchParams: SearchParams) => {
   // }
 
   const queryString = url.toString();
-  try {
-    const {
-      data: { docs, meta, links },
-    } = await api.get(
-      "/customers/wishlist" + (queryString ? `?${queryString}` : ""),
-      {
-        headers: Object.fromEntries((await headers()).entries()), // convert headers to object
-      }
-    );
-    return {
-      docs,
-      pagination: {
-        meta,
-        links,
-      },
-    };
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+
+  const {
+    data: { docs, meta, links },
+  } = await api.get(
+    `/customers/wishlist${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: Object.fromEntries((await headers()).entries()), // convert headers to object
+    }
+  );
+  return {
+    docs,
+    pagination: {
+      meta,
+      links,
+    },
+  };
 };
 
 const page = async (props: { searchParams: Promise<SearchParams> }) => {
@@ -63,8 +61,9 @@ const page = async (props: { searchParams: Promise<SearchParams> }) => {
   try {
     const { docs, pagination } = await queryParams(searchParams);
     return <WishlistPage wishlistProduct={docs} pagination={pagination} />;
-  } catch (error: any) {
-    return <ErrorHandler message={error?.message} />;
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

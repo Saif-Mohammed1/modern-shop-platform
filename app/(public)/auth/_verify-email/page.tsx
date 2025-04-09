@@ -1,7 +1,8 @@
-import { verifyEmailPasswordTranslate } from "@/public/locales/client/(public)/auth/verifyEmailPasswordTranslate copy";
-import EmailVerificationPage from "@/components/authentication/_emailVerification";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Metadata } from "next";
+import type {Metadata} from 'next';
+
+import {lang} from '@/app/lib/utilities/lang';
+import EmailVerificationPage from '@/components/authentication/_emailVerification';
+import {verifyEmailPasswordTranslate} from '@/public/locales/client/(public)/auth/verifyEmailPasswordTranslate copy';
 
 export const metadata: Metadata = {
   title: verifyEmailPasswordTranslate[lang].metadata.title,

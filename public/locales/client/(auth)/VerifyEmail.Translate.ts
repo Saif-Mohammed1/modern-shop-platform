@@ -14,7 +14,8 @@ export const VerifyEmailTranslate = {
       success: "Email verified successfully",
       fail: "Failed to verify email",
       resendCodeSuccess: "Code sent successfully Please check your email",
-    resendCodeFail: "Failed to send code",
+      resendCodeFail: "Failed to send code",
+      userNotFound: "User not found please login and try again",
     },
   },
   uk: {
@@ -31,9 +32,11 @@ export const VerifyEmailTranslate = {
       ResendCode: "Відправити код ще раз",
       success: "Електронна пошта успішно підтверджена",
       fail: "Не вдалося підтвердити електронну пошту",
-        resendCodeSuccess: "Код успішно відправлено Перевірте свою електронну пошту",
-        resendCodeFail: "Не вдалося відправити код",
-
+      resendCodeSuccess:
+        "Код успішно відправлено Перевірте свою електронну пошту",
+      resendCodeFail: "Не вдалося відправити код",
+      userNotFound:
+        "Користувача не знайдено, будь ласка, увійдіть і спробуйте ще раз",
     },
   },
 } as const;

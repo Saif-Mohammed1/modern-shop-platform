@@ -1,21 +1,24 @@
 "use client";
-import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import Link from "next/link";
-import toast from "react-hot-toast";
-import Spinner from "../spinner/spinner";
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import api from "../../app/lib/utilities/api";
-import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
-import { lang } from "../../app/lib/utilities/lang";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { FiLock, FiMail, FiUser } from "react-icons/fi";
-import Input from "../ui/Input";
+import { z } from "zod";
+
+import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
+import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
+
+import api from "../../app/lib/utilities/api";
+import { lang } from "../../app/lib/utilities/lang";
 import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
+import Spinner from "../spinner/spinner";
+import Input from "../ui/Input";
 
 // Allowed email domains
 const allowedEmailDomains = ["gmail.com", "yahoo.com", "outlook.com"];
@@ -27,12 +30,14 @@ const registerSchema = z
       .string({
         required_error: userZodValidatorTranslate[lang].name.required,
       })
+      .trim()
       .min(3, userZodValidatorTranslate[lang].name.minLength)
       .max(50, userZodValidatorTranslate[lang].name.maxLength),
     email: z
       .string({
         required_error: userZodValidatorTranslate[lang].email.required,
       })
+      .trim()
       .email(userZodValidatorTranslate[lang].email.invalid)
       .refine(
         (email) => allowedEmailDomains.includes(email.split("@")[1]),
@@ -42,6 +47,7 @@ const registerSchema = z
       .string({
         // required_error: userZodValidatorTranslate[lang].phone.required,
       })
+      .trim()
       .regex(
         /^\+?[1-9]\d{1,14}$/,
         userZodValidatorTranslate[lang].phone.invalid
@@ -52,15 +58,19 @@ const registerSchema = z
       .string({
         required_error: userZodValidatorTranslate[lang].password.required,
       })
+      .trim()
       .min(10, userZodValidatorTranslate[lang].password.minLength)
       .max(40, userZodValidatorTranslate[lang].password.maxLength)
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
         userZodValidatorTranslate[lang].password.invalid
       ),
-    confirmPassword: z.string({
-      required_error: userZodValidatorTranslate[lang].confirmPassword.required,
-    }),
+    confirmPassword: z
+      .string({
+        required_error:
+          userZodValidatorTranslate[lang].confirmPassword.required,
+      })
+      .trim(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: userZodValidatorTranslate[lang].confirmPassword.invalid,
@@ -94,7 +104,9 @@ const RegisterPage = () => {
         redirect: false,
       });
 
-      if (result?.error) throw new Error(result.error);
+      if (result?.error) {
+        throw new Error(result.error);
+      }
       const res = await mergeLocalCartWithDB();
       if (res?.message) {
         toast.success(res.message);
@@ -186,7 +198,9 @@ const RegisterPage = () => {
           />
           <button
             type="button"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => {
+              setShowPassword(!showPassword);
+            }}
             className="absolute inset-y-0 right-2 flex items-center text-gray-500"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
@@ -238,7 +252,9 @@ const RegisterPage = () => {
           />
           <button
             type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            onClick={() => {
+              setShowConfirmPassword(!showConfirmPassword);
+            }}
             className="absolute inset-y-0 right-2 flex items-center text-gray-500"
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >

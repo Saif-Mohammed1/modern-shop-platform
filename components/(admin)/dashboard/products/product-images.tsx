@@ -1,14 +1,17 @@
 // product-images.tsx
-import { useFormContext } from "react-hook-form";
-import { useDropzone } from "react-dropzone";
-import { FaImage, FaTrash } from "react-icons/fa";
 import Image from "next/image";
-import type { PreviewFile } from "./addProduct";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import { useDropzone } from "react-dropzone";
+import { useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
-import api from "@/app/lib/utilities/api";
+import { FaImage, FaTrash } from "react-icons/fa";
+
 import type { OldImage } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
+import type { PreviewFile } from "./addProduct";
+
 // type OldImage = {
 //   link: string;
 //   public_id: string;
@@ -32,12 +35,14 @@ export default function ProductImages({
         return new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.readAsDataURL(file);
-          reader.onload = () => resolve(reader.result as string);
+          reader.onload = () => {
+            resolve(reader.result as string);
+          };
           reader.onerror = reject;
         });
       });
 
-      Promise.all(readFilesAsBase64).then((base64Images) => {
+      void Promise.all(readFilesAsBase64).then((base64Images) => {
         setValue("images", [...images, ...base64Images]);
       });
     },
@@ -53,7 +58,7 @@ export default function ProductImages({
           productsTranslate.products[lang].editProduct.removeImage.loading
         );
 
-        await api.put("/admin/dashboard/products/" + slug + "/remove-image", {
+        await api.put(`/admin/dashboard/products/${slug}/remove-image`, {
           public_id: imageToRemove.public_id,
         });
         toast.success(
@@ -80,11 +85,11 @@ export default function ProductImages({
 
   return (
     <div className="space-y-6">
-      {editMode && (
+      {editMode ? (
         <div className="bg-yellow-100 p-3 rounded-lg mb-4">
           {productsTranslate.products[lang].editMode}
         </div>
-      )}
+      ) : null}
       <div
         {...getRootProps()}
         className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"

@@ -1,15 +1,18 @@
 "use client";
-import { useEffect, useRef } from "react";
+
 import Image from "next/image";
-import { useCartItems } from "../providers/context/cart/cart.context";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import imageSrc from "../../app/lib/utilities/productImageHandler";
-import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
-import { lang } from "../../app/lib/utilities/lang";
+import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import { FiX } from "react-icons/fi";
-import { useUser } from "../providers/context/user/user.context";
+
 import { type CartItemsType } from "@/app/lib/types/cart.types";
+import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
+
+import { lang } from "../../app/lib/utilities/lang";
+import imageSrc from "../../app/lib/utilities/productImageHandler";
+import { useCartItems } from "../providers/context/cart/cart.context";
+import { useUser } from "../providers/context/user/user.context";
 
 type CartDropdownProps = {
   setIsCartOpen: (value: boolean) => void;
@@ -38,13 +41,15 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
       const message = error instanceof Error ? error.message : errorMessage;
       toast.error(message);
     } finally {
-      if (toastId) toast.dismiss(toastId);
+      if (toastId) {
+        toast.dismiss(toastId);
+      }
     }
   };
 
   const handleIncrease = (item: CartItemsType) =>
     handleCartAction(
-      () => Promise.resolve(addToCartItems(item)),
+      () => addToCartItems(item),
       cartDropdownTranslate[lang].functions.handleIncrease.addingToCart,
       cartDropdownTranslate[lang].functions.handleIncrease.success,
       cartDropdownTranslate[lang].functions.handleIncrease.error
@@ -52,7 +57,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
   const handleDecrease = (item: CartItemsType) =>
     handleCartAction(
-      () => Promise.resolve(removeCartItem(item)),
+      () => removeCartItem(item),
       cartDropdownTranslate[lang].functions.handleDecrease.removingFromCart,
       cartDropdownTranslate[lang].functions.handleDecrease.success,
       cartDropdownTranslate[lang].functions.handleDecrease.error
@@ -60,7 +65,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
   const handelClearItem = (item: CartItemsType) =>
     handleCartAction(
-      () => Promise.resolve(clearProductFromCartItem(item)),
+      () => clearProductFromCartItem(item),
       cartDropdownTranslate[lang].functions.handelClearItem.clearingProduct,
       cartDropdownTranslate[lang].functions.handelClearItem.success,
       cartDropdownTranslate[lang].functions.handelClearItem.error
@@ -116,7 +121,9 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [setIsCartOpen]);
 
   const calculatePrice = (item: CartItemsType) => {
@@ -127,7 +134,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
   };
   return (
     <>
-      <div
+      <button
         className="fixed inset-0 bg-black/50 z-40 md:hidden"
         onClick={() => setIsCartOpen(false)}
       />
@@ -143,7 +150,9 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
         <div className="flex items-center justify-between p-4 border-b md:hidden">
           <h2 className="text-lg font-semibold">Shopping Cart</h2>
           <button
-            onClick={() => setIsCartOpen(false)}
+            onClick={() => {
+              setIsCartOpen(false);
+            }}
             className="p-2 hover:bg-gray-100 rounded-full"
           >
             <FiX className="text-xl" />

@@ -1,19 +1,22 @@
 // src/repositories/order.repository.ts
-import { Model, type ClientSession } from "mongoose";
-import type {
-  CreateOrderDto,
-  UpdateOrderDto,
-  UpdateOrderStatusDto,
-} from "../dtos/order.dto";
-import type { IOrder } from "../models/Order.model";
-import { BaseRepository } from "./BaseRepository";
+import type { Model, ClientSession } from "mongoose";
+
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+
+import type {
+  CreateOrderDto,
+  UpdateOrderDto,
+  UpdateOrderStatusDto,
+} from "../dtos/order.dto";
+import type { IOrder } from "../models/Order.model";
 import UserModel from "../models/User.model";
+
+import { BaseRepository } from "./BaseRepository";
 
 export class OrderRepository extends BaseRepository<IOrder> {
   constructor(model: Model<IOrder>) {
@@ -110,7 +113,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
       })
         .select("_id")
         .lean();
-      if (!users.length)
+      if (!users.length) {
         return {
           docs: [],
           meta: {
@@ -122,6 +125,7 @@ export class OrderRepository extends BaseRepository<IOrder> {
             hasPrev: false,
           },
         };
+      }
       options.query.set("userId", users.map((u) => u._id.toString()).join(","));
     }
     const queryBuilder = new QueryBuilder<IOrder>(

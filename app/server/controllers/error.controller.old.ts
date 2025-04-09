@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
-import AppError from "@/app/lib/utilities/appError";
-import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import { z } from "zod";
+
 import { logRequestError } from "@/app/lib/logger/logs";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+
+import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
 
 // Type definitions
 interface CastError {
@@ -38,19 +40,16 @@ const handleZodValidationError = (err: z.ZodError): AppError => {
 };
 // Database Error Handlers
 const handleCastErrorDB = (err: CastError): AppError => {
-  const message = errorControllerTranslate[lang].controllers.handleCastErrorDB(
-    err.path,
-    err.value
-  ).message;
+  const { message } = errorControllerTranslate[
+    lang
+  ].controllers.handleCastErrorDB(err.path, err.value);
   return new AppError(message, 400);
 };
 
 const handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || "unknown value";
-  const message =
-    errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(
-      value
-    ).message;
+  const { message } =
+    errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(value);
   return new AppError(message, 400);
 };
 
@@ -70,8 +69,8 @@ const handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
 const handleValidationErrorDB = (err: ValidationError) => {
   const schemaName = err._message.split(" ")[0].toLowerCase() ?? " ";
   const errors = Object.values(err.errors).map((el: any) => {
-    const type = el.properties.type; //u need to check this if exist in error object
-    const path = el.properties.path;
+    const { type } = el.properties; //u need to check this if exist in error object
+    const { path } = el.properties;
 
     // Add checks before accessing dynamic properties
     const schemaErrors = (
@@ -115,13 +114,17 @@ const createErrorResponse = (err: AppError, includeDetails: boolean) =>
 
 // Environment-specific Handlers
 const sendErrorDev = (err: AppError, req: NextRequest) => {
-  if (err.name === "ZodError") return createErrorResponse(err, true);
+  if (err.name === "ZodError") {
+    return createErrorResponse(err, true);
+  }
   return createErrorResponse(err, req.nextUrl.pathname.startsWith("/api/"));
 };
 
 const sendErrorProd = (err: AppError) => {
   // Log operational errors for monitoring
-  if (!err.isOperational) console.error("ERROR 💥", err);
+  if (!err.isOperational) {
+    console.error("ERROR 💥", err);
+  }
 
   return NextResponse.json(
     {
@@ -148,17 +151,27 @@ const ErrorHandler = (error: any, req: NextRequest): NextResponse => {
   if (error instanceof z.ZodError) {
     err = handleZodValidationError(error);
   }
-  if (error.name === "JsonWebTokenError") err = handleJWTError();
-  if (error.name === "TokenExpiredError") err = handleJWTExpiredError();
+  if (error.name === "JsonWebTokenError") {
+    err = handleJWTError();
+  }
+  if (error.name === "TokenExpiredError") {
+    err = handleJWTExpiredError();
+  }
   // Production error processing
   if (process.env.NODE_ENV === "production") {
     if (error instanceof z.ZodError) {
       err = handleZodValidationError(error);
     }
 
-    if (error.name === "CastError") err = handleCastErrorDB(error);
-    if (error.code === 11000) err = handleDuplicateFieldsDB(error);
-    if (error.name === "ValidationError") err = handleValidationErrorDB(error);
+    if (error.name === "CastError") {
+      err = handleCastErrorDB(error);
+    }
+    if (error.code === 11000) {
+      err = handleDuplicateFieldsDB(error);
+    }
+    if (error.name === "ValidationError") {
+      err = handleValidationErrorDB(error);
+    }
     // if (error.name === "JsonWebTokenError") err = handleJWTError();
     // if (error.name === "TokenExpiredError") err = handleJWTExpiredError();
     // Log errors

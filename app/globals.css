@@ -189,3 +189,6 @@ input[type="number"] {
 .btn-secondary {
   @apply bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors;
 }
+button {
+  cursor: pointer;
+}

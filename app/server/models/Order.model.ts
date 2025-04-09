@@ -1,6 +1,13 @@
-import { Schema, model, models, Document, Model, Types } from "mongoose";
+import {
+  Schema,
+  model,
+  models,
+  type Document,
+  type Model,
+  type Types,
+} from "mongoose";
+
 // import type { IProduct } from "./Product.model";
-import type { IUser } from "./User.model";
 import {
   type IOrderItem,
   type IShippingInfo,
@@ -8,6 +15,8 @@ import {
   PaymentsMethod,
 } from "@/app/lib/types/orders.types";
 import { UserCurrency } from "@/app/lib/types/users.types";
+
+import _UserModel, { type IUser } from "./User.model";
 
 export interface IOrder extends Document {
   _id: Types.ObjectId;

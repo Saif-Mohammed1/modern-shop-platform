@@ -1,5 +1,7 @@
 import type { IProduct } from "../../server/models/Product.model";
+
 import type { UserAuthType } from "./users.types";
+
 // import Address from "./address.model";
 // export type status = "pending" | "completed" | "refunded" | "processing" | "cancelled";
 export interface IShippingInfo {
@@ -65,6 +67,10 @@ export type OrderType = {
   invoiceId: string;
   invoiceLink: string;
   subtotal: number;
+  payment: {
+    method: string;
+    transactionId: string;
+  };
   // shippingCost: number;
   tax: number;
   total: number;

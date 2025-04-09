@@ -1,5 +1,5 @@
-// @ts-ignore
-import { Document, Model, Schema, model, models } from "mongoose";
+import { Schema, model, models, type Document, type Model } from "mongoose";
+
 import type { IUser } from "./User.model";
 
 type status = "received" | "read" | "responded";

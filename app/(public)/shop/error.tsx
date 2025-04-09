@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import ErrorHandler from "@/components/Error/errorHandler";
-import { type FC, useEffect, useState } from "react";
+import {type FC, useEffect, useState} from 'react';
+
+import ErrorHandler from '@/components/Error/errorHandler';
 
 type ErrorProps = {
   error: {
@@ -10,8 +11,8 @@ type ErrorProps = {
   reset: () => void;
 };
 
-const Error: FC<ErrorProps> = ({ error, reset }) => {
-  const [message, setMessage] = useState("");
+const Error: FC<ErrorProps> = ({error, reset}) => {
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (error.message) {

@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -32,7 +33,7 @@ const RefundRequest = ({ orderId, totalAmount }) => {
       } else {
         throw new Error("Failed to submit refund.");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error submitting refund request.");
     } finally {
       setLoading(false);

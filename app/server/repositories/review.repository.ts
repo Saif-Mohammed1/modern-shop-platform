@@ -1,16 +1,24 @@
-import type { ClientSession } from "mongoose";
-import { BaseRepository } from "./BaseRepository";
-import { Model } from "mongoose";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import type { Model, ClientSession } from "mongoose";
+
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import type { IReview } from "../models/Review.model";
-import type { createReviewDto } from "../dtos/reviews.dto";
 
+import type { createReviewDto } from "../dtos/reviews.dto";
+import type { IReview } from "../models/Review.model";
+
+import { BaseRepository } from "./BaseRepository";
+interface RatingDistribution {
+  "1": number;
+  "2": number;
+  "3": number;
+  "4": number;
+  "5": number;
+}
 export class ReviewRepository extends BaseRepository<IReview> {
   constructor(model: Model<IReview>) {
     super(model);
@@ -101,32 +109,14 @@ export class ReviewRepository extends BaseRepository<IReview> {
     return ratings;
   }
 
-  async getRatingDistributionByProductId(productId: string): Promise<{
-    [key: string]: number;
-  }> {
-    // const distribution = await this.model.aggregate([
-    //   {
-    //     $match: {
-    //       productId: assignAsObjectId(productId),
-    //       // rating: { $exists: true, $ne: null },
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: { $round: ["$rating", 0] }, // Round rating to nearest int (1-5)
-    //       count: { $sum: 1 }, // Count occurrences
-    //     },
-    //   },
-    //   {
-    //     $sort: { _id: 1 }, // Ensure sorting from 1-star to 5-star
-    //   },
-    // ]);
-    // const ratings = [0, 0, 0, 0, 0]; // Default 0 for all ratings
-    // distribution.forEach(({ _id, count }) => {
-    //   ratings[_id - 1] = count; // Store count at correct index
-    // });
-    // return ratings;
-    const distribution = await this.model.aggregate([
+  async getRatingDistributionByProductId(
+    productId: string
+  ): Promise<RatingDistribution> {
+    interface AggregationResult {
+      distribution?: RatingDistribution;
+    }
+
+    const distribution = await this.model.aggregate<AggregationResult>([
       {
         $match: { productId: assignAsObjectId(productId) },
       },
@@ -168,17 +158,16 @@ export class ReviewRepository extends BaseRepository<IReview> {
       },
     ]);
 
-    return (
-      distribution[0]?.distribution || {
-        "1": 0,
-        "2": 0,
-        "3": 0,
-        "4": 0,
-        "5": 0,
-      }
-    );
-  }
+    const defaultDistribution: RatingDistribution = {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+    };
 
+    return distribution[0]?.distribution || defaultDistribution;
+  }
   async getMyReviews(
     userId: string,
     options: QueryOptionConfig

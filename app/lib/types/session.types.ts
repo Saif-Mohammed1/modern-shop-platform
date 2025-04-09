@@ -1,15 +1,15 @@
 // auth.types.ts
 export enum RefreshTokenStatus {
-  Active = "active",
-  Revoked = "revoked",
-  Rotated = "rotated",
+  Active = 'active',
+  Revoked = 'revoked',
+  Rotated = 'rotated',
 }
 export interface GeoLocation {
   city: string;
   country: string;
   latitude: number;
   longitude: number;
-  source: "ip" | "gps" | "user";
+  source: 'ip' | 'gps' | 'user';
 }
 export type DeviceInfo = {
   os: string;

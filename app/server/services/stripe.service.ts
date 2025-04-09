@@ -1,42 +1,46 @@
-import AppError from "@/app/lib/utilities/appError";
-import { lang } from "@/app/lib/utilities/lang";
-import { redis } from "@/app/lib/utilities/Redis";
-import { stripeControllerTranslate } from "@/public/locales/server/stripeControllerTranslate";
-import mongoose from "mongoose";
-import Stripe from "stripe";
-import UserModel, { type IUser } from "../models/User.model";
-import type { ShippingInfoDto } from "../dtos/stripe.dto";
 import crypto from "crypto";
-import { CartService } from "./cart.service";
-import ProductModel, { type IProduct } from "../models/Product.model";
-import { ProductService } from "./product.service";
+import { setTimeout } from "timers/promises";
+
+import { MongoBulkWriteError, type MongoError } from "mongodb";
+import mongoose, { Types } from "mongoose";
+import Stripe from "stripe";
+
+import logger from "@/app/lib/logger/logs";
 import {
   AuditAction,
   AuditSource,
   EntityType,
 } from "@/app/lib/types/audit.types";
-
-import { setTimeout } from "timers/promises";
-import OrderModel from "../models/Order.model";
+import type { CartItemsType } from "@/app/lib/types/cart.types";
 import {
   type IOrderItem,
   OrderStatus,
   PaymentsMethod,
 } from "@/app/lib/types/orders.types";
-import type { CartItemsType } from "@/app/lib/types/cart.types";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import AuditLogModel from "../models/audit-log.model";
 import {
   UserCurrency,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.types";
-import { Types } from "mongoose";
-import { MongoBulkWriteError } from "mongodb";
+import AppError from "@/app/lib/utilities/appError";
+import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
+import { redis } from "@/app/lib/utilities/Redis";
+import { stripeControllerTranslate } from "@/public/locales/server/stripeControllerTranslate";
+
 import type { LogsTypeDto } from "../dtos/logs.dto";
-import { emailService } from ".";
+import type { ShippingInfoDto } from "../dtos/stripe.dto";
+import AuditLogModel from "../models/audit-log.model";
+import OrderModel from "../models/Order.model";
+import ProductModel, { type IProduct } from "../models/Product.model";
+import UserModel, { type IUser } from "../models/User.model";
+
+import { CartService } from "./cart.service";
 import type { AdminInventoryNotification } from "./email.service";
-import logger from "@/app/lib/logger/logs";
+import { ProductService } from "./product.service";
+
+import { emailService } from ".";
+
 // stripe.service.ts
 
 export interface FailedOrderData {
@@ -52,7 +56,11 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET!, {
   timeout: 15_000, // 15 seconds
   typescript: true,
 });
-
+interface CustomMongoError extends MongoError {
+  // errorLabels?: string[];
+  codeName?: string;
+  // Add other possible MongoDB error properties if needed
+}
 export class StripeService {
   private readonly RESERVATION_TIMEOUT;
   private readonly feePercentage;
@@ -115,7 +123,9 @@ export class StripeService {
           .digest("hex");
 
         const cachedSession = await this.getCachedSession(idempotencyKey);
-        if (cachedSession) return cachedSession;
+        if (cachedSession) {
+          return cachedSession;
+        }
 
         // const reservationId = uuidv4();
         // 4. Reserve inventory using validated products
@@ -154,7 +164,7 @@ export class StripeService {
         await this.handleCreateSessionError(error as Error, user);
         throw error;
       } finally {
-        transaction.endSession();
+        await transaction.endSession();
       }
     }
     throw new AppError(
@@ -335,7 +345,7 @@ export class StripeService {
       await transaction.abortTransaction();
       throw error;
     } finally {
-      transaction.endSession();
+      await transaction.endSession();
     }
   }
   private async handleCheckoutSessionCompleted(
@@ -344,12 +354,13 @@ export class StripeService {
   ): Promise<void> {
     const lockKey = `order:${session.id}`;
     const locked = await this.acquireLock(lockKey);
-    if (!locked)
+    if (!locked) {
       throw new AppError(
         stripeControllerTranslate[lang].errors.ConcurrentOrder,
 
         409
       );
+    }
 
     // Validate session metadata
     if (!session.metadata?.shippingInfo || !session.metadata?.idempotencyKey) {
@@ -363,11 +374,12 @@ export class StripeService {
     const user = await UserModel.findById(session.client_reference_id).session(
       transaction
     );
-    if (!user)
+    if (!user) {
       throw new AppError(
         stripeControllerTranslate[lang].errors.noUserExist,
         404
       );
+    }
     try {
       // Parse shipping information
       const shippingInfo = this.parseShippingInfo(
@@ -432,7 +444,9 @@ export class StripeService {
     const order = await OrderModel.findOne({
       "payment.transactionId": charge.payment_intent,
     });
-    if (!order) return;
+    if (!order) {
+      return;
+    }
 
     order.status = charge.refunded
       ? OrderStatus.Refunded
@@ -511,13 +525,14 @@ export class StripeService {
           productMetadata._id
         ).session(session);
 
-        if (!product)
+        if (!product) {
           throw new AppError(
             stripeControllerTranslate[lang].errors.notFoundProduct(
               productMetadata.name
             ),
             404
           );
+        }
         // throw new AppError(`Product not found: ${productMetadata.name}`, 404);
 
         return {
@@ -662,7 +677,7 @@ export class StripeService {
           }
 
           attempts++;
-          const delay = Math.min(100 * Math.pow(2, attempts), 6000);
+          const delay = Math.min(100 * 2 ** attempts, 6000);
           await setTimeout(delay);
 
           if (attempts === maxRetries) {
@@ -919,7 +934,9 @@ export class StripeService {
       // Handle partial failures for ordered operations
       if (result.modifiedCount !== bulkOps.length) {
         const successfulIds = new Set(
-          Object.values(result.upsertedIds).map((id) => id.toString()) || []
+          Object.values(
+            result.upsertedIds as Record<string, mongoose.Types.ObjectId>
+          ).map((id) => id.toString()) || []
         );
 
         const failedProducts = bulkOps
@@ -930,8 +947,8 @@ export class StripeService {
             const productId = op.updateOne.filter._id.toString();
             return {
               _id: op.updateOne.filter._id,
-              quantity: productMap.get(productId)!.totalQuantity,
-              name: productMap.get(productId)!.name,
+              quantity: productMap.get(productId)?.totalQuantity ?? 0,
+              name: productMap.get(productId)?.name ?? "",
             };
           });
 
@@ -955,11 +972,15 @@ export class StripeService {
           Array.isArray(error.writeErrors)
             ? error.writeErrors
             : [error.writeErrors]
-        ).map((e) => e.op.updateOne.filter._id.toString());
+        ).map(
+          (e: {
+            op: { updateOne: { filter: { _id: mongoose.Types.ObjectId } } };
+          }) => e.op.updateOne.filter._id.toString()
+        );
         const failedProducts = failedIds.map((id) => ({
           _id: assignAsObjectId(id),
-          quantity: productMap.get(id)!.totalQuantity,
-          name: productMap.get(id)!.name,
+          quantity: productMap.get(id)?.totalQuantity ?? 0,
+          name: productMap.get(id)?.name ?? "",
         }));
 
         await this.handlePartialReservationFailure(user, failedProducts, logs);
@@ -1017,8 +1038,8 @@ export class StripeService {
   }
   private parseShippingInfo(shippingInfo: string): ShippingInfoDto {
     try {
-      return JSON.parse(shippingInfo);
-    } catch (e) {
+      return JSON.parse(shippingInfo) as ShippingInfoDto;
+    } catch (_e) {
       throw new AppError(
         stripeControllerTranslate[lang].errors.InvalidShipping,
 
@@ -1054,18 +1075,23 @@ export class StripeService {
     }
     try {
       new URL(process.env.NEXTAUTH_URL);
-    } catch (e) {
+    } catch (_e) {
       throw new AppError("Invalid NEXTAUTH_URL format", 500);
     }
   }
-  async getCachedSession(idempotencyKey: string) {
+  async getCachedSession(
+    idempotencyKey: string
+  ): Promise<{ sessionId: string; url: string } | null> {
     const cachedSession = await redis.get<any>(idempotencyKey);
     if (cachedSession) {
       // Handle both string and object cases
       if (typeof cachedSession === "string") {
-        return JSON.parse(cachedSession);
+        return JSON.parse(cachedSession) as {
+          sessionId: string;
+          url: string;
+        };
       }
-      return cachedSession;
+      return cachedSession as { sessionId: string; url: string };
     }
     return null;
   }
@@ -1073,7 +1099,9 @@ export class StripeService {
     await redis.set(
       idempotencyKey,
       JSON.stringify({ sessionId: session.id, url: session.url! }),
-      { ex: this.RESERVATION_TIMEOUT }
+      {
+        ex: this.RESERVATION_TIMEOUT,
+      }
     );
   }
 
@@ -1088,7 +1116,9 @@ export class StripeService {
     try {
       if (locked) {
         const cachedId = await redis.get<string>(cacheKey);
-        if (cachedId) return cachedId;
+        if (cachedId) {
+          return cachedId;
+        }
 
         const taxRate = await stripe.taxRates.create({
           display_name: "Sales Tax",
@@ -1099,13 +1129,14 @@ export class StripeService {
         });
         await redis.setex(cacheKey, this.TAX_RATE_TTL, taxRate.id);
         return taxRate.id;
-      } else {
-        // Wait and retry if another process is creating the tax rate
-        await setTimeout(100);
-        return this.getTaxRate(country);
       }
+      // Wait and retry if another process is creating the tax rate
+      await setTimeout(100);
+      return this.getTaxRate(country);
     } finally {
-      if (locked) await this.releaseLock(lockKey);
+      if (locked) {
+        await this.releaseLock(lockKey);
+      }
     }
   }
   private async validateCartProducts(cartItems: CartItemsType[]) {
@@ -1241,10 +1272,23 @@ export class StripeService {
       phone: shippingInfo.phone.trim(),
     };
   } // Type guard for transient errors
-  private isTransientError(error: any): boolean {
+  private isTransientError(error: unknown): boolean {
+    const isMongoError = (e: unknown): e is CustomMongoError => {
+      return (
+        typeof e === "object" &&
+        e !== null &&
+        ("errorLabels" in e || "codeName" in e)
+      );
+    };
+
+    if (!isMongoError(error)) {
+      return false;
+    }
+
     return (
-      error?.errorLabels?.includes("TransientTransactionError") ||
-      error?.codeName === "WriteConflict"
+      (Array.isArray(error.errorLabels) &&
+        error.errorLabels.includes("TransientTransactionError")) ||
+      error.codeName === "WriteConflict"
     );
   }
 }

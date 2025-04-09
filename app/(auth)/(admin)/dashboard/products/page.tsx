@@ -1,14 +1,14 @@
 // pages/admin/products.js
-
-import ErrorHandler from "@/components/Error/errorHandler";
-import AdminProducts from "@/components/(admin)/dashboard/products/adminProduct";
-import AppError from "@/app/lib/utilities/appError";
-import api from "@/app/lib/utilities/api";
-import { headers } from "next/headers";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+
 import type { ProductsSearchParams } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import AdminProducts from "@/components/(admin)/dashboard/products/adminProduct";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
 export const metadata: Metadata = {
   title: productsTranslate.metadata[lang].title,
   description: productsTranslate.metadata[lang].description,
@@ -51,28 +51,24 @@ const queryParams = async (searchParams: ProductsSearchParams) => {
   // }
 
   const queryString = url.toString();
-  try {
-    const {
-      data: {
-        products: { docs, meta, links },
+  const {
+    data: {
+      products: { docs, meta, links },
 
-        categories,
-      },
-    } = await api.get(
-      "/admin/dashboard/products/" + (queryString ? `?${queryString}` : ""),
-      {
-        headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
-      }
-    );
-
-    return {
-      products: docs,
       categories,
-      pagination: { meta, links },
-    };
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+    },
+  } = await api.get(
+    `/admin/dashboard/products/${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
+    }
+  );
+
+  return {
+    products: docs,
+    categories,
+    pagination: { meta, links },
+  };
 };
 
 const page = async (props: Props) => {
@@ -118,10 +114,9 @@ const page = async (props: Props) => {
         />
       </div>
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error.message} />;
-
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 export default page;

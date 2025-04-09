@@ -1,11 +1,14 @@
 "use client";
+
+import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
-import Link from "next/link";
-import Spinner from "../spinner/spinner";
+
 import api from "@/app/lib/utilities/api";
 import { forgetPasswordTranslate } from "@/public/locales/client/(public)/auth/forgetPasswordTranslate";
+
 import { lang } from "../../app/lib/utilities/lang";
+import Spinner from "../spinner/spinner";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -115,7 +118,9 @@ const ForgotPasswordPage = () => {
             placeholder={
               forgetPasswordTranslate[lang].functions.form.email.placeholder
             }
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
             required
             className="w-full px-4 py-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />

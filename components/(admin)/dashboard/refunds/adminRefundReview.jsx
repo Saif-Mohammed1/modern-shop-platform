@@ -1,26 +1,24 @@
 "use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import moment from "moment";
+import { useState } from "react";
+
+import api from "@/app/lib/utilities/api";
 
 const AdminRefundReview = () => {
   const [refunds, setRefunds] = useState([]);
 
-  // useEffect(() => {
-  //   // Fetch the refunds from API
-  //   axios.get("/api/refunds").then((response) => {
-  //     setRefunds(response.data);
-  //   });
-  // }, []);
+  const handleRefundDecision = async (refundId, decision) => {
+    try {
+      await api.patch(`/refunds/${refundId}`, { status: decision });
 
-  const handleRefundDecision = (refundId, decision) => {
-    axios.patch(`/api/refunds/${refundId}`, { status: decision }).then(() => {
       setRefunds((prevRefunds) =>
         prevRefunds.map((refund) =>
           refund._id === refundId ? { ...refund, status: decision } : refund
         )
       );
-    });
+    } catch (error) {
+      /* eslint-disable no-console */
+      console.error("Error updating refund status:", error);
+    }
   };
 
   return (
@@ -43,8 +41,8 @@ const AdminRefundReview = () => {
                   refund.status === "pending"
                     ? "bg-yellow-500 text-white"
                     : refund.status === "accepted"
-                    ? "bg-green-500 text-white"
-                    : "bg-red-500 text-white"
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
                 }`}
               >
                 {refund.status}
@@ -57,7 +55,7 @@ const AdminRefundReview = () => {
               <strong>Reason:</strong> {refund.reason}
             </p>
             <p className="text-sm text-gray-500">
-              Requested on: {moment(refund.createdAt).format("LL")}
+              Requested on: {new Date(refund.createdAt).toLocaleDateString()}
             </p>
 
             {refund.status === "pending" && (

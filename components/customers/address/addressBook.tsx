@@ -1,12 +1,16 @@
 "use client";
-import { lang } from "@/app/lib/utilities/lang";
-import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
-import AddressForm, { type AddressFormValues } from "./AddressForm";
+
 import { useState } from "react";
-import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
-import Spinner from "@/components/spinner/spinner";
+
 import type { AddressType } from "@/app/lib/types/address.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import Spinner from "@/components/spinner/spinner";
+import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
+
+import AddressForm, { type AddressFormValues } from "./AddressForm";
+
 type AddressBookProps = {
   initialAddresses: AddressType[];
   hasNextPage: boolean;
@@ -25,10 +29,19 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
     try {
       setLoadingMore(true);
       const nextPage = page + 1;
-      const { data } = await api.get(`/customers/address?page=${nextPage}`);
+      const {
+        data,
+      }: {
+        data: {
+          docs: AddressType[];
+          meta: {
+            hasNext: boolean;
+          };
+        };
+      } = await api.get(`/customers/address?page=${nextPage}`);
       setAddresses((prev) => [...prev, ...data.docs]);
       setPage(nextPage);
-      setHasMore(data.meta.hasNextPage);
+      setHasMore(data.meta.hasNext);
     } catch (error) {
       toast.error(
         (error as Error).message || addressTranslate[lang].error.global
@@ -41,18 +54,23 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
   const handleFormSubmit = async (data: AddressFormValues) => {
     try {
       if (isEditing && editAddress) {
-        const { data: updatedAddress } = await api.patch(
-          `/customers/address/${editAddress._id}`,
-          data
-        );
+        const {
+          data: updatedAddress,
+        }: {
+          data: AddressType;
+        } = await api.patch(`/customers/address/${editAddress._id}`, data);
         setAddresses((prev) =>
           prev.map((addr) =>
-            addr._id === editAddress._id ? updatedAddress : addr
+            String(addr._id) === String(editAddress._id) ? updatedAddress : addr
           )
         );
         toast.success(addressTranslate[lang].function.handleSaveEdit.success);
       } else {
-        const { data: newAddress } = await api.post("/customers/address", data);
+        const {
+          data: newAddress,
+        }: {
+          data: AddressType;
+        } = await api.post("/customers/address", data);
         setAddresses((prev) => [newAddress, ...prev]);
         toast.success(addressTranslate[lang].function.handleAddAddress.success);
       }
@@ -88,14 +106,16 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
       <div className="mb-8">
         {!showForm && !isEditing && (
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true);
+            }}
             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             {addressTranslate[lang].button.addNewAddress}
           </button>
         )}
 
-        {(showForm || isEditing) && (
+        {showForm || isEditing ? (
           <AddressForm
             defaultValues={editAddress ?? undefined}
             onSubmit={handleFormSubmit}
@@ -105,7 +125,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
             }}
             isEditing={!!isEditing}
           />
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-4">
@@ -120,7 +140,9 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
                 <AddressForm
                   defaultValues={address}
                   onSubmit={handleFormSubmit}
-                  onCancel={() => setIsEditing(null)}
+                  onCancel={() => {
+                    setIsEditing(null);
+                  }}
                   isEditing
                 />
               ) : (
@@ -162,7 +184,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
           ))}
         </div>
 
-        {hasMore && (
+        {hasMore ? (
           <button
             onClick={loadMoreAddresses}
             disabled={loadingMore}
@@ -170,7 +192,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
           >
             {loadingMore ? <Spinner /> : addressTranslate[lang].button.loadMore}
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );

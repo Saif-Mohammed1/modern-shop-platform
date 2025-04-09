@@ -1,11 +1,13 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { stripe, StripeService } from "../services/stripe.service";
-import { StripeValidation } from "../dtos/stripe.dto";
-import AppError from "@/app/lib/utilities/appError";
-import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
-import { lang } from "@/app/lib/utilities/lang";
-import { LogsValidation } from "../dtos/logs.dto";
 import { ipAddress } from "@vercel/functions";
+import { type NextRequest, NextResponse } from "next/server";
+
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+
+import { LogsValidation } from "../dtos/logs.dto";
+import { StripeValidation } from "../dtos/stripe.dto";
+import { StripeService, stripe } from "../services/stripe.service";
 
 class StripeController {
   constructor(
@@ -27,8 +29,8 @@ class StripeController {
       ipAddress: ip,
       userAgent,
     });
-    const body = await req.json();
-    const result = StripeValidation.validateShippingInfo(body.shippingInfo);
+    const { shippingInfo } = await req.json();
+    const result = StripeValidation.validateShippingInfo(shippingInfo);
     const session = await this.stripeService.createStripeSession(
       req.user,
       result,

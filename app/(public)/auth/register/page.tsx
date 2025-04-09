@@ -1,7 +1,8 @@
-import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
-import RegisterPage from "@/components/authentication/register";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Metadata } from "next";
+import type {Metadata} from 'next';
+
+import {lang} from '@/app/lib/utilities/lang';
+import RegisterPage from '@/components/authentication/register';
+import {registerTranslate} from '@/public/locales/client/(public)/auth/registerTranslate';
 
 export const metadata: Metadata = {
   title: registerTranslate[lang].metadata.title,

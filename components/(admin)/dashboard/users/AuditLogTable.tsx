@@ -1,4 +1,12 @@
 "use client";
+
+import { FaFingerprint } from "react-icons/fa";
+import { FiGlobe, FiMapPin, FiMonitor } from "react-icons/fi";
+
+import type {
+  AuditLogDetails,
+  ClientAuditLogDetails,
+} from "@/app/lib/types/audit.types";
 import { lang } from "@/app/lib/utilities/lang";
 import {
   Table,
@@ -9,11 +17,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
-import { FaFingerprint } from "react-icons/fa";
-import { FiMonitor, FiGlobe, FiMapPin } from "react-icons/fi";
-import type { AuditLog } from "./editUser";
+
 interface AuditLogTableProps {
-  data: AuditLog[];
+  data: ClientAuditLogDetails[];
   translations: {
     timestamp: string;
     action: string;
@@ -21,37 +27,8 @@ interface AuditLogTableProps {
   };
 }
 
-// function AuditLogTable({ data, translations }: AuditLogTableProps) {
-//   return (
-//     <Table>
-//       <TableHeader>
-//         <TableRow>
-//           <TableHead>{translations.timestamp}</TableHead>
-//           <TableHead>{translations.action}</TableHead>
-//           <TableHead>{translations.details}</TableHead>
-//         </TableRow>
-//       </TableHeader>
-//       <TableBody>
-//         {data.map((entry, index) => (
-//           <TableRow key={index}>
-//             <TableCell className="font-medium">
-//               {entry.timestamp.toLocaleString()}
-//             </TableCell>
-//             <TableCell>{entry.action}</TableCell>
-//             <TableCell className="text-muted-foreground">
-//               {JSON.stringify(entry.details)}
-//             </TableCell>
-//           </TableRow>
-//         ))}
-//       </TableBody>
-//     </Table>
-//   );
-// }
-// export default AuditLogTable;
 function AuditLogTable({ data, translations }: AuditLogTableProps) {
-  const formatDeviceInfo = (
-    device: AuditLogTableProps["data"][number]["details"]["device"]
-  ) => (
+  const formatDeviceInfo = (device: AuditLogDetails["device"]) => (
     <div className="space-y-1.5 text-sm">
       <div className="flex items-center gap-2">
         <span className="font-medium">{device.browser}</span>
@@ -104,13 +81,6 @@ function AuditLogTable({ data, translations }: AuditLogTableProps) {
           <TableRow key={index}>
             <TableCell className="font-medium">
               {entry.timestamp.toLocaleString()}
-              {/* {entry.timestamp.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })} */}
             </TableCell>
             <TableCell>
               <span className="capitalize">
@@ -118,7 +88,7 @@ function AuditLogTable({ data, translations }: AuditLogTableProps) {
               </span>
             </TableCell>
             <TableCell className="overflow-y-auto max-h-[60vh]">
-              {entry.details.device
+              {entry.details?.device
                 ? formatDeviceInfo(entry.details.device)
                 : usersTranslate.users[lang].editUsers.form.NoDeviceInfo}
             </TableCell>

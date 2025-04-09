@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
-import api from "../../app/lib/utilities/api";
-import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import { z } from "zod";
+
+import { lang } from "@/app/lib/utilities/lang";
+import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
+
+import api from "../../app/lib/utilities/api";
 import SubmitButton from "../ui/SubmitButton";
 
 const resetPasswordSchema = z
@@ -73,14 +75,16 @@ async function handleResetPassword(formData: FormData) {
     redirectPath = "/auth";
     // redirect("/auth/");
   } catch (error) {
-    redirectPath = `/auth/reset-password?email=${data.email}&token=${data.token}&error=${encodeURIComponent((error as any)?.message)}`;
+    redirectPath = `/auth/reset-password?email=${data.email}&token=${data.token}&error=${encodeURIComponent((error as Error)?.message)}`;
     // redirect(
     //   `/auth/reset-password?email=${data.email}&token=${
     //     data.token
     //   }&error=${encodeURIComponent((error as any)?.message)}`
     // );
   } finally {
-    if (redirectPath) redirect(redirectPath);
+    if (redirectPath) {
+      redirect(redirectPath);
+    }
   }
 }
 
@@ -101,7 +105,7 @@ const ResetPasswordPage = ({ email, token, error }: Props) => {
       </h2>
 
       {/* Display Messages */}
-      {error && <div className="mb-4 text-red-500">{error}</div>}
+      {error ? <div className="mb-4 text-red-500">{error}</div> : null}
       {/* {successMessage && (
         <div className="mb-4 text-green-500">{successMessage}</div>
       )} */}

@@ -1,14 +1,15 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import StarRatings from "react-star-ratings";
-import { motion, AnimatePresence } from "framer-motion";
-import api from "@/app/lib/utilities/api";
-import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import { FiEdit3, FiX } from "react-icons/fi";
+import StarRatings from "react-star-ratings";
+
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
+import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 
 type CreateReviewProps = {
   reviewsLength: number;
@@ -106,7 +107,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -120,7 +121,9 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
               className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative"
             >
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                }}
                 className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
                 aria-label={
                   reviewsTranslate[lang].createReviewsSection.content.close
@@ -170,9 +173,9 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
                   </label>
                   <textarea
                     value={comment}
-                    onChange={(e) =>
-                      setComment(e.target.value.slice(0, MAX_COMMENT_LENGTH))
-                    }
+                    onChange={(e) => {
+                      setComment(e.target.value.slice(0, MAX_COMMENT_LENGTH));
+                    }}
                     placeholder={
                       reviewsTranslate[lang].createReviewsSection.content
                         .textArea.placeholder
@@ -219,7 +222,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
               </div>
             </motion.div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );

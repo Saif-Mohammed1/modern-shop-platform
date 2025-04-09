@@ -1,15 +1,21 @@
 "use client";
+
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { RiShieldUserLine } from "react-icons/ri";
 
+import { lang } from "@/app/lib/utilities/lang";
+import { accountTwoFactorTranslate } from "@/public/locales/client/(auth)/account/twoFactorTranslate";
+
 import api from "../../app/lib/utilities/api";
-import SetupFlow from "./setupFlow";
-import BackupCodesDisplay from "./backupCodesDisplay";
-import SecurityDashboard from "./securityDashboard";
-import RecoveryManagement from "./recoveryManagement";
+
 import AuditLogViewer from "./auditLogViewer";
+import BackupCodesDisplay from "./backupCodesDisplay";
+import RecoveryManagement from "./recoveryManagement";
+import SecurityDashboard from "./securityDashboard";
+import SetupFlow from "./setupFlow";
+
 interface SecurityMetadata {
   ipAddress: string;
   userAgent: string;
@@ -41,9 +47,14 @@ const TwoFactorAuthDashboard = () => {
       const { data } = await api.post("/auth/2fa");
       setSetupData(data);
       setView("setup");
-      toast.success("2FA setup initiated");
-    } catch (error: any) {
-      toast.error(error?.message || "2FA setup failed");
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleEnable2FA.success
+      );
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          accountTwoFactorTranslate[lang].functions.handleEnable2FA.failed
+      );
     } finally {
       setLoading(false);
     }
@@ -55,9 +66,14 @@ const TwoFactorAuthDashboard = () => {
       await api.post("/auth/2fa/verify", { token });
 
       setView("backup");
-      toast.success("2FA enabled successfully!");
-    } catch (error: any) {
-      toast.error(error?.message || "Verification failed");
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleVerify2FA.success
+      );
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          accountTwoFactorTranslate[lang].functions.handleVerify2FA.failed
+      );
     } finally {
       setLoading(false);
     }
@@ -72,9 +88,14 @@ const TwoFactorAuthDashboard = () => {
         user: { ...session?.user, isTwoFactorAuthEnabled: false },
       });
       setView("main");
-      toast.success("2FA disabled successfully");
-    } catch (error: any) {
-      toast.error(error?.message || "Disable failed");
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleDisable2FA.success
+      );
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          accountTwoFactorTranslate[lang].functions.handleDisable2FA.failed
+      );
     } finally {
       setLoading(false);
     }
@@ -92,38 +113,61 @@ const TwoFactorAuthDashboard = () => {
 
   const regenerateBackupCodes = async () => {
     try {
-      const { data } = await api.post("/auth/2fa/recovery");
-      setSetupData((prev) => ({ ...prev!, backupCodes: data.newCodes }));
-      setGeneratedCodes(data.newCodes);
-      toast.success("New backup codes generated!");
-    } catch (error: any) {
-      toast.error(error?.message || "Regeneration failed");
+      const {
+        data: { newCodes },
+      } = await api.post("/auth/2fa/recovery");
+      setSetupData((prev) => ({ ...prev!, backupCodes: newCodes }));
+      setGeneratedCodes(newCodes);
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleRegenerateBackupCodes
+          .success
+      );
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          accountTwoFactorTranslate[lang].functions.handleRegenerateBackupCodes
+            .failed
+      );
     }
   };
 
   // Audit Logs
   const loadAuditLogs = async () => {
     try {
-      const { data } = await api.get("/auth/2fa/audit");
-      setAuditLogs(data.logs);
-    } catch (error: any) {
-      toast.error("Failed to load audit logs");
+      const {
+        data: { logs },
+      } = await api.get("/auth/2fa/audit");
+      setAuditLogs(logs);
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          accountTwoFactorTranslate[lang].functions.handleLoadAuditLogs.failed
+      );
     }
   };
   const onComplete = async () => {
-    setView("main");
-    await update({
-      ...session,
-      user: { ...session?.user, isTwoFactorAuthEnabled: true },
-    });
-    toast.success("2FA enabled successfully!");
+    try {
+      setView("main");
+      await update({
+        ...session,
+        user: { ...session?.user, isTwoFactorAuthEnabled: true },
+      });
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleEnable2FA.success
+      );
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message ||
+          accountTwoFactorTranslate[lang].functions.handleEnable2FA.failed
+      );
+    }
   };
   return (
     <div className="max-w-4xl lg:w-full #mx-auto p-6 bg-white rounded-xl shadow-lg">
       <div className="flex items-center gap-3 mb-6">
         <RiShieldUserLine className="w-6 h-6 text-blue-600" />
         <h1 className="text-2xl font-bold text-gray-800">
-          Two-Factor Authentication
+          {accountTwoFactorTranslate[lang].title}
         </h1>
       </div>
 
@@ -131,9 +175,7 @@ const TwoFactorAuthDashboard = () => {
         <div className="space-y-6">
           <div className="p-4 bg-blue-50 rounded-lg">
             <p className="text-gray-600">
-              Add an extra layer of security to your account. When enabled,
-              you'll need to enter both your password and an authentication code
-              to sign in.
+              {accountTwoFactorTranslate[lang].description}
             </p>
           </div>
           <button
@@ -141,7 +183,10 @@ const TwoFactorAuthDashboard = () => {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50"
           >
-            {loading ? "Initializing..." : "Enable 2FA"}
+            {loading
+              ? accountTwoFactorTranslate[lang].functions.handleEnable2FA
+                  .loading
+              : accountTwoFactorTranslate[lang].functions.handleEnable2FA.label}
           </button>
         </div>
       ) : (
@@ -149,9 +194,11 @@ const TwoFactorAuthDashboard = () => {
           {/* Main Security Dashboard */}
           {view === "main" && (
             <SecurityDashboard
-              onViewRecovery={() => setView("recovery")}
-              onViewAudit={() => {
-                loadAuditLogs();
+              onViewRecovery={() => {
+                setView("recovery");
+              }}
+              onViewAudit={async () => {
+                await loadAuditLogs();
                 setView("audit");
               }}
               onDisable={handleDisable2FA}
@@ -160,35 +207,44 @@ const TwoFactorAuthDashboard = () => {
           )}
 
           {/* 2FA Setup Flow */}
-          {view === "setup" && setupData && (
+          {view === "setup" && setupData ? (
             <SetupFlow
               setupData={setupData}
               onVerify={verify2FAToken}
-              onBack={() => setView("main")}
+              onBack={() => {
+                setView("main");
+              }}
               loading={loading}
             />
-          )}
+          ) : null}
 
           {/* Backup Codes Display */}
-          {view === "backup" && setupData?.backupCodes && (
+          {view === "backup" && setupData?.backupCodes ? (
             <BackupCodesDisplay
               codes={setupData.backupCodes}
-              onComplete={() => onComplete()}
+              onComplete={() => void onComplete()}
             />
-          )}
+          ) : null}
 
           {/* Recovery Code Management */}
           {view === "recovery" && (
             <RecoveryManagement
               onRegenerate={regenerateBackupCodes}
-              onBack={() => setView("main")}
+              onBack={() => {
+                setView("main");
+              }}
               generatedCodes={generatedCodes}
             />
           )}
 
           {/* Audit Log Viewer */}
           {view === "audit" && (
-            <AuditLogViewer logs={auditLogs} onClose={() => setView("main")} />
+            <AuditLogViewer
+              logs={auditLogs}
+              onClose={() => {
+                setView("main");
+              }}
+            />
           )}
         </div>
       )}

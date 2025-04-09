@@ -1,16 +1,17 @@
-import Image from "next/image";
+import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useState } from "react";
 import StarRatings from "react-star-ratings";
-import { motion } from "framer-motion";
+
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
+import type { ReviewsType } from "@/app/lib/types/reviews.types";
+import type { UserAuthType } from "@/app/lib/types/users.types";
 import api from "@/app/lib/utilities/api";
 // import CustomButton from "@/components/button/button";
-import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 import { lang } from "@/app/lib/utilities/lang";
-import type { UserAuthType } from "@/app/lib/types/users.types";
-import type { ReviewsType } from "@/app/lib/types/reviews.types";
+import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 
 const CreateReview = dynamic(
   () => import("./createReview")
@@ -50,9 +51,16 @@ const ReviewSection = ({
     try {
       setLoading(true);
       const newPage = page + 1;
-      const { data } = await api.get(
-        `/customers/reviews/${productId}/?page=${newPage}`
-      );
+      const {
+        data,
+      }: {
+        data: {
+          docs: ReviewsType[];
+          meta: {
+            hasNext: boolean;
+          };
+        };
+      } = await api.get(`/customers/reviews/${productId}/?page=${newPage}`);
       setMoreResults((prev) => [...prev, ...data.docs]);
       setPage(newPage);
       setShowMore(data.meta.hasNext);
@@ -150,7 +158,7 @@ const ReviewSection = ({
               >
                 <div className="flex gap-4 items-start">
                   <Image
-                    src={"/users/cat.png"}
+                    src="/users/cat.png"
                     // src={review.userId?.avatar || "/users/default-avatar.svg"}
                     width={48}
                     height={48}
@@ -187,7 +195,7 @@ const ReviewSection = ({
         )}
 
         {/* Load More Button */}
-        {showMore && (
+        {showMore ? (
           <div className="mt-8 flex justify-center">
             <button
               onClick={getMoreResults}
@@ -204,18 +212,18 @@ const ReviewSection = ({
               )}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Create Review */}
-      {user?.email && (
+      {user?.email ? (
         <div className="sticky bottom-6 bg-white p-6 rounded-xl shadow-lg">
           <CreateReview
             productId={productId}
             reviewsLength={moreResults.length}
           />
         </div>
-      )}
+      ) : null}
     </section>
   );
 };

@@ -1,5 +1,6 @@
-import { Document, Model, model, models, Schema } from "mongoose";
-import type { IUser } from "./User.model";
+import { Schema, model, models, type Document, type Model } from "mongoose";
+
+import _UserModel, { type IUser } from "./User.model";
 // Enhanced Type Definitions
 export interface SecurityMetadata {
   ipAddress: string;

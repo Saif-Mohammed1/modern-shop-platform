@@ -1,11 +1,15 @@
 "use client";
+
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
-import api from "../../app/lib/utilities/api";
+
 import type { Event } from "@/app/lib/types/products.types";
-import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
 import { lang } from "@/app/lib/utilities/lang";
+import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
+
+import api from "../../app/lib/utilities/api";
+
 type EditableFields = "name" | "email" | "phone";
 type FormDataType = {
   name: string;
@@ -74,10 +78,15 @@ const AccountDashboard = () => {
   const handleApplyChanges = async () => {
     let loadingToast;
     let updatedData: Partial<FormDataType> = {};
+    if (!session?.user) {
+      toast.error(accountDashboardTranslate[lang].errors.global);
+      return;
+    }
     if (changesApplied) {
       Object.entries(formData).forEach(([key, value]) => {
-        if (formData[key as Field] !== session?.user[key as Field]) {
-          updatedData[key as Field] = value;
+        const keyType = key as Field;
+        if (session?.user && formData[keyType] !== session?.user[keyType]) {
+          updatedData[keyType] = value;
         }
       });
 
@@ -182,6 +191,10 @@ const AccountDashboard = () => {
 
   const handleVerifyToken = async () => {
     let loadingToast;
+    if (!session?.user) {
+      toast.error(accountDashboardTranslate[lang].errors.global);
+      return;
+    }
     try {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleVerifyToken.loading
@@ -271,7 +284,9 @@ const AccountDashboard = () => {
         <div className="flex items-center justify-between">
           <span>{userData.name}</span>
           <button
-            onClick={() => handleEditClick("name")}
+            onClick={() => {
+              handleEditClick("name");
+            }}
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
             {isEditing.name
@@ -279,7 +294,7 @@ const AccountDashboard = () => {
               : accountDashboardTranslate[lang].button.isEdit.edit}
           </button>
         </div>
-        {isEditing.name && (
+        {isEditing.name ? (
           <div className="mt-2">
             <input
               type="text"
@@ -292,13 +307,15 @@ const AccountDashboard = () => {
               className="border rounded px-3 py-2 w-full mt-1"
             />
             <button
-              onClick={() => handleSave("name")}
+              onClick={() => {
+                handleSave("name");
+              }}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               {accountDashboardTranslate[lang].button.save}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Email Field */}
@@ -320,7 +337,9 @@ const AccountDashboard = () => {
             )}
           </span>
           <button
-            onClick={() => handleEditClick("email")}
+            onClick={() => {
+              handleEditClick("email");
+            }}
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
             {isEditing.email
@@ -328,13 +347,15 @@ const AccountDashboard = () => {
               : accountDashboardTranslate[lang].button.isEdit.edit}
           </button>
         </div>
-        {isEditing.email && (
+        {isEditing.email ? (
           <div className="mt-2">
             <input
               type="email"
               name="email"
               value={changeEmail}
-              onChange={(e) => setChangeEmail(e.target.value)}
+              onChange={(e) => {
+                setChangeEmail(e.target.value);
+              }}
               placeholder={
                 accountDashboardTranslate[lang].form.email.placeholder
               }
@@ -347,7 +368,7 @@ const AccountDashboard = () => {
               {accountDashboardTranslate[lang].button.update}
             </button>
           </div>
-        )}
+        ) : null}
         {!userData.emailVerify && (
           <div className="mt-4">
             <button
@@ -358,7 +379,7 @@ const AccountDashboard = () => {
             </button>
           </div>
         )}
-        {showTokenField && (
+        {showTokenField ? (
           <div className="mt-4">
             <label>
               {accountDashboardTranslate[lang].form.verificationToken.label}:
@@ -366,7 +387,9 @@ const AccountDashboard = () => {
             <input
               type="text"
               value={verificationToken}
-              onChange={(e) => setVerificationToken(e.target.value)}
+              onChange={(e) => {
+                setVerificationToken(e.target.value);
+              }}
               placeholder={
                 accountDashboardTranslate[lang].form.verificationToken
                   .placeholder
@@ -380,7 +403,7 @@ const AccountDashboard = () => {
               {accountDashboardTranslate[lang].button.verifyEmail}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Mobile Field */}
@@ -391,7 +414,9 @@ const AccountDashboard = () => {
         <div className="flex items-center justify-between">
           <span>{userData.phone || "*********"}</span>
           <button
-            onClick={() => handleEditClick("phone")}
+            onClick={() => {
+              handleEditClick("phone");
+            }}
             className="text-blue-500 hover:text-blue-700 font-medium"
           >
             {isEditing.phone
@@ -399,7 +424,7 @@ const AccountDashboard = () => {
               : accountDashboardTranslate[lang].button.isEdit.edit}
           </button>
         </div>
-        {isEditing.phone && (
+        {isEditing.phone ? (
           <div className="mt-2">
             {/* <input
               type="text"
@@ -423,13 +448,15 @@ const AccountDashboard = () => {
               pattern="[0-9]{10}"
             />
             <button
-              onClick={() => handleSave("phone")}
+              onClick={() => {
+                handleSave("phone");
+              }}
               className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               {accountDashboardTranslate[lang].button.save}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
       <div className="mt-6 space-y-4">
         <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
@@ -445,7 +472,7 @@ const AccountDashboard = () => {
             <input
               type="checkbox"
               checked={session?.user?.loginNotificationSent}
-              onChange={handleNotificationToggle}
+              onChange={() => void handleNotificationToggle}
               className={`sr-only ${session?.user?.loginNotificationSent ? "peer-checked:bg-blue-500" : ""}`}
             />
             <div

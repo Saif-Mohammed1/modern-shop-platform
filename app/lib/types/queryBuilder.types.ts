@@ -1,4 +1,4 @@
-import type { FilterQuery } from "mongoose";
+import type {FilterQuery} from 'mongoose';
 
 export interface PaginationMeta {
   total: number;
@@ -32,15 +32,7 @@ export interface QueryBuilderConfig<T> {
   excludeFields?: (keyof T)[];
 }
 
-export type Operator =
-  | "gt"
-  | "gte"
-  | "lt"
-  | "lte"
-  | "ne"
-  | "in"
-  | "nin"
-  | "regex";
+export type Operator = 'gt' | 'gte' | 'lt' | 'lte' | 'ne' | 'in' | 'nin' | 'regex';
 export interface QueryOptionConfig {
   query: URLSearchParams;
   // query?: Record<string, any>;

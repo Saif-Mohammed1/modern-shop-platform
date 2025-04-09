@@ -1,4 +1,5 @@
 // wishlist.repository.ts
+import type { Model, ClientSession } from "mongoose";
 
 import type {
   QueryBuilderConfig,
@@ -6,9 +7,10 @@ import type {
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { type ClientSession, Model } from "mongoose";
-import { BaseRepository } from "./BaseRepository";
+
 import type { IWishlist } from "../models/Wishlist.model";
+
+import { BaseRepository } from "./BaseRepository";
 
 export class WishlistRepository extends BaseRepository<IWishlist> {
   constructor(model: Model<IWishlist>) {

@@ -1,13 +1,15 @@
+import { type FC, useState } from "react";
 import { AiOutlineShoppingCart } from "react-icons/ai";
-
 import { VscAccount } from "react-icons/vsc";
 
-import AccountNavList from "./account-navList";
+import { type CartItemsType } from "@/app/lib/types/cart.types";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
+
 import { lang } from "../../app/lib/utilities/lang";
 import { useUser } from "../providers/context/user/user.context";
-import { type FC, useState } from "react";
-import { type CartItemsType } from "@/app/lib/types/cart.types";
+
+import AccountNavList from "./account-navList";
+
 type Props = {
   cartItems: CartItemsType[];
   toggleCart: () => void;
@@ -28,7 +30,9 @@ const AccountDropdown: FC<Props> = ({ cartItems, toggleCart }) => {
         <div className="flex items-center cursor-pointer">
           <div
             className="flex items-center "
-            onMouseEnter={() => setAccountMenuOpen(true)}
+            onMouseEnter={() => {
+              setAccountMenuOpen(true);
+            }}
           >
             <VscAccount className="text-2xl" />
             <span className="ml-2">{navBarTranslate[lang].navBar.account}</span>
@@ -37,7 +41,7 @@ const AccountDropdown: FC<Props> = ({ cartItems, toggleCart }) => {
             </span>
           </div>
 
-          <div
+          <button
             className="relative flex items-center cursor-pointer shopping-cart"
             onClick={toggleCart}
           >
@@ -47,13 +51,13 @@ const AccountDropdown: FC<Props> = ({ cartItems, toggleCart }) => {
                 {cartItems?.length}
               </span>
             )}
-          </div>
+          </button>
         </div>
 
         {/* Dropdown Menu */}
-        {accountMenuOpen && (
+        {accountMenuOpen ? (
           <AccountNavList user={user} setAccountMenuOpen={setAccountMenuOpen} />
-        )}
+        ) : null}
       </div>
     </>
   );

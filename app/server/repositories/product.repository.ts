@@ -1,16 +1,19 @@
 // product.repository.ts
+import type { Model, ClientSession } from "mongoose";
+
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
-import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-import { type ClientSession, Model } from "mongoose";
-import { BaseRepository } from "./BaseRepository";
-import type { IProduct } from "../models/Product.model";
-import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
 import { generateSKU } from "@/app/lib/utilities/helpers";
+import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+
+import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
+import type { IProduct } from "../models/Product.model";
 import ReviewModel from "../models/Review.model";
+
+import { BaseRepository } from "./BaseRepository";
 
 export class ProductRepository extends BaseRepository<IProduct> {
   constructor(model: Model<IProduct>) {
@@ -169,8 +172,12 @@ export class ProductRepository extends BaseRepository<IProduct> {
   async getCategoryList(): Promise<string[]> {
     return await this.model.distinct("category");
   }
-  async getTopOffersAndNewProducts() {
-    return await this.model.aggregate([
+  async getTopOffersAndNewProducts(): Promise<{
+    topOfferProducts: IProduct[];
+    newProducts: IProduct[];
+    topRating: IProduct[];
+  }> {
+    const result = await this.model.aggregate([
       {
         $facet: {
           // Top Offer Products - Sorted by highest discount and rating, filtered by stock and minimum rating
@@ -179,11 +186,10 @@ export class ProductRepository extends BaseRepository<IProduct> {
               $match: {
                 discount: { $gt: 0 }, // Ensure there's a discount
                 stock: { $gt: 0 }, // Ensure the product is in stock
-                // ratingsAverage: { $gte: .0 }, // Minimum rating of 4.0
               },
             },
             {
-              $sort: { discount: -1 }, //ratingsAverage: -1 }, // Sort by discount first, then rating
+              $sort: { discount: -1 }, // Sort by discount first
             },
             {
               $limit: 20, // Limit to top 20 offer products
@@ -194,11 +200,10 @@ export class ProductRepository extends BaseRepository<IProduct> {
             {
               $match: {
                 stock: { $gt: 0 }, // Only show products in stock
-                // ratingsAverage: { $gte: 4.0 }, // Optional: Minimum rating of 4.0
               },
             },
             {
-              $sort: { createdAt: -1 }, //ratingsAverage: -1 }, // Sort by creation date, then rating
+              $sort: { createdAt: -1 }, // Sort by creation date
             },
             {
               $limit: 20, // Limit to 20 new products
@@ -222,5 +227,11 @@ export class ProductRepository extends BaseRepository<IProduct> {
         },
       },
     ]);
+
+    return result[0] as {
+      topOfferProducts: IProduct[];
+      newProducts: IProduct[];
+      topRating: IProduct[];
+    };
   }
 }

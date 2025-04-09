@@ -1,11 +1,14 @@
 "use client";
-import { accountReviewsTranslate } from "@/public/locales/client/(auth)/account/reviewsTranslate";
+
+import Link from "next/link";
 import { useState } from "react";
+
+import type { ReviewsType } from "@/app/lib/types/reviews.types";
 import { lang } from "@/app/lib/utilities/lang";
+import { accountReviewsTranslate } from "@/public/locales/client/(auth)/account/reviewsTranslate";
+
 import api from "../../app/lib/utilities/api";
 import CustomButton from "../button/button";
-import Link from "next/link";
-import type { ReviewsType } from "@/app/lib/types/reviews.types";
 
 const ReviewHistory = ({
   reviewsList,
@@ -23,15 +26,25 @@ const ReviewHistory = ({
     try {
       setLoading(true);
       const newPage = page + 1;
-      const { data } = await api.get(`/customers/reviews?page=${newPage}`);
+      const {
+        data,
+      }: {
+        data: {
+          docs: ReviewsType[];
+          meta: {
+            hasNext: boolean;
+          };
+        };
+      } = await api.get(`/customers/reviews?page=${newPage}`);
       setMoreResults([...moreResults, ...data.docs]);
       setPage(newPage);
       setShowMore(data.meta.hasNext);
-    } catch (error) {
+    } catch (_error) {
       return null;
     } finally {
       setLoading(false);
     }
+    return null;
   };
   // const [error, setError] = useState(null);
 
@@ -108,7 +121,7 @@ const ReviewHistory = ({
             </div>{" "}
             <CustomButton
               showMore={showMore}
-              getMoreResults={getMoreResults}
+              getMoreResults={() => void getMoreResults()}
               loading={loading}
             />
           </>

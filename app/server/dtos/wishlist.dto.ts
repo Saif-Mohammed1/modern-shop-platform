@@ -1,5 +1,6 @@
-import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { z } from "zod";
+import {z} from 'zod';
+
+import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
 
 export class WishlistValidation {
   static createWishlistSchema = z.object({
@@ -11,6 +12,4 @@ export class WishlistValidation {
   };
 }
 
-export type CreateWishlistDTO = z.infer<
-  typeof WishlistValidation.createWishlistSchema
->;
+export type CreateWishlistDTO = z.infer<typeof WishlistValidation.createWishlistSchema>;

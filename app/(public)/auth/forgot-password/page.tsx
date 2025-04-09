@@ -1,7 +1,8 @@
-import { forgetPasswordTranslate } from "@/public/locales/client/(public)/auth/forgetPasswordTranslate";
-import ForgotPasswordPage from "@/components/authentication/forgetPassword";
-import { lang } from "@/app/lib/utilities/lang";
-import type { Metadata } from "next";
+import type {Metadata} from 'next';
+
+import {lang} from '@/app/lib/utilities/lang';
+import ForgotPasswordPage from '@/components/authentication/forgetPassword';
+import {forgetPasswordTranslate} from '@/public/locales/client/(public)/auth/forgetPasswordTranslate';
 
 export const metadata: Metadata = {
   title: forgetPasswordTranslate[lang].metadata.title,

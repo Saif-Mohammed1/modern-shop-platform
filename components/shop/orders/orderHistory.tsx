@@ -1,7 +1,8 @@
-import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
-import { lang } from "@/app/lib/utilities/lang";
 import Link from "next/link";
+
 import type { OrderType } from "@/app/lib/types/orders.types";
+import { lang } from "@/app/lib/utilities/lang";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 
 const OrderHistory = ({ ordersList }: { ordersList: OrderType[] }) => {
   return (
@@ -26,7 +27,7 @@ const OrderHistory = ({ ordersList }: { ordersList: OrderType[] }) => {
                 </strong>{" "}
                 {order.status}
               </p>
-              <p className="mb-2">
+              <div className="mb-2">
                 <strong>
                   {
                     accountOrdersTranslate[lang].orderHistory.order.products
@@ -54,7 +55,7 @@ const OrderHistory = ({ ordersList }: { ordersList: OrderType[] }) => {
                     </li>
                   ))}
                 </ul>
-              </p>
+              </div>
               <p className="mb-2">
                 <strong>
                   {

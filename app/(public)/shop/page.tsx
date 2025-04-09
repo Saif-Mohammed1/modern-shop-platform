@@ -1,11 +1,12 @@
-import Shop from "@/components/shop/shop";
-import api from "@/app/lib/utilities/api";
-import AppError from "@/app/lib/utilities/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+import { headers } from "next/headers";
+
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+import ErrorHandler from "@/components/Error/errorHandler";
+import Shop from "@/components/shop/shop";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 
 export const metadata: Metadata = {
@@ -63,26 +64,23 @@ const queryParams = async (searchParams: SearchParams) => {
   // }
 
   const queryString = url.toString();
-  try {
-    const {
-      data: {
-        products: { docs, meta, links },
-        categories,
-      },
-    } = await api.get("/shop/" + (queryString ? `?${queryString}` : ""), {
-      headers: Object.fromEntries((await headers()).entries()), // convert headers to object
-    });
-    return {
-      docs,
-      pagination: {
-        meta,
-        links,
-      },
+
+  const {
+    data: {
+      products: { docs, meta, links },
       categories,
-    };
-  } catch (error: any) {
-    throw new AppError(error.message, error.status);
-  }
+    },
+  } = await api.get(`/shop/${queryString ? `?${queryString}` : ""}`, {
+    headers: Object.fromEntries((await headers()).entries()), // convert headers to object
+  });
+  return {
+    docs,
+    pagination: {
+      meta,
+      links,
+    },
+    categories,
+  };
 };
 
 const page = async (props: { searchParams: Promise<SearchParams> }) => {
@@ -116,10 +114,9 @@ const page = async (props: { searchParams: Promise<SearchParams> }) => {
         }
       />
     );
-  } catch (error: any) {
-    return <ErrorHandler message={error.message} />;
-
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 

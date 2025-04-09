@@ -1,19 +1,23 @@
 // components/OrdersOverview.tsx
+import type { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
+
+import type { DashboardDataApi } from "@/app/lib/types/dashboard.types";
+
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-export function OrdersOverview({ data }: { data: any }) {
-  const weeklyGrowth = data.weeklyGrowth;
-  const chartOptions: ApexCharts.ApexOptions = {
+export function OrdersOverview({ data }: { data: DashboardDataApi["orders"] }) {
+  const { weeklyGrowth } = data;
+  const chartOptions: ApexOptions = {
     chart: { type: "line" },
-    xaxis: { categories: weeklyGrowth.map((w: any) => w.label) },
+    xaxis: { categories: weeklyGrowth.map((w) => w.label) },
     yaxis: { title: { text: "Orders" } },
   };
 
   const chartSeries = [
     {
       name: "Orders",
-      data: weeklyGrowth.map((w: any) => w.currentOrders),
+      data: weeklyGrowth.map((w) => w.currentOrders),
     },
   ];
 
@@ -32,7 +36,7 @@ export function OrdersOverview({ data }: { data: any }) {
         <div>
           <h3 className="text-lg font-medium mb-4">Top Products</h3>
           <div className="space-y-4">
-            {data.topProducts.map((product: any) => (
+            {data.topProducts.map((product) => (
               <div
                 key={product.productId}
                 className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"

@@ -1,4 +1,14 @@
-import type { IOrder } from "@/app/server/models/Order.model";
+import type { Types } from "mongoose";
+
+import type { OrderType } from "./orders.types";
+interface FrequentlyProductsPurchased {
+  _id: string;
+  count: number;
+  productId: string;
+  name: string;
+  category: string;
+  price: number;
+}
 interface UserAnalytics {
   totalUsers: number;
   activeUsers: number;
@@ -24,7 +34,7 @@ interface UserAnalytics {
       count: number;
       device: string;
       os: string;
-      browser: string;
+      // browser: string;
       // device: "Desktop" | "Mobile" | "Tablet" | "Unknown";
       // os:
       //   | "Windows"
@@ -61,7 +71,7 @@ interface UserAnalytics {
       passwordResetAttempts: number;
     };
 
-    trends: [{ date: string; attempts: number; successRate: string }];
+    trends: Array<{ date: string; attempts: number; successRate: string }>;
   };
   deviceDiversity: {
     totalDevices: number;
@@ -186,7 +196,7 @@ interface OrderAnalytics {
     orderCount: number;
     revenue: number;
   }>;
-  recentOrders: IOrder[];
+  recentOrders: OrderType[];
   weeklyGrowth: Array<{
     label: string;
     orderGrowth: number;
@@ -251,6 +261,12 @@ interface RefundAnalytics {
     currentAmount: number;
     currentCount: number;
   }>;
+  highRiskRefunds: { count: number };
+  financialImpact: {
+    totalRefunded: number;
+    avgRefund: number;
+    maxRefund: number;
+  };
   // weeklyGrowth: Array<{
   //   week: string;
   //   year: number;
@@ -279,7 +295,7 @@ interface UserInterestProducts {
     }>;
   };
   conversionMetrics: Array<{
-    productId: string;
+    productId: Types.ObjectId;
     weeks: {
       week: number;
       cartAdds: number;
@@ -299,15 +315,8 @@ interface UserInterestProducts {
     }[];
   };
 }
-interface FrequentlyProductsPurchased {
-  _id: string;
-  count: number;
-  productId: string;
-  name: string;
-  category: string;
-  price: number;
-}
-export interface DashboardData {
+
+export interface DashboardDataApi {
   users: UserAnalytics;
   orders: OrderAnalytics;
   products: ProductAnalytics;
@@ -319,7 +328,7 @@ export interface DashboardData {
   userInterestProducts: UserInterestProducts;
 }
 
-// export interface DashboardData {
+// export interface DashboardDataApi {
 //   users: {
 //     total: number;
 //     growthPercentage: number;

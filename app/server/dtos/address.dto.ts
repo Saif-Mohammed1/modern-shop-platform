@@ -1,14 +1,15 @@
-import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { lang } from "@/app/lib/utilities/lang";
-import { AddressTranslate } from "@/public/locales/server/Address.Translate";
-import { z } from "zod";
+import {z} from 'zod';
+
+import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import {lang} from '@/app/lib/utilities/lang';
+import {AddressTranslate} from '@/public/locales/server/Address.Translate';
 
 const phoneRegex = /^\+380\d{9}$/;
 export class AddressValidation {
   static CreateAddressDto = z.object({
     userId: zObjectId,
     street: z
-      .string({ required_error: AddressTranslate[lang].street.required })
+      .string({required_error: AddressTranslate[lang].street.required})
       .trim()
       .min(1, AddressTranslate[lang].street.required),
     city: z
@@ -60,9 +61,5 @@ export class AddressValidation {
   }
 }
 
-export type CreateAddressDtoType = z.infer<
-  typeof AddressValidation.CreateAddressDto
->;
-export type UpdateAddressDtoType = z.infer<
-  typeof AddressValidation.UpdateAddressDto
->;
+export type CreateAddressDtoType = z.infer<typeof AddressValidation.CreateAddressDto>;
+export type UpdateAddressDtoType = z.infer<typeof AddressValidation.UpdateAddressDto>;

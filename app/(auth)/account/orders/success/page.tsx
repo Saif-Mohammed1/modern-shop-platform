@@ -1,12 +1,14 @@
-export const dynamic = "force-dynamic";
-import OrderCompleted from "@/components/shop/orders/orderCompletedPrushers";
-import api from "@/app/lib/utilities/api";
-// import AppError from "@/components/util/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
+import { headers } from "next/headers";
+
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+import ErrorHandler from "@/components/Error/errorHandler";
+import OrderCompleted from "@/components/shop/orders/orderCompletedPrushers";
+import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
+
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: accountOrdersTranslate[lang].orderCompleted.metadata.title,
   description: accountOrdersTranslate[lang].orderCompleted.metadata.description,
@@ -19,8 +21,9 @@ const page = async () => {
     });
 
     return <OrderCompleted order={data} />;
-  } catch (error: any) {
-    return <ErrorHandler message={error?.message} />;
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
 
     // throw new AppError(error.message, error.status);
   }

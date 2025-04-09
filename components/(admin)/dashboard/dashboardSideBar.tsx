@@ -1,25 +1,24 @@
 "use client";
 
-import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
+// components/Sidebar.js
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { type FC, Fragment, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import {
+  FaChartBar,
+  FaHome,
+  FaShoppingCart,
+  FaSignOutAlt,
+  FaUser,
+} from "react-icons/fa";
+
 import api from "@/app/lib/utilities/api";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
-import { signOut } from "next-auth/react";
-// components/Sidebar.js
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { type FC, useEffect, useState } from "react";
-import toast from "react-hot-toast";
-// import { useState } from "react";
-// import { useRouter } from "next/navigation";
-
-import {
-  FaHome,
-  FaUser,
-  FaShoppingCart,
-  FaChartBar,
-  FaSignOutAlt,
-} from "react-icons/fa";
+import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
 
 const Sidebar: FC = () => {
   const Links = [
@@ -73,8 +72,11 @@ const Sidebar: FC = () => {
       await api.post("/auth/logout");
 
       toast.success("Logged out successfully");
-    } catch (error: any) {
-      toast.error(error?.message || "Something went wrong");
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error).message ||
+          dashboardTranslate.metadata[lang].errors.global
+      );
     } finally {
       toast.dismiss(toastLoading);
     }
@@ -116,9 +118,9 @@ const Sidebar: FC = () => {
           </h1>
           <nav>
             <ul>
-              {Links.map((link, index) => (
-                <>
-                  <li key={index} className="mb-4">
+              {Links.map((link) => (
+                <Fragment key={link.href}>
+                  <li className="mb-4">
                     <Link
                       href={link.href}
                       className={`flex items-center justify-between p-3
@@ -147,7 +149,7 @@ const Sidebar: FC = () => {
                       </svg>
                     </Link>
                   </li>
-                </>
+                </Fragment>
               ))}{" "}
               <li>
                 <button

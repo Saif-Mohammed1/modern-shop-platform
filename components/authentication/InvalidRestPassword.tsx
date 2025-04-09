@@ -1,12 +1,10 @@
 // import type{ FC } from "react";
 // import { lang } from "@/app/lib/utilities/lang";
 // import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
-
 // type InvalidRestPasswordProps = {
 //   email: string;
 //   message?: string;
 // };
-
 // const InvalidRestPassword: FC<InvalidRestPasswordProps> = ({
 //   email,
 //   message,
@@ -19,7 +17,6 @@
 //       {/* <p className="text-sm text-gray-600 mb-4 text-center">
 //         {resetPasswordTranslate[lang].form.description}
 //       </p> */}
-
 //       <div className="w-full">
 //         {/* <label className="block text-sm font-medium text-gray-700 mb-1">
 //           {resetPasswordTranslate[lang].form.emailLabel}
@@ -31,7 +28,6 @@
 //           readOnly
 //         />
 //       </div>
-
 //       {message && (
 //         <span
 //           className="mt-3 text-sm text-red-600 font-medium"
@@ -43,22 +39,19 @@
 //     </div>
 //   );
 // };
-
 // export default InvalidRestPassword;
-import { lang } from "@/app/lib/utilities/lang";
-import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
-import type { FC } from "react";
-import { FaExclamationTriangle } from "react-icons/fa";
+import type {FC} from 'react';
+import {FaExclamationTriangle} from 'react-icons/fa';
+
+import {lang} from '@/app/lib/utilities/lang';
+import {resetPasswordTranslate} from '@/public/locales/client/(public)/auth/resetPasswordTranslate';
 
 type InvalidResetPasswordProps = {
   email: string;
   message: string;
 };
 
-const InvalidResetPassword: FC<InvalidResetPasswordProps> = ({
-  email,
-  message,
-}) => {
+const InvalidResetPassword: FC<InvalidResetPasswordProps> = ({email, message}) => {
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
       <div className="text-center space-y-2">
@@ -66,9 +59,7 @@ const InvalidResetPassword: FC<InvalidResetPasswordProps> = ({
         <h2 className="text-3xl font-bold text-gray-900">
           {resetPasswordTranslate[lang].invalidRestToken.title}
         </h2>
-        <p className="text-gray-500">
-          {resetPasswordTranslate[lang].invalidRestToken.subtitle}
-        </p>
+        <p className="text-gray-500">{resetPasswordTranslate[lang].invalidRestToken.subtitle}</p>
       </div>
 
       <div className="space-y-4">
@@ -81,12 +72,10 @@ const InvalidResetPassword: FC<InvalidResetPasswordProps> = ({
           </div>
         </div>
 
-        {message && (
-          <div className="flex items-start p-4 bg-red-50 rounded-lg">
+        {message ? <div className="flex items-start p-4 bg-red-50 rounded-lg">
             <FaExclamationTriangle className="flex-shrink-0 mt-1 text-lg text-red-400" />
             <span className="ml-3 text-sm text-red-700">{message}</span>
-          </div>
-        )}
+          </div> : null}
       </div>
     </div>
   );

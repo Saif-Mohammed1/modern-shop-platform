@@ -1,14 +1,16 @@
-import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
-import { lang } from "@/app/lib/utilities/lang";
-import { AddressTranslate } from "@/public/locales/server/Address.Translate";
-import { CartTranslate } from "@/public/locales/server/Cart.Translate";
-import { z } from "zod";
+import {z} from 'zod';
+
+import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import {lang} from '@/app/lib/utilities/lang';
+import {AddressTranslate} from '@/public/locales/server/Address.Translate';
+import {CartTranslate} from '@/public/locales/server/Cart.Translate';
+
 const phoneRegex = /^\+380\d{9}$/;
 
 export class StripeValidation {
   static ShippingInfoSchema = z.object({
     street: z
-      .string({ required_error: AddressTranslate[lang].street.required })
+      .string({required_error: AddressTranslate[lang].street.required})
       .trim()
       .min(1, AddressTranslate[lang].street.required),
     city: z
@@ -58,7 +60,7 @@ export class StripeValidation {
           message: CartTranslate[lang].dto.quantity.min,
         })
         .default(1),
-    })
+    }),
   );
   static StripeSessionSchema = z.object({
     shippingInfo: this.ShippingInfoSchema,
@@ -74,12 +76,6 @@ export class StripeValidation {
     return this.StripeProductItemSchema.parse(data);
   }
 }
-export type ShippingInfoDto = z.infer<
-  typeof StripeValidation.ShippingInfoSchema
->;
-export type StripeProductItemDto = z.infer<
-  typeof StripeValidation.StripeProductItemSchema
->;
-export type StripeSessionDto = z.infer<
-  typeof StripeValidation.StripeSessionSchema
->;
+export type ShippingInfoDto = z.infer<typeof StripeValidation.ShippingInfoSchema>;
+export type StripeProductItemDto = z.infer<typeof StripeValidation.StripeProductItemSchema>;
+export type StripeSessionDto = z.infer<typeof StripeValidation.StripeSessionSchema>;

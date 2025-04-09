@@ -1,10 +1,13 @@
 "use client";
-import { useRouter } from "next/navigation";
+
 import Lottie from "lottie-react";
-import notFoundAnimation from "/public/animations/notFound.json"; // You need a Lottie animation JSON file
 import Link from "next/link";
-import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
+import { useRouter } from "next/navigation";
+
 import { lang } from "@/app/lib/utilities/lang";
+import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
+
+import notFoundAnimation from "/public/animations/notFound.json";
 
 const NotFoundComponent = () => {
   const router = useRouter();
@@ -46,7 +49,7 @@ const NotFoundComponent = () => {
 
       {/* Go Back Button */}
       <button
-        onClick={() => router.back()}
+        onClick={() => { router.back(); }}
         className="mt-8 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
       >
         {rootStaticPagesTranslate[lang].notFound.button.goBack}

@@ -1,24 +1,26 @@
-import type {
-  QueryBuilderConfig,
-  QueryBuilderResult,
-  QueryOptionConfig,
-} from "@/app/lib/types/queryBuilder.types";
-import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
-import ProductModel, { type IProduct } from "../models/Product.model";
-import { ProductRepository } from "../repositories/product.repository";
-import AppError from "@/app/lib/utilities/appError";
-import { productControllerTranslate } from "@/public/locales/server/productControllerTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { destroyImage, uploadImage } from "@/app/lib/utilities/cloudinary";
-import AuditLogModel, { type IAuditLog } from "../models/audit-log.model";
-import { type ClientSession, Types } from "mongoose";
+import type { Types, ClientSession } from "mongoose";
+
 import {
   AuditAction,
   AuditSource,
   EntityType,
 } from "@/app/lib/types/audit.types";
+import type {
+  QueryBuilderConfig,
+  QueryBuilderResult,
+  QueryOptionConfig,
+} from "@/app/lib/types/queryBuilder.types";
+import AppError from "@/app/lib/utilities/appError";
+import { destroyImage, uploadImage } from "@/app/lib/utilities/cloudinary";
+import { lang } from "@/app/lib/utilities/lang";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+import { productControllerTranslate } from "@/public/locales/server/productControllerTranslate";
+
 import type { LogsTypeDto } from "../dtos/logs.dto";
+import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
+import AuditLogModel, { type IAuditLog } from "../models/audit-log.model";
+import ProductModel, { type IProduct } from "../models/Product.model";
+import { ProductRepository } from "../repositories/product.repository";
 
 export class ProductService {
   constructor(
@@ -140,7 +142,7 @@ export class ProductService {
 
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 
@@ -184,11 +186,12 @@ export class ProductService {
         session
       );
 
-      if (!updatedProduct)
+      if (!updatedProduct) {
         throw new AppError(
           productControllerTranslate[lang].errors.noProductFoundWithId,
           404
         );
+      }
 
       const changes = this.getUpdateChanges(oldProduct, updatedProduct);
       if (Object.keys(changes).length > 0) {
@@ -210,7 +213,7 @@ export class ProductService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 
@@ -267,7 +270,7 @@ export class ProductService {
 
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
   async getProducts(
@@ -387,7 +390,7 @@ export class ProductService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
     // await product.save();
   }
@@ -453,7 +456,6 @@ export class ProductService {
         "entityId",
         "actor",
         "action",
-
         "createdAt",
       ],
 
@@ -470,7 +472,9 @@ export class ProductService {
 
     if (versionId) {
       const targetVersion = await AuditLogModel.findById(versionId);
-      if (!targetVersion) throw new AppError("Invalid version", 400);
+      if (!targetVersion) {
+        throw new AppError("Invalid version", 400);
+      }
       query.append("createAt[lte]", targetVersion.createdAt.toISOString());
     }
     const queryBuilder = new QueryBuilder<IAuditLog>(
@@ -491,7 +495,7 @@ export class ProductService {
   private reconstructProduct(
     logsResult: QueryBuilderResult<IAuditLog>
   ): QueryBuilderResult<IAuditLog> {
-    let product: any = {};
+    let product: Record<string, any> = {};
     const reconstructedVersions: any[] = [];
 
     for (const log of logsResult.docs) {
@@ -511,7 +515,7 @@ export class ProductService {
           break;
 
         case AuditAction.DELETE:
-          product = null;
+          product = {};
           break;
 
         case AuditAction.RESTORE:
@@ -521,14 +525,21 @@ export class ProductService {
         case AuditAction.IMAGE_ADD:
           product.images = product.images || [];
           log.changes.forEach((change) => {
-            product.images.push(change.after);
+            (product.images as Array<{ link: string; public_id: string }>).push(
+              change.after
+            );
           });
           break;
 
         case AuditAction.IMAGE_REMOVE:
-          product.images = (product.images || []).filter(
-            (img: any) =>
-              !log.changes.some((c) => c.before.public_id === img.public_id)
+          product.images = (
+            (product.images as Array<{ link: string; public_id: string }>) || []
+          ).filter(
+            (img) =>
+              !log.changes.some(
+                (c: { before?: { public_id: string } }) =>
+                  c.before && c.before.public_id === img.public_id
+              )
           );
           break;
       }
@@ -622,7 +633,7 @@ export class ProductService {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 }

@@ -1,6 +1,6 @@
 // form-progress.tsx
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
-import { lang } from "@/app/lib/utilities/lang";
+import {lang} from '@/app/lib/utilities/lang';
+import {productsTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/productTranslate';
 
 export default function FormProgress({
   currentStep,
@@ -18,9 +18,7 @@ export default function FormProgress({
         {[...Array(totalSteps)].map((_, i) => (
           <div
             key={i}
-            className={`h-2 flex-1 rounded-full ${
-              i < currentStep ? "bg-blue-500" : "bg-gray-200"
-            }`}
+            className={`h-2 flex-1 rounded-full ${i < currentStep ? 'bg-blue-500' : 'bg-gray-200'}`}
           />
         ))}
       </div>

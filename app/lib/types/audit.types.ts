@@ -1,4 +1,5 @@
 import type { DeviceInfo } from "./session.types";
+
 export enum SecurityAuditAction {
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
   LOGIN_FAILURE = "LOGIN_FAILURE",
@@ -88,6 +89,13 @@ export enum EntityType {
 // audit.types.ts
 export interface AuditLogDetails {
   success: boolean;
-  device?: Partial<DeviceInfo>;
+  device: DeviceInfo;
+  // message: string;
   [key: string]: any; // Additional dynamic details
+}
+export interface ClientAuditLogDetails {
+  details: AuditLogDetails;
+  action: SecurityAuditAction;
+  timestamp: Date;
+  // message: string;
 }

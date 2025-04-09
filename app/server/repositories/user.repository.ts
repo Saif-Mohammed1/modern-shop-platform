@@ -1,29 +1,34 @@
-import { BaseRepository } from "./BaseRepository";
-import { type ClientSession, Model } from "mongoose";
 import crypto from "crypto";
-import type { DeviceInfo } from "@/app/lib/types/session.types";
-import {
-  SecurityAuditAction,
-  type AuditLogDetails,
-} from "@/app/lib/types/audit.types";
-import { TokensService } from "../services/tokens.service";
-import type { IUser } from "../models/User.model";
+
+import type { Model, ClientSession } from "mongoose";
+
 import type {
-  CreateUserByAdminDTO,
-  UpdateUserByAdminDTO,
-  UserCreateDTO,
-} from "../dtos/user.dto";
-import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+  SecurityAuditAction,
+  AuditLogDetails,
+} from "@/app/lib/types/audit.types";
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
 import type { accountAction } from "@/app/lib/types/users.types";
-import { SecurityAlertType } from "@/app/server/services/email.service";
 import AppError from "@/app/lib/utilities/appError";
-import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 import { lang } from "@/app/lib/utilities/lang";
+import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+import type { SecurityAlertType } from "@/app/server/services/email.service";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+
+import type {
+  CreateUserByAdminDTO,
+  UpdateUserByAdminDTO,
+  UserCreateDTO,
+} from "../dtos/user.dto";
+import type { IUser } from "../models/User.model";
+import { TokensService } from "../services/tokens.service";
+
+import { BaseRepository } from "./BaseRepository";
+
 export class UserRepository extends BaseRepository<IUser> {
   private tokensService: TokensService = new TokensService();
   constructor(model: Model<IUser>) {
@@ -42,13 +47,17 @@ export class UserRepository extends BaseRepository<IUser> {
 
   async findUserById(id: string, options?: string): Promise<IUser | null> {
     if (!options) {
-      return await this.model.findById(id).select("+security");
+      return (await this.model
+        .findById(id)
+        .select("+security")) as IUser | null;
     }
-    return await this.model.findById(id).select(options);
+    return (await this.model.findById(id).select(options)) as IUser | null;
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
-    return await this.model.findOne({ email }).select("+password +security");
+    return (await this.model
+      .findOne({ email })
+      .select("+password +security")) as IUser | null;
   }
 
   override async update(
@@ -248,7 +257,7 @@ export class UserRepository extends BaseRepository<IUser> {
     email?: string
   ): Promise<IUser | null> {
     const hashedToken = this.tokensService.hashRestPasswordToken(token);
-    const query: any = {
+    const query: Record<string, any> = {
       "verification.verificationToken": hashedToken,
       "verification.verificationExpires": { $gt: new Date() },
     };
@@ -256,7 +265,9 @@ export class UserRepository extends BaseRepository<IUser> {
       query.email = email;
     }
 
-    return await this.model.findOne(query).select("+security");
+    return (await this.model
+      .findOne(query)
+      .select("+security")) as IUser | null;
   }
   async createAuditLog(
     userId: string,
@@ -488,14 +499,14 @@ export class UserRepository extends BaseRepository<IUser> {
     status: IUser["status"],
     session?: ClientSession
   ): Promise<void> {
-    return await this.updateUserStatus(userId, status, session);
+    await this.updateUserStatus(userId, status, session);
   }
   async updateUserRoleByAdmin(
     userId: string,
     role: IUser["role"],
     session?: ClientSession
   ): Promise<void> {
-    return await this.updateUserRole(userId, role, session);
+    await this.updateUserRole(userId, role, session);
   }
   async updateUserPasswordByAdmin(
     userId: string,

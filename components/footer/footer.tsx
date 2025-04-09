@@ -10,7 +10,6 @@
 // import Link from "next/link";
 // import { AiOutlineInfoCircle } from "react-icons/ai";
 // import { RiContactsLine } from "react-icons/ri";
-
 // const Footer = () => {
 //   return (
 //     <footer className="bg-gray-800 text-white py-5 px-3 mt-4 -mx-4 !-mb-4">
@@ -77,52 +76,51 @@
 //     </footer>
 //   );
 // };
-
 // export default Footer;
+import Link from 'next/link';
+import {AiOutlineInfoCircle} from 'react-icons/ai';
 import {
-  FaFacebook,
-  FaTwitter,
-  FaInstagram,
-  FaGithub,
-  FaPhone,
   FaEnvelope,
+  FaFacebook,
+  FaGithub,
+  FaInstagram,
   FaMapMarkerAlt,
-} from "react-icons/fa";
-import Link from "next/link";
-import { AiOutlineInfoCircle } from "react-icons/ai";
-import { RiContactsLine } from "react-icons/ri";
+  FaPhone,
+  FaTwitter,
+} from 'react-icons/fa';
+import {RiContactsLine} from 'react-icons/ri';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const socialLinks = [
-    { icon: <FaFacebook />, href: "#", label: "Facebook" },
-    { icon: <FaTwitter />, href: "#", label: "Twitter" },
-    { icon: <FaInstagram />, href: "#", label: "Instagram" },
+    {icon: <FaFacebook />, href: '#', label: 'Facebook'},
+    {icon: <FaTwitter />, href: '#', label: 'Twitter'},
+    {icon: <FaInstagram />, href: '#', label: 'Instagram'},
     {
       icon: <FaGithub />,
-      href: "https://github.com/Saif-Mohammed1",
-      label: "GitHub",
+      href: 'https://github.com/Saif-Mohammed1',
+      label: 'GitHub',
     },
   ];
 
   const contactInfo = [
-    { icon: <FaMapMarkerAlt />, text: "123 Street, Cairo, Egypt" },
-    { icon: <FaPhone />, text: "+1234567890" },
-    { icon: <FaEnvelope />, text: "info@example.com" },
+    {icon: <FaMapMarkerAlt />, text: '123 Street, Cairo, Egypt'},
+    {icon: <FaPhone />, text: '+1234567890'},
+    {icon: <FaEnvelope />, text: 'info@example.com'},
   ];
 
   const navigationLinks = [
     {
       icon: <AiOutlineInfoCircle />,
-      href: "/about-us",
-      text: "About Us",
-      label: "Learn more about our company",
+      href: '/about-us',
+      text: 'About Us',
+      label: 'Learn more about our company',
     },
     {
       icon: <RiContactsLine />,
-      href: "/contact-us",
-      text: "Contact Us",
-      label: "Get in touch with us",
+      href: '/contact-us',
+      text: 'Contact Us',
+      label: 'Get in touch with us',
     },
   ];
 
@@ -132,9 +130,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-white tracking-wide">
-              завзятий господар
-            </h3>
+            <h3 className="text-xl font-bold text-white tracking-wide">завзятий господар</h3>
             <div className="space-y-2">
               {contactInfo.map((item, index) => (
                 <p
@@ -171,9 +167,7 @@ const Footer = () => {
           {/* Social & Copyright */}
           <div className="space-y-6">
             <div className="text-center md:text-right">
-              <h4 className="text-sm font-semibold text-white mb-4">
-                Follow Us
-              </h4>
+              <h4 className="text-sm font-semibold text-white mb-4">Follow Us</h4>
               <div className="flex justify-center md:justify-end space-x-6">
                 {socialLinks.map((social, index) => (
                   <Link
@@ -192,10 +186,8 @@ const Footer = () => {
 
             <div className="text-center md:text-right space-y-2">
               <p className="text-xs">
-                Created by Saif -{" "}
-                <span className="italic text-gray-400">
-                  Full Stack Web Developer
-                </span>
+                Created by Saif -{' '}
+                <span className="italic text-gray-400">Full Stack Web Developer</span>
               </p>
               <p className="text-xs text-gray-500">
                 &copy; {currentYear} завзятий господар. All Rights Reserved.

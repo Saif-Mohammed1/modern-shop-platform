@@ -1,22 +1,26 @@
 // components/products/EditProductForm.tsx
 "use client";
 
-import type { ProductType } from "@/app/lib/types/products.types";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import FormProgress from "./form-progress";
-import ProductDetails from "./product-details";
-import ProductPricing from "./product-pricing";
-import ProductShipping from "./product-shipping";
-import ProductInventory from "./product-inventory";
-import ProductImages from "./product-images";
-import ProductReview from "./product-review";
-import FormControls from "./FormControls";
-import api from "@/app/lib/utilities/api";
 import toast from "react-hot-toast";
-import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
+import type { ProductType } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
-import { useRouter } from "next/navigation";
+import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
+
+import FormProgress from "./form-progress";
+import FormControls from "./FormControls";
+import ProductDetails from "./product-details";
+import ProductImages from "./product-images";
+import ProductInventory from "./product-inventory";
+import ProductPricing from "./product-pricing";
+import ProductReview from "./product-review";
+import ProductShipping from "./product-shipping";
+
+// components/products/EditProductForm.tsx
 
 interface EditProductFormProps {
   defaultValues: ProductType;
@@ -45,7 +49,7 @@ export default function EditProductForm({
           productsTranslate.products[lang].editProduct.form.productSubmit
             .success
         );
-        router.push("/dashboard/products?search=" + defaultValues.name);
+        router.push(`/dashboard/products?search=${defaultValues.name}`);
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast.error(
@@ -86,7 +90,9 @@ export default function EditProductForm({
             editMode
             step={step}
             totalSteps={totalSteps}
-            onPrev={() => setStep((prev) => Math.max(prev - 1, 1))}
+            onPrev={() => {
+              setStep((prev) => Math.max(prev - 1, 1));
+            }}
           />
         </form>{" "}
       </FormProvider>

@@ -1,12 +1,15 @@
-import type { DeviceInfo } from "@/app/lib/types/session.types";
-import type { ISession } from "../models/Session.model";
-import { BaseRepository } from "./BaseRepository";
-import { type ClientSession, Model } from "mongoose";
+import type { Model, ClientSession } from "mongoose";
+
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
 } from "@/app/lib/types/queryBuilder.types";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+
+import type { ISession } from "../models/Session.model";
+
+import { BaseRepository } from "./BaseRepository";
 
 interface CreateSessionDTO {
   userId: string;

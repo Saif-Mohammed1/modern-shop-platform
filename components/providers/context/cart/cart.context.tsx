@@ -1,22 +1,25 @@
 "use client";
 
 import { createContext, use, useEffect, useState } from "react";
-import {
-  addToCart,
-  getCartItems,
-  removeFromCart,
-  clearItemFromCart,
-  // mergeLocalCartWithDB,
-} from "./cartAction";
 import toast from "react-hot-toast";
-import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
-import { lang } from "@/app/lib/utilities/lang";
-import { useUser } from "../user/user.context";
+
 import type {
   CartContextType,
   CartItemsType,
   ProductCartPick,
 } from "@/app/lib/types/cart.types";
+import { lang } from "@/app/lib/utilities/lang";
+import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
+
+import { useUser } from "../user/user.context";
+
+import {
+  addToCart,
+  clearItemFromCart,
+  // mergeLocalCartWithDB,
+  getCartItems,
+  removeFromCart,
+} from "./cartAction";
 
 // Create the cart context
 export const CartContext = createContext<CartContextType>({
@@ -107,16 +110,20 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     const loadCart = async () => {
       try {
         const data = await getCartItems(user);
-        if (isMounted) setCartItems(data);
-      } catch (error: any) {
-        if (isMounted)
+        if (isMounted) {
+          setCartItems(data);
+        }
+      } catch (error: unknown) {
+        if (isMounted) {
           toast.error(
-            error?.message || cartContextTranslate[lang].errors.global
+            (error as Error)?.message ||
+              cartContextTranslate[lang].errors.global
           );
+        }
       }
     };
     // Add small delay if experiencing race conditions
-    const timer = setTimeout(loadCart, 500);
+    const timer = setTimeout(() => void loadCart(), 500);
     return () => {
       isMounted = false;
       clearTimeout(timer);
@@ -125,7 +132,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Sync local storage
   useEffect(() => {
-    if (!user) localStorage.setItem("cart", JSON.stringify(cartItems));
+    if (!user) {
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+    }
   }, [cartItems, user]);
 
   // Merge carts with cleanup

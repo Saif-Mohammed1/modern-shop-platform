@@ -1,17 +1,18 @@
-import { type NextRequest } from "next/server";
-import { connectDB } from "@/app/server/db/db";
-import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
-import ErrorHandler from "@/app/server/controllers/error.controller";
-import cartController from "@/app/server/controllers/cart.controller";
+import {type NextRequest} from 'next/server';
+
+import cartController from '@/app/server/controllers/cart.controller';
+import ErrorHandler from '@/app/server/controllers/error.controller';
+import {connectDB} from '@/app/server/db/db';
+import {AuthMiddleware} from '@/app/server/middlewares/auth.middleware';
 
 export const POST = async (
   req: NextRequest,
   props: {
-    params: Promise<{ id: string }>;
-  }
+    params: Promise<{id: string}>;
+  },
 ) => {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
   try {
     await connectDB();
     await AuthMiddleware.requireAuth()(req);
@@ -25,11 +26,11 @@ export const POST = async (
 export const PUT = async (
   req: NextRequest,
   props: {
-    params: Promise<{ id: string }>;
-  }
+    params: Promise<{id: string}>;
+  },
 ) => {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
   try {
     await connectDB();
     await AuthMiddleware.requireAuth()(req);
@@ -43,11 +44,11 @@ export const PUT = async (
 export const DELETE = async (
   req: NextRequest,
   props: {
-    params: Promise<{ id: string }>;
-  }
+    params: Promise<{id: string}>;
+  },
 ) => {
   const params = await props.params;
-  const { id } = params;
+  const {id} = params;
   try {
     await connectDB();
     await AuthMiddleware.requireAuth()(req);

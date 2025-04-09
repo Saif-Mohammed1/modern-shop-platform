@@ -1,8 +1,8 @@
+import { type IpVersion, z } from "zod";
+
 import { AuditSource } from "@/app/lib/types/audit.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { ProductTranslate } from "@/public/locales/server/Product.Translate";
-import type { IpVersion } from "zod";
-import { z } from "zod";
 
 export class LogsValidation {
   static LogsSchema = z.object({
@@ -24,7 +24,7 @@ export class LogsValidation {
       .default(AuditSource.WEB)
       .optional(),
   });
-  static validateLogs = (data: LogsTypeDto) => {
+  static validateLogs = (data: z.infer<typeof this.LogsSchema>) => {
     return this.LogsSchema.parse(data);
   };
 }

@@ -1,32 +1,34 @@
 "use client";
-import { type FC, useEffect, useState } from "react";
-import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
+
+import { DateTime } from "luxon";
 import Link from "next/link";
-import { FiTrash2, FiEye, FiCalendar } from "react-icons/fi";
-import {
-  ordersTranslate,
-  StatusColors,
-} from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { type FC, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { FiCalendar, FiEye, FiTrash2 } from "react-icons/fi";
+import { HiFilter } from "react-icons/hi";
+
+import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import Pagination, {
   type PaginationType,
 } from "@/components/pagination/Pagination";
-import api from "@/app/lib/utilities/api";
-import { lang } from "@/app/lib/utilities/lang";
-import { type OrderType } from "@/app/lib/types/orders.types";
 // import StatusBadge from "@/components/ui/StatusBadge";
-import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import Select from "@/components/ui/Select";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-import SkeletonTable from "@/components/ui/SkeletonTable";
-import toast from "react-hot-toast";
-import { OrderStatus } from "@/app/lib/types/orders.types";
-import SearchBar from "@/components/ui/SearchBar";
-import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-import { HiFilter } from "react-icons/hi";
+import Input from "@/components/ui/Input";
 import MobileFilter from "@/components/ui/MobileFilter";
+import SearchBar from "@/components/ui/SearchBar";
+import Select from "@/components/ui/Select";
+import SkeletonTable from "@/components/ui/SkeletonTable";
+import {
+  StatusColors,
+  ordersTranslate,
+} from "@/public/locales/client/(auth)/(admin)/dashboard/ordersTranslate";
+import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
 // import { RelativeTime } from "@/app/(auth)/(admin)/dashboard/users/[id]/userMangement";
-import { DateTime } from "luxon";
 
 type StatusOption = {
   value: OrderStatus;
@@ -119,7 +121,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );
   const handelPageChange = (page: number) => {
-    setCurrentPage(page);
+    void setCurrentPage(page);
   };
   useEffect(() => {
     setOrders(initialOrders);
@@ -129,7 +131,10 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
         setLoading(false);
         resolve();
       }, 50);
-    });
+    }).catch(
+      /* eslint-disable no-console */
+      (error) => console.error("Error loading orders:", error)
+    );
     window.scrollTo({ top: 1, behavior: "smooth" });
   }, [initialOrders]);
 
@@ -141,7 +146,9 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
       );
       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
     } catch (error) {
-      toast.error(ordersTranslate.functions[lang].error);
+      toast.error(
+        (error as Error)?.message || ordersTranslate.functions[lang].error
+      );
     }
   };
 
@@ -151,7 +158,9 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
       setOrders((prev) => prev.filter((order) => order._id !== id));
       toast.success(ordersTranslate.functions[lang].handleDelete.success);
     } catch (error) {
-      toast.error(ordersTranslate.functions[lang].error);
+      toast.error(
+        (error as Error)?.message || ordersTranslate.functions[lang].error
+      );
     }
   };
 
@@ -173,7 +182,9 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
         {ordersTranslate.orders[lang].title}
       </h2>{" "}
       <button
-        onClick={() => setIsMobileFiltersOpen(true)}
+        onClick={() => {
+          setIsMobileFiltersOpen(true);
+        }}
         className="md:hidden flex items-center gap-2 my-1 mb-4 p-3 bg-gray-100 rounded-lg shadow-md w-full "
       >
         <HiFilter className="text-xl" />
@@ -218,8 +229,12 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
         {/* </div> */}
       </div>
       {/* </div> */}
-      {isMobileFiltersOpen && (
-        <MobileFilter closeFilters={() => setIsMobileFiltersOpen(false)}>
+      {isMobileFiltersOpen ? (
+        <MobileFilter
+          closeFilters={() => {
+            setIsMobileFiltersOpen(false);
+          }}
+        >
           <div className="mb-6 flex flex-col justify-between  gap-4">
             {/* <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2"> */}
 
@@ -267,7 +282,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
             {/* </div> */}
           </div>
         </MobileFilter>
-      )}
+      ) : null}
       <div className="overflow-x-auto rounded-lg border border-gray-100">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">

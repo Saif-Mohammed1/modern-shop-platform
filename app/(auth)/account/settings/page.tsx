@@ -1,12 +1,16 @@
-export const dynamic = "force-dynamic";
-import ChangePassword from "@/components/customers/changePassword";
-import api from "@/app/lib/utilities/api";
-// import AppError from "@/components/util/appError";
-import ErrorHandler from "@/components/Error/errorHandler";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
+import { headers } from "next/headers";
+
+import type { sessionInfo } from "@/app/lib/types/session.types";
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+// import AppError from "@/components/util/appError";
+import ChangePassword from "@/components/customers/changePassword";
+import ErrorHandler from "@/components/Error/errorHandler";
+import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
+
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: accountSettingsTranslate[lang].metadata.title,
   description: accountSettingsTranslate[lang].metadata.description,
@@ -14,13 +18,19 @@ export const metadata: Metadata = {
 };
 const page = async () => {
   try {
-    const { data } = await api.get("/customers/device", {
+    const {
+      data,
+    }: {
+      data: {
+        docs: sessionInfo[];
+      };
+    } = await api.get("/customers/device", {
       headers: Object.fromEntries((await headers()).entries()), // convert headers to object
     });
     return <ChangePassword devices={data.docs} />;
-  } catch (error: any) {
-    return <ErrorHandler message={error.message} />;
-    // throw new AppError(error.message, error.status);
+  } catch (error: unknown) {
+    const { message } = error as Error;
+    return <ErrorHandler message={message} />;
   }
 };
 
