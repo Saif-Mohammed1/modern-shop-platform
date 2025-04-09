@@ -10,7 +10,7 @@ import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { v4 as uuidv4 } from "uuid";
 
-import { UserRole, type UserAuthType } from "./app/lib/types/users.types";
+import { allowedRoles, type UserAuthType } from "./app/lib/types/users.types";
 import AppError from "./app/lib/utilities/appError";
 import { lang } from "./app/lib/utilities/lang";
 // import { rateLimitIp } from "./components/util/rateLimitIp";
@@ -30,7 +30,6 @@ const DEFAULT_LANGUAGE = "uk";
 const AUTH_PATH = "/auth";
 const DASHBOARD_PATH = "/dashboard";
 const NOT_FOUND_PATH = "/not-found";
-
 export const config = {
   matcher: [
     /*
@@ -48,7 +47,7 @@ const authMiddleware = async (req: NextRequest) => {
   const { pathname } = req.nextUrl;
   const isAuth = await getToken({ req });
   const user = isAuth?.user as UserAuthType;
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const isAuthorizedUser = allowedRoles.includes(user?.role);
   const response = NextResponse.next();
   const correlationId = uuidv4();
 
@@ -143,7 +142,7 @@ const authMiddleware = async (req: NextRequest) => {
       }
 
       // Admin dashboard protection
-      if (pathname.startsWith(DASHBOARD_PATH) && !isAdmin) {
+      if (pathname.startsWith(DASHBOARD_PATH) && !isAuthorizedUser) {
         return NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url));
       }
     } else {

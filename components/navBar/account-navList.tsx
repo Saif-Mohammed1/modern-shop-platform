@@ -14,7 +14,7 @@ import {
   VscSignOut,
 } from "react-icons/vsc";
 
-import type { UserAuthType } from "@/app/lib/types/users.types";
+import { allowedRoles, type UserAuthType } from "@/app/lib/types/users.types";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 
 import api from "../../app/lib/utilities/api";
@@ -77,7 +77,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
             }, ${user.name.split(" ")[0]}`
           : navBarTranslate[lang].accountNavList.content.accountMenu.welcome}
       </div>
-      {user && user.role === "admin" ? (
+      {user && allowedRoles.includes(user.role) ? (
         <Link href="/dashboard">
           <span className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300">
             <MdDashboard className="mr-2" />{" "}
