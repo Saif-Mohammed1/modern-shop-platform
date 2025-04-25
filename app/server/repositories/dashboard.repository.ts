@@ -1990,10 +1990,13 @@ export class DashboardRepository implements BaseDashboardRepository {
       >([
         // { $match: { expiresAt: { $gt: new Date() } } }, // Only active carts
         // { $unwind: "$items" },
+
+        // Step 1: Unwind the items array
+        { $unwind: "$items" },
         {
           $lookup: {
             from: "products",
-            localField: "productId",
+            localField: "items.productId",
             foreignField: "_id",
             as: "product",
           },
@@ -2002,7 +2005,7 @@ export class DashboardRepository implements BaseDashboardRepository {
         {
           $group: {
             _id: "$product.category",
-            totalItems: { $sum: "$quantity" },
+            totalItems: { $sum: "$items.quantity" },
             uniqueUsers: { $addToSet: "$userId" },
             avgPrice: { $avg: "$product.price" },
             maxPrice: { $max: "$product.price" },
@@ -2015,10 +2018,11 @@ export class DashboardRepository implements BaseDashboardRepository {
       WishlistModel.aggregate<
         DashboardDataAggregate["userInterestAnalytics"]["wishlist"]
       >([
+        { $unwind: "$items" },
         {
           $lookup: {
             from: "products",
-            localField: "productId",
+            localField: "items.productId",
             foreignField: "_id",
             as: "product",
           },
@@ -2044,11 +2048,11 @@ export class DashboardRepository implements BaseDashboardRepository {
         DashboardDataAggregate["userInterestAnalytics"]["CombinedData"]
       >([
         // { $match: { createdAt: { $gte: lastMonth } } },
-        // { $unwind: "$items" },
+        { $unwind: "$items" },
         {
           $group: {
             _id: {
-              product: "$productId",
+              product: "$items.productId",
               week: { $week: "$createdAt" },
             },
             cartAdds: { $sum: 1 },
@@ -2140,7 +2144,8 @@ export class DashboardRepository implements BaseDashboardRepository {
 
   private async getTopProducts(model: Model<any>, limit: number) {
     return model.aggregate([
-      { $group: { _id: "$productId", count: { $sum: 1 } } },
+      { $unwind: "$items" },
+      { $group: { _id: "$items.productId", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: limit },
       {
@@ -2167,8 +2172,8 @@ export class DashboardRepository implements BaseDashboardRepository {
   private async getAbandonedProducts() {
     return CartModel.aggregate([
       // { $match: { expiresAt: { $lt: new Date() } } },
-      // { $unwind: "$items" },
-      { $group: { _id: "$productId", count: { $sum: 1 } } },
+      { $unwind: "$items" },
+      { $group: { _id: "$items.productId", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: 10 },
       {

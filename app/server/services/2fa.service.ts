@@ -220,7 +220,6 @@ export class TwoFactorService {
     const usedCodes: string[] = [];
     // Atomic transaction
     const session = await this.repository.startSession();
-    session.startTransaction();
     try {
       // Process all codes before failing to prevent timing attacks
       for (const [_index, code] of codes.entries()) {
@@ -256,32 +255,32 @@ export class TwoFactorService {
       );
 
       if (updatedCodes.length !== twoFA.backupCodes.length - 5) {
-        await session.abortTransaction();
         throw new AppError(
           TwoFactorTranslate[lang].error.validationFailed,
           400
         );
       }
+      await session.withTransaction(async () => {
+        await this.repository.updateBackupCodes(
+          user._id.toString(),
+          updatedCodes,
+          session
+        );
 
-      await this.repository.updateBackupCodes(
-        user._id.toString(),
-        updatedCodes,
-        session
-      );
+        // Audit log
 
-      // Audit log
-
-      await this.userService.createAuditLog(
-        user._id.toString(),
-        SecurityAuditAction.BACKUP_CODE_RECOVERY,
-        {
-          success: true,
-          codesUsed: usedCodes,
-          remainingCodes: updatedCodes.length,
-          device: deviceInfo,
-        },
-        session
-      );
+        await this.userService.createAuditLog(
+          user._id.toString(),
+          SecurityAuditAction.BACKUP_CODE_RECOVERY,
+          {
+            success: true,
+            codesUsed: usedCodes,
+            remainingCodes: updatedCodes.length,
+            device: deviceInfo,
+          },
+          session
+        );
+      });
 
       // Security recommendations
       if (twoFA.backupCodes.length - 5 < 3) {
@@ -302,7 +301,6 @@ export class TwoFactorService {
 
       await this.sessionService.revokeAllSessions(user._id.toString());
       await this.userService.requestPasswordReset(user.email, deviceInfo);
-      await session.commitTransaction();
       return {
         success: true,
         remainingCodes: twoFA.backupCodes.length - 5,
@@ -319,7 +317,6 @@ export class TwoFactorService {
         }
       );
 
-      await session.abortTransaction();
       throw error;
     } finally {
       await session.endSession();

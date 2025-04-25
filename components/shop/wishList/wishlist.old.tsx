@@ -1,14 +1,35 @@
+/* eslint-disable */
+
 // pages/wishlist.js
 "use client";
 
+import { parseAsInteger, useQueryState } from "nuqs";
+
+import type { WishlistType } from "@/app/lib/types/wishList.types";
 import { lang } from "@/app/lib/utilities/lang";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
+import Pagination, {
+  type PaginationType,
+} from "@/components/pagination/Pagination";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 
 import WishListCard from "./wishListCard";
 
-const WishlistPage = () => {
-  const { wishlist } = useWishlist();
+// pages/wishlist.js
+
+type WishlistPageProps = {
+  wishlistProduct: WishlistType;
+
+  pagination: PaginationType;
+};
+const WishlistPage = ({ wishlistProduct, pagination }: WishlistPageProps) => {
+  const [_currentPage, setCurrentPage] = useQueryState(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false })
+  );
+  const onPaginationChange = (page: number) => {
+    void setCurrentPage(page);
+  };
+  // const { wishlist } = useWishlist();
   // const [wishlistProduct, setWishlistProduct] = useState<WishlistType>([]);
 
   // useEffect(() => {
@@ -20,19 +41,20 @@ const WishlistPage = () => {
         {accountWishlistTranslate[lang].wishlistPage.title}
       </h1>
       <div className="max-h-screen overflow-y-auto">
-        {wishlist.items.length === 0 ? (
+        {wishlistProduct.length === 0 ? (
           <p className="empty">
             {accountWishlistTranslate[lang].wishlistPage.emptyWhishlist}
           </p>
         ) : (
           <div className="grid col gap-4">
-            {wishlist.items.map((product) => {
+            {wishlistProduct.map((product) => {
               const products = product.productId;
-              return <WishListCard key={products?._id} product={products} />;
+              return <WishListCard key={product?._id} product={products} />;
             })}
           </div>
         )}
       </div>
+      <Pagination meta={pagination.meta} onPageChange={onPaginationChange} />
     </div>
   );
 };

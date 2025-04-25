@@ -49,6 +49,8 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           ? error.message
           : shopPageTranslate[lang].functions.toggleWishlist.failed;
       toast.error(errorMessage, { id: toastId });
+    } finally {
+      toast.dismiss(toastId);
     }
   };
 
@@ -67,6 +69,8 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           ? error.message
           : shopPageTranslate[lang].functions.toggleWishlist.failed;
       toast.error(errorMessage, { id: toastId });
+    } finally {
+      toast.dismiss(toastId);
     }
   };
 
