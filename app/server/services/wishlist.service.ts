@@ -1,4 +1,6 @@
 // import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import type { ClientSession } from "mongoose";
+
 import { lang } from "@/app/lib/utilities/lang";
 import { WishlistTranslate } from "@/public/locales/server/Wishlist.Translate";
 
@@ -25,6 +27,8 @@ export class WishlistService {
         if (exists) {
           // Remove from wishlist
           await this.repository.deleteWishlist(userId, productId, session);
+          // const exists = await this.checkWishlist(userId, productId, session);
+          // console.log("exists", exists);
           return {
             success: true,
             message: WishlistTranslate[lang].wishlist.remove,
@@ -45,7 +49,11 @@ export class WishlistService {
     }
   }
 
-  async checkWishlist(userId: string, productId: string) {
-    return await this.repository.isWishlist(userId, productId);
+  async checkWishlist(
+    userId: string,
+    productId: string,
+    session?: ClientSession
+  ) {
+    return await this.repository.isWishlist(userId, productId, session);
   }
 }

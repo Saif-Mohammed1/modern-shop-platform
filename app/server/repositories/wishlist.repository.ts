@@ -102,11 +102,17 @@ export class WishlistRepository extends BaseRepository<IWishlist> {
   //   return await queryBuilder.execute();
   // }
 
-  async isWishlist(userId: string, productId: string): Promise<boolean> {
-    const exists = await this.model.exists({
-      userId,
-      "items.productId": productId,
-    });
+  async isWishlist(
+    userId: string,
+    productId: string,
+    session?: ClientSession
+  ): Promise<boolean> {
+    const exists = await this.model
+      .exists({
+        userId,
+        "items.productId": assignAsObjectId(productId),
+      })
+      .session(session ?? null);
     return !!exists;
   }
 
