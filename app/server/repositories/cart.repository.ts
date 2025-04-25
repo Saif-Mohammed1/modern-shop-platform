@@ -150,8 +150,8 @@ export class CartRepository extends BaseRepository<ICart> {
     await this.model.updateOne(
       { userId, "items.productId": assignAsObjectId(productId) },
       {
+        $inc: { "items.$.quantity": newQuantity },
         $set: {
-          "items.$.quantity": newQuantity,
           expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
         }, // Set expiresAt to one week from now
       },

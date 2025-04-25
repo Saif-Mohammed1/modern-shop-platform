@@ -1,22 +1,22 @@
 // components/ProductCard.js
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AiFillHeart, AiOutlineShoppingCart } from "react-icons/ai";
 
 // Import cart icon
 
 import type { ProductType } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 const WishListCard = ({ product }: { product: ProductType }) => {
   // const { toggleWishlist, isInWishlist } = useWishlist();
-  const router = useRouter();
+  const { toggleWishlist } = useWishlist();
+
   const { addToCartItems } = useCartItems();
   const handelAddToCart = async () => {
     let toastLoading;
@@ -45,12 +45,11 @@ const WishListCard = ({ product }: { product: ProductType }) => {
         accountWishlistTranslate[lang].WishListCard.functions
           .handleWishlistClick.loading
       );
-      await api.post(`/customers/wishlist/${product._id}`);
-      toast.success(
-        accountWishlistTranslate[lang].WishListCard.functions
-          .handleWishlistClick.removed
-      );
-      router.refresh();
+      await toggleWishlist(product);
+      // toast.success(
+      //   accountWishlistTranslate[lang].WishListCard.functions
+      //     .handleWishlistClick.removed
+      // );
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(

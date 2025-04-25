@@ -9,11 +9,7 @@ import WishListCard from "./wishListCard";
 
 const WishlistPage = () => {
   const { wishlist } = useWishlist();
-  // const [wishlistProduct, setWishlistProduct] = useState<WishlistType>([]);
 
-  // useEffect(() => {
-  //   setWishlistProduct(wishlist);
-  // }, [wishlist]);
   return (
     <div className="container mx-auto mt-8 ">
       <h1 className="text-3xl font-bold mb-4 ">

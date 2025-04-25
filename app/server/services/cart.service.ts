@@ -36,10 +36,11 @@ export class CartService {
           400
         );
       }
-      if (quantity === 1) {
-        await this.repository.addToCart(userId, productId, session);
-        return;
-      }
+      // if (quantity === 1) {
+      //   console.log("quantity === 1");
+      //   await this.repository.addToCart(userId, productId, session);
+      //   return;
+      // }
       await this.repository.increaseQuantity(
         userId,
         productId,
