@@ -74,7 +74,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       setCartItems((pre) => {
         //  check if product exist in cart and quantity is greater than 1 then decrease quantity by 1
         const existingProduct = pre.find((item) => item._id === product._id);
-        if (existingProduct && existingProduct.quantity > 1) {
+        if (!existingProduct) {
+          return pre;
+        }
+        // If quantity is greater than 1, decrease it by 1
+        if (existingProduct.quantity > 1) {
           return pre.map((item) =>
             item._id === product._id
               ? { ...item, quantity: item.quantity - 1 }
@@ -83,8 +87,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         }
         return pre.filter((item) => item._id !== product._id);
       });
-      await removeFromCart(product, user);
-      // setCartItems(data);
+      const items = await removeFromCart(product, user);
+      setCartItems(items);
     } catch (error) {
       const originalCart = await getCartItems(user);
       setCartItems(originalCart);
