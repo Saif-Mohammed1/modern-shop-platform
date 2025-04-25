@@ -19,31 +19,27 @@ export class WishlistService {
   // }
   async toggleWishlist(userId: string, productId: string) {
     const session = await this.repository.startSession();
-    session.startTransaction();
     try {
       const exists = await this.checkWishlist(userId, productId);
-      if (exists) {
-        // Remove from wishlist
-        await this.repository.deleteWishlist(userId, productId, session);
-        await session.commitTransaction();
+      return await session.withTransaction(async () => {
+        if (exists) {
+          // Remove from wishlist
+          await this.repository.deleteWishlist(userId, productId, session);
+          return {
+            success: true,
+            message: WishlistTranslate[lang].wishlist.remove,
+            added: false,
+          };
+        }
+        // Add to wishlist
+        await this.repository.addToWishlist(userId, productId, session);
+
         return {
           success: true,
-          message: WishlistTranslate[lang].wishlist.remove,
-          added: false,
+          message: WishlistTranslate[lang].wishlist.add,
+          added: true,
         };
-      }
-      // Add to wishlist
-      await this.repository.addToWishlist(userId, productId, session);
-      await session.commitTransaction();
-
-      return {
-        success: true,
-        message: WishlistTranslate[lang].wishlist.add,
-        added: true,
-      };
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
+      });
     } finally {
       await session.endSession();
     }
