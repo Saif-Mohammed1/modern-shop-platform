@@ -322,28 +322,24 @@ export class StripeService {
 
   async handleWebhookEvent(event: Stripe.Event): Promise<void> {
     const transaction = await mongoose.startSession();
-    transaction.startTransaction();
 
     try {
-      switch (event.type) {
-        case "checkout.session.completed":
-          await this.handleCheckoutSessionCompleted(
-            event.data.object as Stripe.Checkout.Session,
-            transaction
-          );
-          break;
-        case "charge.refunded":
-          await this.handleChargeRefunded(
-            event.data.object as Stripe.Charge,
-            transaction
-          );
-          break;
-      }
-
-      await transaction.commitTransaction();
-    } catch (error) {
-      await transaction.abortTransaction();
-      throw error;
+      await transaction.withTransaction(async () => {
+        switch (event.type) {
+          case "checkout.session.completed":
+            await this.handleCheckoutSessionCompleted(
+              event.data.object as Stripe.Checkout.Session,
+              transaction
+            );
+            break;
+          case "charge.refunded":
+            await this.handleChargeRefunded(
+              event.data.object as Stripe.Charge,
+              transaction
+            );
+            break;
+        }
+      });
     } finally {
       await transaction.endSession();
     }
