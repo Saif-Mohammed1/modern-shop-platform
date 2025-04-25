@@ -14,12 +14,12 @@ import { useUser } from "../user/user.context";
 import { getMyWishList } from "./wishlist.action";
 
 type wishlistContextType = {
-  wishlist: WishlistType[];
+  wishlist: WishlistType;
   toggleWishlist: (product: ProductType) => Promise<void>;
   isInWishlist: (id: string) => boolean;
 };
 const WishlistContext = createContext<wishlistContextType>({
-  wishlist: [],
+  wishlist: { items: [], userId: "" },
   toggleWishlist: async () => {},
   isInWishlist: () => false,
 });
@@ -29,7 +29,10 @@ export const WishlistProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [wishlist, setWishlist] = useState<WishlistType[]>([]);
+  const [wishlist, setWishlist] = useState<WishlistType>({
+    items: [],
+    userId: "",
+  });
   const { user } = useUser();
 
   // Load wishlist from localStorage or database
@@ -49,7 +52,10 @@ export const WishlistProvider = ({
           } else {
             toast.error(accountWishlistTranslate[lang].errors.global);
           }
-          setWishlist([]);
+          setWishlist({
+            items: [],
+            userId: "",
+          });
         }
       }
     };
@@ -68,27 +74,34 @@ export const WishlistProvider = ({
   const toggleWishlist = async (product: ProductType) => {
     if (user) {
       try {
-        const exists = wishlist.some(
+        const exists = wishlist.items.some(
           (item) => item.productId._id === product._id
         );
         if (exists) {
-          setWishlist((prevWishlist) =>
-            prevWishlist.filter((item) => item.productId._id !== product._id)
-          );
+          setWishlist((prevWishlist) => ({
+            ...prevWishlist,
+            items: prevWishlist.items.filter(
+              (item) => item.productId._id !== product._id
+            ),
+          }));
+          await api.post(`/customers/wishlist/${product._id}`);
+
           toast.success(
             accountWishlistTranslate[lang].WishListCard.functions
               .handleWishlistClick.removed
           );
         } else {
-          setWishlist((prevWishlist) => [
+          setWishlist((prevWishlist) => ({
             ...prevWishlist,
-            {
-              productId: product,
-              userId: user._id.toString(),
-            },
-          ]);
+            items: [
+              ...prevWishlist.items,
+              {
+                productId: product,
+              },
+            ],
+          }));
 
-          await api.post(`/customers/wishlist/${  product._id}`);
+          await api.post(`/customers/wishlist/${product._id}`);
           toast.success(
             accountWishlistTranslate[lang].WishListCard.functions
               .handleWishlistClick.success
@@ -108,7 +121,7 @@ export const WishlistProvider = ({
   };
 
   const isInWishlist = (id: string) => {
-    return wishlist.some((item) => item.productId._id === id);
+    return wishlist.items.some((item) => item.productId._id === id);
   };
 
   return (

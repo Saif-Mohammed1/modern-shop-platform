@@ -14,7 +14,9 @@ import { type IUser } from "./User.model";
 export interface IWishlist extends Document {
   _id: Types.ObjectId;
   userId: IUser["_id"];
-  productId: IProduct["_id"];
+  items: {
+    productId: IProduct["_id"];
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,12 +29,16 @@ const WishlistSchema = new Schema<IWishlist>(
       required: true,
       index: true,
     },
-    productId: {
-      type: Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-      index: true,
-    },
+    items: [
+      {
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        _id: false,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -53,7 +59,7 @@ const WishlistSchema = new Schema<IWishlist>(
 );
 
 // Compound index to prevent duplicate favorites
-WishlistSchema.index({ userId: 1, productId: 1 }, { unique: true });
+WishlistSchema.index({ userId: 1, "items.productId": 1 }, { unique: true });
 WishlistSchema.set("toJSON", { versionKey: false });
 // Virtual population (if needed)
 WishlistSchema.virtual("user", {
@@ -65,15 +71,16 @@ WishlistSchema.virtual("user", {
 
 WishlistSchema.virtual("product", {
   ref: "Product",
-  localField: "productId",
+  localField: "items.productId",
   foreignField: "_id",
   justOne: true,
 });
 
 WishlistSchema.virtual("purchased", {
-  type: Boolean,
+  // type: Boolean,
+
   ref: "Order",
-  localField: "productId",
+  localField: "items.productId",
   foreignField: "items.productId",
 });
 

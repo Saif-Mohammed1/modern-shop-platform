@@ -20,23 +20,72 @@ export class CartService {
     return await this.repository.getUserCart(userId);
   }
   async addToCart(userId: string, productId: string, quantity: number = 1) {
-    const existingProduct = await this.productService.getProductById(productId);
-    if (!existingProduct) {
-      await this.repository.removeProductFromCart(userId, productId);
-      throw new AppError(CartTranslate[lang].errors.productNotFound, 404);
-    }
-    if (quantity === 1) {
-      await this.repository.addToCart(userId, productId);
-      return;
-    }
-    if (existingProduct.stock < quantity) {
-      throw new AppError(
-        CartTranslate[lang].errors.insufficientStock(existingProduct.name),
-        400
+    const session = await this.repository.startSession();
+    await session.withTransaction(async () => {
+      const existingProduct = await this.productService.getProductById(
+        productId,
+        session
       );
-    }
-    await this.repository.increaseQuantity(userId, productId, quantity);
+      if (!existingProduct) {
+        await this.repository.removeProductFromCart(userId, productId);
+        throw new AppError(CartTranslate[lang].errors.productNotFound, 404);
+      }
+      if (existingProduct.stock < quantity) {
+        throw new AppError(
+          CartTranslate[lang].errors.insufficientStock(existingProduct.name),
+          400
+        );
+      }
+      if (quantity === 1) {
+        await this.repository.addToCart(userId, productId, session);
+        return;
+      }
+      await this.repository.increaseQuantity(
+        userId,
+        productId,
+        quantity,
+        session
+      );
+    });
+    await session.endSession();
   }
+  // async addToCart(userId: string, productId: string, quantity: number = 1) {
+  //   const session = await this.repository.startSession();
+  //   session.startTransaction();
+  //   try {
+  //     const existingProduct = await this.productService.getProductById(
+  //       productId,
+  //       session
+  //     );
+  //     if (!existingProduct) {
+  //       await this.repository.removeProductFromCart(userId, productId);
+  //       throw new AppError(CartTranslate[lang].errors.productNotFound, 404);
+  //     }
+  //     if (existingProduct.stock < quantity) {
+  //       throw new AppError(
+  //         CartTranslate[lang].errors.insufficientStock(existingProduct.name),
+  //         400
+  //       );
+  //     }
+  //     if (quantity === 1) {
+  //       await this.repository.addToCart(userId, productId, session);
+  //       await session.commitTransaction();
+  //       return;
+  //     }
+  //     await this.repository.increaseQuantity(
+  //       userId,
+  //       productId,
+  //       quantity,
+  //       session
+  //     );
+  //     await session.commitTransaction();
+  //   } catch (error) {
+  //     await session.abortTransaction();
+  //     throw error;
+  //   } finally {
+  //     await session.endSession();
+  //   }
+  // }
   /**
    * Decrease quantity of product in cart
    * this for decrease Quantity of product in cart
@@ -47,7 +96,7 @@ export class CartService {
     if (!existingItem) {
       throw new AppError(CartTranslate[lang].errors.productNotFound, 404);
     }
-    if (existingItem.quantity === 1) {
+    if (existingItem.items[0].quantity === 1) {
       await this.repository.removeProductFromCart(userId, productId);
       return;
     }
