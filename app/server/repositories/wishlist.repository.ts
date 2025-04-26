@@ -9,6 +9,7 @@ import type { Model, ClientSession } from "mongoose";
 import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 // import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 
+import ProductModel from "../models/Product.model";
 import type { IWishlist } from "../models/Wishlist.model";
 
 import { BaseRepository } from "./BaseRepository";
@@ -64,7 +65,11 @@ export class WishlistRepository extends BaseRepository<IWishlist> {
       .findOne({ userId })
       .populate([
         { path: "userId", select: "name" },
-        { path: "items.productId", select: "name price images slug" },
+        {
+          path: "items.productId",
+          select: "name price images slug",
+          model: ProductModel,
+        },
       ])
       .lean();
     return wishlist;
