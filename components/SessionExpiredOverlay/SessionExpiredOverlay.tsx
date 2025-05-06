@@ -1,15 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import api from "@/app/lib/utilities/api";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
+import { lang } from "@/app/lib/utilities/lang";
 import { sessionExpiredOverlayTranslate } from "@/public/locales/client/(public)/sessionExpiredOverlayTranslate";
 
-import { lang } from "../../app/lib/utilities/lang";
+import { logOutUser } from "../providers/store/user/user.store";
 
 const SessionExpiredOverlay = () => {
   const router = useRouter();
@@ -31,7 +31,7 @@ const SessionExpiredOverlay = () => {
 
   const handleLogin = async () => {
     try {
-      await signOut();
+      await logOutUser();
       await deleteCookies("refreshAccessToken");
 
       await api.post("/auth/logout");

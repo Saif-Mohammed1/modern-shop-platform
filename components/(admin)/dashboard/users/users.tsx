@@ -118,7 +118,9 @@ const AdminUsers = ({ users, pagination }: Props) => {
       </h1>
       {/* Mobile Filter Button */}
       <button
-        onClick={() => { setIsMobileFiltersOpen(true); }}
+        onClick={() => {
+          setIsMobileFiltersOpen(true);
+        }}
         className="md:hidden flex items-center gap-2 my-1 mb-4 p-3 bg-gray-100 rounded-lg shadow-md w-full "
       >
         <HiFilter className="text-xl" />
@@ -148,7 +150,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
             label: usersTranslate.users[lang].addUsers.form.roles[role],
           }))}
           value={roleFilter}
-          onChange={(e) => void setRoleFilter(e.target.value)}
+          onChange={(e) => setRoleFilter(e.target.value)}
           placeholder={usersTranslate.users[lang].addUsers.form.role.label}
           icon={<FiUser />}
         />
@@ -161,7 +163,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
             label: usersTranslate.users[lang].addUsers.form.statuses[status],
           }))}
           value={activityFilter}
-          onChange={(e) => void setActivityFilter(e.target.value)}
+          onChange={(e) => setActivityFilter(e.target.value)}
           placeholder={usersTranslate.users[lang].filter.select.activity.title}
           icon={<FiCheckSquare />}
         />
@@ -202,7 +204,11 @@ const AdminUsers = ({ users, pagination }: Props) => {
         </p>
       </div>
       {isMobileFiltersOpen ? (
-        <MobileFilter closeFilters={() => { setIsMobileFiltersOpen(false); }}>
+        <MobileFilter
+          closeFilters={() => {
+            setIsMobileFiltersOpen(false);
+          }}
+        >
           <div className="flex  flex-col items-center justify-between gap-4">
             <SearchBar
               className="w-full"
@@ -219,7 +225,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
                 label: usersTranslate.users[lang].addUsers.form.roles[role],
               }))}
               value={roleFilter}
-              onChange={(e) => void setRoleFilter(e.target.value)}
+              onChange={(e) => setRoleFilter(e.target.value)}
               placeholder={
                 usersTranslate.users[lang].filter.select.activity.all
               }
@@ -238,7 +244,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
                   usersTranslate.users[lang].addUsers.form.statuses[status],
               }))}
               value={activityFilter}
-              onChange={(e) => void setActivityFilter(e.target.value)}
+              onChange={(e) => setActivityFilter(e.target.value)}
               placeholder={
                 usersTranslate.users[lang].filter.select.activity.all
               }
@@ -313,7 +319,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
                     title={
                       usersTranslate.users[lang].editUsers.actions.deleteConfirm
                     }
-                    onConfirm={() => void handleDeleteUser(user._id)}
+                    onConfirm={() => handleDeleteUser(user._id)}
                     // confirmVariant="destructive"
                   >
                     <button className="text-red-600 hover:text-red-800 transition-colors">

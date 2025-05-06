@@ -326,7 +326,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
       /> */}
       <ConfirmModal
         title={usersTranslate.users[lang].editUsers.actions.deleteConfirm}
-        onConfirm={() => void handleDeleteUser()}
+        onConfirm={handleDeleteUser}
         // confirmVariant="destructive"
       >
         <Button variant="destructive" size="sm" icon={<FiTrash2 />} danger />

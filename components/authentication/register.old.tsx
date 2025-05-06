@@ -9,8 +9,8 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 
-import api from "../../app/lib/utilities/api";
-import { lang } from "../../app/lib/utilities/lang";
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import Spinner from "../spinner/spinner";
 
 const RegisterPage = () => {

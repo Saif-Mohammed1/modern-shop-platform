@@ -9,10 +9,13 @@ import StarRatings from "react-star-ratings";
 
 import type { ProductType } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";
+import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
+import { addToCartItems } from "@/components/providers/store/cart/cart.store";
+import {
+  isInWishlist,
+  toggleWishlist,
+} from "@/components/providers/store/wishlist/wishlist.store";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
-
-import { useCartItems } from "../providers/context/cart/cart.context";
-import { useWishlist } from "../providers/context/wishlist/wishlist.context";
 
 import Input from "./Input";
 
@@ -21,8 +24,7 @@ import Input from "./Input";
 const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const router = useRouter();
-  const { isInWishlist, toggleWishlist } = useWishlist();
-  const { addToCartItems } = useCartItems();
+
   // const [isWishlisted, setIsWishlisted] = useState(false);
   // const [isZoomed, setIsZoomed] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -77,7 +79,8 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const handleImageNavigation = (index: number) => {
     setCurrentImageIndex(index);
   };
-
+  const { discountPercentage, discountedPrice, isDiscountValid } =
+    calculateDiscount(product);
   return (
     // <AnimatePresence>
     //   <motion.div
@@ -131,12 +134,12 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           </div>
 
           {/* Discount Badge */}
-          {product.discount > 0 && (
+          {isDiscountValid ? (
             <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-              {((product.discount / product.price) * 100).toFixed(0)}%
+              {discountPercentage.toFixed(0)}%
               {shopPageTranslate[lang].RelatedProducts.off}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -162,13 +165,13 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           </div>
           <div className="flex items-baseline gap-1 md:gap-3">
             <span className="text-xl md:text-3xl font-bold text-primary">
-              ${(product.price - product.discount).toFixed(2)}
+              ${discountedPrice.toFixed(2)}
             </span>
-            {product.discount > 0 && (
+            {isDiscountValid ? (
               <span className="text-lg text-gray-400 line-through">
                 ${product.price.toFixed(2)}
               </span>
-            )}
+            ) : null}
           </div>
         </div>
         <div className="space-y-2">

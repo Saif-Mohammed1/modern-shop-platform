@@ -7,13 +7,14 @@ import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTranslate";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 
-import api from "../../app/lib/utilities/api";
-import { lang } from "../../app/lib/utilities/lang";
+
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
-import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
+import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
 import Spinner from "../spinner/spinner";
 
 const LoginPage = () => {

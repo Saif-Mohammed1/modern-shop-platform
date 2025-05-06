@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 
-import api from "../../app/lib/utilities/api";
 import SubmitButton from "../ui/SubmitButton";
 
 const resetPasswordSchema = z

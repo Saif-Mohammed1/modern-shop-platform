@@ -161,7 +161,7 @@ const BackupCodeInput: FC<BackupCodeInputProps> = ({
                 onChange={(e) => {
                   handleCodeChange(index, e.target.value);
                 }}
-                onPaste={(e) => void handleOnPaste(index, e)}
+                onPaste={(e) => handleOnPaste(index, e)}
                 placeholder="XXXX-XXXX-XXXX"
                 className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center font-mono mt-1"
                 disabled={isLoading}

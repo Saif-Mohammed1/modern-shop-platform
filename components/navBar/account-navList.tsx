@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { signOut } from "next-auth/react";
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { AiOutlineShoppingCart } from "react-icons/ai";
@@ -15,11 +14,12 @@ import {
 } from "react-icons/vsc";
 
 import { allowedRoles, type UserAuthType } from "@/app/lib/types/users.types";
+import api from "@/app/lib/utilities/api";
+import { deleteCookies } from "@/app/lib/utilities/cookies";
+import { lang } from "@/app/lib/utilities/lang";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 
-import api from "../../app/lib/utilities/api";
-import { deleteCookies } from "../../app/lib/utilities/cookies";
-import { lang } from "../../app/lib/utilities/lang";
+import { logOutUser } from "../providers/store/user/user.store";
 import CustomLink from "../ui/CustomLink";
 
 type AccountNavListProps = {
@@ -30,7 +30,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
   const navListRef = useRef<HTMLDivElement | null>(null);
   const logOut = async () => {
     try {
-      await signOut();
+      await logOutUser();
       toast.success(
         navBarTranslate[lang].accountNavList.functions.logOut.success
       );

@@ -5,10 +5,10 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { RiShieldUserLine } from "react-icons/ri";
 
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountTwoFactorTranslate } from "@/public/locales/client/(auth)/account/twoFactorTranslate";
 
-import api from "../../app/lib/utilities/api";
 
 import AuditLogViewer from "./auditLogViewer";
 import BackupCodesDisplay from "./backupCodesDisplay";
@@ -222,7 +222,7 @@ const TwoFactorAuthDashboard = () => {
           {view === "backup" && setupData?.backupCodes ? (
             <BackupCodesDisplay
               codes={setupData.backupCodes}
-              onComplete={() => void onComplete()}
+              onComplete={onComplete}
             />
           ) : null}
 

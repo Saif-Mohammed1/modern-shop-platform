@@ -4,7 +4,6 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { type FC, Fragment, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -18,6 +17,7 @@ import {
 import api from "@/app/lib/utilities/api";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
+import { logOutUser } from "@/components/providers/store/user/user.store";
 import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
 
 const Sidebar: FC = () => {
@@ -66,7 +66,7 @@ const Sidebar: FC = () => {
     let toastLoading;
     try {
       toastLoading = toast.loading("Logging out...");
-      await signOut();
+      await logOutUser();
       await deleteCookies("refreshAccessToken");
 
       await api.post("/auth/logout");

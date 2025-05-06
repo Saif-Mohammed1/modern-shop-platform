@@ -1,6 +1,5 @@
 "use client";
 
-import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
@@ -9,11 +8,12 @@ import {
   RefreshTokenStatus,
   type sessionInfo,
 } from "@/app/lib/types/session.types";
+import api from "@/app/lib/utilities/api";
+import { deleteCookies } from "@/app/lib/utilities/cookies";
+import { lang } from "@/app/lib/utilities/lang";
 import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
 
-import api from "../../app/lib/utilities/api";
-import { deleteCookies } from "../../app/lib/utilities/cookies";
-import { lang } from "../../app/lib/utilities/lang";
+import { logOutUser } from "../providers/store/user/user.store";
 
 import DeviceInfoSection from "./deviceInfoSection";
 
@@ -55,7 +55,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       // API call to delete the user account
       await api.delete("/customers/");
 
-      await signOut();
+      await logOutUser();
       await deleteCookies("refreshAccessToken");
 
       await api.post("/auth/logout");
@@ -130,7 +130,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
         accountSettingsTranslate[lang].functions.handleSignoutAll.loading
       );
       await api.delete("/auth/refresh-token");
-      await signOut();
+      await logOutUser();
       await deleteCookies("refreshAccessToken");
 
       toast.success(

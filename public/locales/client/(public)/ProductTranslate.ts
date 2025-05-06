@@ -1,3 +1,17 @@
+const relatedProductTranslate = {
+  en: {
+    title: "Related Products",
+    noRelatedProducts: "No related products found",
+    off: "OFF",
+    discountedPrice: "Discounted Price",
+  },
+  uk: {
+    title: "Схожі продукти",
+    noRelatedProducts: "Схожі продукти не знайдено",
+    off: "-",
+    discountedPrice: "Знижена ціна",
+  },
+} as const;
 export const ProductTranslate = {
   en: {
     ProductVersionHistory: {
@@ -9,6 +23,7 @@ export const ProductTranslate = {
         },
       },
     },
+    relatedProduct: relatedProductTranslate.en,
     Tables: {
       head: "Version ID",
       date: "Date",
@@ -61,5 +76,6 @@ export const ProductTranslate = {
       title:
         "Ви впевнені, що хочете відновити цю версію? Поточні дані будуть замінені.",
     },
+    relatedProduct: relatedProductTranslate.uk,
   },
 } as const;

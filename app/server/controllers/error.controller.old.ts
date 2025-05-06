@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { logRequestError } from "@/app/lib/logger/logs";
-import AppError from "@/app/lib/utilities/appError";
-import { lang } from "@/app/lib/utilities/lang";
+import { logRequestError } from "../../lib/logger/logs";
+import AppError from "../../lib/utilities/appError";
+import { lang } from "../../lib/utilities/lang";
 
 import { errorControllerTranslate } from "../../../public/locales/server/errorControllerTranslate";
 

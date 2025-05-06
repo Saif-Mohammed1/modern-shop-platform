@@ -2,13 +2,13 @@
 "use client";
 
 import { lang } from "@/app/lib/utilities/lang";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
+import { useWishlistStore } from "@/components/providers/store/wishlist/wishlist.store";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 
 import WishListCard from "./wishListCard";
 
 const WishlistPage = () => {
-  const { wishlist } = useWishlist();
+  const wishlist = useWishlistStore((state) => state.wishlist);
 
   return (
     <div className="container mx-auto mt-8 ">

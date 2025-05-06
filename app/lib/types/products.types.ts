@@ -1,5 +1,5 @@
-import type {ReviewsType} from './reviews.types';
-import type {UserAuthType} from './users.types';
+import type { ReviewsType } from "./reviews.types";
+import type { UserAuthType } from "./users.types";
 
 export type ProductsSearchParams = {
   category?: string;
@@ -31,7 +31,7 @@ export type ProductType = {
   category: string;
   price: number;
   discount: number;
-  discountExpire?: Date;
+  discountExpire?: Date | string;
   images: OldImage[] | [];
   userId: Partial<UserAuthType>;
   description: string;

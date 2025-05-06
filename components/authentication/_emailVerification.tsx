@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
+import { lang } from "@/app/lib/utilities/lang";
 import { verifyEmailPasswordTranslate } from "@/public/locales/client/(public)/auth/verifyEmailPasswordTranslate copy";
 
-import { lang } from "../../app/lib/utilities/lang";
 
 const EmailVerificationPage = () => {
   const [isSending, setIsSending] = useState(false);

@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
-import CartDropdown from '../cart/cartDropdown';
-import {useCartItems} from '../providers/context/cart/cart.context';
+import CartDropdown from "../cart/cartDropdown";
+import {
+  setIsCartOpen,
+  toggleCart,
+  useCartStore,
+} from "../providers/store/cart/cart.store";
 
-import AccountDropdown from './ accountDropdown';
+import AccountDropdown from "./accountDropdown";
 
 const NavBar = () => {
-  const {isCartOpen, toggleCartStatus, setIsCartOpen, cartItems} = useCartItems(); // get the cartItemsCount from context
-
-  const toggleCart = () => {
-    toggleCartStatus();
-  };
-
+  const cartItems = useCartStore((state) => state.cartItems);
+  const isCartOpen = useCartStore((state) => state.isCartOpen);
   return (
     <nav className="flex items-center justify-between bg-white shadow-lg -mx-2 -mt-2 sm:-mx-4 sm:-mt-4 p-3 sm:p-5">
       {/* Logo */}
@@ -23,7 +23,9 @@ const NavBar = () => {
       {/* Account Dropdown */}
       <AccountDropdown cartItems={cartItems} toggleCart={toggleCart} />
       {/* Cart Dropdown */}
-      {isCartOpen ? <CartDropdown cartItems={cartItems} setIsCartOpen={setIsCartOpen} /> : null}
+      {isCartOpen ? (
+        <CartDropdown cartItems={cartItems} setIsCartOpen={setIsCartOpen} />
+      ) : null}
     </nav>
   );
 };

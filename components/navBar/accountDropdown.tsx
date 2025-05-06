@@ -3,10 +3,10 @@ import { AiOutlineShoppingCart } from "react-icons/ai";
 import { VscAccount } from "react-icons/vsc";
 
 import { type CartItemsType } from "@/app/lib/types/cart.types";
+import { lang } from "@/app/lib/utilities/lang";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 
-import { lang } from "../../app/lib/utilities/lang";
-import { useUser } from "../providers/context/user/user.context";
+import { useUserStore } from "../providers/store/user/user.store";
 
 import AccountNavList from "./account-navList";
 
@@ -15,7 +15,7 @@ type Props = {
   toggleCart: () => void;
 };
 const AccountDropdown: FC<Props> = ({ cartItems, toggleCart }) => {
-  const { user } = useUser();
+  const user = useUserStore((state) => state.user);
 
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 

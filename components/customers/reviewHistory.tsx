@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 import type { ReviewsType } from "@/app/lib/types/reviews.types";
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountReviewsTranslate } from "@/public/locales/client/(auth)/account/reviewsTranslate";
 
-import api from "../../app/lib/utilities/api";
 import CustomButton from "../button/button";
 
 const ReviewHistory = ({
@@ -121,7 +121,7 @@ const ReviewHistory = ({
             </div>{" "}
             <CustomButton
               showMore={showMore}
-              getMoreResults={() => void getMoreResults()}
+              getMoreResults={getMoreResults}
               loading={loading}
             />
           </>

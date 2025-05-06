@@ -7,12 +7,17 @@ import toast from "react-hot-toast";
 import { FiX } from "react-icons/fi";
 
 import { type CartItemsType } from "@/app/lib/types/cart.types";
+import { lang } from "@/app/lib/utilities/lang";
+import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
+import imageSrc from "@/app/lib/utilities/productImageHandler";
 import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
 
-import { lang } from "../../app/lib/utilities/lang";
-import imageSrc from "../../app/lib/utilities/productImageHandler";
-import { useCartItems } from "../providers/context/cart/cart.context";
-import { useUser } from "../providers/context/user/user.context";
+import {
+  addToCartItems,
+  clearProductFromCartItem,
+  decrementCartItemQuantity,
+} from "../providers/store/cart/cart.store";
+import { useUserStore } from "../providers/store/user/user.store";
 
 type CartDropdownProps = {
   setIsCartOpen: (value: boolean) => void;
@@ -20,9 +25,7 @@ type CartDropdownProps = {
 };
 
 const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
-  const { removeCartItem, addToCartItems, clearProductFromCartItem } =
-    useCartItems();
-  const { user } = useUser();
+  const user = useUserStore((state) => state.user);
   const router = useRouter();
   const cartRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +60,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
   const handleDecrease = (item: CartItemsType) =>
     handleCartAction(
-      () => removeCartItem(item),
+      () => decrementCartItemQuantity(item),
       cartDropdownTranslate[lang].functions.handleDecrease.removingFromCart,
       cartDropdownTranslate[lang].functions.handleDecrease.success,
       cartDropdownTranslate[lang].functions.handleDecrease.error
@@ -126,12 +129,19 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
     };
   }, [setIsCartOpen]);
 
-  const calculatePrice = (item: CartItemsType) => {
-    const isValidDiscount =
-      item.discount && item.discountExpire && item.discountExpire > new Date();
-
-    return isValidDiscount ? item.price - item.discount : item.price;
-  };
+  // const calculatePrice = (item: CartItemsType) => {
+  //   const now = new Date();
+  //   const discountExpire = item.discountExpire
+  //     ? new Date(item.discountExpire)
+  //     : null;
+  // const discountPercentage =
+  //   item.discount > 0
+  //     ? Math.round((item.discount / item.price) * 100)
+  //     : 0;
+  //   const isValidDiscount =
+  //     !!item.discount && !!discountExpire && discountExpire > now;
+  //   return isValidDiscount ? item.price - item.discount : item.price;
+  // };
   return (
     <>
       <button
@@ -163,7 +173,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
           {/* Keep existing cart items rendering */}
           {cartItems?.length > 0 ? (
             cartItems.map((item) => {
-              const price = calculatePrice(item);
+              const { discountedPrice: price } = calculateDiscount(item);
               const total = (price * item.quantity).toFixed(2);
               return (
                 <div key={item._id} className="flex items-center gap-4 mb-4">

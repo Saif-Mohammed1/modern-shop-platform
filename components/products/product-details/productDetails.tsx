@@ -15,10 +15,14 @@ import type { ProductType } from "@/app/lib/types/products.types";
 // import type { ReviewsType } from "@/app/lib/types/reviews.types";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import ReviewSection from "@/components/products/Review/review";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import { useUser } from "@/components/providers/context/user/user.context";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
+import { addToCartItems } from "@/components/providers/store/cart/cart.store";
+import { useUserStore } from "@/components/providers/store/user/user.store";
+import {
+  isInWishlist,
+  toggleWishlist,
+} from "@/components/providers/store/wishlist/wishlist.store";
 import ComponentLoading from "@/components/spinner/componentLoading";
 import Input from "@/components/ui/Input";
 import RelatedProducts from "@/components/ui/relatedProducts";
@@ -46,14 +50,12 @@ const ProductDetail = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState<ProductType[]>([]);
   const [quantity, setQuantity] = useState(1);
-  const { isInWishlist, toggleWishlist } = useWishlist();
-  const { addToCartItems } = useCartItems();
-  const { user } = useUser();
+
+  const user = useUserStore((state) => state.user);
+
   const stock = product.stock - (product.reserved ?? 0);
-  const discountPercentage =
-    product.discount > 0
-      ? Math.round((product.discount / product.price) * 100)
-      : 0;
+  const { discountPercentage, discountedPrice, isDiscountValid } =
+    calculateDiscount(product);
 
   const handleImageChange = (index: number) => {
     setCurrentImageIndex(index);
@@ -245,9 +247,9 @@ const ProductDetail = ({
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               <span className="text-4xl font-bold text-gray-900">
-                ${(product.price - product.discount).toFixed(2)}
+                ${discountedPrice.toFixed(2)}
               </span>
-              {product.discount > 0 && (
+              {isDiscountValid ? (
                 <>
                   <span className="text-xl text-gray-500 line-through">
                     ${product.price.toFixed(2)}
@@ -256,7 +258,7 @@ const ProductDetail = ({
                     -{discountPercentage}%
                   </span>
                 </>
-              )}
+              ) : null}
             </div>
 
             <div className="flex items-center space-x-2">
@@ -323,15 +325,18 @@ const ProductDetail = ({
               </button>
             </div>
 
-            {product.discountExpire ? (
+            {isDiscountValid ? (
               <div className="bg-yellow-50 p-3 rounded-lg">
                 <p className="text-sm text-yellow-700">
                   {shopPageTranslate[lang].content.discountExpires}{" "}
-                  {new Date(product.discountExpire).toLocaleDateString(lang, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {new Date(product.discountExpire || "").toLocaleDateString(
+                    lang,
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )}
                   {/* {formatDateTime(product.discountExpire)} */}
                 </p>
               </div>

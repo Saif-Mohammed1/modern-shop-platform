@@ -5,9 +5,9 @@ import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 
 import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import { forgetPasswordTranslate } from "@/public/locales/client/(public)/auth/forgetPasswordTranslate";
 
-import { lang } from "../../app/lib/utilities/lang";
 import Spinner from "../spinner/spinner";
 
 const ForgotPasswordPage = () => {

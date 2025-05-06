@@ -1,4 +1,4 @@
-import type { IProduct } from "../../server/models/Product.model";
+import type { IProduct } from "@/app/server/models/Product.model";
 
 import type { UserAuthType } from "./users.types";
 

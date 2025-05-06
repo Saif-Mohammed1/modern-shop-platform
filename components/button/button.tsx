@@ -1,13 +1,17 @@
-import {reviewsTranslate} from '@/public/locales/client/(public)/reviewsTranslate';
+import { lang } from "@/app/lib/utilities/lang";
+import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 
-import {lang} from '../../app/lib/utilities/lang';
 
 type CustomButtonProps = {
   showMore: boolean;
   getMoreResults: () => void;
   loading: boolean;
 };
-const CustomButton = ({showMore, getMoreResults, loading}: CustomButtonProps) => {
+const CustomButton = ({
+  showMore,
+  getMoreResults,
+  loading,
+}: CustomButtonProps) => {
   return showMore ? (
     <div className="flex justify-center my-2">
       <button

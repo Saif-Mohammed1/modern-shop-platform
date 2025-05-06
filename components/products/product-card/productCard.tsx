@@ -8,16 +8,18 @@ import StarRatings from "react-star-ratings";
 
 import type { ProductType } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";
+import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import { useUser } from "@/components/providers/context/user/user.context";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
+import { addToCartItems } from "@/components/providers/store/cart/cart.store";
+import { useUserStore } from "@/components/providers/store/user/user.store";
+import {
+  isInWishlist,
+  toggleWishlist,
+} from "@/components/providers/store/wishlist/wishlist.store";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 const ProductCard = ({ product }: { product: ProductType }) => {
-  const { addToCartItems } = useCartItems();
-  const { isInWishlist, toggleWishlist } = useWishlist();
-  const { user } = useUser();
+  const user = useUserStore((state) => state.user);
 
   const toggleWishlistHandler = async () => {
     let toastLoading;
@@ -81,22 +83,28 @@ const ProductCard = ({ product }: { product: ProductType }) => {
     toast.dismiss(ToastId);
   };
 
-  const discountPrice =
-    product.discount > 0
-      ? (product.price - product.discount).toFixed(2)
-      : product.price;
+  // const discountPrice =
+  //   product.discount > 0
+  //     ? (product.price - product.discount).toFixed(2)
+  //     : product.price;
   // product.discount > 0
   //   ? (product.price - product.price * (product.discount / 100)).toFixed(2)
   //   : product.price;
+  const {
+    discountedPrice: discountPrice,
+    isDiscountValid,
+    discountPercentage,
+  } = calculateDiscount(product);
 
   return (
     <div className="bg-white overflow-hidden rounded-lg shadow-md p-5 relative transition-transform transform hover:scale-105 duration-300">
-      {product.discount > 0 && (
+      {isDiscountValid ? (
         <div className="absolute top-4 -left-5 text-center transform -rotate-[35deg] p-1 leading-5 custom-shadow  bg-red-500 text-white text-xs font-bold rounded-br-lg w-[40%]">
-          {((product.discount / product.price) * 100).toFixed(0)}%
+          {/* {((product.discount / product.price) * 100).toFixed(0)}% */}
+          {discountPercentage.toFixed(0)}%
           {shopPageTranslate[lang].RelatedProducts.off}
         </div>
-      )}
+      ) : null}
       <Link href={`/shop/${product.slug}`}>
         <div className="imgParent">
           <Image
@@ -120,7 +128,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
 
       <div className="flex items-center justify-between mb-4">
         <div>
-          {product.discount > 0 ? (
+          {isDiscountValid ? (
             <div className="flex items-center gap-2">
               <span className="text-gray-700 font-medium line-through">
                 ${product.price}

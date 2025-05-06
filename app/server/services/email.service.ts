@@ -2,9 +2,9 @@
 import nodemailer from "nodemailer";
 
 import logger from "@/app/lib/logger/logs";
+import type { DeviceInfo } from "@/app/lib/types/session.types";
 import type { UserRepository } from "@/app/server/repositories/user.repository";
 
-import type { DeviceInfo } from "../../lib/types/session.types";
 
 interface EmailConfig {
   service: string;

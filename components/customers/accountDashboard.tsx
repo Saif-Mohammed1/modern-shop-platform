@@ -1,14 +1,15 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import type { Event } from "@/app/lib/types/products.types";
+import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
 
-import api from "../../app/lib/utilities/api";
+import SkeletonTable from "../ui/SkeletonTable";
 
 type EditableFields = "name" | "email" | "phone";
 type FormDataType = {
@@ -24,8 +25,8 @@ type UserDataType = {
 };
 const AccountDashboard = () => {
   const { data: session, update } = useSession();
-  //   const { user } = use(UserContext); // Assuming these methods exist in your UserContext
 
+  //   const { user } = use(UserContext); // Assuming these methods exist in your UserContext
   const [isEditing, setIsEditing] = useState<{
     [key in EditableFields]: boolean;
   }>({
@@ -35,10 +36,10 @@ const AccountDashboard = () => {
   });
 
   const [userData, setUserData] = useState<UserDataType>({
-    name: session?.user?.name ?? "",
-    email: session?.user?.email ?? "",
-    phone: session?.user?.phone ?? "",
-    emailVerify: session?.user?.verification.emailVerified ?? false,
+    name: "",
+    email: "",
+    phone: "",
+    emailVerify: false,
   });
 
   const [formData, setFormData] = useState<FormDataType>({
@@ -270,6 +271,26 @@ const AccountDashboard = () => {
     }
   };
 
+  useEffect(() => {
+    if (session?.user) {
+      setUserData({
+        name: session.user.name ?? "",
+        email: session.user.email ?? "",
+        phone: session.user.phone ?? "",
+        emailVerify: session.user.verification?.emailVerified ?? false,
+      });
+    }
+  }, [session]);
+
+  if (!session) {
+    return (
+      <table className="min-w-full divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-200">
+          <SkeletonTable columns={4} rows={6} />;
+        </tbody>
+      </table>
+    );
+  }
   return (
     <div className="w-full max-w-3xl /mx-auto bg-white p-8 shadow-lg rounded-lg">
       <h1 className="text-2xl font-bold mb-6">
@@ -472,7 +493,7 @@ const AccountDashboard = () => {
             <input
               type="checkbox"
               checked={session?.user?.loginNotificationSent}
-              onChange={() => void handleNotificationToggle}
+              onChange={handleNotificationToggle}
               className={`sr-only ${session?.user?.loginNotificationSent ? "peer-checked:bg-blue-500" : ""}`}
             />
             <div

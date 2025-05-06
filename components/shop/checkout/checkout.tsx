@@ -9,9 +9,10 @@ import type { AddressType } from "@/app/lib/types/address.types";
 import type { Event } from "@/app/lib/types/products.types";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
+import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import type { AddressFormValues } from "@/components/customers/address/AddressForm";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
+import { useCartStore } from "@/components/providers/store/cart/cart.store";
 import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
 
 const AddressForm = dynamic(
@@ -19,9 +20,8 @@ const AddressForm = dynamic(
 );
 
 const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
-  const { cartItems } = useCartItems(); // Assuming useCartItems is available
   const [addresses, setAddresses] = useState<AddressType[]>(address || []);
-
+  const cartItems = useCartStore((state) => state.cartItems);
   const [selectedAddress, setSelectedAddress] = useState(
     addresses.length ? addresses[0] : ""
   );
@@ -36,15 +36,12 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
   const [showAddressForm, setShowAddressForm] = useState(false);
 
   // Calculate subtotal of cart items
-  const subtotal = cartItems.reduce(
-    (total, item) =>
-      total +
-      (item.discount && item.discountExpire && item.discountExpire > new Date()
-        ? item.price - item.discount
-        : item.price) *
-        item.quantity,
-    0
-  );
+  const subtotal = cartItems.reduce<number>((total, item) => {
+    const { discountedPrice, isDiscountValid } = calculateDiscount(item);
+    return (
+      total + (isDiscountValid ? discountedPrice : item.price) * item.quantity
+    );
+  }, 0);
   const feePercentage = Number(process.env.NEXT_PUBLIC_FEES_PERCENTAGE ?? 0);
   const feeDecimal = feePercentage / 100;
 
@@ -226,12 +223,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
           </h3>
           <div className="w-full max-h-[120vh] md:max-h-[70vh] overflow-y-auto mb-4">
             {cartItems.map((item, index) => {
-              const price =
-                item.discount &&
-                item.discountExpire &&
-                item.discountExpire > new Date()
-                  ? item.price - item.discount
-                  : item.price;
+              const { discountedPrice: price } = calculateDiscount(item);
 
               return (
                 <div

@@ -11,12 +11,13 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { FiLock, FiMail, FiUser } from "react-icons/fi";
 import { z } from "zod";
 
+import api from "@/app/lib/utilities/api";
+import { lang } from "@/app/lib/utilities/lang";
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 
-import api from "../../app/lib/utilities/api";
-import { lang } from "../../app/lib/utilities/lang";
-import { mergeLocalCartWithDB } from "../providers/context/cart/cartAction";
+
+import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
 import Spinner from "../spinner/spinner";
 import Input from "../ui/Input";
 

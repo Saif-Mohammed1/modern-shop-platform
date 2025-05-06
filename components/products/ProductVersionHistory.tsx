@@ -125,7 +125,7 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
                 <TableCell>
                   <ConfirmModal
                     title={ProductTranslate[lang].confirmModal.title}
-                    onConfirm={() => void handleRestore(version.versionId)}
+                    onConfirm={() => handleRestore(version.versionId)}
                   >
                     <Button variant="outline" size="sm">
                       {ProductTranslate[lang].Button.restore}

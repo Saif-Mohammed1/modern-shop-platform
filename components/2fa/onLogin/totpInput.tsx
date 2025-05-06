@@ -43,6 +43,7 @@ const TotpInput: FC<TotpInputProps> = ({
     const pastedData = e.clipboardData.getData("text/plain").slice(0, 6);
     // if (/^\d+$/.test(pastedData)) {
     const newCode = pastedData.split("").slice(0, 6);
+
     setCode(newCode);
     await handleSubmit(newCode.join(""));
     // }
@@ -86,8 +87,8 @@ const TotpInput: FC<TotpInputProps> = ({
             inputMode="numeric"
             maxLength={1}
             value={digit}
-            onChange={(e) => void handleChange(index, e.target.value)}
-            onPaste={() => handlePaste}
+            onChange={(e) => handleChange(index, e.target.value)}
+            onPaste={(e) => handlePaste(e)}
             onKeyDown={(e) => {
               handleKeyDown(index, e);
             }}

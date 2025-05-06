@@ -8,16 +8,14 @@ import { AiFillHeart, AiOutlineShoppingCart } from "react-icons/ai";
 import type { ProductType } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
-import { useCartItems } from "@/components/providers/context/cart/cart.context";
-import { useWishlist } from "@/components/providers/context/wishlist/wishlist.context";
+import { addToCartItems } from "@/components/providers/store/cart/cart.store";
+import { toggleWishlist } from "@/components/providers/store/wishlist/wishlist.store";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 const WishListCard = ({ product }: { product: ProductType }) => {
   // const { toggleWishlist, isInWishlist } = useWishlist();
-  const { toggleWishlist } = useWishlist();
 
-  const { addToCartItems } = useCartItems();
   const handelAddToCart = async () => {
     let toastLoading;
     try {
