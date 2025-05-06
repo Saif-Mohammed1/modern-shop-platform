@@ -15,7 +15,7 @@ import {
 export const UserSessionSync = ({
   initialSession,
 }: {
-  initialSession: Session;
+  initialSession: Session | null;
 }) => {
   const { data: session } = useSession();
   useEffect(() => {
