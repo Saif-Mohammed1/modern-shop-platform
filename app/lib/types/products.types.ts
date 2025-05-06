@@ -31,7 +31,7 @@ export type ProductType = {
   category: string;
   price: number;
   discount: number;
-  discountExpire?: Date | string;
+  discountExpire?: Date; //| string;
   images: OldImage[] | [];
   userId: Partial<UserAuthType>;
   description: string;
