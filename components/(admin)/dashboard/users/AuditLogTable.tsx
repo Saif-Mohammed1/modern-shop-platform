@@ -6,7 +6,7 @@ import { FiGlobe, FiMapPin, FiMonitor } from "react-icons/fi";
 import type {
   AuditLogDetails,
   ClientAuditLogDetails,
-} from "@/app/lib/types/audit.types";
+} from "@/app/lib/types/audit.db.types";
 import { lang } from "@/app/lib/utilities/lang";
 import {
   Table,

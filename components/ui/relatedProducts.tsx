@@ -127,7 +127,7 @@ const RelatedProducts = ({
                     <div className="space-y-1">
                       <div className="ratings">
                         <StarRatings
-                          rating={product.ratingsAverage}
+                          rating={product.ratings_average}
                           starRatedColor="#ffb829"
                           numberOfStars={5}
                           starDimension="20px"
@@ -175,7 +175,7 @@ const RelatedProducts = ({
                     <div className="space-y-1">
                       <div className="ratings">
                         <StarRatings
-                          rating={product.ratingsAverage}
+                          rating={product.ratings_average}
                           starRatedColor="#ffb829"
                           numberOfStars={5}
                           starDimension="20px"

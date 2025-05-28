@@ -167,7 +167,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-1">
           <StarRatings
-            rating={product.ratingsAverage}
+            rating={product.ratings_average}
             starRatedColor="#ffb829"
             numberOfStars={5}
             starDimension="20px"
@@ -175,7 +175,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
             name="rating"
           />
           <span className="text-gray-600 text-sm">
-            ({product.ratingsQuantity})
+            ({product.ratings_quantity})
           </span>
         </div>
         <div className="flex items-center gap-4">

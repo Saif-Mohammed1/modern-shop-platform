@@ -13,8 +13,11 @@ import {
   VscSignOut,
 } from "react-icons/vsc";
 
-import { allowedRoles, type UserAuthType } from "@/app/lib/types/users.types";
-import api from "@/app/lib/utilities/api";
+import {
+  allowedRoles,
+  type UserAuthType,
+} from "@/app/lib/types/users.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
@@ -35,7 +38,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
         navBarTranslate[lang].accountNavList.functions.logOut.success
       );
       await deleteCookies("refreshAccessToken");
-      await api.post("/auth/logout");
+      await api_client.post("/auth/logout");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Error logging out";
@@ -174,7 +177,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
           </Link>
 
           <button
-            className="flex items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300 cursor-pointer"
+            className="flex w-full items-center px-4 py-2 hover:bg-gray-200 border-b border-gray-300 cursor-pointer"
             onClick={logOut}
           >
             <VscSignOut className="mr-2" />

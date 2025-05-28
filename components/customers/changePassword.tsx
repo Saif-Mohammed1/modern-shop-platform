@@ -8,7 +8,7 @@ import {
   RefreshTokenStatus,
   type sessionInfo,
 } from "@/app/lib/types/session.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
@@ -53,12 +53,12 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       );
 
       // API call to delete the user account
-      await api.delete("/customers/");
+      await api_client.delete("/customers/");
 
       await logOutUser();
       await deleteCookies("refreshAccessToken");
 
-      await api.post("/auth/logout");
+      await api_client.post("/auth/logout");
 
       toast.success(
         accountSettingsTranslate[lang].functions.handleDeleteAccount.success
@@ -97,7 +97,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
         accountSettingsTranslate[lang].functions.handlePasswordUpdate.loading
       );
 
-      await api.patch("/customers/update-password", {
+      await api_client.patch("/customers/update-password", {
         password,
         newPassword,
         confirmPassword,
@@ -129,7 +129,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       loadingToast = toast.loading(
         accountSettingsTranslate[lang].functions.handleSignoutAll.loading
       );
-      await api.delete("/auth/refresh-token");
+      await api_client.delete("/auth/refresh-token");
       await logOutUser();
       await deleteCookies("refreshAccessToken");
 

@@ -1,11 +1,11 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
-import type {DeviceInfo} from '@/app/lib/types/session.types';
-import type {UserAuthType} from '@/app/lib/types/users.types';
+import type { DeviceInfo } from "@/app/lib/types/session.types";
+import type { UserAuthType } from "@/app/lib/types/users.db.types";
 
 // Create a transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.GMAIL, // Your Gmail email address
     pass: process.env.PASSWORD, // Your Gmail password or app password
@@ -75,18 +75,18 @@ export const Email = async (user: UserAuthType, token: string) => {
 
   // Define email options
   await transporter.sendMail({
-    from: 'Support <no-reply@example.com>', // Sender address
+    from: "Support <no-reply@example.com>", // Sender address
     to: user.email, // List of receivers
-    subject: 'Temporary Reset Token', // Subject line
+    subject: "Temporary Reset Token", // Subject line
     html: emailHTML, // HTML content
   });
 };
 export const ChangeEmail = async (user: UserAuthType, token: string) => {
   // Define email options
   await transporter.sendMail({
-    from: 'Support <no-reply@example.com>',
+    from: "Support <no-reply@example.com>",
     to: user.email,
-    subject: 'Confirm Email Change Request',
+    subject: "Confirm Email Change Request",
     html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
       <h2 style="color: #333;">Confirm Your Email Change Request</h2>
@@ -106,11 +106,14 @@ export const ChangeEmail = async (user: UserAuthType, token: string) => {
   `,
   });
 };
-export const sendVerificationCode = async (user: Partial<UserAuthType>, code: string) => {
+export const sendVerificationCode = async (
+  user: Partial<UserAuthType>,
+  code: string
+) => {
   await transporter.sendMail({
     from: `${process.env.APP_NAME} <no-reply@example.com>`, // process.env.SENDER_EMAIL,
     to: user.email,
-    subject: 'Email Verification Code',
+    subject: "Email Verification Code",
     html: `
     <div style="font-family: Arial, sans-serif; color: #333;">
       <h2 style="color: #0056b3;">Email Verification Code</h2>
@@ -126,7 +129,10 @@ export const sendVerificationCode = async (user: Partial<UserAuthType>, code: st
   `,
   });
 };
-export const sendEmailWithInvoice = async (user: UserAuthType, link: string) => {
+export const sendEmailWithInvoice = async (
+  user: UserAuthType,
+  link: string
+) => {
   // Setup email data
   /*let mailOptions = {
       from: '"fashFlash" <no-reply@yourcompany.com>', // Sender address
@@ -173,16 +179,16 @@ export const sendEmailWithInvoice = async (user: UserAuthType, link: string) => 
 
 export const sendEmailOnDetectedUnusualActivity = async (
   user: UserAuthType,
-  deviceInfo: string,
-  ipAddress: string,
+  device_info: string,
+  ipAddress: string
 ) => {
   await transporter.sendMail({
     from: `${process.env.APP_NAME} <no-reply@example.com>`,
     to: user.email,
-    subject: 'Unusual Login Activity Detected',
+    subject: "Unusual Login Activity Detected",
     html: `
       <p>We noticed a new login to your account from a different device or location.</p>
-      <p><strong>Device Information:</strong> ${deviceInfo}</p>
+      <p><strong>Device Information:</strong> ${device_info}</p>
       <p><strong>IP Address:</strong> ${ipAddress}</p>
       <p>If this was you, no further action is required. Otherwise, <a href="${process.env.NEXTAUTH_URL}/reset-password">change your password</a> immediately.</p>
     `,
@@ -192,19 +198,19 @@ export const sendEmailOnDetectedUnusualActivity = async (
 export const sendRefundStatusUpdateEmail = async (
   user: UserAuthType,
   status: string,
-  reason: string,
+  reason: string
 ) => {
-  const subject = `Your Refund Request ${status === 'approved' ? 'Approved' : 'Rejected'}`;
+  const subject = `Your Refund Request ${status === "approved" ? "Approved" : "Rejected"}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
       <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
         <h2 style="color: #4CAF50;">Refund Request ${
-          status === 'approved' ? 'Approved' : 'Refused'
+          status === "approved" ? "Approved" : "Refused"
         }</h2>
         <p>Dear ${user.name},</p>
-        <p>Your refund request has been ${status === 'approved' ? 'approved' : 'refused'}.</p>
-        ${status === 'refused' ? `<p><strong>Reason for refusal:</strong> ${reason}</p>` : ''}
+        <p>Your refund request has been ${status === "approved" ? "approved" : "refused"}.</p>
+        ${status === "refused" ? `<p><strong>Reason for refusal:</strong> ${reason}</p>` : ""}
         <p>If you have any questions, please feel free to contact our support team.</p>
         <p>Best regards,</p>
         <p>The Support Team</p>
@@ -213,21 +219,24 @@ export const sendRefundStatusUpdateEmail = async (
   `;
 
   await transporter.sendMail({
-    from: 'support@example.com',
+    from: "support@example.com",
     to: user.email,
     subject,
     html,
   });
 };
-export const sendMessageForNewPassword = async (user: UserAuthType, newPassword: string) => {
+export const sendMessageForNewPassword = async (
+  user: UserAuthType,
+  newPassword: string
+) => {
   await transporter.sendMail({
     from: `Support <${process.env.APP_NAME}>`,
     to: user.email,
-    subject: 'Password Reset Successful',
+    subject: "Password Reset Successful",
     html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
           <h2 style="color: #0056b3; text-align: center;">Password Reset Successful</h2>
-          <p>Dear ${user.name || 'User'},</p>
+          <p>Dear ${user.name || "User"},</p>
           <p>Your password has been successfully reset. Below is your new password:</p>
           <p style="text-align: center; font-size: 18px; font-weight: bold; color: #d63384; background: #f8f9fa; padding: 10px; border-radius: 5px;">${newPassword}</p>
           <p><strong>For security reasons, we recommend that you change your password after logging in.</strong></p>
@@ -249,17 +258,17 @@ export const sendSecurityEmail = async ({
   device,
 }: {
   user: UserAuthType;
-  type: 'new-login' | 'suspicious-activity';
+  type: "new-login" | "suspicious-activity";
   device: DeviceInfo;
 }) => {
   const subject =
-    type === 'new-login'
-      ? '🔐 New Login Alert - Your Account Was Accessed'
-      : '⚠️ Suspicious Login Attempt Detected';
+    type === "new-login"
+      ? "🔐 New Login Alert - Your Account Was Accessed"
+      : "⚠️ Suspicious Login Attempt Detected";
 
   const message =
-    type === 'new-login'
-      ? 'A new login to your account was detected. If this was you, no action is required. If not, please secure your account immediately.'
+    type === "new-login"
+      ? "A new login to your account was detected. If this was you, no action is required. If not, please secure your account immediately."
       : "We've detected an unusual login attempt. If this wasn't you, we strongly recommend changing your password and reviewing your account security settings.";
 
   const html = `
@@ -271,8 +280,8 @@ export const sendSecurityEmail = async ({
         <tr><td style="padding: 8px; font-weight: bold;">Operating System:</td><td>${device.os}</td></tr>
         <tr><td style="padding: 8px; font-weight: bold;">Browser:</td><td>${device.browser}</td></tr>
         <tr><td style="padding: 8px; font-weight: bold;">Device Type:</td><td>${device.device}</td></tr>
-        ${device.brand ? `<tr><td style="padding: 8px; font-weight: bold;">Brand:</td><td>${device.brand}</td></tr>` : ''}
-        ${device.model ? `<tr><td style="padding: 8px; font-weight: bold;">Model:</td><td>${device.model}</td></tr>` : ''}
+        ${device.brand ? `<tr><td style="padding: 8px; font-weight: bold;">Brand:</td><td>${device.brand}</td></tr>` : ""}
+        ${device.model ? `<tr><td style="padding: 8px; font-weight: bold;">Model:</td><td>${device.model}</td></tr>` : ""}
         <tr><td style="padding: 8px; font-weight: bold;">IP Address:</td><td>${device.ip}</td></tr>
         <tr><td style="padding: 8px; font-weight: bold;">Location:</td><td>${device.location}</td></tr>
       </table>

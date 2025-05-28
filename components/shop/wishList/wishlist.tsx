@@ -23,8 +23,8 @@ const WishlistPage = () => {
         ) : (
           <div className="grid col gap-4">
             {wishlist.items.map((product) => {
-              const products = product.productId;
-              return <WishListCard key={products?._id} product={products} />;
+              // const products = product._id;
+              return <WishListCard key={product?._id} product={product} />;
             })}
           </div>
         )}

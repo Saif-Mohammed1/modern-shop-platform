@@ -5,10 +5,9 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { RiShieldUserLine } from "react-icons/ri";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountTwoFactorTranslate } from "@/public/locales/client/(auth)/account/twoFactorTranslate";
-
 
 import AuditLogViewer from "./auditLogViewer";
 import BackupCodesDisplay from "./backupCodesDisplay";
@@ -44,7 +43,7 @@ const TwoFactorAuthDashboard = () => {
   const handleEnable2FA = async () => {
     try {
       setLoading(true);
-      const { data } = await api.post("/auth/2fa");
+      const { data } = await api_client.post("/auth/2fa");
       setSetupData(data);
       setView("setup");
       toast.success(
@@ -63,7 +62,7 @@ const TwoFactorAuthDashboard = () => {
   const verify2FAToken = async (token: string) => {
     try {
       setLoading(true);
-      await api.post("/auth/2fa/verify", { token });
+      await api_client.post("/auth/2fa/verify", { token });
 
       setView("backup");
       toast.success(
@@ -82,7 +81,7 @@ const TwoFactorAuthDashboard = () => {
   const handleDisable2FA = async () => {
     try {
       setLoading(true);
-      await api.post("/auth/2fa/disable");
+      await api_client.post("/auth/2fa/disable");
       await update({
         ...session,
         user: { ...session?.user, isTwoFactorAuthEnabled: false },
@@ -104,7 +103,7 @@ const TwoFactorAuthDashboard = () => {
   // Backup Codes Management
   // const verifyBackupCode = async (code: string) => {
   //   try {
-  //     await api.post("/auth/2fa/backup/verify", { code });
+  //     await api_client.post("/auth/2fa/backup/verify", { code });
   //     toast.success("Backup code verified!");
   //   } catch (error: any) {
   //     toast.error(error?.message || "Invalid backup code");
@@ -115,7 +114,7 @@ const TwoFactorAuthDashboard = () => {
     try {
       const {
         data: { newCodes },
-      } = await api.post("/auth/2fa/recovery");
+      } = await api_client.post("/auth/2fa/recovery");
       setSetupData((prev) => ({ ...prev!, backupCodes: newCodes }));
       setGeneratedCodes(newCodes);
       toast.success(
@@ -136,7 +135,7 @@ const TwoFactorAuthDashboard = () => {
     try {
       const {
         data: { logs },
-      } = await api.get("/auth/2fa/audit");
+      } = await api_client.get("/auth/2fa/audit");
       setAuditLogs(logs);
     } catch (error: unknown) {
       toast.error(
@@ -171,7 +170,7 @@ const TwoFactorAuthDashboard = () => {
         </h1>
       </div>
 
-      {!session?.user?.twoFactorEnabled && view === "main" ? (
+      {!session?.user?.two_factor_enabled && view === "main" ? (
         <div className="space-y-6">
           <div className="p-4 bg-blue-50 rounded-lg">
             <p className="text-gray-600">

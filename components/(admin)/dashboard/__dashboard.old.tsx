@@ -221,7 +221,7 @@ interface ActivityItem {
   amount?: number;
   totalPrice?: number;
   status: string;
-  createdAt: Date;
+  created_at: Date;
   type?: "refund" | "order" | "report";
 }
 
@@ -282,7 +282,7 @@ const RecentActivities: FC<RecentActivitiesProps> = ({
             <div>
               <p className="font-medium">#{activity._id.slice(-4)}</p>
               <p className="text-sm text-gray-400">
-                {new Date(activity.createdAt).toLocaleDateString("en-US", {
+                {new Date(activity.created_at).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   hour: "2-digit",
@@ -383,7 +383,7 @@ const RevenueTrendChart: FC<{
 //           <div>
 //             <p className="font-medium">Order #{String(order._id).slice(-6)}</p>
 //             <p className="text-sm text-gray-400">
-//               {new Date(order.createdAt).toLocaleDateString()}
+//               {new Date(order.created_at).toLocaleDateString()}
 //             </p>
 //           </div>
 //           <div className="text-right">
@@ -501,7 +501,7 @@ const TopProductsTable: FC<{
         </thead>
         <tbody>
           {products.map((product) => (
-            <tr key={product.productId} className="border-t border-gray-700">
+            <tr key={product.product_id} className="border-t border-gray-700">
               <td className="py-3">{product.name}</td>
               <td className="py-3">{product.unitsSold}</td>
               <td className="py-3">${product.revenue.toLocaleString()}</td>

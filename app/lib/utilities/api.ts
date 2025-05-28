@@ -60,17 +60,16 @@ api.interceptors.response.use(
 
       try {
         // Type the refresh token response
-        const { data } = await api.get<{ accessToken: string }>(
+        const { data } = await api.get<{ access_token: string }>(
           "/auth/refresh-token",
           {
             headers: originalRequest.headers,
           }
         );
+        tokenManager.setAccessToken(data.access_token);
+        api.defaults.headers.common.Authorization = `Bearer ${data.access_token}`;
 
-        tokenManager.setAccessToken(data.accessToken);
-        api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
-
-        refreshSubscribers.forEach((cb) => cb(data.accessToken));
+        refreshSubscribers.forEach((cb) => cb(data.access_token));
         refreshSubscribers = [];
 
         return api(originalRequest);

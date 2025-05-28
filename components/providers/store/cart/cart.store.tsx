@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware";
 import type {
   CartItemsType,
   ProductCartPick,
-} from "@/app/lib/types/cart.types";
+} from "@/app/lib/types/cart.db.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
 

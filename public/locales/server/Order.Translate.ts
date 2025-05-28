@@ -2,104 +2,110 @@ export const OrderTranslate = {
   en: {
     dto: {
       street: {
-        required: 'Street is required',
+        required: "Street is required",
       },
       city: {
-        required: 'City is required',
+        required: "City is required",
       },
       state: {
-        required: 'State is required',
+        required: "State is required",
       },
-      postalCode: {
-        required: 'Postal code is required',
+      postal_code: {
+        required: "Postal code is required",
       },
       phone: {
-        required: 'Phone is required',
+        required: "Phone is required",
       },
       country: {
-        required: 'Country is required',
+        required: "Country is required",
       },
       items: {
         _id: {
-          required: 'Product id is required',
+          required: "Product id is required",
         },
         name: {
-          required: 'Product name is required',
+          required: "Product name is required",
         },
         quantity: {
-          required: 'Product quantity is required',
+          required: "Product quantity is required",
         },
         sku: {
-          required: 'Product Sku is required',
+          required: "Product Sku is required",
         },
         price: {
-          required: 'Product price is required',
+          required: "Product price is required",
         },
         discount: {
-          required: 'Product discount is required',
+          required: "Product discount is required",
         },
-        finalPrice: {
-          required: 'Product final price is required',
+        final_price: {
+          required: "Product final price is required",
         },
       },
-      userId: {
-        required: 'User id is required',
+      user_id: {
+        required: "User id is required",
       },
-      shippingInfo: {
-        required: 'Shipping info is required',
+      shipping_info: {
+        required: "Shipping info is required",
       },
-      invoiceId: {
-        required: 'Invoice id is required',
+      invoice_id: {
+        required: "Invoice id is required",
       },
-      invoiceLink: {
-        required: 'Invoice link is required',
+      invoice_link: {
+        required: "Invoice link is required",
       },
       totalPrice: {
-        required: 'Total price is required',
+        required: "Total price is required",
       },
       status: {
-        required: 'Status is required',
+        required: "Status is required",
       },
       subtotal: {
-        required: 'Subtotal is required',
+        required: "Subtotal is required",
       },
       // shippingCost: {
       //   required: "Shipping cost is required",
       // },
       tax: {
-        required: 'Tax is required',
+        required: "Tax is required",
       },
-      orderNotes: {
-        required: 'Order notes are required',
+      order_notes: {
+        required: "Order notes are required",
       },
       cancellationReason: {
-        required: 'Cancellation reason is required',
+        required: "Cancellation reason is required",
+      },
+      paymentMethod: {
+        required: "Payment method is required",
+      },
+      transactionId: {
+        required: "Transaction ID is required",
       },
     },
     functions: {
       create: {
-        success: 'Order created successfully',
-        error: 'Error creating order',
+        success: "Order created successfully",
+        error: "Error creating order",
       },
       updateStatus: {
-        success: 'Order status updated successfully',
-        error: 'Error updating order status',
+        success: "Order status updated successfully",
+        error: "Error updating order status",
       },
       findByUser: {
-        success: 'Orders found successfully',
-        error: 'Error finding orders',
+        success: "Orders found successfully",
+        error: "Error finding orders",
       },
       findById: {
-        success: 'Order found successfully',
-        error: 'Error finding order',
+        success: "Order found successfully",
+        error: "Error finding order",
       },
       delete: {
-        success: 'Order deleted successfully',
-        error: 'Error deleting order',
+        success: "Order deleted successfully",
+        error: "Error deleting order",
       },
     },
     errors: {
-      noDocumentsFound: 'No documents found',
+      noDocumentsFound: "No documents found",
     },
   },
   uk: {
@@ -113,7 +119,7 @@ export const OrderTranslate = {
       state: {
         required: "Область обов'язкова",
       },
-      postalCode: {
+      postal_code: {
         required: "Поштовий індекс обов'язковий",
       },
       phone: {
@@ -141,20 +147,20 @@ export const OrderTranslate = {
         discount: {
           required: "Знижка на продукт обов'язкова",
         },
-        finalPrice: {
+        final_price: {
           required: "Кінцева ціна продукту обов'язкова",
         },
       },
-      userId: {
+      user_id: {
         required: "Ідентифікатор користувача обов'язковий",
       },
-      shippingInfo: {
+      shipping_info: {
         required: "Інформація про доставку обов'язкова",
       },
-      invoiceId: {
+      invoice_id: {
         required: "Ідентифікатор рахунку обов'язковий",
       },
-      invoiceLink: {
+      invoice_link: {
         required: "Посилання на рахунок обов'язкове",
       },
       totalPrice: {
@@ -173,37 +179,43 @@ export const OrderTranslate = {
       tax: {
         required: "Податок обов'язковий",
       },
-      orderNotes: {
+      order_notes: {
         required: "Примітки до замовлення обов'язкові",
       },
       cancellationReason: {
         required: "Причина скасування обов'язкова",
       },
+      paymentMethod: {
+        required: "Метод оплати обов'язковий",
+      },
+      transactionId: {
+        required: "Ідентифікатор транзакції обов'язковий",
+      },
     },
     functions: {
       create: {
-        success: 'Замовлення успішно створено',
-        error: 'Помилка створення замовлення',
+        success: "Замовлення успішно створено",
+        error: "Помилка створення замовлення",
       },
       updateStatus: {
-        success: 'Статус замовлення успішно оновлено',
-        error: 'Помилка оновлення статусу замовлення',
+        success: "Статус замовлення успішно оновлено",
+        error: "Помилка оновлення статусу замовлення",
       },
       findByUser: {
-        success: 'Замовлення успішно знайдено',
-        error: 'Помилка пошуку замовлень',
+        success: "Замовлення успішно знайдено",
+        error: "Помилка пошуку замовлень",
       },
       findById: {
-        success: 'Замовлення успішно знайдено',
-        error: 'Помилка пошуку замовлення',
+        success: "Замовлення успішно знайдено",
+        error: "Помилка пошуку замовлення",
       },
       delete: {
-        success: 'Замовлення успішно видалено',
-        error: 'Помилка видалення замовлення',
+        success: "Замовлення успішно видалено",
+        error: "Помилка видалення замовлення",
       },
     },
     errors: {
-      noDocumentsFound: 'Документи не знайдено',
+      noDocumentsFound: "Документи не знайдено",
     },
   },
 };

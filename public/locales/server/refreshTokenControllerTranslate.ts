@@ -3,46 +3,46 @@ export const refreshTokenControllerTranslate = {
     model: {
       schema: {
         user: {
-          required: 'User must be required',
+          required: "User must be required",
         },
-        deviceInfo: {
-          required: 'DeviceInfo must be required',
+        device_info: {
+          required: "DeviceInfo must be required",
         },
         ipAddress: {
-          required: 'IpAddress must be required',
+          required: "IpAddress must be required",
         },
 
-        expiresAt: {
-          required: 'ExpiresAt must be required',
+        expires_at: {
+          required: "ExpiresAt must be required",
         },
       },
     },
     functions: {
       refreshAccessToken: {
-        requiredFields: 'Missing required fields',
+        requiredFields: "Missing required fields",
       },
       verifyRefreshToken: {
-        invalidRefreshToken: 'Invalid refresh token',
-        refreshTokenExpired: 'Refresh token expired',
+        invalidRefreshToken: "Invalid refresh token",
+        refreshTokenExpired: "Refresh token expired",
       },
       deleteRefreshTokenOnLogOut: {
-        message: 'Refresh token deleted',
+        message: "Refresh token deleted",
       },
       deleteAllUserRefreshTokens: {
-        message: 'All refresh tokens deleted',
-        noRefreshTokens: 'No refresh tokens found',
+        message: "All refresh tokens deleted",
+        noRefreshTokens: "No refresh tokens found",
       },
       deleteExpiredRefreshTokens: {
-        message: 'Expired refresh tokens deleted',
+        message: "Expired refresh tokens deleted",
       },
       deleteSpecificUserRefreshTokens: {
-        message: 'Refresh token deleted',
+        message: "Refresh token deleted",
       },
       revokeToken: {
-        message: 'Refresh token revoked',
+        message: "Refresh token revoked",
       },
       revokeAllUserTokens: {
-        message: 'All user tokens revoked',
+        message: "All user tokens revoked",
       },
     },
   },
@@ -52,14 +52,14 @@ export const refreshTokenControllerTranslate = {
         user: {
           required: "Користувач має бути обов'язковим",
         },
-        deviceInfo: {
+        device_info: {
           required: "Інформація про пристрій має бути обов'язковою",
         },
         ipAddress: {
           required: "IP-адреса має бути обов'язковою",
         },
 
-        expiresAt: {
+        expires_at: {
           required: "ExpiresAt має бути обов'язковим",
         },
       },
@@ -69,27 +69,27 @@ export const refreshTokenControllerTranslate = {
         requiredFields: "Відсутні обов'язкові поля",
       },
       verifyRefreshToken: {
-        invalidRefreshToken: 'Недійсний токен оновлення',
-        refreshTokenExpired: 'Токен оновлення закінчився',
+        invalidRefreshToken: "Недійсний токен оновлення",
+        refreshTokenExpired: "Токен оновлення закінчився",
       },
       deleteRefreshTokenOnLogOut: {
-        message: 'Токен оновлення видалено',
+        message: "Токен оновлення видалено",
       },
       deleteAllUserRefreshTokens: {
-        message: 'Всі токени оновлення видалено',
-        noRefreshTokens: 'Токени оновлення не знайдено',
+        message: "Всі токени оновлення видалено",
+        noRefreshTokens: "Токени оновлення не знайдено",
       },
       deleteExpiredRefreshTokens: {
-        message: 'Закінчені токени оновлення видалено',
+        message: "Закінчені токени оновлення видалено",
       },
       deleteSpecificUserRefreshTokens: {
-        message: 'Токен оновлення видалено',
+        message: "Токен оновлення видалено",
       },
       revokeToken: {
-        message: 'Токен оновлення анульовано',
+        message: "Токен оновлення анульовано",
       },
       revokeAllUserTokens: {
-        message: 'Всі токени користувача анульовано',
+        message: "Всі токени користувача анульовано",
       },
     },
   },

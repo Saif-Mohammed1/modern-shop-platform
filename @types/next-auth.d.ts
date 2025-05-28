@@ -1,7 +1,7 @@
 import "next-auth";
 import "next-auth/jwt";
 
-import type { UserAuthType } from "@/app/lib/types/users.types";
+import type { UserAuthType } from "@/app/lib/types/users.db.types";
 
 declare module "next-auth" {
   interface Session {
@@ -15,18 +15,18 @@ The shape of the returned object in the OAuth providers' profile callback, avail
 signIn callback | session callback | jwt callback | profile OAuth provider callback
  */
   interface User extends UserAuthType {
-    accessTokenExpires?: number;
+    access_token_expires?: number;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     user?: User; // type User = /*unresolved*/ any
-    accessTokenExpires?: number;
+    access_token_expires?: number;
 
     error?: string;
   }
   // interface User extends UserAuthType {
-  //   accessTokenExpires?: number;
+  //   access_token_expires?: number;
   // }
 }

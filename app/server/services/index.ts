@@ -1,9 +1,9 @@
-import UserModel from '../models/User.model';
-import {UserRepository} from '../repositories/user.repository';
+import { connectDB } from "../db/db";
+import { UserRepository } from "../repositories/user.repository";
 
-import {EmailService} from './email.service';
+import { EmailService } from "./email.service";
 
-const userRepository = new UserRepository(UserModel);
+const userRepository = new UserRepository(connectDB());
 const emailService = new EmailService(userRepository);
 
-export {emailService};
+export { emailService };

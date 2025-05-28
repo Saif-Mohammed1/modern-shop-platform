@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-import type { OrderType } from "@/app/lib/types/orders.types";
+import type { OrderType } from "@/app/lib/types/orders.db.types";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import ErrorHandler from "@/components/Error/errorHandler";

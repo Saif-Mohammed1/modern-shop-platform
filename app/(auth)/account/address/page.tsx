@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-import type { AddressType } from "@/app/lib/types/address.types";
+import type { AddressType } from "@/app/lib/types/address.db.types";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 // import AppError from "@/components/util/appError";

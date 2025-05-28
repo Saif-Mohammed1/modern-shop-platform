@@ -1,30 +1,30 @@
 export const AddressTranslate = {
   en: {
     street: {
-      required: 'Street is required',
+      required: "Street is required",
     },
     city: {
-      required: 'City is required',
+      required: "City is required",
     },
     state: {
-      required: 'State is required',
+      required: "State is required",
     },
-    postalCode: {
-      required: 'Postal code is required',
-      positive: 'Postal code must be positive',
+    postal_code: {
+      required: "Postal code is required",
+      positive: "Postal code must be positive",
     },
     phone: {
-      required: 'Phone is required',
-      invalid: 'Invalid Ukrainian phone number it should be like +380xxxxxxxxx',
+      required: "Phone is required",
+      invalid: "Invalid Ukrainian phone number it should be like +380xxxxxxxxx",
     },
     country: {
-      required: 'Country is required',
+      required: "Country is required",
     },
     delete: {
-      success: 'Address deleted successfully',
+      success: "Address deleted successfully",
     },
     error: {
-      addressNotFound: 'Address not found',
+      addressNotFound: "Address not found",
     },
   },
   uk: {
@@ -37,22 +37,23 @@ export const AddressTranslate = {
     state: {
       required: "Штат обов'язковий",
     },
-    postalCode: {
+    postal_code: {
       required: "Поштовий індекс обов'язковий",
-      positive: 'Поштовий індекс повинен бути позитивним',
+      positive: "Поштовий індекс повинен бути позитивним",
     },
     phone: {
       required: "Телефон обов'язковий",
-      invalid: 'Недійсний український номер телефону, він повинен бути на кшталт +380xxxxxxxxx',
+      invalid:
+        "Недійсний український номер телефону, він повинен бути на кшталт +380xxxxxxxxx",
     },
     country: {
       required: "Країна обов'язкова",
     },
     delete: {
-      success: 'Адресу успішно видалено',
+      success: "Адресу успішно видалено",
     },
     error: {
-      addressNotFound: 'Адресу не знайдено',
+      addressNotFound: "Адресу не знайдено",
     },
   },
 } as const;

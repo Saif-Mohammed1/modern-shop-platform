@@ -1,8 +1,8 @@
 import type {
   CartItemsType,
   ProductCartPick,
-} from "@/app/lib/types/cart.types";
-import api from "@/app/lib/utilities/api";
+} from "@/app/lib/types/cart.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { cartContextTranslate } from "@/public/locales/client/(public)/cartContextTranslate";
 
@@ -10,8 +10,8 @@ import { useCartStore } from "./cart.store";
 
 // Add item to cart
 
-export async function saveCartToDB(productId: string, quantity: number) {
-  await api.post(`/customers/cart/${productId}`, {
+export async function saveCartToDB(product_id: string, quantity: number) {
+  await api_client.post(`/customers/cart/${product_id}`, {
     quantity,
   });
 
@@ -19,10 +19,10 @@ export async function saveCartToDB(productId: string, quantity: number) {
 }
 
 export async function removeCartItemFromDB(product: ProductCartPick) {
-  await api.put(`/customers/cart/${product._id}`);
+  await api_client.put(`/customers/cart/${product._id}`);
 }
 export async function clearCartInDB(product: ProductCartPick) {
-  await api.delete(`/customers/cart/${product._id}`);
+  await api_client.delete(`/customers/cart/${product._id}`);
 }
 export const mergeLocalCartWithDB = async () => {
   try {
@@ -35,7 +35,7 @@ export const mergeLocalCartWithDB = async () => {
       localStorage.removeItem("cart");
       return;
     }
-    await api.post(
+    await api_client.post(
       "/customers/cart/merge",
 
       { products: StoredCart }
@@ -59,16 +59,16 @@ export const fetchCartItemsFromDB = async () => {
     data: {
       products: CartItemsType[];
     };
-  } = await api.get("/customers/cart");
+  } = await api_client.get("/customers/cart");
 
   return data.products || [];
 };
 // export const updateCartQuantity = async (
-//   productId: string,
+//   product_id: string,
 //   quantity: number
 // ) => {
 //
-//     const { data } = await api.patch(`/customers/cart/${productId}`, {
+//     const { data } = await api_client.patch(`/customers/cart/${product_id}`, {
 //       quantity,
 //     });
 //     return data.data;

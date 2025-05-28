@@ -1,20 +1,18 @@
-import {type NextRequest} from 'next/server';
+import { type NextRequest } from "next/server";
 
-import ErrorHandler from '@/app/server/controllers/error.controller';
-import reviewController from '@/app/server/controllers/review.controller';
-import {connectDB} from '@/app/server/db/db';
-import {AuthMiddleware} from '@/app/server/middlewares/auth.middleware';
+import ErrorHandler from "@/app/server/controllers/error.controller";
+import reviewController from "@/app/server/controllers/review.controller";
+import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
 
 export const GET = async (
   req: NextRequest,
   props: {
-    params: Promise<{id: string}>;
-  },
+    params: Promise<{ id: string }>;
+  }
 ) => {
   const params = await props.params;
-  const {id} = params;
+  const { id } = params;
   try {
-    await connectDB();
     req.id = id;
 
     return await reviewController.getProductReviews(req);
@@ -23,11 +21,13 @@ export const GET = async (
   }
 };
 
-export const POST = async (req: NextRequest, props: {params: Promise<{id: string}>}) => {
+export const POST = async (
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) => {
   const params = await props.params;
-  const {id} = params;
+  const { id } = params;
   try {
-    await connectDB();
     await AuthMiddleware.requireAuth()(req);
     req.id = id;
     // await checkReview(req);
@@ -38,11 +38,13 @@ export const POST = async (req: NextRequest, props: {params: Promise<{id: string
     return ErrorHandler(error, req);
   }
 };
-export const PATCH = async (req: NextRequest, props: {params: Promise<{id: string}>}) => {
+export const PATCH = async (
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) => {
   const params = await props.params;
-  const {id} = params;
+  const { id } = params;
   try {
-    await connectDB();
     await AuthMiddleware.requireAuth()(req);
     req.id = id;
     return await reviewController.checkReview(req);

@@ -1,9 +1,9 @@
-// import { AuditSource } from "@/app/lib/types/audit.types";
-import {z} from 'zod';
+// import { AuditSource } from "@/app/lib/types/audit.db.types";
+import { z } from "zod";
 
-import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
-import {lang} from '@/app/lib/utilities/lang';
-import {ProductTranslate} from '@/public/locales/server/Product.Translate';
+import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
+import { ProductTranslate } from "@/public/locales/server/Product.Translate";
 
 // import type{ IpVersion } from "zod";
 export class ProductValidation {
@@ -24,7 +24,7 @@ export class ProductValidation {
       .array(
         z.string({
           required_error: ProductTranslate[lang].dto.images.required,
-        }),
+        })
       )
       .min(1, {
         message: ProductTranslate[lang].dto.images.required,
@@ -88,21 +88,21 @@ export class ProductValidation {
 
         {
           message: ProductTranslate[lang].dto.discount.min,
-        },
+        }
       )
       .optional(),
     // .max(100, "Discount cannot exceed 100"),
-    discountExpire: z
+    discount_expire: z
       .union([z.string(), z.date()]) // Accept both string & Date
       .transform((val) => new Date(val)) // Convert string to Date
       .optional(),
     images: this.imagesSchema,
 
-    userId: zObjectId, // Assuming it's a string
-    // userId: z.string().min(1, {
+    user_id: zObjectId, // Assuming it's a string
+    // user_id: z.string().min(1, {
     //   message:
     //     errorControllerTranslate[lang].controllers.handleValidationErrorDB
-    //       .userId.required,
+    //       .user_id.required,
     // }), // Assuming it's a string
     description: z
       .string({
@@ -119,20 +119,20 @@ export class ProductValidation {
         message: ProductTranslate[lang].dto.stock.min,
       })
       .transform((v) => Math.floor(v)), // Ensure integer stock values
-    ratingsAverage: z
+    ratings_average: z
       .number()
       .min(1, {
-        message: ProductTranslate[lang].dto.ratingsAverage.min,
+        message: ProductTranslate[lang].dto.ratings_average.min,
       })
       .max(5, {
-        message: ProductTranslate[lang].dto.ratingsAverage.max,
+        message: ProductTranslate[lang].dto.ratings_average.max,
       })
       .default(4.5)
       .transform((v) => Math.round(v * 10) / 10), // Round to 1 decimal
-    ratingsQuantity: z
+    ratings_quantity: z
       .number()
       .min(0, {
-        message: ProductTranslate[lang].dto.ratingsQuantity.min,
+        message: ProductTranslate[lang].dto.ratings_quantity.min,
       })
       .default(0),
     active: z.boolean().default(true),
@@ -150,7 +150,7 @@ export class ProductValidation {
       })
       .default(0),
     attributes: z.record(z.string(), z.any()).optional(), // Flexible key-value attributes
-    shippingInfo: z.object({
+    shipping_info: z.object({
       weight: z.number().min(0, {
         message: ProductTranslate[lang].dto.weight.min,
       }),
@@ -171,4 +171,6 @@ export class ProductValidation {
 }
 
 export type CreateProductDto = z.infer<typeof ProductValidation.productSchema>;
-export type UpdateProductDto = z.infer<typeof ProductValidation.updateProductSchema>;
+export type UpdateProductDto = z.infer<
+  typeof ProductValidation.updateProductSchema
+>;

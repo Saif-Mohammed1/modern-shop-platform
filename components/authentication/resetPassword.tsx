@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { resetPasswordTranslate } from "@/public/locales/client/(public)/auth/resetPasswordTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
@@ -65,7 +65,7 @@ async function handleResetPassword(formData: FormData) {
   }
   let redirectPath: string | null = null;
   try {
-    await api.post("/auth/reset-password", {
+    await api_client.post("/auth/reset-password", {
       email: data.email,
       confirmPassword: data.confirmPassword,
       token: data.token,

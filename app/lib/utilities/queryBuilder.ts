@@ -1,29 +1,4 @@
-/**
-  // Example usage:
-  const productQueryConfig: QueryConfig<Product> = {
-    allowedFilters: ['name', 'price', 'category', 'rating'],
-    allowedSorts: ['price', 'rating', 'createdAt'],
-    defaultSort: '-createdAt',
-    searchFields: ['name', 'description'],
-    maxLimit: 50,
-    filterMap: {
-      category: 'categoryId'
-    }
-  };
-
-  const builder = new QueryBuilder(ProductModel, searchParams, productQueryConfig);
-  const result = await builder.execute();
-
-*/
-import type {
-  Document,
-  FilterQuery,
-  Model,
-  PopulateOptions,
-  Query,
-  // QueryOptions,
-  SortOrder,
-} from "mongoose";
+import type { Knex } from "knex";
 
 import logger from "../logger/logs";
 import type {
@@ -32,43 +7,93 @@ import type {
   QueryBuilderResult,
 } from "../types/queryBuilder.types";
 
-export class QueryBuilder<T extends Document> {
-  private populateOptions: PopulateOptions[] = [];
-  private query: Query<T[], T>;
+interface JoinConfig {
+  table: string;
+  alias?: string; // Optional alias for table (e.g., 'pi' for product_images)
+  type: "inner" | "left" | "right" | "full"; // Join type
+  on: {
+    left: string; // Column in primary table (e.g., products._id)
+    right: string; // Column in joined table (e.g., product_images.product_id)
+  };
+  select: string[]; // Made select required with default empty array}
+  outerKey?: string; // Optional outer key for the join
+}
+/***example of uses
+ * .join({
+        table: "product_images",
+        alias: "pi",
+        type: "left",
+        on: { left: "_id", right: "product_id" },
+        select: ["_id", "link", "public_id", "created_at"],
+      })
+      .join({
+        table: "product_shopping_info",
+        alias: "psi",
+        type: "left",
+        on: { left: "_id", right: "product_id" },
+        select: ["weight", "length", "width", "height"],
+      });
+ */
+export class QueryBuilder<T extends Record<string, any>> {
+  private knex: Knex;
+  private query: Knex.QueryBuilder;
   private config: Required<QueryBuilderConfig<T>>;
-  private baseQuery: Query<T[], T>;
   private originalParams: URLSearchParams;
-  private projection: Record<string, number> = {};
+  private tableName: string;
+  private totalCount?: number;
+  private joins: JoinConfig[] = []; // Store join configurations
+  private isAggregateEnabled: boolean = false;
   page: number = 1;
   limit: number = 15;
-  filter: FilterQuery<T> = {};
+  filter: Record<string, any> = {};
 
   constructor(
-    model: Model<T>,
+    knex: Knex,
+    tableName: string,
     searchParams: URLSearchParams,
-    config: QueryBuilderConfig<T>
+    config: QueryBuilderConfig<T>,
+    isAggregateEnabled: boolean = false
   ) {
+    this.tableName = tableName;
+    this.isAggregateEnabled = isAggregateEnabled;
     this.originalParams = new URLSearchParams(searchParams);
     this.config = {
       maxLimit: 15,
-      enableTextSearch: false,
+      enableFullTextSearch: false,
       paramAliases: {},
       filterMap: {},
       searchFields: [],
-      // allowedFilters: [], // Default empty array
-      allowedSorts: [], // Default empty array
-      defaultSort: "-createdAt",
-      fixedFilters: {},
+      allowedSorts: [],
+      defaultSort: "-created_at",
+      fixedFilters: {} as Record<keyof T, any>,
       excludeFields: [],
+      selectFields: [],
+      totalCountBy: [],
+      excludeLinksFields: [],
+      operators: {},
+      dateFormatFields: {},
       ...config,
     };
-    this.baseQuery = model.find();
-    this.query = this.baseQuery.clone();
+    this.knex = knex;
+    this.query = knex(this.tableName);
     this.sanitizeInput();
   }
 
+  // Add a join to the query
+  join(
+    config: Omit<JoinConfig, "select"> & {
+      select?: string[];
+    }
+  ): this {
+    this.joins.push({
+      ...config,
+      alias: config.alias || config.table, // Default alias to table name
+      select: config.select || [], // Default to empty array
+    });
+    return this;
+  }
+
   private sanitizeInput(): void {
-    // Remove invalid parameters
     for (const key of this.originalParams.keys()) {
       if (!this.originalParams.get(key) || !this.isValidParam(key)) {
         this.originalParams.delete(key);
@@ -76,26 +101,25 @@ export class QueryBuilder<T extends Document> {
     }
   }
 
-  // private isValidParam(key: string): boolean {
-  //   const baseKey = key.replace(/\[.*\]/, "");
-  //   return (
-  //     this.config.allowedFilters.includes(baseKey as keyof T) ||
-  //     ["page", "limit", "sort", "search", "fields"].includes(key)
-  //   );
-  // }
   private isValidParam(key: string): boolean {
     if (["page", "limit", "sort", "search", "fields"].includes(key)) {
       return true;
     }
     const baseKey = key.replace(/\[.*\]/, "");
     const dbField = this.config.filterMap[baseKey] || baseKey;
-    return this.config.allowedFilters.includes(dbField as keyof T);
+    const sanitizeField =
+      typeof dbField === "string" && dbField.includes(".")
+        ? dbField.split(".")[0] === String(this.tableName)
+          ? dbField.split(".")[1]
+          : dbField
+        : dbField;
+    return this.config.allowedFilters.includes(sanitizeField as keyof T);
   }
-  populate(options: PopulateOptions[]): this {
-    this.populateOptions = options;
-    return this;
-  }
+
   private parseValue(value: string): any {
+    if (value.includes(",")) {
+      return value.split(",").map((v) => String(this.parseValue(v)));
+    }
     if (/^\d+$/.test(value)) {
       return parseInt(value, 10);
     }
@@ -108,248 +132,380 @@ export class QueryBuilder<T extends Document> {
     if (value.toLowerCase() === "false") {
       return false;
     }
-    // if (Date.parse(value)) return new Date(value);
-
-    // Handle date parsing explicitly
-    if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
-      // MM-DD-YYYY format
-      const [month, day, year] = value.split("-").map(Number);
-      return new Date(Date.UTC(year, month - 1, day));
-    }
-
-    // Fallback to default parsing for ISO dates
-    if (Date.parse(value)) {
-      const date = new Date(value);
-      return isNaN(date.getTime()) ? value : date;
-    }
-    if (value.includes(",")) {
-      return value.split(",").map(this.parseValue);
-    }
     return value;
   }
 
-  // private buildOperatorFilter(field: string, value: any): Record<string, any> {
-  //   const operatorMatch = field.match(/(\w+)\[(\w+)\]/);
-  //   if (operatorMatch) {
-  //     const [, baseField, operator] = operatorMatch;
-  //     return { [`$${operator}`]: value };
-  //   }
-  //   return value;
-  // }
-
   private buildFilter(): this {
-    const filter: Record<string, any> = {};
+    const whereClauses: Record<string, any> = {};
 
     for (const [key, value] of this.originalParams) {
-      const operatorMatch = key.match(/^(\w+)\[(\w+)\]$/);
+      const operatorMatch = key.match(/(\w+)\[(\w+)\]/);
       const [baseKey, operator] = operatorMatch
         ? [operatorMatch[1], operatorMatch[2]]
         : [key, null];
-      // : [key, null];
 
-      // const dbField = this.config.filterMap[key] || key;
-      // const aliasKey = this.config.paramAliases[key] || key;
       const aliasKey = this.config.paramAliases[baseKey] || baseKey;
       const dbField = this.config.filterMap[aliasKey] || aliasKey;
-      let parsedValue = this.parseValue(value);
+      const sanitizeField =
+        typeof dbField === "string" && dbField.includes(".")
+          ? dbField.split(".")[0] === String(this.tableName)
+            ? dbField.split(".")[1]
+            : dbField
+          : dbField;
       if (aliasKey === "search") {
-        this.handleTextSearch(parsedValue);
+        this.handleTextSearch(value);
         continue;
       }
 
-      // we dont need to check if the field is allowed or not becuse sentize input already did that
-      // if (this.config.allowedFilters.includes(dbField as keyof T)) {
-      //   filter[dbField as string] = this.buildOperatorFilter(
-      //     aliasKey,
-      //     parsedValue
-      //   );
-      // }
-      if (!this.config.allowedFilters.includes(dbField as keyof T)) {
+      if (!this.config.allowedFilters.includes(sanitizeField as keyof T)) {
         continue;
       }
-      // Adjust dates based on operator
-      if (parsedValue instanceof Date && operator) {
-        parsedValue = this.adjustDateForOperator(parsedValue, operator);
-      }
+
+      const parsedValue = this.parseValue(value);
+
       if (operator) {
-        if (
-          !["eq", "ne", "gt", "gte", "lt", "lte", "in", "nin"].includes(
-            operator
-          )
-        ) {
-          logger.warn(`Invalid operator: ${operator}`);
-          continue; // Skip invalid operators
-        }
-        // Merge operators for the same field
-        if (filter[dbField as string]) {
-          filter[dbField as string] = {
-            ...filter[dbField as string],
-            [`$${operator}`]: parsedValue,
-          };
-        } else {
-          filter[dbField as string] = { [`$${operator}`]: parsedValue };
+        const column = this.buildColumnRef(dbField as keyof T);
+        switch (operator) {
+          case "gt":
+            this.query.where(column, ">", parsedValue);
+            break;
+          case "gte":
+            this.query.where(column, ">=", parsedValue);
+            break;
+          case "lt":
+            this.query.where(column, "<", parsedValue);
+            break;
+          case "lte":
+            this.query.where(column, "<=", parsedValue);
+            break;
+          case "ne":
+            this.query.where(column, "<>", parsedValue);
+            break;
+          case "in":
+            if (!Array.isArray(parsedValue)) {
+              logger.warn("IN operator requires array value");
+              break;
+            }
+            this.query.whereRaw("?? IN (?)", [column, parsedValue]);
+            break;
+          case "nin":
+            if (!Array.isArray(parsedValue)) {
+              logger.warn("NOT IN operator requires array value");
+              break;
+            }
+            this.query.whereRaw("?? NOT IN (?)", [column, parsedValue]);
+            break;
+          default:
+            logger.warn(`Unsupported operator: ${operator}`);
         }
       } else {
-        filter[dbField as string] = parsedValue;
+        whereClauses[dbField as string] = parsedValue;
       }
     }
 
-    this.filter = {
-      ...this.filter,
-      ...filter,
-      ...(this.config.fixedFilters || {}),
-    };
-    // Apply fixed filters from config
-    // if (this.config.fixedFilters) {
-    //   this.filter = { ...this.filter, ...this.config.fixedFilters };
-    // }
-    // Apply exclude fields
-    if (this.config.excludeFields?.length) {
-      this.config.excludeFields.forEach((field) => {
-        this.projection[field as string] = 0;
-      });
-    }
-    this.query = this.query.find(this.filter).select(this.projection);
-
+    this.query.where({ ...whereClauses, ...this.config.fixedFilters });
     return this;
   }
 
+  private buildColumnRef(field: keyof T): Knex.Raw {
+    return this.knex.raw("??", [field as string]);
+  }
+
   private handleTextSearch(searchTerm: string): void {
-    if (this.config.enableTextSearch) {
-      this.filter.$text = { $search: searchTerm };
-    } else if (this.config.searchFields?.length) {
-      this.filter.$or = this.config.searchFields.map((field) => ({
-        [field]: { $regex: searchTerm, $options: "i" },
-      })) as FilterQuery<T>[];
+    if (
+      !this.config.enableFullTextSearch ||
+      !this.config.searchFields?.length
+    ) {
+      return;
     }
+
+    const searchFields = this.config.searchFields
+      .map((f) => `to_tsvector('english', ${String(f)})`)
+      .join(" || ");
+
+    this.query.whereRaw(`${searchFields} @@ to_tsquery('english', ?)`, [
+      searchTerm.split(/\s+/).join(" & "),
+    ]);
   }
 
   private buildSort(): this {
     const sortParam =
       this.originalParams.get("sort") || this.config.defaultSort;
+    const sorts = sortParam.split(",").map((s) => s.trim());
 
-    const sortFields = sortParam.split(",").reduce(
-      (acc, field) => {
-        let direction = 1; // Default ascending
-        let rawField = field.trim();
+    sorts.forEach((sort) => {
+      let [field, direction] = sort.startsWith("-")
+        ? [sort.slice(1), "desc"]
+        : [sort, "asc"];
 
-        if (rawField.includes(":")) {
-          // Handle case like price:desc
-          const [key, order] = rawField.split(":");
-          direction = order === "desc" ? -1 : 1;
-          rawField = key;
-        } else if (rawField.startsWith("-")) {
-          // Handle case like -price
-          direction = -1;
-          rawField = rawField.substring(1);
-        }
+      if (field.includes(":")) {
+        [field, direction] = field.split(":");
+      }
 
-        // Map alias if exists
-        const dbField = (this.config.filterMap[rawField] || rawField) as string;
-
-        if (this.config.allowedSorts.includes(dbField as keyof T)) {
-          acc[dbField] = direction as SortOrder;
-        }
-
-        return acc;
-      },
-      {} as Record<string, SortOrder>
-    );
-
-    if (Object.keys(sortFields).length) {
-      this.query = this.query.sort(sortFields);
-    }
+      const dbField = this.config.filterMap[field] || field;
+      if (this.config.allowedSorts.includes(dbField as keyof T)) {
+        const orderByField = `${this.tableName}.${dbField as string}`;
+        this.query.orderBy(orderByField, direction as "asc" | "desc");
+      }
+    });
 
     return this;
   }
 
   private buildPagination(): this {
     this.page = Math.max(1, parseInt(this.originalParams.get("page") || "1"));
-
     this.limit = Math.min(
       this.config.maxLimit,
       parseInt(this.originalParams.get("limit") || String(this.config.maxLimit))
     );
     return this;
   }
-
   private buildProjection(): this {
+    let selectFields: (string | Knex.Raw)[] = [];
+    // let selectFields: string[] = this.config.selectFields?.length
+    //   ? this.config.selectFields.map((f) => `${this.tableName}.${String(f)}`)
+    //   : [`${this.tableName}.*`]; // Always select all from primary table
+    if (this.config.selectFields?.length) {
+      selectFields = this.config.selectFields.map((f) => {
+        const field = String(f);
+
+        // Add date formatting for specified fields
+        if (this.config.dateFormatFields?.[field]) {
+          const format = this.config.dateFormatFields[field];
+          return this.knex.raw(
+            `TO_CHAR(??, ?) as ??`,
+            // `TO_CHAR(${this.tableName}.${field}, ?) as ${field}`,
+            [
+              `${this.tableName}.${field}`, // Use the field name directly
+              format,
+              field,
+            ]
+          );
+        }
+        return `${this.tableName}.${field}`;
+      });
+    }
     if (this.originalParams.has("fields")) {
       const fields = this.originalParams
         .get("fields")!
         .split(",")
         .map((f) => this.config.filterMap[f] || f)
-        .filter((f) => this.config.allowedFilters.includes(f as keyof T))
-        .join(" ");
-      this.query = this.query.select(fields);
+        .filter((f) => this.config.allowedFilters.includes(f as keyof T));
+
+      // Only include fields from the main table that are requested
+      selectFields = fields.map((f) => `${this.tableName}.${String(f)}`);
     }
+
+    if (this.joins.length) {
+      // Add fields from joined tables
+      selectFields.push(
+        ...this.joins.flatMap((join) =>
+          join.select.map((field) => `${join.alias}.${field}`)
+        )
+      );
+    }
+    if (!selectFields.length) {
+      selectFields = [`${this.tableName}.*`];
+    }
+
+    this.query.select(selectFields);
     return this;
   }
+  // private buildProjectionModeifyDate(): this {
+  //   let selectFields: (string | Knex.Raw)[] = [];
 
-  private buildLinks(totalPages: number): Record<string, string> {
-    const links: Record<string, string> = {};
-    const params = new URLSearchParams(this.originalParams);
+  //   // Base select fields from config
+  //   if (
+  //     this.config.selectFields?.length &&
+  //     !this.originalParams.has("fields")
+  //   ) {
+  //     selectFields = this.config.selectFields.map((f) => {
+  //       const field = String(f);
+  //       if (this.config.dateFormatFields?.[field]) {
+  //         const format = this.config.dateFormatFields[field];
+  //         return this.knex.raw(
+  //           `TO_CHAR(${this.tableName}.${field}, ?) as ${field}`,
+  //           [format]
+  //         );
+  //       }
+  //       return `${this.tableName}.${field}`;
+  //     });
+  //   }
 
-    if (params.has("userId")) {
-      params.delete("userId");
-    }
-    if (this.page > 1) {
-      params.set("page", "1");
-      links.first = `?${params}`;
-      params.set("page", String(this.page - 1));
-      links.prev = `?${params}`;
-    }
+  //   // Override with fields parameter, preserving date formatting
+  //   if (this.originalParams.has("fields")) {
+  //     const fields = this.originalParams
+  //       .get("fields")!
+  //       .split(",")
+  //       .map((f) => this.config.filterMap[f] || f)
+  //       .filter((f) => this.config.allowedFilters.includes(f as keyof T));
+  //     selectFields = fields.map((f) => {
+  //       const field = String(f);
+  //       if (this.config.dateFormatFields?.[field]) {
+  //         const format = this.config.dateFormatFields[field];
+  //         return this.knex.raw(
+  //           `TO_CHAR(${this.tableName}.${field}, ?) as ${field}`,
+  //           [format]
+  //         );
+  //       }
+  //       return `${this.tableName}.${field}`;
+  //     });
+  //   }
 
-    if (this.page < totalPages) {
-      params.set("page", String(this.page + 1));
-      links.next = `?${params}`;
-      params.set("page", String(totalPages));
-      links.last = `?${params}`;
-    }
+  //   // Handle joins without overriding main fields
+  //   if (this.joins.length) {
+  //     const joinFields = this.joins.flatMap((join) =>
+  //       join.select.map((field) => `${join.alias}.${field}`)
+  //     );
+  //     selectFields.push(...joinFields);
+  //   }
 
-    return links;
+  //   // If no specific fields are defined, select all from the main table
+  //   if (!selectFields.length) {
+  //     selectFields = [`${this.tableName}.*`];
+  //   }
+
+  //   this.query.select(selectFields);
+  //   return this;
+  // }
+  private applyJoins(): this {
+    this.joins.forEach((join) => {
+      const joinType = join.type || "left";
+      const leftColumn = join.on.left.includes(".")
+        ? join.on.left
+        : `${this.tableName}.${join.on.left}`;
+      switch (joinType) {
+        case "inner":
+          this.query.innerJoin(
+            `${join.table} as ${join.alias}`,
+            `${leftColumn}`,
+            `${join.alias}.${join.on.right}`
+          );
+          break;
+        case "left":
+          this.query.leftJoin(
+            `${join.table} as ${join.alias}`,
+            `${leftColumn}`,
+            `${join.alias}.${join.on.right}`
+          );
+          break;
+        case "right":
+          this.query.rightJoin(
+            `${join.table} as ${join.alias}`,
+            `${leftColumn}`,
+            `${join.alias}.${join.on.right}`
+          );
+          break;
+        case "full":
+          this.query.fullOuterJoin(
+            `${join.table} as ${join.alias}`,
+            `${leftColumn}`,
+            `${join.alias}.${join.on.right}`
+          );
+          break;
+        default:
+          logger.warn(`Unsupported join type: ${joinType}`);
+      }
+    });
+    return this;
   }
+  private async getTotalCount(): Promise<number> {
+    if (!this.config.totalCountBy.length && this.totalCount === undefined) {
+      const countQuery = this.query
+        .clone()
+        .clearOrder()
+        .clearSelect()
+        .clear("group") // 💡 Add this to remove groupBy clauses
+        .countDistinct(`${this.tableName}._id as total`); // Use distinct to avoid counting duplicates from joins
+      // Add this before executing countQuery
+      const [result] = (await countQuery) as { total: number }[];
+      this.totalCount = Number(result?.total || 0);
+    } else if (
+      this.config.totalCountBy.length &&
+      this.totalCount === undefined
+    ) {
+      const countByFields = this.config.totalCountBy.map(
+        (field) => `${this.tableName}.${String(field)}`
+      );
+      const user_id = this.originalParams.get(`${this.tableName}.user_id`);
 
-  private adjustDateForOperator(date: Date, operator: string): Date {
-    // Clone to avoid mutating original date
-    const adjustedDate = new Date(date);
-    switch (operator) {
-      case "gte":
-        adjustedDate.setUTCHours(0, 0, 0, 0); // Start of day
-        break;
-      case "lte":
-        adjustedDate.setUTCHours(23, 59, 59, 999); // End of day
-        break;
-      case "gt":
-        adjustedDate.setUTCHours(23, 59, 59, 999); // Treat as end of day
-        break;
-      case "lt":
-        adjustedDate.setUTCHours(0, 0, 0, 0); // Treat as start of day
-        break;
+      const countQuery = this.query
+        .clone()
+        .clearOrder()
+        .clearSelect()
+        .clear("group")
+        .where(`${this.tableName}.user_id`, user_id) // 💡 Add this to remove groupBy clauses
+        // .groupBy(countByFields)
+        .count(countByFields);
+      // Add this before executing countQuery
+
+      const [result] = (await countQuery) as { count: number }[];
+      this.totalCount = Number(result?.count || 0);
     }
-
-    return adjustedDate;
+    return this.totalCount ?? 0;
+  }
+  aggregate(queries: string[], groupsBy: string[]): this {
+    const q = queries.map((query) => this.knex.raw(query));
+    // console.log("q", q);
+    this.query.select(q).groupBy(groupsBy);
+    return this;
   }
   async execute(): Promise<QueryBuilderResult<T>> {
     try {
-      this.sanitizeInput();
-      this.buildFilter().buildSort().buildPagination().buildProjection();
+      // Apply joins before other operations
+      this.applyJoins()
+        .buildFilter()
+        .buildSort()
+        .buildPagination()
+        .buildProjection();
 
-      // Clone the filtered query and clear pagination/sorting for count
-      const countQuery = this.query.model.find(this.query.getFilter());
-
-      // Apply population to MAIN QUERY
-      if (this.populateOptions.length) {
-        this.query = this.query.populate(this.populateOptions);
+      // Group by primary table's _id to handle one-to-many joins
+      if (!this.isAggregateEnabled && this.joins.length) {
+        // Aggregate joined data (e.g., images)
+        const defaultSelectFields = this.config.selectFields?.length
+          ? this.config.selectFields.map(
+              (f) => `${this.tableName}.${String(f)}`
+            )
+          : [`${this.tableName}.*`]; // Always select all from primary table
+        const selectFields = [
+          ...defaultSelectFields,
+          ...this.joins.map((join) =>
+            this.knex.raw(
+              `json_agg(json_build_object(${join.select
+                .map((f) => `'${f}', ${join.alias}.${f}`)
+                .join(", ")})) as ${join.outerKey ?? `${join.alias}_data`}`
+            )
+          ),
+        ];
+        // const groupByFields = [
+        //   `${this.tableName}._id`,
+        //   ...this.joins.flatMap((join) =>
+        //     join.select.map((f) => `${join.alias}.${f}`)
+        //   ),
+        // ];
+        // console.log("selectFields", selectFields);
+        this.query
+          .clearSelect()
+          .select(selectFields)
+          .groupBy(`${this.tableName}._id`);
+        // this.query.groupBy(groupByFields);
       }
 
-      const [total, results] = await Promise.all([
-        countQuery.countDocuments(),
-        this.query
-          .skip((this.page - 1) * this.limit)
-          .limit(this.limit)
-          .exec(),
+      const [data, total] = await Promise.all([
+        this.query.offset((this.page - 1) * this.limit).limit(this.limit),
+        this.getTotalCount(),
       ]);
+
+      // Transform results to match T (e.g., IProductDB)
+      // const transformedData = data.map((row: any) => {
+      //   const result = { ...row } as T;
+      //   this.joins.forEach((join) => {
+      //     const key =
+      //       join.alias === "product_images" ? "images" : `${join.alias}_data`;
+      //     result[key as keyof T] = row[`${join.alias}_data`] || [];
+      //   });
+      //   return result;
+      // });
 
       const totalPages = Math.ceil(total / this.limit);
       const meta: PaginationMeta = {
@@ -362,22 +518,51 @@ export class QueryBuilder<T extends Document> {
       };
 
       return {
-        docs: results,
+        docs: data,
         meta,
         links: this.buildLinks(totalPages),
       };
     } catch (error) {
-      // logger.error("QueryBuilder Error:", error);
+      logger.error("QueryBuilder Error:", error);
       throw new QueryBuilderError("Failed to execute query", error);
     }
+  }
+
+  private buildLinks(totalPages: number): Record<string, string> {
+    const links: Record<string, string> = {};
+    const params = new URLSearchParams(this.originalParams);
+    for (const key of params.keys()) {
+      if (this.config.excludeLinksFields?.includes(key)) {
+        params.delete(key);
+      }
+    }
+    ["first", "prev", "next", "last"].forEach((rel) => {
+      const pageMap = {
+        first: 1,
+        prev: this.page - 1,
+        next: this.page + 1,
+        last: totalPages,
+      };
+
+      if (
+        (rel === "prev" && this.page > 1) ||
+        (rel === "next" && this.page < totalPages) ||
+        rel === "first" ||
+        rel === "last"
+      ) {
+        params.set("page", String(pageMap[rel as keyof typeof pageMap]));
+        links[rel] = `?${params}`;
+      }
+    });
+
+    return links;
   }
 }
 
 class QueryBuilderError extends Error {
   constructor(
     public override message: string,
-    public originalError: unknown,
-    public context?: Record<string, any>
+    public originalError: unknown
   ) {
     super(message);
     this.name = "QueryBuilderError";

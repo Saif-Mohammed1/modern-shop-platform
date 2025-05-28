@@ -2,9 +2,9 @@
 import nodemailer from "nodemailer";
 
 import logger from "@/app/lib/logger/logs";
+import { SecurityAuditAction } from "@/app/lib/types/audit.db.types";
 import type { DeviceInfo } from "@/app/lib/types/session.types";
 import type { UserRepository } from "@/app/server/repositories/user.repository";
-
 
 interface EmailConfig {
   service: string;
@@ -20,27 +20,9 @@ interface EmailTemplate {
   priority?: "high" | "normal" | "low";
   attachments?: nodemailer.SendMailOptions["attachments"]; // Add attachments property
 }
-export enum SecurityAlertType {
-  SUSPICIOUS_LOGIN = "SUSPICIOUS_LOGIN",
-  ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
-  PASSWORD_CHANGED = "PASSWORD_CHANGED",
-  NEW_DEVICE = "NEW_DEVICE",
-  IMPOSSIBLE_TRAVEL = "IMPOSSIBLE_TRAVEL",
-  SECURITY_SETTINGS_CHANGED = "SECURITY_SETTINGS_CHANGED",
-  BACKUP_CODES_GENERATED = "BACKUP_CODES_GENERATED",
-  BACKUP_CODES_CONSUMED = "BACKUP_CODES_CONSUMED",
-  MFA_ENABLED = "MFA_ENABLED",
-  MFA_DISABLED = "MFA_DISABLED",
-  BOT_DETECTED = "BOT_DETECTED",
-  DATA_EXPORT_REQUESTED = "DATA_EXPORT_REQUESTED",
-  ACCOUNT_RECOVERY_INITIATED = "ACCOUNT_RECOVERY_INITIATED",
-  UNUSUAL_ACTIVITY = "UNUSUAL_ACTIVITY",
-  CRITICAL_ALERT = "CRITICAL_ALERT",
-  LOW_BACKUP_CODES = "LOW_BACKUP_CODES",
-  SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY",
-}
+
 // interface SecurityAlertEmailParams {
-//   type: SecurityAlertType;
+//   type: SecurityAuditAction;
 //   attempts?: number;
 //   locations?: GeoLocation[];
 //   device?: string;
@@ -60,7 +42,7 @@ interface AdditionalInfo {
   codesRemaining?: number;
 }
 interface SecurityAlertEmailParams {
-  type: SecurityAlertType;
+  type: SecurityAuditAction;
   timestamp?: Date;
   ipAddress?: string;
   location?: string;
@@ -70,9 +52,9 @@ interface SecurityAlertEmailParams {
 // Add type definition
 export interface AdminInventoryNotification {
   type: "INVENTORY_RESERVATION_PARTIAL" | "INVENTORY_RESERVATION_FAILED";
-  userId: string;
+  user_id: string;
   failedProducts: Array<{
-    productId: string;
+    product_id: string;
     productName: string;
     quantity: number;
   }>;
@@ -417,7 +399,7 @@ export class EmailService {
   }
 
   private getAlertTemplate(
-    type: SecurityAlertType,
+    type: SecurityAuditAction,
     timestamp: Date,
     ipAddress?: string,
     location?: string,
@@ -455,11 +437,11 @@ export class EmailService {
   }
 
   private getAlertSpecificContent(
-    type: SecurityAlertType,
+    type: SecurityAuditAction,
     additionalInfo?: AdditionalInfo
   ): string {
     switch (type) {
-      case SecurityAlertType.IMPOSSIBLE_TRAVEL:
+      case SecurityAuditAction.IMPOSSIBLE_TRAVEL:
         return `
         <p>We detected login attempts from:</p>
         <ul>
@@ -468,7 +450,7 @@ export class EmailService {
         </ul>
       `;
 
-      case SecurityAlertType.SECURITY_SETTINGS_CHANGED:
+      case SecurityAuditAction.SECURITY_SETTINGS_CHANGED:
         return `
         <p>Changed setting: ${additionalInfo?.changedSetting || "Unknown"}</p>
         ${
@@ -482,7 +464,7 @@ export class EmailService {
         }
       `;
 
-      case SecurityAlertType.ACCOUNT_RECOVERY_INITIATED:
+      case SecurityAuditAction.ACCOUNT_RECOVERY_INITIATED:
         return `
         <p>Recovery process started for: 
           ${additionalInfo?.affectedService || "Account"}
@@ -494,7 +476,7 @@ export class EmailService {
     }
   }
 
-  private getActionButtons(type: SecurityAlertType): string {
+  private getActionButtons(type: SecurityAuditAction): string {
     const buttons = [];
 
     if (this.requiresImmediateAction(type)) {
@@ -503,7 +485,7 @@ export class EmailService {
       );
     }
 
-    if (type === SecurityAlertType.ACCOUNT_LOCKED) {
+    if (type === SecurityAuditAction.ACCOUNT_LOCKED) {
       buttons.push(
         this.createButton(
           `${this.appUrl}/support/emergency`,
@@ -521,11 +503,11 @@ export class EmailService {
       : "";
   }
 
-  private getSecurityRecommendations(type: SecurityAlertType): string {
+  private getSecurityRecommendations(type: SecurityAuditAction): string {
     let recommendations: string[] = [];
 
     switch (type) {
-      case SecurityAlertType.NEW_DEVICE:
+      case SecurityAuditAction.NEW_DEVICE:
         recommendations = [
           "If you don't recognize this device, change your password immediately",
           "Review your active sessions",
@@ -533,7 +515,7 @@ export class EmailService {
         ];
         break;
 
-      case SecurityAlertType.ACCOUNT_LOCKED:
+      case SecurityAuditAction.ACCOUNT_LOCKED:
         recommendations = [
           "Wait for the lockout period to expire (typically 1 hour)",
           "Use account recovery options after lockout expires",
@@ -541,7 +523,7 @@ export class EmailService {
         ];
         break;
 
-      case SecurityAlertType.IMPOSSIBLE_TRAVEL:
+      case SecurityAuditAction.IMPOSSIBLE_TRAVEL:
         recommendations = [
           "Change your password immediately",
           "Check your account activity history",
@@ -628,7 +610,7 @@ export class EmailService {
     });
   }
   // private getAlertDetails(
-  //   type: SecurityAlertType,
+  //   type: SecurityAuditAction,
   //   attempts?: number,
   //   locations?: GeoLocation[],
   //   device?: string,
@@ -641,7 +623,7 @@ export class EmailService {
   //   };
 
   //   switch (type) {
-  //     case SecurityAlertType.SUSPICIOUS_LOGIN:
+  //     case SecurityAuditAction.SUSPICIOUS_LOGIN:
   //       return {
   //         ...baseDetails,
   //         title: "Suspicious Activity Detected",
@@ -736,85 +718,107 @@ export class EmailService {
     });
   }
   // Helper Methods
-  private getAlertEmoji(type: SecurityAlertType): string {
-    const emojiMap: Record<SecurityAlertType, string> = {
-      [SecurityAlertType.SUSPICIOUS_LOGIN]: "⚠️",
-      [SecurityAlertType.ACCOUNT_LOCKED]: "🔒",
-      [SecurityAlertType.PASSWORD_CHANGED]: "🔑",
-      [SecurityAlertType.NEW_DEVICE]: "📱",
-      [SecurityAlertType.IMPOSSIBLE_TRAVEL]: "✈️",
-      [SecurityAlertType.SECURITY_SETTINGS_CHANGED]: "⚙️",
-      [SecurityAlertType.BACKUP_CODES_GENERATED]: "📝",
-      [SecurityAlertType.BACKUP_CODES_CONSUMED]: "📋",
-      [SecurityAlertType.MFA_ENABLED]: "🔐",
-      [SecurityAlertType.MFA_DISABLED]: "⚠️",
-      [SecurityAlertType.BOT_DETECTED]: "🤖",
-      [SecurityAlertType.DATA_EXPORT_REQUESTED]: "💾",
-      [SecurityAlertType.ACCOUNT_RECOVERY_INITIATED]: "🆘",
-      [SecurityAlertType.UNUSUAL_ACTIVITY]: "🚨",
-      [SecurityAlertType.CRITICAL_ALERT]: "🚨",
+  private getAlertEmoji(type: SecurityAuditAction): string {
+    const emojiMap: Record<SecurityAuditAction, string> = Object.values(
+      SecurityAuditAction
+    ).reduce(
+      (map, action) => {
+        map[action] = "⚠️"; // Default emoji for unspecified actions
+        return map;
+      },
+      {} as Record<SecurityAuditAction, string>
+    );
 
-      [SecurityAlertType.LOW_BACKUP_CODES]: "⚠️",
-
-      [SecurityAlertType.SUSPICIOUS_ACTIVITY]: "⚠️",
-    };
+    // Overwrite specific emojis for certain actions
+    emojiMap[SecurityAuditAction.SUSPICIOUS_LOGIN] = "⚠️";
+    emojiMap[SecurityAuditAction.ACCOUNT_LOCKED] = "🔒";
+    emojiMap[SecurityAuditAction.PASSWORD_CHANGED] = "🔑";
+    emojiMap[SecurityAuditAction.NEW_DEVICE] = "📱";
+    emojiMap[SecurityAuditAction.IMPOSSIBLE_TRAVEL] = "✈️";
+    emojiMap[SecurityAuditAction.SECURITY_SETTINGS_CHANGED] = "⚙️";
+    emojiMap[SecurityAuditAction.BACKUP_CODES_GENERATED] = "📝";
+    emojiMap[SecurityAuditAction.BACKUP_CODES_CONSUMED] = "📋";
+    emojiMap[SecurityAuditAction.MFA_ENABLED] = "🔐";
+    emojiMap[SecurityAuditAction.MFA_DISABLED] = "⚠️";
+    emojiMap[SecurityAuditAction.BOT_DETECTED] = "🤖";
+    emojiMap[SecurityAuditAction.DATA_EXPORT_REQUESTED] = "💾";
+    emojiMap[SecurityAuditAction.ACCOUNT_RECOVERY_INITIATED] = "🆘";
+    emojiMap[SecurityAuditAction.UNUSUAL_ACTIVITY] = "🚨";
+    emojiMap[SecurityAuditAction.CRITICAL_ALERT] = "🚨";
+    emojiMap[SecurityAuditAction.LOW_BACKUP_CODES] = "⚠️";
+    emojiMap[SecurityAuditAction.SUSPICIOUS_ACTIVITY] = "⚠️";
 
     return emojiMap[type] || "⚠️";
   }
-
-  private getAlertTitle(type: SecurityAlertType): string {
-    const titles: Record<SecurityAlertType, string> = {
-      [SecurityAlertType.SUSPICIOUS_LOGIN]: "Suspicious Login Attempt",
-      [SecurityAlertType.ACCOUNT_LOCKED]: "Account Temporarily Locked",
-      [SecurityAlertType.PASSWORD_CHANGED]: "Password Changed Successfully",
-      [SecurityAlertType.NEW_DEVICE]: "New Device Detected",
-      [SecurityAlertType.IMPOSSIBLE_TRAVEL]: "Impossible Travel Detected",
-      [SecurityAlertType.SECURITY_SETTINGS_CHANGED]:
-        "Security Settings Updated",
-      [SecurityAlertType.BACKUP_CODES_GENERATED]: "Backup Codes Generated",
-      [SecurityAlertType.BACKUP_CODES_CONSUMED]: "Backup Code Used",
-      [SecurityAlertType.MFA_ENABLED]: "Two-Factor Authentication Enabled",
-      [SecurityAlertType.MFA_DISABLED]: "Two-Factor Authentication Disabled",
-      [SecurityAlertType.BOT_DETECTED]: "Bot Activity Detected",
-      [SecurityAlertType.DATA_EXPORT_REQUESTED]: "Data Export Requested",
-      [SecurityAlertType.ACCOUNT_RECOVERY_INITIATED]:
-        "Account Recovery Started",
-      [SecurityAlertType.UNUSUAL_ACTIVITY]: "Unusual Activity Detected",
-      [SecurityAlertType.CRITICAL_ALERT]: "Critical Security Alert",
-
-      [SecurityAlertType.LOW_BACKUP_CODES]: "Low Backup Codes Remaining",
-
-      [SecurityAlertType.SUSPICIOUS_ACTIVITY]: "Suspicious Activity Detected",
-    };
+  private getAlertTitle(type: SecurityAuditAction): string {
+    const titles: Record<SecurityAuditAction, string> = Object.values(
+      SecurityAuditAction
+    ).reduce(
+      (acc, action) => {
+        acc[action] = action
+          .replace(/_/g, " ")
+          .toLowerCase()
+          .replace(/^\w/, (c) => c.toUpperCase());
+        return acc;
+      },
+      {} as Record<SecurityAuditAction, string>
+    );
 
     return titles[type];
   }
+  // private getAlertTitle(type: SecurityAuditAction): string {
+  //   const titles: Record<SecurityAuditAction, string> = {
+  //     [SecurityAuditAction.SUSPICIOUS_LOGIN]: "Suspicious Login Attempt",
+  //     [SecurityAuditAction.ACCOUNT_LOCKED]: "Account Temporarily Locked",
+  //     [SecurityAuditAction.PASSWORD_CHANGED]: "Password Changed Successfully",
+  //     [SecurityAuditAction.NEW_DEVICE]: "New Device Detected",
+  //     [SecurityAuditAction.IMPOSSIBLE_TRAVEL]: "Impossible Travel Detected",
+  //     [SecurityAuditAction.SECURITY_SETTINGS_CHANGED]:
+  //       "Security Settings Updated",
+  //     [SecurityAuditAction.BACKUP_CODES_GENERATED]: "Backup Codes Generated",
+  //     [SecurityAuditAction.BACKUP_CODES_CONSUMED]: "Backup Code Used",
+  //     [SecurityAuditAction.MFA_ENABLED]: "Two-Factor Authentication Enabled",
+  //     [SecurityAuditAction.MFA_DISABLED]: "Two-Factor Authentication Disabled",
+  //     [SecurityAuditAction.BOT_DETECTED]: "Bot Activity Detected",
+  //     [SecurityAuditAction.DATA_EXPORT_REQUESTED]: "Data Export Requested",
+  //     [SecurityAuditAction.ACCOUNT_RECOVERY_INITIATED]:
+  //       "Account Recovery Started",
+  //     [SecurityAuditAction.UNUSUAL_ACTIVITY]: "Unusual Activity Detected",
+  //     [SecurityAuditAction.CRITICAL_ALERT]: "Critical Security Alert",
 
-  private getAlertPriority(type: SecurityAlertType): "high" | "normal" {
+  //     [SecurityAuditAction.LOW_BACKUP_CODES]: "Low Backup Codes Remaining",
+
+  //     [SecurityAuditAction.SUSPICIOUS_ACTIVITY]: "Suspicious Activity Detected",
+  //   };
+
+  //   return titles[type];
+  // }
+
+  private getAlertPriority(type: SecurityAuditAction): "high" | "normal" {
     const highPriorityAlerts = [
-      SecurityAlertType.ACCOUNT_LOCKED,
-      SecurityAlertType.IMPOSSIBLE_TRAVEL,
-      SecurityAlertType.CRITICAL_ALERT,
-      SecurityAlertType.ACCOUNT_RECOVERY_INITIATED,
-      SecurityAlertType.BOT_DETECTED,
+      SecurityAuditAction.ACCOUNT_LOCKED,
+      SecurityAuditAction.IMPOSSIBLE_TRAVEL,
+      SecurityAuditAction.CRITICAL_ALERT,
+      SecurityAuditAction.ACCOUNT_RECOVERY_INITIATED,
+      SecurityAuditAction.BOT_DETECTED,
     ];
 
     return highPriorityAlerts.includes(type) ? "high" : "normal";
   }
 
-  private requiresImmediateAction(type: SecurityAlertType): boolean {
+  private requiresImmediateAction(type: SecurityAuditAction): boolean {
     return [
-      SecurityAlertType.SUSPICIOUS_LOGIN,
-      SecurityAlertType.NEW_DEVICE,
-      SecurityAlertType.IMPOSSIBLE_TRAVEL,
-      SecurityAlertType.ACCOUNT_RECOVERY_INITIATED,
+      SecurityAuditAction.SUSPICIOUS_LOGIN,
+      SecurityAuditAction.NEW_DEVICE,
+      SecurityAuditAction.IMPOSSIBLE_TRAVEL,
+      SecurityAuditAction.ACCOUNT_RECOVERY_INITIATED,
     ].includes(type);
   }
 
   private generateAlertAttachments(
-    type: SecurityAlertType
+    type: SecurityAuditAction
   ): nodemailer.SendMailOptions["attachments"] {
-    if (type === SecurityAlertType.DATA_EXPORT_REQUESTED) {
+    if (type === SecurityAuditAction.DATA_EXPORT_REQUESTED) {
       return [
         {
           filename: "data-export-instructions.pdf",
@@ -836,12 +840,12 @@ export class EmailService {
 
     const adminEmails = admins.map((admin) => admin.email).join(", ");
     const productList = notification.failedProducts
-      .map((p) => `• ${p.quantity}x ${p.productName} (ID: ${p.productId})`)
+      .map((p) => `• ${p.quantity}x ${p.productName} (ID: ${p.product_id})`)
       .join("<br>");
 
     const content = `
     <h2 style="color: #2d3748; margin-top: 0;">Inventory Reservation Issue</h2>
-    <p><strong>User ID:</strong> ${notification.userId}</p>
+    <p><strong>User ID:</strong> ${notification.user_id}</p>
     <p><strong>Timestamp:</strong> ${notification.timestamp.toLocaleString()}</p>
     
     <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 15px 0;">
@@ -850,7 +854,7 @@ export class EmailService {
     </div>
 
     ${this.createButton(
-      `${this.appUrl}/admin/orders?userId=${notification.userId}`,
+      `${this.appUrl}/admin/orders?user_id=${notification.user_id}`,
       "View User Details"
     )}
 
@@ -858,7 +862,7 @@ export class EmailService {
       <p>This is an automated notification. Please review inventory levels and user account:</p>
       <ul>
         <li><a href="${this.appUrl}/admin/inventory">Inventory Management</a></li>
-        <li><a href="${this.appUrl}/admin/users/${notification.userId}">User Profile</a></li>
+        <li><a href="${this.appUrl}/admin/users/${notification.user_id}">User Profile</a></li>
       </ul>
     </div>
   `;

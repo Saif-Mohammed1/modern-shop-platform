@@ -7,11 +7,10 @@ import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTranslate";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
-
 
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
 import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
@@ -115,7 +114,7 @@ const LoginPage = () => {
 
       const {
         data: { message },
-      } = await api.post("/auth/2fa/backup/validate", {
+      } = await api_client.post("/auth/2fa/backup/validate", {
         email,
         codes,
       });
@@ -135,7 +134,7 @@ const LoginPage = () => {
   // const handleResend = async () => {
   //   // setIsLoading(true);
   //   try {
-  //     await api.put("/auth/2fa", {
+  //     await api_client.put("/auth/2fa", {
   //       email,
   //     });
 

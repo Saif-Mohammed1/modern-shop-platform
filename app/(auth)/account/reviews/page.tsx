@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { headers } from "next/headers";
 
-import type { ReviewsType } from "@/app/lib/types/reviews.types";
+import type { ReviewsType } from "@/app/lib/types/reviews.db.types";
 import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import ReviewHistory from "@/components/customers/reviewHistory";

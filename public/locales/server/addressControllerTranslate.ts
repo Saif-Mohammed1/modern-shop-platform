@@ -3,30 +3,31 @@ export const addressControllerTranslate = {
     model: {
       schema: {
         street: {
-          required: 'street must be required',
+          required: "street must be required",
         },
         city: {
-          required: 'city must be required',
+          required: "city must be required",
         },
         state: {
-          required: 'state must be required',
+          required: "state must be required",
         },
-        postalCode: {
-          required: 'postalCode must be required',
+        postal_code: {
+          required: "postal_code must be required",
         },
         phone: {
-          required: 'phone must be required',
+          required: "phone must be required",
         },
-        phoneValidation: (value: string) => `${value} is not a valid Ukrainian phone number!`,
+        phoneValidation: (value: string) =>
+          `${value} is not a valid Ukrainian phone number!`,
         country: {
-          required: 'country must be required',
+          required: "country must be required",
         },
         user: {
-          required: 'Address must belong to a user.',
+          required: "Address must belong to a user.",
         },
       },
     },
-    errors: {notFound: 'No address found'},
+    errors: { notFound: "No address found" },
   },
   uk: {
     model: {
@@ -40,21 +41,22 @@ export const addressControllerTranslate = {
         state: {
           required: "область повинна бути обов'язковою",
         },
-        postalCode: {
+        postal_code: {
           required: "поштовий індекс повинен бути обов'язковим",
         },
         phone: {
           required: "телефон пов инен бути обов'язковим",
         },
-        phoneValidation: (value: string) => `${value} не є дійсним українським номером телефону!`,
+        phoneValidation: (value: string) =>
+          `${value} не є дійсним українським номером телефону!`,
         country: {
           required: "країна повинна бути обов'язковою",
         },
         user: {
-          required: 'Адреса повинна належати користувачеві',
+          required: "Адреса повинна належати користувачеві",
         },
       },
     },
-    errors: {notFound: 'Адресу не знайдено'},
+    errors: { notFound: "Адресу не знайдено" },
   },
 } as const;

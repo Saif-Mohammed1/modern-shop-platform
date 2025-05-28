@@ -1,74 +1,75 @@
 import crypto from "crypto";
 import { setTimeout } from "timers/promises";
 
-import { MongoBulkWriteError, type MongoError } from "mongodb";
-import mongoose, { Types } from "mongoose";
+import type { Knex } from "knex";
 import Stripe from "stripe";
 
 import logger from "@/app/lib/logger/logs";
+import { AuditAction, AuditSource } from "@/app/lib/types/audit.db.types";
+import type { CartItemsType } from "@/app/lib/types/cart.db.types";
 import {
-  AuditAction,
-  AuditSource,
-  EntityType,
-} from "@/app/lib/types/audit.types";
-import type { CartItemsType } from "@/app/lib/types/cart.types";
-import {
-  type IOrderItem,
   OrderStatus,
   PaymentsMethod,
-} from "@/app/lib/types/orders.types";
+  type IOrderDB,
+} from "@/app/lib/types/orders.db.types";
+import type {
+  IProductDB,
+  IProductViewBasicDB,
+  IReservationDB,
+} from "@/app/lib/types/products.db.types";
 import {
   UserCurrency,
   UserRole,
   UserStatus,
-} from "@/app/lib/types/users.types";
+  type IUserDB,
+} from "@/app/lib/types/users.db.types";
 import AppError from "@/app/lib/utilities/appError";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { generateUUID } from "@/app/lib/utilities/id";
 import { lang } from "@/app/lib/utilities/lang";
+import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import { redis } from "@/app/lib/utilities/Redis";
 import { stripeControllerTranslate } from "@/public/locales/server/stripeControllerTranslate";
 
-import type { LogsTypeDto } from "../dtos/logs.dto";
+import { connectDB } from "../db/db";
+// import type { LogsTypeDto } from "../dtos/logs.dto";
+import type { CreateOrderDto } from "../dtos/order.dto";
 import type { ShippingInfoDto } from "../dtos/stripe.dto";
-import AuditLogModel from "../models/audit-log.model";
-import OrderModel from "../models/Order.model";
-import ProductModel, { type IProduct } from "../models/Product.model";
-import UserModel, { type IUser } from "../models/User.model";
 
 import { CartService } from "./cart.service";
 import type { AdminInventoryNotification } from "./email.service";
+import { OrderService } from "./order.service";
 import { ProductService } from "./product.service";
+import { UserService } from "./user.service";
 
 import { emailService } from ".";
 
 // stripe.service.ts
 
-export interface FailedOrderData {
-  sessionId: string;
-  userId: string;
-  error: string;
-  metadata: any;
-  products: Array<{ productId: string; quantity: number }>;
-}
+// export interface FailedOrderData {
+//   sessionId: string;
+//   user_id: string;
+//   error: string;
+//   metadata: any;
+//   products: Array<{ product_id: string; quantity: number }>;
+// }
 export const stripe = new Stripe(process.env.STRIPE_SECRET!, {
   // apiVersion: "2024-06-20",
   maxNetworkRetries: 3, // Retry 3 times on network errors
   timeout: 15_000, // 15 seconds
   typescript: true,
 });
-interface CustomMongoError extends MongoError {
-  // errorLabels?: string[];
-  codeName?: string;
-  // Add other possible MongoDB error properties if needed
-}
+
 export class StripeService {
   private readonly RESERVATION_TIMEOUT;
   private readonly feePercentage;
   private readonly TAX_RATE_TTL;
   private readonly CACHE_PREFIX;
+  private readonly knex = connectDB();
   constructor(
     private readonly userCartService: CartService = new CartService(),
-    private readonly productService: ProductService = new ProductService()
+    private readonly productService: ProductService = new ProductService(),
+    private readonly userService: UserService = new UserService(),
+    private readonly orderService: OrderService = new OrderService()
   ) {
     this.RESERVATION_TIMEOUT =
       Number(process.env.RESERVATION_TIMEOUT || 15) * 60; // 15 minutes in seconds
@@ -76,192 +77,104 @@ export class StripeService {
     this.TAX_RATE_TTL = 3600; // 1 hour in seconds
     this.CACHE_PREFIX = "taxRate:";
   }
+
   async createStripeSession(
-    user: IUser,
-    shippingInfo: ShippingInfoDto,
-    logs: LogsTypeDto
+    user: IUserDB,
+    shipping_info: ShippingInfoDto
   ): Promise<{ sessionId: string; url: string }> {
     await this.validateEnvironment();
     const MAX_RETRIES = 3;
     let retryCount = 0;
 
+    const BASE_URL = new URL(process.env.NEXTAUTH_URL!);
+    const userCart = await this.userCartService.getMyCart(user._id.toString());
+
+    if (userCart.length === 0) {
+      throw new AppError(stripeControllerTranslate[lang].errors.cartEmpty, 400);
+    }
+
+    const { validProducts, invalidProducts } =
+      await this.validateCartProducts(userCart);
+    if (invalidProducts.length > 0) {
+      throw new AppError(invalidProducts[0].message, 400);
+    }
+
+    const idempotencyPayload = {
+      validProducts: validProducts.map((p) => ({
+        id: p.product._id.toString(),
+        quantity: p.quantity,
+      })),
+      shipping_info: this.normalizeShippingInfo(shipping_info),
+      user_id: user._id.toString(),
+    };
+    const idempotencyKey = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(idempotencyPayload))
+      .digest("hex");
+
+    const cachedSession = await this.getCachedSession(idempotencyKey);
+    if (cachedSession) {
+      return cachedSession;
+    }
+
+    // RETRY LOOP
     while (retryCount < MAX_RETRIES) {
-      const transaction = await mongoose.startSession();
-      transaction.startTransaction();
       try {
-        const BASE_URL = new URL(process.env.NEXTAUTH_URL!);
-        const userCart = await this.userCartService.getMyCart(
-          user._id.toString()
-        );
-        // 1. Get and validate cart FIRST
-        if (userCart.length === 0) {
-          throw new AppError(
-            stripeControllerTranslate[lang].errors.cartEmpty,
-            400
+        const result = await this.knex.transaction(async (trx) => {
+          await this.reserveInventoryWithRetry(
+            validProducts.map((p) => ({
+              _id: p.product._id,
+              quantity: p.quantity,
+              name: p.product.name,
+              slug: p.product.slug,
+            })),
+            user,
+            trx
           );
-        }
-        // 2. Validate cart items first
-        const { validProducts, invalidProducts } =
-          await this.validateCartProducts(userCart);
-        if (invalidProducts.length > 0) {
-          // await this.handleInvalidCartItems(user._id.toString(), invalidProducts);
-          throw new AppError(invalidProducts[0].message, 400);
-        }
 
-        // 3. Generate idempotency key based on validated products
-        const idempotencyPayload = {
-          validProducts: validProducts.map((p) => ({
-            id: p.product._id.toString(),
-            quantity: p.quantity,
-          })),
-          shippingInfo: this.normalizeShippingInfo(shippingInfo), // Normalized
-          userId: user._id.toString(),
-        };
-        const idempotencyKey = crypto
-          .createHash("sha256")
-          .update(JSON.stringify(idempotencyPayload))
-          .digest("hex");
+          const session = await this.createStripeCheckoutSession(
+            user,
+            validProducts,
+            shipping_info,
+            BASE_URL,
+            idempotencyKey
+          );
+          await this.cacheSession(idempotencyKey, session);
 
-        const cachedSession = await this.getCachedSession(idempotencyKey);
-        if (cachedSession) {
-          return cachedSession;
-        }
+          return { sessionId: session.id, url: session.url! };
+        });
 
-        // const reservationId = uuidv4();
-        // 4. Reserve inventory using validated products
-        await this.reserveInventoryWithRetry(
-          validProducts.map((p) => ({
-            _id: p.product._id,
-            quantity: p.quantity,
-            name: p.product.name,
-          })),
-          user,
-          logs,
-          // reservationId,
-          transaction
-        );
-
-        const session = await this.createStripeCheckoutSession(
-          user,
-          validProducts,
-          shippingInfo,
-          BASE_URL,
-          idempotencyKey
-        );
-        await this.cacheSession(idempotencyKey, session);
-
-        await transaction.commitTransaction();
-        return { sessionId: session.id, url: session.url! };
+        return result; // ✅ Only return after successful transaction
       } catch (error) {
-        await transaction.abortTransaction();
-
         if (this.isTransientError(error)) {
           retryCount++;
-          await setTimeout(50 * retryCount);
-          continue;
+          await setTimeout(50 * retryCount); // exponential backoff
+          continue; // 🔁 try again
         }
 
         await this.handleCreateSessionError(error as Error, user);
         throw error;
-      } finally {
-        await transaction.endSession();
       }
     }
-    throw new AppError(
-      stripeControllerTranslate[lang].errors.maxRetry,
 
-      500
-    );
+    throw new AppError(stripeControllerTranslate[lang].errors.maxRetry, 500);
   }
 
-  // async createStripeSessionOld(
-  //   user: IUser,
-  //   shippingInfo: ShippingInfoDto
-  // ): Promise<{ sessionId: string; url: string }> {
-  //   await this.validateEnvironment();
-  //   const transaction = await mongoose.startSession();
-  //   transaction.startTransaction();
-
-  //   try {
-  //     const BASE_URL = new URL(process.env.NEXTAUTH_URL!);
-  //     const userCart = await this.userCartService.getMyCart(
-  //       user._id.toString()
-  //     );
-  //     // 1. Get and validate cart FIRST
-  //     if (userCart.length === 0) {
-  //       throw new AppError("Cart is empty", 400);
-  //     }
-  //     // 2. Validate cart items first
-  //     const { validProducts, invalidProducts } =
-  //       await this.validateCartProducts(userCart);
-  //     if (invalidProducts.length > 0) {
-  //       // await this.handleInvalidCartItems(user._id.toString(), invalidProducts);
-  //       throw new AppError(invalidProducts[0].message, 400);
-  //     }
-
-  //     // 3. Generate idempotency key based on validated products
-  //     const idempotencyPayload = {
-  //       validProducts: validProducts.map((p) => ({
-  //         id: p.product._id.toString(),
-  //         quantity: p.quantity,
-  //       })),
-  //       shippingInfo: this.normalizeShippingInfo(shippingInfo), // Normalized
-  //       userId: user._id.toString(),
-  //     };
-  //     const idempotencyKey = crypto
-  //       .createHash("sha256")
-  //       .update(JSON.stringify(idempotencyPayload))
-  //       .digest("hex");
-
-  //     const cachedSession = await this.getCachedSession(idempotencyKey);
-  //     if (cachedSession) return cachedSession;
-
-  //     const reservationId = uuidv4();
-  //     // 4. Reserve inventory using validated products
-  //     await this.reserveInventoryWithRetry(
-  //       validProducts.map((p) => ({
-  //         _id: p.product._id,
-  //         quantity: p.quantity,
-  //       })),
-  //       user,
-  //       reservationId,
-  //       transaction
-  //     );
-
-  //     const session = await this.createStripeCheckoutSession(
-  //       user,
-  //       validProducts,
-  //       shippingInfo,
-  //       BASE_URL,
-  //       idempotencyKey
-  //     );
-  //     await this.cacheSession(idempotencyKey, session);
-  //     await transaction.commitTransaction();
-  //     return { sessionId: session.id, url: session.url! };
-  //   } catch (error) {
-  //     await transaction.abortTransaction();
-  //     await this.handleCreateSessionError(error as Error, user);
-  //     throw error;
-  //   } finally {
-  //     transaction.endSession();
-  //   }
-  // }
-
   private async createStripeCheckoutSession(
-    user: IUser,
-    validProducts: Array<{ product: IProduct; quantity: number }>, // Now receives pre-validated products
-    shippingInfo: ShippingInfoDto,
+    user: IUserDB,
+    validProducts: Array<{ product: IProductViewBasicDB; quantity: number }>, // Now receives pre-validated products
+    shipping_info: ShippingInfoDto,
     BASE_URL: URL,
     idempotencyKey: string
   ) {
     // 1. Validate shipping info
-    const normalizedShippingInfo = this.normalizeShippingInfo(shippingInfo);
+    const normalizedShippingInfo = this.normalizeShippingInfo(shipping_info);
 
-    const textRate = await this.getTaxRate(shippingInfo.country);
+    const texRate = await this.getTaxRate(shipping_info.country);
     // 3. Create line items with verified prices
     const lineItems = await Promise.all(
       validProducts.map((product) =>
-        this.createStripeLineItem(product, textRate)
+        this.createStripeLineItem(product, texRate)
       )
     );
 
@@ -280,11 +193,11 @@ export class StripeService {
           shipping: {
             name: user?.name ?? "Unknown",
             address: {
-              line1: shippingInfo.street,
-              city: shippingInfo.city,
-              state: shippingInfo.state,
-              postal_code: shippingInfo.postalCode,
-              country: shippingInfo.country,
+              line1: shipping_info.street,
+              city: shipping_info.city,
+              state: shipping_info.state,
+              postal_code: shipping_info.postal_code,
+              country: shipping_info.country,
             },
           },
         },
@@ -311,7 +224,7 @@ export class StripeService {
         },
 
         metadata: {
-          shippingInfo: JSON.stringify(normalizedShippingInfo),
+          shipping_info: JSON.stringify(normalizedShippingInfo),
           idempotencyKey,
           reservationTimeout: Date.now() + this.RESERVATION_TIMEOUT * 1000,
         },
@@ -321,32 +234,26 @@ export class StripeService {
   }
 
   async handleWebhookEvent(event: Stripe.Event): Promise<void> {
-    const transaction = await mongoose.startSession();
-
-    try {
-      await transaction.withTransaction(async () => {
-        switch (event.type) {
-          case "checkout.session.completed":
-            await this.handleCheckoutSessionCompleted(
-              event.data.object as Stripe.Checkout.Session,
-              transaction
-            );
-            break;
-          case "charge.refunded":
-            await this.handleChargeRefunded(
-              event.data.object as Stripe.Charge,
-              transaction
-            );
-            break;
-        }
-      });
-    } finally {
-      await transaction.endSession();
-    }
+    await this.knex.transaction(async (trx) => {
+      switch (event.type) {
+        case "checkout.session.completed":
+          await this.handleCheckoutSessionCompleted(
+            event.data.object as Stripe.Checkout.Session,
+            trx
+          );
+          break;
+        case "charge.refunded":
+          await this.handleChargeRefunded(
+            event.data.object as Stripe.Charge,
+            trx
+          );
+          break;
+      }
+    });
   }
   private async handleCheckoutSessionCompleted(
     session: Stripe.Checkout.Session,
-    transaction: mongoose.ClientSession
+    trx: Knex.Transaction
   ): Promise<void> {
     const lockKey = `order:${session.id}`;
     const locked = await this.acquireLock(lockKey);
@@ -359,16 +266,17 @@ export class StripeService {
     }
 
     // Validate session metadata
-    if (!session.metadata?.shippingInfo || !session.metadata?.idempotencyKey) {
+    if (!session.metadata?.shipping_info || !session.metadata?.idempotencyKey) {
       throw new AppError(
         stripeControllerTranslate[lang].errors.InvalidMetadata,
         400
       );
     }
-
     // Retrieve user and shipping info
-    const user = await UserModel.findById(session.client_reference_id).session(
-      transaction
+
+    const user = await this.userService.findUserById(
+      session.client_reference_id as string,
+      trx
     );
     if (!user) {
       throw new AppError(
@@ -378,8 +286,8 @@ export class StripeService {
     }
     try {
       // Parse shipping information
-      const shippingInfo = this.parseShippingInfo(
-        session.metadata.shippingInfo
+      const shipping_info = this.parseShippingInfo(
+        session.metadata.shipping_info
       );
       // Retrieve Stripe invoice and line items
       const [lineItems, invoice] = await Promise.all([
@@ -390,22 +298,19 @@ export class StripeService {
       ]);
 
       // Create order items
-      const orderItems = await this.processOrderItems(
-        lineItems.data,
-        transaction
-      );
+      const orderItems = await this.processOrderItems(lineItems.data, trx);
 
       // Create order document
       await this.createOrderFromSession(
         session,
         user,
-        shippingInfo,
-        transaction,
+        shipping_info,
+        trx,
         orderItems,
         invoice
       );
       // Update inventory and clear cart
-      await this.updateInventory(orderItems, user, transaction);
+      await this.updateInventory(orderItems, user, trx);
       // await this.cartService.clearCart(user._id.toString(), transaction);
 
       // Send order confirmation
@@ -435,11 +340,12 @@ export class StripeService {
   }
   private async handleChargeRefunded(
     charge: Stripe.Charge,
-    transaction: mongoose.ClientSession
+    trx: Knex.Transaction
   ): Promise<void> {
-    const order = await OrderModel.findOne({
-      "payment.transactionId": charge.payment_intent,
-    });
+    const order = await trx<IOrderDB>("orders")
+      .whereRaw(`payment->>'transaction_id' = ?`, [charge.payment_intent])
+      .first();
+
     if (!order) {
       return;
     }
@@ -447,79 +353,69 @@ export class StripeService {
     order.status = charge.refunded
       ? OrderStatus.Refunded
       : OrderStatus.PartiallyRefunded;
-    await order.save({ session: transaction });
+    await trx("orders")
+      .update({ status: order.status })
+      .where("_id", order._id);
 
-    await this.createAuditLog(
-      new Types.ObjectId(charge.metadata.userId),
+    await this.orderService.createAuditLog(
       AuditAction.ORDER_UPDATED,
-      EntityType.ORDER,
       order._id.toString(),
+      String(charge.metadata.user_id),
+      [],
       {
         status: order.status,
         refundAmount: charge.amount_refunded / 100,
         currency: charge.currency,
       },
-      transaction
-    );
-  }
-  private async createAuditLog(
-    actor: Types.ObjectId,
-    action: AuditAction,
-    entityType: EntityType,
-    entityId: string,
-    context: Record<string, any>,
-    session?: mongoose.ClientSession
-  ): Promise<void> {
-    await AuditLogModel.create(
-      [
-        {
-          actor,
-          action,
-          entityType,
-          entityId,
-          changes: [],
-          context,
-          source: AuditSource.API,
-          correlationId: `CORR-${Date.now()}`,
-        },
-      ],
-      { session }
+      AuditSource.WEB,
+      trx
     );
   }
 
   private async updateInventory(
-    orderItems: IOrderItem[],
-    user: IUser,
-    session: mongoose.ClientSession
+    orderItems: CreateOrderDto["items"],
+    user: IUserDB,
+    trx: Knex.Transaction
   ): Promise<void> {
-    const bulkOps = orderItems.map((item) => ({
-      updateOne: {
-        filter: { _id: item.productId },
-        update: {
-          $inc: {
-            stock: -item.quantity,
-            sold: item.quantity,
-            reserved: -item.quantity,
-          },
-          $set: { modifiedAt: new Date(), lastModifiedBy: user._id },
-        },
-      },
-    }));
+    await Promise.all(
+      orderItems.map(async (item) => {
+        const affectedRows = await trx<IProductDB>("products")
+          .where("_id", item.product_id)
+          .update({
+            stock: this.knex.raw("stock - ?", [item.quantity]),
+            reserved: this.knex.raw("reserved - ?", [item.quantity]),
+            sold: this.knex.raw("sold + ?", [item.quantity]),
+            last_modified_by: user._id,
+          });
 
-    await ProductModel.bulkWrite(bulkOps, { session });
+        if (affectedRows === 0) {
+          throw new AppError(
+            `Failed to update inventory for product ${item.name}`,
+            500
+          );
+        }
+        await trx<IReservationDB>("reservations")
+          .where("product_id", item.product_id)
+          .andWhere("user_id", user._id)
+          .andWhere("status", "pending")
+          .update({ status: "confirmed" });
+      })
+    );
   }
   private async processOrderItems(
     items: Stripe.LineItem[],
-    session: mongoose.ClientSession
-  ) {
+    trx: Knex.Transaction
+  ): Promise<CreateOrderDto["items"]> {
     return await Promise.all(
       items.map(async (item) => {
         const productMetadata = (item?.price?.product as Stripe.Product)
           .metadata; // Assuming you stored _id in metadata
-
-        const product = await ProductModel.findById(
-          productMetadata._id
-        ).session(session);
+        const query = trx ?? this.knex;
+        const product = await query<IProductViewBasicDB>(
+          "public_products_views_basic"
+        )
+          .where("_id", productMetadata._id)
+          .first();
 
         if (!product) {
           throw new AppError(
@@ -532,59 +428,54 @@ export class StripeService {
         // throw new AppError(`Product not found: ${productMetadata.name}`, 404);
 
         return {
-          productId: product._id,
+          product_id: product._id,
           name: product.name,
           price: product.price,
           discount: product.discount || 0,
           quantity: item.quantity || 0,
           sku: product.sku,
-          attributes: product.attributes || {},
-          shippingInfo: {
-            weight: product.shippingInfo.weight || 0,
-            dimensions: product.shippingInfo.dimensions || {
+          shipping_info: {
+            weight: product.shipping_info.weight || 0,
+            dimensions: product.shipping_info.dimensions || {
               length: 0,
               width: 0,
               height: 0,
             },
           },
-          finalPrice: this.calculateFinalPrice(product, item.quantity || 1),
+          final_price: this.calculateFinalPrice(product, item.quantity || 1),
         };
       })
     );
   }
   private async createOrderFromSession(
     session: Stripe.Checkout.Session,
-    user: IUser,
-    shippingInfo: ShippingInfoDto,
-    transaction: mongoose.ClientSession,
-    orderItems: IOrderItem[],
+    user: IUserDB,
+    shipping_info: ShippingInfoDto,
+    trx: Knex.Transaction,
+    orderItems: CreateOrderDto["items"],
     invoice: Stripe.Invoice
   ) {
     try {
-      await OrderModel.create(
-        [
-          {
-            userId: user._id,
-            items: orderItems,
-            shippingAddress: shippingInfo,
-            payment: {
-              method: PaymentsMethod.Credit_card, // Map from Stripe payment method
-              transactionId: session.payment_intent as string,
-            },
-            status: OrderStatus.Processing,
-            invoiceId: invoice.id,
-            invoiceLink: invoice.invoice_pdf || "",
-            subtotal: session.amount_subtotal
-              ? session.amount_subtotal / 100
-              : 0,
-            tax: session.total_details?.amount_tax
-              ? session.total_details.amount_tax / 100
-              : 0,
-            total: session.amount_total ? session.amount_total / 100 : 0,
-            currency: session.currency?.toUpperCase() || UserCurrency.UAH,
+      await this.orderService.createOrder(
+        {
+          user_id: user._id,
+          items: orderItems,
+          shipping_address: shipping_info,
+          payment: {
+            method: PaymentsMethod.Credit_card, // Map from Stripe payment method
+            transaction_id: session.payment_intent as string,
           },
-        ],
-        { session: transaction }
+          status: OrderStatus.Processing,
+          invoice_id: invoice.id,
+          invoice_link: invoice.invoice_pdf || "",
+          subtotal: session.amount_subtotal ? session.amount_subtotal / 100 : 0,
+          tax: session.total_details?.amount_tax
+            ? session.total_details.amount_tax / 100
+            : 0,
+          total: session.amount_total ? session.amount_total / 100 : 0,
+          currency: session.currency?.toUpperCase() || UserCurrency.UAH,
+        },
+        trx
       );
     } catch (error) {
       await this.handleOrderFailure(user, error as Error);
@@ -592,62 +483,29 @@ export class StripeService {
       throw error;
     }
   }
-  private async handleOrderFailure(user: IUser, error: Error) {
-    await this.createAuditLog(
-      user._id,
+  private async handleOrderFailure(user: IUserDB, error: Error) {
+    await this.orderService.createAuditLog(
       AuditAction.ORDER_FAILURE,
-      EntityType.ORDER,
       "N/A",
-
+      user._id,
+      [],
       {
         error: error.message,
         stack: error.stack,
       }
     );
   }
-  // private async reserveInventoryWithRetry3(
-  //   products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
-  //   user: IUser,
-  //   session: mongoose.ClientSession
-  // ) {
-  //   const sortedProducts = [...products].sort((a, b) =>
-  //     a._id.toString().localeCompare(b._id.toString())
-  //   );
 
-  //   const lockPromises = sortedProducts.map(async (product) => {
-  //     const lockKey = `product_lock:${product._id}`;
-  //     let acquired = false;
-  //     let attempts = 0;
-
-  //     while (!acquired && attempts < 5) {
-  //       acquired = await this.acquireLock(lockKey, 60); // 60 second TTL
-  //       if (!acquired) {
-  //         attempts++;
-  //         await setTimeout(200 * attempts); // Linear backoff
-  //       }
-  //     }
-
-  //     if (!acquired) throw new AppError(`Lock failed for ${product._id}`, 409);
-  //     return lockKey;
-  //   });
-
-  //   const lockKeys = await Promise.all(lockPromises);
-
-  //   try {
-  //     await this.reserveInventory(sortedProducts, user, session);
-  //   } finally {
-  //     await Promise.all(lockKeys.map((key) => this.releaseLock(key)));
-  //   }
-  // }
   private async reserveInventoryWithRetry(
     products: Array<{
-      _id: mongoose.Types.ObjectId;
+      _id: string;
       quantity: number;
       name: string;
+      slug: string;
     }>,
-    user: IUser,
-    logs: LogsTypeDto,
-    session: mongoose.ClientSession,
+    user: IUserDB,
+    // logs: LogsTypeDto,
+    trx: Knex.Transaction,
     maxRetries = 5
   ): Promise<void> {
     // Sort products by ID to prevent deadlocks
@@ -689,7 +547,7 @@ export class StripeService {
       }
 
       // Proceed with inventory reservation after acquiring all locks
-      await this.reserveInventory(sortedProducts, user, logs, session);
+      await this.reserveInventory(sortedProducts, user, trx);
     } finally {
       // Release all locks in reverse order
       for (const lockKey of [...acquiredLocks].reverse()) {
@@ -699,331 +557,199 @@ export class StripeService {
       }
     }
   }
-  // private async reserveInventoryWithRetryOld2(
-  //   products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
-  //   user: IUser,
-  //   // reservationId: string,
-  //   session: mongoose.ClientSession,
-  //   retries = 3
-  // ): Promise<void> {
-  //   // Sort products by ID to acquire locks in consistent order
-  //   const sortedProducts = [...products].sort((a, b) =>
-  //     a._id.toString().localeCompare(b._id.toString())
-  //   );
-
-  //   const lockKeys = sortedProducts.map((p) => `product_lock:${p._id}`);
-
-  //   try {
-  //     // Acquire all locks in order
-  //     for (const lockKey of lockKeys) {
-  //       let acquired = false;
-  //       while (!acquired && retries > 0) {
-  //         acquired = await this.acquireLock(lockKey, 30);
-  //         if (!acquired) {
-  //           retries--;
-  //           await setTimeout(100);
-  //         }
-  //       }
-  //       if (!acquired) throw new AppError("Failed to acquire locks", 409);
-  //     }
-
-  //     await this.reserveInventory(sortedProducts, user, session);
-  //   } finally {
-  //     // Release all locks in reverse order
-  //     for (const lockKey of lockKeys.reverse()) {
-  //       await this.releaseLock(lockKey);
-  //     }
-  //   }
-  // }
-  // private async reserveInventoryWithRetryOld(
-  //   userCart: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
-  //   user: IUser,
-  //   reservationId: string,
-  //   session: mongoose.ClientSession,
-  //   retries = 3
-  // ): Promise<void> {
-  //   const lockKey = `inventory_lock:${reservationId}`;
-  //   let locked = false;
-
-  //   try {
-  //     locked = await this.acquireLock(lockKey, 30);
-  //     if (!locked) throw new AppError("Inventory reservation conflict", 409);
-
-  //     await this.reserveInventory(userCart, user, session);
-  //   } catch (error) {
-  //     if (retries > 0 && error instanceof AppError) {
-  //       const delay = 2 ** (4 - retries) * 100; // Exponential backoff
-  //       await setTimeout(delay);
-  //       return this.reserveInventoryWithRetry(
-  //         userCart,
-  //         user,
-  //         reservationId,
-  //         session,
-  //         retries - 1
-  //       );
-  //     }
-  //     throw error;
-  //   } finally {
-  //     if (locked) await this.releaseLock(lockKey);
-  //   }
-  // }
 
   private async handleCreateSessionError(
     error: Error,
-    user: IUser
+    user: IUserDB
   ): Promise<void> {
-    await AuditLogModel.create([
+    await this.orderService.createAuditLog(
+      AuditAction.CHECKOUT_FAILURE,
+      "N/A",
+      user._id.toString(),
+      [],
       {
-        actor: user._id.toString(),
-        action: AuditAction.CHECKOUT_FAILURE,
-        entityType: EntityType.ORDER,
-        entityId: "N/A",
-        changes: [],
-        context: {
-          error: error.message,
-          userId: user._id.toString(),
-          stack: error.stack,
-        },
-      },
-    ]);
+        error: error.message,
+        user_id: user._id.toString(),
+        stack: error.stack,
+      }
+    );
   }
-  // private async reserveInventory(
-  //   products: Array<{ _id: mongoose.Types.ObjectId; quantity: number }>,
-  //   user: IUser,
-  //   logs: LogsTypeDto,
-  //   session: mongoose.ClientSession
-  // ): Promise<void> {
-  //   // Aggregate quantities for duplicate products
-  //   const productMap = new Map<string, number>();
-
-  //   products.forEach(({ _id, quantity }) => {
-  //     const productId = _id.toString();
-  //     productMap.set(productId, (productMap.get(productId) || 0) + quantity);
-  //   });
-
-  //   // Create consolidated bulk operations
-  //   const bulkOps = Array.from(productMap.entries()).map(([_id, quantity]) => ({
-  //     updateOne: {
-  //       filter: {
-  //         _id: new mongoose.Types.ObjectId(_id),
-  //         $expr: {
-  //           $gte: [{ $subtract: ["$stock", "$reserved"] }, quantity],
-  //         },
-  //       },
-  //       update: {
-  //         $inc: { reserved: quantity },
-  //         $set: {
-  //           lastModifiedBy: user._id,
-  //           modifiedAt: new Date(),
-  //         },
-  //       },
-  //     },
-  //   }));
-
-  //   try {
-  //     const result = await ProductModel.bulkWrite(bulkOps, {
-  //       session,
-  //       ordered: true, // Process in sequence
-  //       writeConcern: { w: "majority" },
-  //     });
-
-  //     // Handle partial failures for ordered operations
-  //     if (result.modifiedCount !== bulkOps.length) {
-  //       const successfulIds = new Set(
-  //         Object.values(result.upsertedIds).map((id) => id.toString()) || []
-  //       );
-
-  //       const failedProducts = bulkOps
-  //         .filter(
-  //           (op) => !successfulIds.has(op.updateOne.filter._id.toString())
-  //         )
-  //         .map((op) => ({
-  //           _id: op.updateOne.filter._id,
-  //           quantity: productMap.get(op.updateOne.filter._id.toString())!,
-  //         }));
-
-  //       if (failedProducts.length > 0) {
-  //         await this.handlePartialReservationFailure(
-  //           user,
-  //           failedProducts,
-  //           logs
-  //         );
-  //         throw new AppError(
-  //           `Partial reservation failed for ${failedProducts.length} products`,
-  //           409
-  //         );
-  //       }
-  //     }
-  //   } catch (error) {
-  //     if (error instanceof MongoBulkWriteError) {
-  //       const failedIds = (
-  //         Array.isArray(error.writeErrors)
-  //           ? error.writeErrors
-  //           : [error.writeErrors]
-  //       ).map((e) => e.op.updateOne.filter._id.toString());
-  //       const failedProducts = failedIds.map((id) => ({
-  //         _id: assignAsObjectId(id),
-  //         quantity: productMap.get(id)!,
-  //       }));
-
-  //       await this.handlePartialReservationFailure(user, failedProducts, logs);
-  //     }
-  //     throw error;
-  //   }
-  // }
-  // 1. Modify the productMap to track names
   private async reserveInventory(
     products: Array<{
-      _id: mongoose.Types.ObjectId;
+      _id: string;
       quantity: number;
       name: string;
+      slug: string;
     }>,
-    user: IUser,
-    logs: LogsTypeDto,
-    session: mongoose.ClientSession
+    user: IUserDB,
+    trx: Knex.Transaction
   ): Promise<void> {
-    // Track both quantity and product name
     const productMap = new Map<
       string,
-      { totalQuantity: number; name: string }
+      { totalQuantity: number; name: string; slug: string }
     >();
-
-    products.forEach(({ _id, quantity, name }) => {
-      const productId = _id.toString();
-      const existing = productMap.get(productId);
-
+    products.forEach(({ _id, quantity, name, slug }) => {
+      const product_id = _id.toString();
+      const existing = productMap.get(product_id);
       if (existing) {
         existing.totalQuantity += quantity;
       } else {
-        productMap.set(productId, { totalQuantity: quantity, name });
+        productMap.set(product_id, { totalQuantity: quantity, name, slug });
       }
     });
 
-    // Create bulk operations with aggregated quantities
-    const bulkOps = Array.from(productMap.entries()).map(
-      ([productId, { totalQuantity }]) => ({
-        updateOne: {
-          filter: {
-            _id: new mongoose.Types.ObjectId(productId),
-            $expr: {
-              $gte: [{ $subtract: ["$stock", "$reserved"] }, totalQuantity],
-            },
-          },
-          update: {
-            $inc: { reserved: totalQuantity },
-            $set: {
-              lastModifiedBy: user._id,
-              modifiedAt: new Date(),
-            },
-          },
-        },
-      })
-    );
+    const reservationPromises = Array.from(productMap.entries()).map(
+      async ([product_id, { totalQuantity, name, slug }]) => {
+        // Check stock availability
+        const product = await trx<IProductDB>("products")
+          .where("_id", product_id)
+          .andWhere(this.knex.raw("(stock - reserved) >= ?", [totalQuantity]))
+          .first();
 
-    try {
-      const result = await ProductModel.bulkWrite(bulkOps, {
-        session,
-        ordered: true, // Process in sequence
-        writeConcern: { w: "majority" },
-      });
+        if (!product) {
+          return { product_id, success: false, name, slug };
+        }
 
-      // Handle partial failures for ordered operations
-      if (result.modifiedCount !== bulkOps.length) {
-        const successfulIds = new Set(
-          Object.values(
-            result.upsertedIds as Record<string, mongoose.Types.ObjectId>
-          ).map((id) => id.toString()) || []
-        );
+        // Insert reservation record
+        await trx<IReservationDB>("reservations").insert({
+          _id: generateUUID(),
+          user_id: user._id,
+          product_id,
+          quantity: totalQuantity,
+          // created_at: new Date(),
+          expires_at: new Date(Date.now() + this.RESERVATION_TIMEOUT * 1000),
+          status: "pending",
+        });
 
-        const failedProducts = bulkOps
-          .filter(
-            (op) => !successfulIds.has(op.updateOne.filter._id.toString())
-          )
-          .map((op) => {
-            const productId = op.updateOne.filter._id.toString();
-            return {
-              _id: op.updateOne.filter._id,
-              quantity: productMap.get(productId)?.totalQuantity ?? 0,
-              name: productMap.get(productId)?.name ?? "",
-            };
+        // Update reserved column in products table
+        const affectedRows = await trx<IProductDB>("products")
+          .where("_id", product_id)
+          .update({
+            reserved: this.knex.raw("reserved + ?", [totalQuantity]),
+            last_modified_by: user._id,
           });
 
-        if (failedProducts.length > 0) {
-          await this.handlePartialReservationFailure(
-            user,
-            failedProducts,
-            logs
-          );
-          throw new AppError(
-            stripeControllerTranslate[lang].errors.PartialReservation(
-              failedProducts.length
-            ),
-            409
-          );
-        }
+        return { product_id, success: affectedRows > 0, name, slug };
       }
-    } catch (error) {
-      if (error instanceof MongoBulkWriteError) {
-        const failedIds = (
-          Array.isArray(error.writeErrors)
-            ? error.writeErrors
-            : [error.writeErrors]
-        ).map(
-          (e: {
-            op: { updateOne: { filter: { _id: mongoose.Types.ObjectId } } };
-          }) => e.op.updateOne.filter._id.toString()
-        );
-        const failedProducts = failedIds.map((id) => ({
-          _id: assignAsObjectId(id),
-          quantity: productMap.get(id)?.totalQuantity ?? 0,
-          name: productMap.get(id)?.name ?? "",
-        }));
+    );
 
-        await this.handlePartialReservationFailure(user, failedProducts, logs);
-      }
-      throw error;
+    const updateResults = await Promise.all(reservationPromises);
+    const failedProducts = updateResults
+      .filter((result) => !result.success)
+      .map((result) => ({
+        _id: result.product_id,
+        quantity: productMap.get(result.product_id)?.totalQuantity ?? 0,
+        name: result.name,
+        slug: result.slug,
+      }));
+
+    if (failedProducts.length > 0) {
+      await this.handlePartialReservationFailure(user, failedProducts);
+      throw new AppError(
+        stripeControllerTranslate[lang].errors.PartialReservation(
+          failedProducts.length
+        ),
+        409
+      );
     }
   }
+  // private async reserveInventory(
+  //   products: Array<{
+  //     _id: string;
+  //     quantity: number;
+  //     name: string;
+  //     slug: string;
+  //   }>,
+  //   user: IUserDB,
+  //   trx: Knex.Transaction
+  // ): Promise<void> {
+  //   const productMap = new Map<
+  //     string,
+  //     { totalQuantity: number; name: string; slug: string }
+  //   >();
+  //   products.forEach(({ _id, quantity, name, slug }) => {
+  //     const product_id = _id.toString();
+  //     const existing = productMap.get(product_id);
+  //     if (existing) {
+  //       existing.totalQuantity += quantity;
+  //     } else {
+  //       productMap.set(product_id, { totalQuantity: quantity, name, slug });
+  //     }
+  //   });
+
+  //   const updateResults = await Promise.all(
+  //     Array.from(productMap.entries()).map(
+  //       async ([product_id, { totalQuantity }]) => {
+  //         const affectedRows = await trx<IProductDB>("products")
+  //           .where("_id", product_id)
+  //           .andWhere(this.knex.raw("(stock - reserved) >= ?", [totalQuantity]))
+  //           .update({
+  //             reserved: this.knex.raw("reserved + ?", [totalQuantity]),
+  //             last_modified_by: user._id,
+  //           });
+  //         return { product_id, success: affectedRows > 0 };
+  //       }
+  //     )
+  //   );
+
+  //   const failedProducts = updateResults
+  //     .filter((result) => !result.success)
+  //     .map((result) => ({
+  //       _id: result.product_id,
+  //       quantity: productMap.get(result.product_id)?.totalQuantity ?? 0,
+  //       name: productMap.get(result.product_id)?.name ?? "",
+  //       slug: productMap.get(result.product_id)?.slug ?? "",
+  //     }));
+
+  //   if (failedProducts.length > 0) {
+  //     await this.handlePartialReservationFailure(user, failedProducts);
+  //     throw new AppError(
+  //       stripeControllerTranslate[lang].errors.PartialReservation(
+  //         failedProducts.length
+  //       ),
+  //       409
+  //     );
+  //   }
+  // }
   private async handlePartialReservationFailure(
-    user: IUser,
+    user: IUserDB,
     failedProducts: Array<{
-      _id: mongoose.Types.ObjectId;
+      _id: string;
       quantity: number;
       name: string;
-    }>,
-    logs: LogsTypeDto
+      slug: string;
+    }>
+    // logs: LogsTypeDto
   ): Promise<void> {
     // 1. Log audit entry
 
-    await this.productService.logAction(
+    await this.productService.createLogs(
       AuditAction.INVENTORY_RESERVATION_PARTIAL,
       "BATCH_UPDATE",
       user._id,
       failedProducts.map((p) => ({
         field: "reserved",
-        productId: p._id,
-        quantity: p.quantity,
-        productName: p.name,
-        changeType: "MODIFY",
-      })),
-      logs.ipAddress,
-      logs.userAgent
+        before: " ",
+        after: p.quantity,
+        // productName: p.name,
+        change_type: "MODIFY",
+      }))
+      // logs.ipAddress,
+      // logs.userAgent
     );
 
     // 2. Notify admins
     // Get admins with proper typing and security
-    const admins = await UserModel.find({
-      role: UserRole.ADMIN,
-      status: UserStatus.ACTIVE,
-    })
-      .select("email")
-      .lean();
+    const admins = await this.knex("users")
+      .where("role", UserRole.ADMIN)
+      .where("status", UserStatus.ACTIVE)
+      .select("email");
 
     const notification: AdminInventoryNotification = {
       type: "INVENTORY_RESERVATION_PARTIAL",
-      userId: user._id.toString(),
+      user_id: user._id.toString(),
       failedProducts: failedProducts.map((p) => ({
-        productId: p._id.toString(),
+        product_id: p._id.toString(),
         productName: p.name, // Add product name from your Product model
         quantity: p.quantity,
       })),
@@ -1032,9 +758,9 @@ export class StripeService {
 
     await emailService.sendAdminNotification(admins, notification);
   }
-  private parseShippingInfo(shippingInfo: string): ShippingInfoDto {
+  private parseShippingInfo(shipping_info: string): ShippingInfoDto {
     try {
-      return JSON.parse(shippingInfo) as ShippingInfoDto;
+      return JSON.parse(shipping_info) as ShippingInfoDto;
     } catch (_e) {
       throw new AppError(
         stripeControllerTranslate[lang].errors.InvalidShipping,
@@ -1043,13 +769,16 @@ export class StripeService {
       );
     }
   }
-  private calculateFinalPrice(product: IProduct, quantity: number): number {
-    const price =
-      product.discountExpire && product.discountExpire > new Date()
-        ? product.price - (product.discount || 0)
-        : product.price;
+  private calculateFinalPrice(
+    product: IProductViewBasicDB,
+    quantity: number
+  ): number {
+    const { discountedPrice } = calculateDiscount(product);
+    // product.discount_expire && product.discount_expire > new Date()
+    //   ? product.price - (product.discount || 0)
+    //   : product.price;
 
-    return Number((price * quantity).toFixed(2));
+    return Number((discountedPrice * quantity).toFixed(2));
   } // Distributed locking functions
   private async acquireLock(
     key: string,
@@ -1136,21 +865,24 @@ export class StripeService {
     }
   }
   private async validateCartProducts(cartItems: CartItemsType[]) {
-    const productIds = cartItems.map((item) => assignAsObjectId(item._id));
+    const productIds = cartItems.map((item) => item._id);
 
     // 1. Bulk fetch with fresh data
-    const products = await ProductModel.find({
-      _id: { $in: productIds },
-      active: true,
-      stock: { $gte: 1 },
-    }).lean();
+    const products = await this.knex<IProductViewBasicDB>(
+      "public_products_views_basic"
+    )
+      .where("stock", ">", 1)
+      .whereIn("_id", productIds);
 
     // 2. Create validation map
     const productMap = new Map(products.map((p) => [p._id.toString(), p]));
 
     // 3. Validate each cart item
     const results = {
-      validProducts: [] as Array<{ product: IProduct; quantity: number }>,
+      validProducts: [] as Array<{
+        product: IProductViewBasicDB;
+        quantity: number;
+      }>,
       invalidProducts: [] as Array<{
         name: string;
         _id: string;
@@ -1185,8 +917,9 @@ export class StripeService {
         continue;
       }
       // 4. Price validation
-      const currentPrice = this.calculateCurrentPrice(product);
-      const currentItemPrice = this.calculateCurrentPrice(item);
+      const { discountedPrice: currentPrice } = calculateDiscount(product);
+      const { discountedPrice: currentItemPrice } = calculateDiscount(item);
+
       if (currentPrice !== currentItemPrice) {
         results.invalidProducts.push({
           name: item.name,
@@ -1199,7 +932,7 @@ export class StripeService {
       }
 
       results.validProducts.push({
-        product: product as IProduct,
+        product: product,
         quantity: item.quantity,
       });
     }
@@ -1207,18 +940,11 @@ export class StripeService {
     return results;
   }
 
-  private calculateCurrentPrice(
-    product: Pick<IProduct, "price" | "discount" | "discountExpire">
-  ) {
-    return product.discountExpire && product.discountExpire > new Date()
-      ? Number((product.price - product.discount).toFixed(2))
-      : product.price;
-  }
-
   private async createStripeLineItem(
-    item: { product: IProduct; quantity: number },
+    item: { product: IProductViewBasicDB; quantity: number },
     taxRate: string
   ) {
+    const { discountedPrice } = calculateDiscount(item.product);
     return {
       price_data: {
         currency: "usd",
@@ -1231,60 +957,28 @@ export class StripeService {
             name: item.product.name,
           },
         },
-        unit_amount: Math.round(this.calculateCurrentPrice(item.product) * 100),
+        unit_amount: Math.round(discountedPrice * 100),
       },
       quantity: item.quantity,
       tax_rates: [taxRate],
     };
   }
 
-  // private async _handleInvalidCartItems(
-  //   userId: string,
-  //   invalidProductIds: string[]
-  // ) {
-  //   // 1. Remove invalid items from cart
-  //   await this.userCartService.deleteManyByProductId(userId, invalidProductIds);
-
-  //   // 2. Cache invalidation
-  //   const cartKey = `cart:${userId}`;
-  //   await redis.del(cartKey);
-
-  //   // 3. Notify user
-  //   // await NotificationService.sendCartUpdateNotification(
-  //   //   userId,
-  //   //   invalidProductIds
-  //   // );
-  // }
   private normalizeShippingInfo(
-    shippingInfo: ShippingInfoDto
+    shipping_info: ShippingInfoDto
   ): ShippingInfoDto {
-    // ): Omit<ShippingInfoDto, "phone"> {
     return {
-      street: shippingInfo.street.trim(),
-      city: shippingInfo.city.trim(),
-      state: shippingInfo.state.trim(),
-      postalCode: shippingInfo.postalCode.trim(),
-      country: shippingInfo.country.trim(),
-      phone: shippingInfo.phone.trim(),
+      street: shipping_info.street.trim(),
+      city: shipping_info.city.trim(),
+      state: shipping_info.state.trim(),
+      postal_code: shipping_info.postal_code.trim(),
+      country: shipping_info.country.trim(),
+      phone: shipping_info.phone.trim(),
     };
-  } // Type guard for transient errors
-  private isTransientError(error: unknown): boolean {
-    const isMongoError = (e: unknown): e is CustomMongoError => {
-      return (
-        typeof e === "object" &&
-        e !== null &&
-        ("errorLabels" in e || "codeName" in e)
-      );
-    };
+  }
 
-    if (!isMongoError(error)) {
-      return false;
-    }
-
-    return (
-      (Array.isArray(error.errorLabels) &&
-        error.errorLabels.includes("TransientTransactionError")) ||
-      error.codeName === "WriteConflict"
-    );
+  private isTransientError(error: any): boolean {
+    const { code } = error as any;
+    return code === "lock_timeout" || code === "deadlock_detected";
   }
 }

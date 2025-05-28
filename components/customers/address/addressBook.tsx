@@ -3,8 +3,8 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import type { AddressType } from "@/app/lib/types/address.types";
-import api from "@/app/lib/utilities/api";
+import type { AddressType } from "@/app/lib/types/address.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Spinner from "@/components/spinner/spinner";
 import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
@@ -38,7 +38,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
             hasNext: boolean;
           };
         };
-      } = await api.get(`/customers/address?page=${nextPage}`);
+      } = await api_client.get(`/customers/address?page=${nextPage}`);
       setAddresses((prev) => [...prev, ...data.docs]);
       setPage(nextPage);
       setHasMore(data.meta.hasNext);
@@ -58,7 +58,10 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
           data: updatedAddress,
         }: {
           data: AddressType;
-        } = await api.patch(`/customers/address/${editAddress._id}`, data);
+        } = await api_client.patch(
+          `/customers/address/${editAddress._id}`,
+          data
+        );
         setAddresses((prev) =>
           prev.map((addr) =>
             String(addr._id) === String(editAddress._id) ? updatedAddress : addr
@@ -70,7 +73,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
           data: newAddress,
         }: {
           data: AddressType;
-        } = await api.post("/customers/address", data);
+        } = await api_client.post("/customers/address", data);
         setAddresses((prev) => [newAddress, ...prev]);
         toast.success(addressTranslate[lang].function.handleAddAddress.success);
       }
@@ -85,7 +88,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/customers/address/${id}`);
+      await api_client.delete(`/customers/address/${id}`);
       setAddresses((prev) => prev.filter((addr) => addr._id !== id));
       toast.success(
         addressTranslate[lang].function.handleDeleteAddress.success
@@ -150,7 +153,7 @@ const AddressBook = ({ initialAddresses, hasNextPage }: AddressBookProps) => {
                   <div className="space-y-2">
                     <p className="font-medium">{address.street}</p>
                     <p>
-                      {address.city}, {address.state} {address.postalCode}
+                      {address.city}, {address.state} {address.postal_code}
                     </p>
                     <p>
                       {addressTranslate[lang].addAddress.form.phone.label}:{" "}

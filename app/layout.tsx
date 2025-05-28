@@ -1,5 +1,4 @@
 import { Inter } from "next/font/google";
-import { getServerSession } from "next-auth";
 import { Toaster } from "react-hot-toast";
 
 import { lang } from "@/app/lib/utilities/lang";
@@ -25,11 +24,10 @@ export default async function RootLayout({
   children: React.ReactNode;
   interceptor: React.ReactNode;
 }) {
-  const session = await getServerSession();
   return (
     <html lang={lang ?? "en"}>
       <body className={`${inter.className} `}>
-        <Providers initialSession={session}>
+        <Providers>
           <main className="space-y-3 p-2 sm:p-4">
             <NavBar />
             <div className="rounded-3xl bg-red-600 text-white py-3 px-5 text-center overflow-hidden ">

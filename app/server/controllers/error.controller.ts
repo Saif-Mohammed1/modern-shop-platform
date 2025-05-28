@@ -1,301 +1,208 @@
-import type mongoose from "mongoose";
-import { type NextRequest, NextResponse } from "next/server";
+// errorHandler.ts
+import { NextResponse, type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
-import logger, { logRequestError, logtail } from "@/app/lib/logger/logs";
+import logger from "@/app/lib/logger/logs";
 import AppError from "@/app/lib/utilities/appError";
 import { lang } from "@/app/lib/utilities/lang";
 import { errorControllerTranslate } from "@/public/locales/server/errorControllerTranslate";
 
-// Type definitions
-// interface CastError {
-//   path: string;
-//   value: string;
-// }
-
-// interface DuplicateFieldsError {
-//   errmsg: string;
-// }
-
-// interface ValidationError {
-//   _message: string;
-//   errors: Record<
-//     string,
-//     { properties: { type: string; path: string; value: any } }
-//   >;
-// }
-interface CastError extends Error {
-  path: string;
-  value: any;
-  kind?: string;
-  reason?: Error;
+interface DBError extends Error {
+  code?: string;
+  detail?: string;
+  table?: string;
+  column?: string;
+  constraint?: string;
+  routine?: string;
+  schema?: string;
+  severity?: string;
 }
 
-interface DuplicateFieldsError extends Error {
-  code?: number;
-  keyValue?: Record<string, any>;
-  errmsg?: string;
-}
-
-interface ValidationError extends Error {
-  _message: string;
-  errors: Record<
-    string,
-    mongoose.Error.ValidatorError //| mongoose.Error.CastError
-  >;
-}
-// Utility Type Export
+// interface ZodValidationError {
+//   type: "body" | "query" | "params";
+//   errors: z.ZodIssue[];
+// }
 
 class ErrorHandler {
   private correlationId!: string;
-  // Main Error Handler
+
   main = (error: unknown, req: NextRequest): NextResponse => {
+    // console.log("error controller", error);
     this.correlationId = req.headers.get("X-Correlation-ID") || uuidv4();
+    let err: AppError;
 
-    // Convert error to AppError
-    let err = this.normalizeError(error);
-
-    // Check if the error is an instance of AppError
-    if (error instanceof z.ZodError) {
-      err = this.handleZodValidationError(error);
-    } else if (error instanceof Error) {
-      if (error.name === "JsonWebTokenError") {
-        err = this.handleJWTError();
+    try {
+      if (error instanceof AppError) {
+        err = error;
+      } else if (error instanceof z.ZodError) {
+        err = this.handleZodValidationError(error);
+      } else if (this.isDBError(error)) {
+        err = this.handleDBError(error);
+      } else if (error instanceof Error) {
+        err = this.handleGenericError(error);
+      } else {
+        err = new AppError(
+          errorControllerTranslate[lang].errors.globalError,
+          500
+        );
       }
-      if (error.name === "TokenExpiredError") {
-        err = this.handleJWTExpiredError();
-      }
-      // Production error processing
-      if (process.env.NODE_ENV === "production") {
-        // CastError (Mongoose bad ID format)
-        if (error.name === "CastError" && "path" in error && "value" in error) {
-          const castError = error as CastError;
-          err = this.handleCastErrorDB({
-            ...castError,
-            path: castError.path || "unknown",
-            value: castError.value || "invalid",
-          });
-        }
-        // Check if 'code' exists before accessing it
-        // Duplicate key error (Mongoose unique constraint)
-        if ("code" in error && error.code === 11000) {
-          const keyValue =
-            "keyValue" in error && typeof error.keyValue === "object"
-              ? (error.keyValue as Record<string, any>)
-              : {};
-
-          const errmsg =
-            "errmsg" in error && typeof error.errmsg === "string"
-              ? error.errmsg
-              : `Duplicate value: ${JSON.stringify(keyValue)}`;
-
-          const dupError: DuplicateFieldsError = {
-            name: "DuplicateFieldError",
-            message: "Duplicate field value",
-            code: 11000,
-            keyValue,
-            errmsg,
-          };
-
-          err = this.handleDuplicateFieldsDB(dupError);
-        }
-
-        // ValidationError (Mongoose schema validation)
-        if (
-          error.name === "ValidationError" &&
-          "_message" in error &&
-          "errors" in error
-        ) {
-          const validationError = error as ValidationError;
-          err = this.handleValidationErrorDB({
-            ...validationError,
-            _message: validationError._message || "Validation failed",
-            errors: validationError.errors || {},
-          });
-        }
-
-        // Log errors
-        // Enhanced logging with translation context
-        // logRequestError(err, req, this.correlationId);
-      }
-    } else {
-      // Fallback for when error is not an Error (e.g., a string or other type)
-      err = new AppError("An unknown error occurred", 500); // Adjust based on your AppError class
+    } catch (handlerError) {
+      err = new AppError(
+        errorControllerTranslate[lang].errors.globalError,
+        500
+      );
+      logger.error("Error handler failed:", handlerError);
     }
 
-    return process.env.NODE_ENV === "development"
-      ? this.sendErrorDev(err, req)
-      : this.sendErrorProd(err, req);
+    return this.sendErrorResponse(err, req);
   };
 
-  // Zod Error Handler
-  private handleZodValidationError = (err: z.ZodError): AppError => {
-    // Process validation errors
-    const errors = err.issues.map((issue) => {
-      // const path = issue.path.join(".");
-      // const errorCode = issue.code;
+  private isDBError(error: unknown): error is DBError {
+    return (
+      error instanceof Error &&
+      Object.prototype.hasOwnProperty.call(error, "code")
+    );
+  }
 
-      return issue.message;
+  private handleDBError = (error: DBError): AppError => {
+    switch (error.code) {
+      case "23505": // Unique violation
+        return this.handleUniqueViolationError(error);
+      case "23503": // Foreign key violation
+        return this.handleForeignKeyViolationError(error);
+      case "22P02": // Invalid text representation
+        return this.handleInvalidInputError(error);
+      case "23502": // Not null violation
+        return this.handleNotNullViolationError(error);
+      case "42703": // Undefined column
+        return this.handleUndefinedColumnError(error);
+      case "42P01": // Undefined table
+        return this.handleUndefinedTableError(error);
+      default:
+        return this.handleGenericDBError(error);
+    }
+  };
+
+  private handleZodValidationError = (error: z.ZodError): AppError => {
+    const errors = error.issues.map((issue) => {
+      const path = issue.path.join(".");
+      return errorControllerTranslate[lang].controllers.zodError(path);
     });
     return new AppError(errors.join("; "), 400);
   };
-  private normalizeError = (error: unknown): AppError => {
-    if (error instanceof AppError) {
-      return error;
-    } // Already an AppError instance
+
+  private handleUniqueViolationError = (error: DBError): AppError => {
+    const matches = error.detail?.match(/Key \((.*?)\)=\((.*?)\)/);
+    const field = matches?.[1] || "field";
+    const value = matches?.[2] || "value";
     return new AppError(
-      error instanceof Error
-        ? error.message
-        : errorControllerTranslate[lang].errors.globalError,
-      (error instanceof AppError && error.statusCode) || 500
+      errorControllerTranslate[lang].controllers.uniqueViolationError(
+        field,
+        value
+      ),
+      409
     );
   };
 
-  // Database Error Handlers
-  private handleCastErrorDB = (err: CastError): AppError => {
-    const { message } = errorControllerTranslate[
-      lang
-    ].controllers.handleCastErrorDB(err.path, err.value);
-    return new AppError(message, 400);
+  private handleForeignKeyViolationError = (error: DBError): AppError => {
+    const constraint = error.constraint?.replace(/_foreign$/, "") || "resource";
+    return new AppError(
+      errorControllerTranslate[lang].controllers.foreignKeyViolationError(
+        constraint
+      ),
+      400
+    );
   };
 
-  private handleDuplicateFieldsDB = (err: DuplicateFieldsError): AppError => {
-    let value = "unknown value";
-    if (err.errmsg) {
-      value = err.errmsg.match(/(["'])(\\?.)*?\1/)?.[0] || "unknown value";
+  private handleInvalidInputError = (error: DBError): AppError => {
+    const field = error.column || "field";
+    return new AppError(
+      errorControllerTranslate[lang].controllers.invalidInputError(field),
+      400
+    );
+  };
+
+  private handleNotNullViolationError = (error: DBError): AppError => {
+    const field = error.column || "field";
+    return new AppError(
+      errorControllerTranslate[lang].controllers.notNullViolationError(field),
+      400
+    );
+  };
+
+  private handleUndefinedColumnError = (error: DBError): AppError => {
+    const column = error.column || "column";
+    return new AppError(
+      errorControllerTranslate[lang].controllers.undefinedColumnError(column),
+      400
+    );
+  };
+
+  private handleUndefinedTableError = (error: DBError): AppError => {
+    const table = error.table || "table";
+    return new AppError(
+      errorControllerTranslate[lang].controllers.undefinedTableError(table),
+      500
+    );
+  };
+
+  private handleGenericDBError = (error: DBError): AppError => {
+    logger.error("Database Error:", error);
+    return new AppError(
+      errorControllerTranslate[lang].controllers.genericDBError(
+        error.code ?? "unknown"
+      ),
+      500
+    );
+  };
+
+  private handleGenericError = (error: Error): AppError => {
+    if (error.name === "JsonWebTokenError") {
+      return new AppError(
+        errorControllerTranslate[lang].controllers.invalidTokenError,
+        401
+      );
     }
-    const { message } =
-      errorControllerTranslate[lang].controllers.handleDuplicateFieldsDB(value);
-    return new AppError(message, 400);
-  };
-
-  // private handleValidationErrorDB = (err: ValidationError): AppError => {
-  //   const schemaName = err._message.split(" ")[0].toLowerCase() ?? "validation";
-  //   const errors = Object.entries(err.errors).map(([field, error]) => {
-  //     const errorType = error.properties.type;
-  //     return (
-  //       errorControllerTranslate[lang]?.controllers?.handleValidationErrorDB?.[
-  //         schemaName
-  //       ]?.[field]?.[errorType] || `Invalid ${field} value`
-  //     );
-  //   });
-
-  //   return new AppError(errors.join("; "), 400);
-  // };
-  private handleValidationErrorDB = (err: ValidationError) => {
-    const schemaName = err._message.split(" ")[0].toLowerCase() ?? "validation";
-    const errors = Object.values(err.errors).map((el) => {
-      const { type } = el.properties; //u need to check this if exist in error object
-      const { path } = el.properties;
-      if (!path || !type) {
-        return new AppError(
-          errorControllerTranslate[lang].errors.validationError,
-          400
-        );
-      }
-      // Add checks before accessing dynamic properties
-      const schemaErrors: Record<
-        string,
-        Record<string, Record<string, string>>
-      > = (
-        errorControllerTranslate[lang].controllers
-          .handleValidationErrorDB as Record<string, any>
-      )[schemaName];
-
-      let errormessage = String(errorControllerTranslate[lang].errors.message);
-      let message = errormessage;
-      if (schemaErrors?.[path]?.[type]) {
-        message =
-          typeof schemaErrors[path][type] === "string"
-            ? schemaErrors[path][type]
-            : errorControllerTranslate[lang].errors.validationError;
-      }
-
-      return message;
-    });
-
-    return new AppError(errors.join(","), 400);
-  };
-  // JWT Handlers
-  private createAuthError = (
-    // translationKey: keyof (typeof errorControllerTranslate)[typeof lang]["controllers"]
-    translationKey: "handleJWTError" | "handleJWTExpiredError"
-  ) =>
-    new AppError(
-      errorControllerTranslate[lang].controllers[translationKey].message,
-      401
-    );
-
-  private handleJWTError = () => this.createAuthError("handleJWTError");
-  private handleJWTExpiredError = () =>
-    this.createAuthError("handleJWTExpiredError");
-
-  // Error Response Formatters
-  private createErrorResponse = (err: AppError, includeDetails: boolean) =>
-    NextResponse.json(
-      {
-        status: err.status,
-        message: err.message,
-        ...(includeDetails && { stack: err.stack }),
-      },
-      { status: err.statusCode }
-    );
-
-  // Environment-specific Handlers
-  private sendErrorDev = (err: AppError, req: NextRequest) => {
-    if (err.name === "ZodError") {
-      return this.createErrorResponse(err, true);
+    if (error.name === "TokenExpiredError") {
+      return new AppError(
+        errorControllerTranslate[lang].controllers.expiredTokenError,
+        401
+      );
     }
-    return this.createErrorResponse(
-      err,
-      req.nextUrl.pathname.startsWith("/api/")
-    );
+    return new AppError(error.message, 500);
   };
 
-  private sendErrorProd = (err: AppError, req: NextRequest) => {
-    // Log operational errors for monitoring
-    // if (!err.isOperational) logger.error("ERROR 💥", err);
-    logRequestError(err, req, this.correlationId);
-    logtail
-      ?.flush()
-      .then(() => {
-        logger.log({ level: "info", message: "Logs flushed successfully." });
-      })
-      .catch((err) => {
-        logger.error("Error flushing logs:", err);
-      });
-    // return NextResponse.json(
-    //   {
-    //     status: err.status,
-    //     message: err.isOperational
-    //       ? err.message
-    //       : errorControllerTranslate[lang].errors.globalError,
-    //   },
-    //   { status: err.statusCode }
-    // );
-    // Add correlation ID to client response
+  private sendErrorResponse = (
+    err: AppError,
+    req: NextRequest
+  ): NextResponse => {
+    logger.error(`[${this.correlationId}] Error:`, err);
+
     return NextResponse.json(
       {
-        status: err.status,
-        message: err.isOperational
-          ? err.message
-          : errorControllerTranslate[lang].errors.globalError,
+        // type: "https://api.yourservice.com/errors/" + err.type,
+        title: err.message,
+        status: err.statusCode,
+        instance: req.url,
         correlationId: this.correlationId,
+        ...(process.env.NODE_ENV === "development" && {
+          detail: err.stack,
+          // internalCode: err.type,
+        }),
       },
       {
         status: err.statusCode,
         headers: {
           "X-Correlation-ID": this.correlationId,
-          "Content-Type": "application/problem+json", // RFC 7807 compliance
+          "Content-Type": "application/problem+json",
         },
       }
     );
   };
 }
-// Create single instance
-const errorHandler = new ErrorHandler();
 
-// Export types and instance
-export type ErrorResponse = ReturnType<typeof errorHandler.main>;
+// Singleton instance
+// export const errorHandler = new ErrorHandler().main;
+const errorHandler = new ErrorHandler();
 export default errorHandler.main;

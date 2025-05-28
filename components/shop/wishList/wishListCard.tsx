@@ -5,7 +5,7 @@ import { AiFillHeart, AiOutlineShoppingCart } from "react-icons/ai";
 
 // Import cart icon
 
-import type { ProductType } from "@/app/lib/types/products.types";
+import type { WishlistType } from "@/app/lib/types/wishList.types";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import { addToCartItems } from "@/components/providers/store/cart/cart.store";
@@ -13,7 +13,11 @@ import { toggleWishlist } from "@/components/providers/store/wishlist/wishlist.s
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
-const WishListCard = ({ product }: { product: ProductType }) => {
+const WishListCard = ({
+  product,
+}: {
+  product: WishlistType["items"][number];
+}) => {
   // const { toggleWishlist, isInWishlist } = useWishlist();
 
   const handelAddToCart = async () => {

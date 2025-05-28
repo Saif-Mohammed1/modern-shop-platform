@@ -1,15 +1,15 @@
-import {z} from 'zod';
+import { z } from "zod";
 
-import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
-import {lang} from '@/app/lib/utilities/lang';
-import {AddressTranslate} from '@/public/locales/server/Address.Translate';
+import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
+import { AddressTranslate } from "@/public/locales/server/Address.Translate";
 
 const phoneRegex = /^\+380\d{9}$/;
 export class AddressValidation {
   static CreateAddressDto = z.object({
-    userId: zObjectId,
+    user_id: zObjectId,
     street: z
-      .string({required_error: AddressTranslate[lang].street.required})
+      .string({ required_error: AddressTranslate[lang].street.required })
       .trim()
       .min(1, AddressTranslate[lang].street.required),
     city: z
@@ -24,12 +24,12 @@ export class AddressValidation {
       })
       .trim()
       .min(1, AddressTranslate[lang].state.required),
-    postalCode: z
+    postal_code: z
       .string({
-        required_error: AddressTranslate[lang].postalCode.required,
+        required_error: AddressTranslate[lang].postal_code.required,
       })
       .trim()
-      .min(1, AddressTranslate[lang].postalCode.required),
+      .min(1, AddressTranslate[lang].postal_code.required),
     phone: z
       .string({
         required_error: AddressTranslate[lang].phone.required,
@@ -54,12 +54,16 @@ export class AddressValidation {
   }
   static deleteAddressDto = z.object({
     id: zObjectId,
-    userId: zObjectId,
+    user_id: zObjectId,
   });
   static validateId(data: any) {
     return this.deleteAddressDto.parse(data);
   }
 }
 
-export type CreateAddressDtoType = z.infer<typeof AddressValidation.CreateAddressDto>;
-export type UpdateAddressDtoType = z.infer<typeof AddressValidation.UpdateAddressDto>;
+export type CreateAddressDtoType = z.infer<
+  typeof AddressValidation.CreateAddressDto
+>;
+export type UpdateAddressDtoType = z.infer<
+  typeof AddressValidation.UpdateAddressDto
+>;

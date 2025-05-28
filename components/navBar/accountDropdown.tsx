@@ -2,7 +2,7 @@ import { type FC, useState } from "react";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { VscAccount } from "react-icons/vsc";
 
-import { type CartItemsType } from "@/app/lib/types/cart.types";
+import { type CartItemsType } from "@/app/lib/types/cart.db.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 

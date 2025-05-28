@@ -1,29 +1,29 @@
 import Link from "next/link";
 
-import type { OrderStatus, OrderType } from "@/app/lib/types/orders.types";
+import type { OrderStatus, OrderType } from "@/app/lib/types/orders.db.types";
 import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 // Sub-components
 
 const ShippingInfo = ({
-  shippingAddress,
+  shipping_address,
   t,
 }: {
-  shippingAddress: OrderType["shippingAddress"];
-  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["shippingInfo"];
+  shipping_address: OrderType["shipping_address"];
+  t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["shipping_info"];
 }) => (
   <div>
     <h3 className="text-xl font-semibold mb-2">{t.title}</h3>
     <address className="not-italic">
-      <p>{shippingAddress.street}</p>
+      <p>{shipping_address.street}</p>
       <p>
-        {shippingAddress.city}, {shippingAddress.state}
+        {shipping_address.city}, {shipping_address.state}
       </p>
-      <p>{shippingAddress.postalCode}</p>
-      <p>{shippingAddress.country}</p>
+      <p>{shipping_address.postal_code}</p>
+      <p>{shipping_address.country}</p>
       <p className="mt-2">
-        {t.phone}: {shippingAddress.phone}
+        {t.phone}: {shipping_address.phone}
       </p>
     </address>
   </div>
@@ -56,7 +56,10 @@ const OrderItem = ({
         item.discount > 0 ? formatCurrency(item.discount) : t.existDiscount
       }
     />
-    <ItemDetail label={t.finalPrice} value={formatCurrency(item.finalPrice)} />
+    <ItemDetail
+      label={t.final_price}
+      value={formatCurrency(item.final_price)}
+    />
   </li>
 );
 
@@ -71,7 +74,7 @@ const ItemsList = ({
     <h3 className="text-xl font-semibold mb-2">{t.title}</h3>
     <ul className="space-y-4 max-h-96 overflow-y-auto">
       {items.map((item) => (
-        <OrderItem key={item.productId.toString()} item={item} t={t} />
+        <OrderItem key={item.product_id.toString()} item={item} t={t} />
       ))}
     </ul>
   </div>
@@ -127,16 +130,16 @@ const OrderStatusSection = ({
 );
 
 const InvoiceSection = ({
-  invoiceLink,
+  invoice_link,
   t,
 }: {
-  invoiceLink: string;
+  invoice_link: string;
   t: (typeof accountOrdersTranslate)[typeof lang]["orderTracking"]["invoice"];
 }) => (
   <div className="mt-6">
     <h3 className="text-xl font-semibold mb-2">{t.title}</h3>
     <Link
-      href={invoiceLink}
+      href={invoice_link}
       target="_blank"
       rel="noopener noreferrer"
       className="text-blue-500 hover:underline transition-colors"
@@ -160,15 +163,15 @@ const OrderCard = ({
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <ShippingInfo
-        shippingAddress={order.shippingAddress}
-        t={t.shippingInfo}
+        shipping_address={order.shipping_address}
+        t={t.shipping_info}
       />
       <ItemsList items={order.items} t={t.items} />
     </div>
 
     <OrderStatusSection status={order.status} order={order} t={t.orderStatus} />
 
-    <InvoiceSection invoiceLink={order.invoiceLink} t={t.invoice} />
+    <InvoiceSection invoice_link={order.invoice_link} t={t.invoice} />
   </div>
 );
 

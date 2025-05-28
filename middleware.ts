@@ -1,16 +1,13 @@
-//   const response = NextResponse.next({
-//     request: {
-//       ...req,
-//       headers: newHeaders,
-//     },
-//   });
 import { ipAddress } from "@vercel/functions";
 import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { v4 as uuidv4 } from "uuid";
 
-import { allowedRoles, type UserAuthType } from "./app/lib/types/users.types";
+import {
+  allowedRoles,
+  type UserAuthType,
+} from "./app/lib/types/users.db.types";
 import AppError from "./app/lib/utilities/appError";
 import { lang } from "./app/lib/utilities/lang";
 // import { rateLimitIp } from "./components/util/rateLimitIp";
@@ -68,7 +65,7 @@ const authMiddleware = async (req: NextRequest) => {
       isAuth &&
       !pathname.startsWith("/api") &&
       !pathname.startsWith("/verify-email") &&
-      !user?.verification?.emailVerified
+      !user?.verification?.email_verified
     ) {
       return NextResponse.redirect(new URL("/verify-email", req.url));
     }
@@ -125,7 +122,7 @@ const authMiddleware = async (req: NextRequest) => {
       if (!isAuth) {
         return NextResponse.redirect(new URL(AUTH_PATH, req.url));
       }
-      if (user?.verification?.emailVerified) {
+      if (user?.verification?.email_verified) {
         return NextResponse.redirect(new URL("/", req.url));
       }
       return NextResponse.next();
@@ -184,6 +181,6 @@ export default withAuth(authMiddleware, {
   },
   pages: {
     newUser: "/auth/register",
-    // signIn: AUTH_PATH,
+    signIn: AUTH_PATH,
   },
 });

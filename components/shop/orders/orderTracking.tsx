@@ -1,4 +1,4 @@
-import type { OrderType } from "@/app/lib/types/orders.types";
+import type { OrderType } from "@/app/lib/types/orders.db.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 

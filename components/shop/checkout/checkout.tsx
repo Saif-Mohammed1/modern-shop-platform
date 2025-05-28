@@ -5,9 +5,9 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-import type { AddressType } from "@/app/lib/types/address.types";
+import type { AddressType } from "@/app/lib/types/address.db.types";
 import type { Event } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
@@ -29,7 +29,7 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
   //   street: "",
   //   city: "",
   //   state: "",
-  //   postalCode: "",
+  //   postal_code: "",
   //   phone: "",
   //   country: "Ukraine",
   // });
@@ -71,7 +71,10 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.loading
       );
-      const { data: newAddress } = await api.post("/customers/address", data);
+      const { data: newAddress } = await api_client.post(
+        "/customers/address",
+        data
+      );
       setAddresses((prevAddresses) => [
         ...prevAddresses,
         newAddress as AddressType,
@@ -116,8 +119,8 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       );
       const {
         data: { url },
-      } = await api.post("/customers/orders", {
-        shippingInfo: selectedAddress,
+      } = await api_client.post("/customers/orders", {
+        shipping_info: selectedAddress,
         // products: cartItems,
       });
       toast.success(

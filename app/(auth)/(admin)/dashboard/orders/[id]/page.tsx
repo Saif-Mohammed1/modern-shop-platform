@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-import type { OrderType } from "@/app/lib/types/orders.types";
+import type { OrderType } from "@/app/lib/types/orders.db.types";
 import api from "@/app/lib/utilities/api";
 // import AppError from "@/components/util/appError";
 import { lang } from "@/app/lib/utilities/lang";
@@ -26,7 +26,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return {
-      title: `${data?.userId?.name} - ${ordersTranslate.orders[lang].details.metadata.title}`,
+      title: `${data?.user_id?.name} - ${ordersTranslate.orders[lang].details.metadata.title}`,
       description: ordersTranslate.orders[lang].details.metadata.description,
       keywords: ordersTranslate.orders[lang].details.metadata.keywords,
     };

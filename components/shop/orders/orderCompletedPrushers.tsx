@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FaHome, FaTruck } from "react-icons/fa";
 
-import type { OrderType } from "@/app/lib/types/orders.types";
+import type { OrderType } from "@/app/lib/types/orders.db.types";
 import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
 import { formatDateTime } from "@/app/lib/utilities/formatDate";
 import { lang } from "@/app/lib/utilities/lang";
@@ -20,7 +20,7 @@ const OrderSummary = ({
     </p>
     <p className="text-lg mb-2">
       {t.orderDate}:{" "}
-      <span className="font-semibold">{formatDateTime(order.createdAt)}</span>
+      <span className="font-semibold">{formatDateTime(order.created_at)}</span>
     </p>
     <p className="text-lg mb-4">
       {t.subtotal}:{" "}
@@ -51,7 +51,7 @@ const PriceDisplay = ({
           {formatCurrency(item.price)}
         </p>
         <p className="font-semibold text-green-600">
-          {formatCurrency(item.finalPrice)}
+          {formatCurrency(item.final_price)}
         </p>
       </>
     ) : (
@@ -98,7 +98,7 @@ const ProductList = ({
     <h2 className="text-xl font-bold mb-2">{t.title}:</h2>
     <ul className="mb-4 max-h-96 overflow-y-auto">
       {items.map((item) => (
-        <ProductListItem key={item.productId.toString()} item={item} t={t} />
+        <ProductListItem key={item.product_id.toString()} item={item} t={t} />
       ))}
     </ul>
   </>

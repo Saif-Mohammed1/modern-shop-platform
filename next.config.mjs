@@ -1,45 +1,49 @@
-import withBundleAnalyzer from '@next/bundle-analyzer';
-import {config} from 'dotenv';
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import { config } from "dotenv";
 
-config({path: './config/.env'}); // Add this at top
+config({ path: "./config/.env" }); // Add this at top
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    turbo: {},
     reactCompiler: true,
     staleTimes: {
       dynamic: 30,
       static: 600,
     },
   },
+  // config: {
+  //   turbopack: {}, // Move `experimental.turbo` to `config.turbopack`
+  // },
+  serverExternalPackages: ["knex"], // Replace `experimental.serverComponentsExternalPackages`
+
   images: {
     remotePatterns: [
-      {protocol: 'https', hostname: 'via.placeholder.com', port: ''},
+      { protocol: "https", hostname: "via.placeholder.com", port: "" },
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        port: '',
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
       },
       {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
+        protocol: "https",
+        hostname: "picsum.photos",
+        port: "",
       },
       {
-        protocol: 'https',
-        hostname: 'loremflickr.com',
-        port: '',
+        protocol: "https",
+        hostname: "loremflickr.com",
+        port: "",
       },
     ],
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
           // {
           //   key: "Content-Security-Policy",
@@ -56,32 +60,33 @@ const nextConfig = {
           //     "form-action 'self';",
           // },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), browsing-topics=()",
           },
           {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
           },
           {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
           },
         ],
       },
@@ -90,7 +95,7 @@ const nextConfig = {
 };
 
 const bundleAnalyzerConfig = withBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env.ANALYZE === "true",
 });
 
 export default bundleAnalyzerConfig(nextConfig);

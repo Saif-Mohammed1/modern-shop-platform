@@ -56,17 +56,17 @@ api.interceptors.response.use(
 
       try {
         const {
-          data: { accessToken },
+          data: { access_token },
         } = await api.get("/auth/refresh-token", {
           headers: originalRequest.headers,
         });
 
-        tokenManager.setAccessToken(accessToken);
-        api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+        tokenManager.setAccessToken(access_token);
+        api.defaults.headers.common.Authorization = `Bearer ${access_token}`;
 
         // Retry queued requests
         refreshSubscribers.forEach((cb) => {
-          cb(accessToken);
+          cb(access_token);
         });
         refreshSubscribers = [];
 

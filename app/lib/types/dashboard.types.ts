@@ -1,10 +1,8 @@
-import type { Types } from "mongoose";
-
-import type { OrderType } from "./orders.types";
+// import type { OrderType } from "./orders.db.types";
 interface FrequentlyProductsPurchased {
-  _id: string;
+  slug: string;
   count: number;
-  productId: string;
+  // product_id: string;
   name: string;
   category: string;
   price: number;
@@ -15,21 +13,19 @@ interface UserAnalytics {
   recentSignups: number;
   languageDistribution: Record<string, number>;
   geographicalInsights: {
-    // topCountries: Array<{ country: string; count: number }>;
-    // topCities: Array<{ city: string; count: number }>;
-    topLocations: Array<{
+    topLocations: {
+      city: string;
+      country: string;
       logins: number;
+      uniqueUsers: number;
+      commonDevices: string[];
+      commonBrowsers: string[];
       coordinates: {
         lat: number;
         lng: number;
       };
-      city: string;
-      country: string;
-      uniqueUsers: number;
-      commonDevices: string[];
-      commonBrowsers: string[];
       growthPercentage: number;
-    }>;
+    }[];
     deviceDistribution: Array<{
       count: number;
       device: string;
@@ -61,7 +57,7 @@ interface UserAnalytics {
     };
 
     threats: {
-      impossibleTravel: number;
+      impossible_travel: number;
       suspiciousDevices: number;
       botAttempts: number;
     };
@@ -116,7 +112,7 @@ interface ProductAnalytics {
     avgStock: number;
   }[];
   recentChanges: {
-    _id: string;
+    slug: string;
     name: string;
     type: "New Product" | "Updated Product";
     modifiedBy: string;
@@ -131,9 +127,11 @@ interface ProductAnalytics {
   weeklyGrowth: Array<{
     label: string;
     salesGrowth: number;
-    revenueGrowth: number;
     currentSales: number;
+    previousSales: number;
     currentRevenue: number;
+    revenueGrowth: number;
+    previousRevenue: number;
   }>;
 }
 interface OrderAnalytics {
@@ -147,10 +145,10 @@ interface OrderAnalytics {
   financialHealth: {
     netRevenue: number;
     totalTax: number;
-    processingCosts: number;
-    netProfitMargin: {
-      monthly: number;
-    };
+    // processingCosts: number;
+    // netProfitMargin: {
+    //   monthly: number;
+    // };
     refundRate: number;
     weeklyGrowth: number;
   };
@@ -160,7 +158,7 @@ interface OrderAnalytics {
     topSpender: number;
   };
   topProducts: Array<{
-    productId: string;
+    product_id: string;
     name: string;
     unitsSold: number;
     revenue: number;
@@ -196,7 +194,17 @@ interface OrderAnalytics {
     orderCount: number;
     revenue: number;
   }>;
-  recentOrders: OrderType[];
+  recentOrders: {
+    _id: string;
+    status: string;
+    total: number;
+    created_at: Date;
+    items: Array<{
+      name: string;
+      price: number;
+      quantity: number;
+    }>;
+  }[];
   weeklyGrowth: Array<{
     label: string;
     orderGrowth: number;
@@ -223,7 +231,7 @@ interface ReportAnalytics {
     status: string;
     product: string;
     reporter: string;
-    createdAt: Date;
+    created_at: Date;
   }>;
   dailyTrend: Array<{ date: string; reports: number }>;
   weeklyTrends: Array<{
@@ -251,8 +259,8 @@ interface RefundAnalytics {
     amount: number;
     status: string;
     user: string;
-    createdAt: Date;
-    invoiceId: string;
+    created_at: Date;
+    invoice_id: string;
   }>;
   weeklyGrowth: Array<{
     label: string;
@@ -295,7 +303,7 @@ interface UserInterestProducts {
     }>;
   };
   conversionMetrics: Array<{
-    productId: Types.ObjectId;
+    product_id: string;
     weeks: {
       week: number;
       cartAdds: number;
@@ -303,13 +311,21 @@ interface UserInterestProducts {
       conversionRate: number;
     }[];
   }>;
+  combined: {
+    slug: string;
+    name: string;
+    category: string;
+    cartCount: number;
+    wishlistCount: number;
+    interestScore: number;
+  }[];
   highInterestProducts: {
     frequentlyCartAdded: FrequentlyProductsPurchased[];
     frequentlyWishlisted: FrequentlyProductsPurchased[];
     abandonedItems: {
-      _id: string;
+      slug: string;
       count: number;
-      productId: string;
+      // product_id: string;
       name: string;
       stock: number;
     }[];
@@ -388,9 +404,9 @@ export interface DashboardDataApi {
 //     orders: IOrder[];
 //     refunds: IRefundSchema[];
 //   };
-//   userInterestProducts: Array<{ productId: string; count: number }>;
+//   userInterestProducts: Array<{ product_id: string; count: number }>;
 //   topOrderedProducts: Array<{
-//     productId: string;
+//     product_id: string;
 //     totalQuantity: number;
 //     productSlug: string;
 //   }>;

@@ -1,20 +1,20 @@
 class TokenManager {
-  private accessToken: string | null;
+  private access_token: string | null;
 
   constructor() {
-    this.accessToken = null;
+    this.access_token = null;
   }
 
   setAccessToken(token: string): void {
-    this.accessToken = token;
+    this.access_token = token;
   }
 
   getAccessToken(): string | null {
-    return this.accessToken;
+    return this.access_token;
   }
 
   clearAccessToken(): void {
-    this.accessToken = null;
+    this.access_token = null;
   }
 }
 

@@ -1,15 +1,17 @@
-import {z} from 'zod';
+import { z } from "zod";
 
-import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
+import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
 
 export class WishlistValidation {
   static createWishlistSchema = z.object({
-    productId: zObjectId,
-    userId: zObjectId,
+    product_id: zObjectId,
+    user_id: zObjectId,
   });
   static validateCreateWishlist = (data: any) => {
     return this.createWishlistSchema.parse(data);
   };
 }
 
-export type CreateWishlistDTO = z.infer<typeof WishlistValidation.createWishlistSchema>;
+export type CreateWishlistDTO = z.infer<
+  typeof WishlistValidation.createWishlistSchema
+>;

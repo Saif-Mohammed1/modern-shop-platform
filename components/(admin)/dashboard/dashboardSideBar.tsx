@@ -14,7 +14,7 @@ import {
   FaUser,
 } from "react-icons/fa";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { logOutUser } from "@/components/providers/store/user/user.store";
@@ -69,7 +69,7 @@ const Sidebar: FC = () => {
       await logOutUser();
       await deleteCookies("refreshAccessToken");
 
-      await api.post("/auth/logout");
+      await api_client.post("/auth/logout");
 
       toast.success("Logged out successfully");
     } catch (error: unknown) {

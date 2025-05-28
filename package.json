@@ -10,7 +10,13 @@
     "check-types": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "migrate:make": "npx knex migrate:make  -x ts ",
+    "migrate:latest": "npx knex migrate:latest ",
+    "migrate:rollback": "npx knex migrate:rollback ",
+    "migrate": "npx tsx ./app/server/db/migrate.ts ",
+    "seed:make": "npx knex seed:make -x ts",
+    "seed:run": "npx tsx ./app/server/db/migrate.ts seed:run"
   },
   "lint-staged": {
     "./**/*.{js,jsx,ts,tsx}": [
@@ -37,16 +43,20 @@
     "dotenv": "^16.4.7",
     "eslint-config-next": "^15.2.3",
     "framer-motion": "^12.5.0",
+    "globals": "^16.1.0",
     "heapdump": "^0.3.15",
     "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
     "lottie-react": "^2.4.1",
     "luxon": "^3.5.0",
     "mongoose": "^8.12.2",
+    "mysql2": "^3.14.1",
     "next": "^15.2.3",
     "next-auth": "^4.24.11",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
     "nuqs": "^2.4.1",
+    "pg": "^8.15.6",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-apexcharts": "^1.7.0",
@@ -107,6 +117,8 @@
     "puppeteer": "^24.4.0",
     "tailwindcss": "^4.0.15",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.2"
   },
   "overrides": {

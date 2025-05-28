@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { sessionExpiredOverlayTranslate } from "@/public/locales/client/(public)/sessionExpiredOverlayTranslate";
@@ -34,7 +34,7 @@ const SessionExpiredOverlay = () => {
       await logOutUser();
       await deleteCookies("refreshAccessToken");
 
-      await api.post("/auth/logout");
+      await api_client.post("/auth/logout");
       // Handle login logic here
       router.push("/auth");
     } catch (error: unknown) {

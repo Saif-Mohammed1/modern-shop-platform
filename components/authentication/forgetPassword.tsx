@@ -4,7 +4,7 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { forgetPasswordTranslate } from "@/public/locales/client/(public)/auth/forgetPasswordTranslate";
 
@@ -31,7 +31,7 @@ const ForgotPasswordPage = () => {
     try {
       const {
         data: { message },
-      } = await api.post("/auth/forgot-password", {
+      } = await api_client.post("/auth/forgot-password", {
         email,
       });
 
@@ -71,7 +71,7 @@ const ForgotPasswordPage = () => {
 
   //   const requestData = hasToken ? { token, email } : { email };
 
-  //   const requestMethod = hasToken ? api.patch : api.post;
+  //   const requestMethod = hasToken ? api_client.patch : api_client.post;
 
   //   try {
   //     await requestMethod("/auth/forgot-password", requestData);

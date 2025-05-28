@@ -1,4 +1,5 @@
-import type { ProductType } from "./products.types";
+import type { ProductCartPick } from "./cart.db.types";
+// import type { ProductType } from "./products.types";
 
 export interface FavoriteQueryConfig {
   query: URLSearchParams;
@@ -9,9 +10,8 @@ export interface FavoriteQueryConfig {
   populate?: boolean;
 }
 export type WishlistType = {
-  items: {
-    productId: ProductType;
-  }[];
-  userId: string;
-  _id?: string;
+  items: ProductCartPick[];
+  // items: Pick<ProductType, "_id" | "name" | "slug" | "price" | "images">[];
+  // user_id: string;
+  _id: string;
 };

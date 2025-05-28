@@ -18,60 +18,60 @@ export class TokensService {
     );
     this.COOKIE_NAME = "refreshAccessToken";
   }
-  generateAuthTokens(userId: string): {
-    accessToken: string;
+  generateAuthTokens(user_id: string): {
+    access_token: string;
     refreshToken: string;
-    hashedToken: string;
+    hashed_token: string;
   } {
     // Generate tokens
-    const accessToken = this.createAccessToken(userId);
-    const refreshToken = this.createRefreshToken(userId);
+    const access_token = this.createAccessToken(user_id);
+    const refreshToken = this.createRefreshToken(user_id);
 
     // Hash and store refresh token
-    const hashedToken = this.hashRefreshToken(refreshToken);
+    const hashed_token = this.hashRefreshToken(refreshToken);
 
-    return { accessToken, refreshToken, hashedToken };
+    return { access_token, refreshToken, hashed_token };
   }
 
-  // createAccessToken(userId: string): string {
-  //   return sign({ userId }, process.env.JWT_ACCESS_TOKEN_SECRET!, {
+  // createAccessToken(user_id: string): string {
+  //   return sign({ user_id }, process.env.JWT_ACCESS_TOKEN_SECRET!, {
   //     expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
   //   });
   // }
 
-  createAccessToken(userId: string): string {
+  createAccessToken(user_id: string): string {
     return sign(
-      { userId },
+      { user_id },
       process.env.JWT_ACCESS_TOKEN_SECRET as jwt.Secret, // 1. Type assertion for secret
       {
         expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN as string | number, // 2. Type assertion for expiresIn
       } as jwt.SignOptions // 3. Explicit type casting
     );
   }
-  // async decodedAccessToken(accessToken: string): Promise<{ userId: string }> {
+  // async decodedAccessToken(access_token: string): Promise<{ user_id: string }> {
   //   return (await promisify<string, jwt.Secret>(jwt.verify)(
-  //     accessToken,
+  //     access_token,
   //     process.env.JWT_ACCESS_TOKEN_SECRET!
-  //   )) as unknown as { userId: string };
+  //   )) as unknown as { user_id: string };
   // }
-  async decodedAccessToken(accessToken: string): Promise<{ userId: string }> {
+  async decodedAccessToken(access_token: string): Promise<{ user_id: string }> {
     return new Promise((resolve, reject) => {
       jwt.verify(
-        accessToken,
+        access_token,
         process.env.JWT_ACCESS_TOKEN_SECRET!,
         (err, decoded) => {
           if (err) {
             reject(err);
           } else {
-            resolve(decoded as { userId: string });
+            resolve(decoded as { user_id: string });
           }
         }
       );
     });
   }
-  // private createRefreshToken(userId: string): string {
+  // private createRefreshToken(user_id: string): string {
   //   const refreshToken = sign(
-  //     { userId },
+  //     { user_id },
   //     process.env.JWT_REFRESH_TOKEN_SECRET!,
   //     {
   //       expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
@@ -79,9 +79,9 @@ export class TokensService {
   //   );
   //   return refreshToken;
   // }
-  private createRefreshToken(userId: string): string {
+  private createRefreshToken(user_id: string): string {
     const refreshToken = sign(
-      { userId },
+      { user_id },
       process.env.JWT_REFRESH_TOKEN_SECRET as jwt.Secret, // 1. Type assertion for secret
       {
         expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string | number, // 2. Type assertion for expiresIn
@@ -89,7 +89,9 @@ export class TokensService {
     );
     return refreshToken;
   }
-  async decodedRefreshToken(refreshToken: string): Promise<{ userId: string }> {
+  async decodedRefreshToken(
+    refreshToken: string
+  ): Promise<{ user_id: string }> {
     return new Promise((resolve, reject) => {
       jwt.verify(
         refreshToken,
@@ -98,17 +100,17 @@ export class TokensService {
           if (err) {
             reject(err);
           } else {
-            resolve(decoded as { userId: string });
+            resolve(decoded as { user_id: string });
           }
         }
       );
     });
   }
-  // async decodedRefreshToken(refreshToken: string): Promise<{ userId: string }> {
+  // async decodedRefreshToken(refreshToken: string): Promise<{ user_id: string }> {
   //   return (await promisify<string, jwt.Secret>(jwt.verify)(
   //     refreshToken,
   //     process.env.JWT_REFRESH_TOKEN_SECRET!
-  //   )) as unknown as { userId: string };
+  //   )) as unknown as { user_id: string };
   // }
   hashRefreshToken = (token: string): string => {
     return crypto
@@ -164,13 +166,13 @@ export class TokensService {
   }
   generateEmailChangeTokenAndHashed(): {
     token: string;
-    hashedToken: string;
+    hashed_token: string;
   } {
     const token = crypto.randomBytes(32).toString("hex");
-    const hashedToken = this.hashEmailChangeToken(token);
+    const hashed_token = this.hashEmailChangeToken(token);
     return {
       token,
-      hashedToken,
+      hashed_token,
     };
   }
   //   getAccessTokenExpiry(): Date {

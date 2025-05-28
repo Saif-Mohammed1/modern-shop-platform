@@ -13,8 +13,8 @@ import {
   type UserAuthType,
   UserRole,
   UserStatus,
-} from "@/app/lib/types/users.types";
-import api from "@/app/lib/utilities/api";
+} from "@/app/lib/types/users.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { statusStyles } from "@/app/lib/utilities/status-style";
 import Pagination, {
@@ -66,7 +66,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
   //       toastId = toast.loading(
   //         usersTranslate.users[lang].functions.handleDelete.loading
   //       );
-  //       await api.delete(`/admin/dashboard/users/${id}`);
+  //       await api_client.delete(`/admin/dashboard/users/${id}`);
   //       toast.success(
   //         usersTranslate.users[lang].functions.handleDelete.success
   //       );
@@ -90,7 +90,7 @@ const AdminUsers = ({ users, pagination }: Props) => {
       toastId = toast.loading(
         usersTranslate.users[lang].functions.handleDelete.loading
       );
-      await api.delete(`/admin/dashboard/users/${id}`);
+      await api_client.delete(`/admin/dashboard/users/${id}`);
       toast.success(usersTranslate.users[lang].functions.handleDelete.success);
       setUsersList((prev) => prev.filter((user) => user._id !== id));
     } catch (error: unknown) {

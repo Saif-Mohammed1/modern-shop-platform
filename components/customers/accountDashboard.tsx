@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import type { Event } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
 
@@ -47,7 +47,7 @@ const AccountDashboard = () => {
     phone: userData.phone,
   });
   const [changeEmail, setChangeEmail] = useState("");
-  const [verificationToken, setVerificationToken] = useState("");
+  const [verification_token, setVerificationToken] = useState("");
   const [showTokenField, setShowTokenField] = useState(false);
   const [changesApplied, setChangesApplied] = useState(false);
 
@@ -95,7 +95,7 @@ const AccountDashboard = () => {
         toast.loading(
           accountDashboardTranslate[lang].functions.handleApplyChanges.loading
         );
-        await api.put("/customers/update-data", updatedData);
+        await api_client.put("/customers/update-data", updatedData);
 
         await update({
           ...session,
@@ -131,14 +131,14 @@ const AccountDashboard = () => {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleApplyChanges.loading
       );
-      await api.patch("/customers/update-data", {
-        loginNotificationSent: !session?.user?.loginNotificationSent,
+      await api_client.patch("/customers/update-data", {
+        login_notification_sent: !session?.user?.login_notification_sent,
       });
       await update({
         ...session,
         user: {
           ...session?.user,
-          loginNotificationSent: !session?.user?.loginNotificationSent,
+          login_notification_sent: !session?.user?.login_notification_sent,
         },
       });
       toast.success(
@@ -167,7 +167,7 @@ const AccountDashboard = () => {
         accountDashboardTranslate[lang].functions.handleSendVerificationLink
           .loading
       );
-      await api.get("/customers/update-data/verify-email");
+      await api_client.get("/customers/update-data/verify-email");
       toast.success(
         accountDashboardTranslate[lang].functions.handleSendVerificationLink
           .success
@@ -200,8 +200,8 @@ const AccountDashboard = () => {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleVerifyToken.loading
       );
-      await api.put("/customers/update-data/verify-email", {
-        verificationCode: verificationToken,
+      await api_client.put("/customers/update-data/verify-email", {
+        verificationCode: verification_token,
       });
 
       toast.success(
@@ -214,7 +214,7 @@ const AccountDashboard = () => {
           ...session?.user,
           verification: {
             ...session?.user.verification,
-            emailVerified: true,
+            email_verified: true,
           },
         },
       });
@@ -240,7 +240,7 @@ const AccountDashboard = () => {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleEmailChange.loading
       );
-      await api.post("/customers/update-data/change-email", {
+      await api_client.post("/customers/update-data/change-email", {
         newEmail: changeEmail,
       });
       setUserData((prevState) => ({
@@ -277,7 +277,7 @@ const AccountDashboard = () => {
         name: session.user.name ?? "",
         email: session.user.email ?? "",
         phone: session.user.phone ?? "",
-        emailVerify: session.user.verification?.emailVerified ?? false,
+        emailVerify: session.user.verification?.email_verified ?? false,
       });
     }
   }, [session]);
@@ -403,16 +403,16 @@ const AccountDashboard = () => {
         {showTokenField ? (
           <div className="mt-4">
             <label>
-              {accountDashboardTranslate[lang].form.verificationToken.label}:
+              {accountDashboardTranslate[lang].form.verification_token.label}:
             </label>
             <input
               type="text"
-              value={verificationToken}
+              value={verification_token}
               onChange={(e) => {
                 setVerificationToken(e.target.value);
               }}
               placeholder={
-                accountDashboardTranslate[lang].form.verificationToken
+                accountDashboardTranslate[lang].form.verification_token
                   .placeholder
               }
               className="border rounded px-3 py-2 w-full mt-1"
@@ -492,16 +492,16 @@ const AccountDashboard = () => {
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
-              checked={session?.user?.loginNotificationSent}
+              checked={session?.user?.login_notification_sent}
               onChange={handleNotificationToggle}
-              className={`sr-only ${session?.user?.loginNotificationSent ? "peer-checked:bg-blue-500" : ""}`}
+              className={`sr-only ${session?.user?.login_notification_sent ? "peer-checked:bg-blue-500" : ""}`}
             />
             <div
-              className={`w-11 h-6 ${session?.user?.loginNotificationSent ? "bg-blue-500" : "bg-gray-300"}  rounded-full transition-colors duration-300 peer-checked:bg-blue-500`}
+              className={`w-11 h-6 ${session?.user?.login_notification_sent ? "bg-blue-500" : "bg-gray-300"}  rounded-full transition-colors duration-300 peer-checked:bg-blue-500`}
             >
               <div
                 className={`dot absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${
-                  session?.user?.loginNotificationSent ? "translate-x-5" : ""
+                  session?.user?.login_notification_sent ? "translate-x-5" : ""
                 }`}
               />
             </div>

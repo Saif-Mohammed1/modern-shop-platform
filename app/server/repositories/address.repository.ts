@@ -1,6 +1,8 @@
 // address.repository.ts
-import type { Model, ClientSession } from "mongoose";
 
+import type { Knex } from "knex";
+
+import type { IAddressDB } from "@/app/lib/types/address.db.types";
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
@@ -8,79 +10,63 @@ import type {
 } from "@/app/lib/types/queryBuilder.types";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 
-import {
-  type CreateAddressDtoType,
-  // UpdateAddressDtoType,
-} from "../dtos/address.dto";
-import type { IAddress } from "../models/Address.model";
-
 import { BaseRepository } from "./BaseRepository";
 
-export class AddressRepository extends BaseRepository<IAddress> {
-  constructor(model: Model<IAddress>) {
-    super(model);
+export class AddressRepository extends BaseRepository<IAddressDB> {
+  constructor(knex: Knex) {
+    super(knex, "addresses");
   }
-  override async create(
-    dto: CreateAddressDtoType,
-    session?: ClientSession
-  ): Promise<IAddress> {
-    const [address] = await this.model.create([dto], {
-      session,
-    });
-    return address;
-  }
-  override async update(
-    id: string,
-    data: Partial<IAddress>,
-    session?: ClientSession
-  ): Promise<IAddress | null> {
-    const address = await this.model.findOneAndUpdate(
-      { _id: id, userId: data.userId },
-      { $set: data },
-      { new: true, session }
-    );
-    return address;
-  }
+
   async deleteAddress(
     id: string,
-    userId: string,
-    session?: ClientSession
+    user_id: string,
+    trx?: Knex.Transaction
   ): Promise<boolean> {
-    const result = await this.model.deleteOne({ _id: id, userId }, { session });
-    return result.deletedCount === 1;
+    const result = await this.query(trx)
+      .where("user_id", user_id)
+      .andWhere("_id", id)
+      .delete();
+    return result === 1;
   }
 
   async getUserAddress(
-    userId: string,
+    user_id: string,
     options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IAddress>> {
-    const queryConfig: QueryBuilderConfig<IAddress> = {
-      allowedFilters: ["userId", "createdAt"],
-      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IAddress>,
+  ): Promise<QueryBuilderResult<IAddressDB>> {
+    const queryConfig: QueryBuilderConfig<IAddressDB> = {
+      allowedFilters: ["user_id", "created_at"],
+      //   allowedSorts: ["created_at", "updated_at"] as Array<keyof IAddressDB>,
       //   maxLimit: 100,
     };
 
     const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
-      userId,
+      user_id: user_id,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
     });
 
-    const queryBuilder = new QueryBuilder<IAddress>(
-      this.model,
+    const queryBuilder = new QueryBuilder<IAddressDB>(
+      this.knex,
+      this.tableName,
       searchParams,
       queryConfig
     );
 
     if (options?.populate) {
-      queryBuilder.populate([{ path: "userId", select: "name email" }]);
+      queryBuilder.join({
+        table: "users",
+
+        type: "left",
+        on: {
+          left: "user_id",
+          right: "_id",
+        },
+        select: ["name", "email"],
+      });
     }
 
     return await queryBuilder.execute();
-  }
-  async startSession(): Promise<ClientSession> {
-    return await this.model.db.startSession();
   }
 }

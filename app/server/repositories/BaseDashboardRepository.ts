@@ -16,12 +16,12 @@ export interface BaseDashboardRepository {
   //   recentRefunds: any[];
   // }>;
   // getUserInterest(): Promise<{
-  //   cartProducts: Array<{ productId: Types.ObjectId; count: number }>;
-  //   wishlistProducts: Array<{ productId: Types.ObjectId; count: number }>;
+  //   cartProducts: Array<{ product_id: Types.ObjectId; count: number }>;
+  //   wishlistProducts: Array<{ product_id: Types.ObjectId; count: number }>;
   // }>;
   // getProductPerformance(): Promise<{
   //   topOrdered: Array<{
-  //     productId: Types.ObjectId;
+  //     product_id: Types.ObjectId;
   //     name: string;
   //     totalQuantity: number;
   //     totalOrders: number;

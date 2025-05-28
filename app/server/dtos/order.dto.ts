@@ -1,12 +1,12 @@
 // src/lib/dto/order.dto.ts
-import {z} from 'zod';
+import { z } from "zod";
 
-import {OrderStatus} from '@/app/lib/types/orders.types';
-import {UserCurrency} from '@/app/lib/types/users.types';
-import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
-import {lang} from '@/app/lib/utilities/lang';
-import {OrderTranslate} from '@/public/locales/server/Order.Translate';
-import {ProductTranslate} from '@/public/locales/server/Product.Translate';
+import { OrderStatus } from "@/app/lib/types/orders.db.types";
+import { UserCurrency } from "@/app/lib/types/users.db.types";
+import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
+import { OrderTranslate } from "@/public/locales/server/Order.Translate";
+import { ProductTranslate } from "@/public/locales/server/Product.Translate";
 
 export class OrderValidation {
   private static dimensionsSchema = z.object({
@@ -36,9 +36,9 @@ export class OrderValidation {
         required_error: OrderTranslate[lang].dto.state.required,
       })
       .min(1),
-    postalCode: z
+    postal_code: z
       .string({
-        required_error: OrderTranslate[lang].dto.postalCode.required,
+        required_error: OrderTranslate[lang].dto.postal_code.required,
       })
       .min(1),
     phone: z
@@ -53,7 +53,7 @@ export class OrderValidation {
       .min(1),
   });
   static OrderItemSchema = z.object({
-    productId: zObjectId,
+    product_id: zObjectId,
     name: z
       .string({
         required_error: OrderTranslate[lang].dto.items.name.required,
@@ -78,35 +78,35 @@ export class OrderValidation {
       .min(0),
 
     attributes: z.record(z.string(), z.any()).optional(), // Flexible key-value attributes
-    shippingInfo: z.object({
+    shipping_info: z.object({
       weight: z.number().min(0, {
         message: ProductTranslate[lang].dto.weight.min,
       }),
       dimensions: this.dimensionsSchema,
     }),
-    finalPrice: z
+    final_price: z
       .number({
-        required_error: OrderTranslate[lang].dto.items.finalPrice.required,
+        required_error: OrderTranslate[lang].dto.items.final_price.required,
       })
       .min(0),
   });
   static CreateOrderDtoSchema = z.object({
-    userId: zObjectId,
-    shippingAddress: this.ShippingInfoSchema,
+    user_id: zObjectId,
+    shipping_address: this.ShippingInfoSchema,
     items: z.array(this.OrderItemSchema),
     status: z.enum(Object.values(OrderStatus) as [string, ...string[]]),
 
     currency: z
       .enum(Object.values(UserCurrency) as [string, ...string[]])
       .default(UserCurrency.UAH),
-    invoiceId: z
+    invoice_id: z
       .string({
-        required_error: OrderTranslate[lang].dto.invoiceId.required,
+        required_error: OrderTranslate[lang].dto.invoice_id.required,
       })
       .min(1),
-    invoiceLink: z
+    invoice_link: z
       .string({
-        required_error: OrderTranslate[lang].dto.invoiceLink.required,
+        required_error: OrderTranslate[lang].dto.invoice_link.required,
       })
       .min(1),
     total: z
@@ -114,10 +114,31 @@ export class OrderValidation {
         required_error: OrderTranslate[lang].dto.totalPrice.required,
       })
       .min(0),
-    subtotal: z.number({required_error: OrderTranslate[lang].dto.subtotal.required}).min(0),
+    subtotal: z
+      .number({ required_error: OrderTranslate[lang].dto.subtotal.required })
+      .min(0),
     // shippingCost: z.number().min(0),
-    tax: z.number({required_error: OrderTranslate[lang].dto.tax.required}).min(0),
-    orderNotes: z.array(z.string()).optional(),
+    tax: z
+      .number({ required_error: OrderTranslate[lang].dto.tax.required })
+      .min(0),
+    /** {
+            payment: {
+              method: string;
+              transaction_id: string;
+            }; */
+    payment: z.object({
+      method: z
+        .string({
+          required_error: OrderTranslate[lang].dto.paymentMethod.required,
+        })
+        .min(1),
+      transaction_id: z
+        .string({
+          required_error: OrderTranslate[lang].dto.transactionId.required,
+        })
+        .min(1),
+    }),
+    order_notes: z.array(z.string()).optional(),
     cancellationReason: z.string().optional(),
   });
 
@@ -138,6 +159,12 @@ export class OrderValidation {
   }
 }
 
-export type CreateOrderDto = z.infer<typeof OrderValidation.CreateOrderDtoSchema>;
-export type UpdateOrderStatusDto = z.infer<typeof OrderValidation.UpdateOrderStatusDtoSchema>;
-export type UpdateOrderDto = z.infer<typeof OrderValidation.UpdateOrderDtoSchema>;
+export type CreateOrderDto = z.infer<
+  typeof OrderValidation.CreateOrderDtoSchema
+>;
+export type UpdateOrderStatusDto = z.infer<
+  typeof OrderValidation.UpdateOrderStatusDtoSchema
+>;
+export type UpdateOrderDto = z.infer<
+  typeof OrderValidation.UpdateOrderDtoSchema
+>;

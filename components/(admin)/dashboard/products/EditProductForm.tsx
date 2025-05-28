@@ -7,7 +7,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import type { ProductType } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 
@@ -44,7 +44,10 @@ export default function EditProductForm({
           productsTranslate.products[lang].editProduct.form.productSubmit
             .loading
         );
-        await api.put(`/admin/dashboard/products/${defaultValues.slug}`, data);
+        await api_client.put(
+          `/admin/dashboard/products/${defaultValues.slug}`,
+          data
+        );
         toast.success(
           productsTranslate.products[lang].editProduct.form.productSubmit
             .success

@@ -25,11 +25,11 @@ class CartController {
     const body = await req.json();
     const result = CartValidation.isCartValid({
       ...body,
-      productId: req.id,
+      product_id: req.id,
     });
     await this.cartService.addToCart(
       req.user._id.toString(),
-      result.productId.toString(),
+      result.product_id.toString(),
       result.quantity
     );
     return this.response(undefined);

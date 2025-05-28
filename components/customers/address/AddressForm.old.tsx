@@ -1,4 +1,4 @@
-import type { AddressType } from "@/app/lib/types/address.types";
+import type { AddressType } from "@/app/lib/types/address.db.types";
 import type { Event } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";
 import Input from "@/components/ui/Input";
@@ -93,16 +93,16 @@ const AddAddressComponent = ({
         {/* Postal Code */}
         <div className="col-span-1">
           <label className="block text-gray-700">
-            {addressTranslate[lang].addAddress.form.postalCode.label}
+            {addressTranslate[lang].addAddress.form.postal_code.label}
           </label>
           <input
-            name="postalCode"
+            name="postal_code"
             type="text"
-            value={newAddress.postalCode}
+            value={newAddress.postal_code}
             onChange={onChange}
             className="w-full p-3 border rounded-lg bg-gray-50 text-gray-600"
             placeholder={
-              addressTranslate[lang].addAddress.form.postalCode.placeholder
+              addressTranslate[lang].addAddress.form.postal_code.placeholder
             }
           />
         </div>

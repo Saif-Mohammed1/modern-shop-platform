@@ -23,8 +23,8 @@ import { HiFilter } from "react-icons/hi";
 import { MdHistory } from "react-icons/md";
 import { TfiReload } from "react-icons/tfi";
 
-import type { Event, ProductType } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import type { AdminProductType, Event } from "@/app/lib/types/products.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Pagination, {
@@ -39,7 +39,7 @@ import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppag
 
 type Category = string;
 type ProductListProps = {
-  products: ProductType[];
+  products: AdminProductType[];
   categories: Category[];
   pagination: PaginationType;
 };
@@ -103,7 +103,7 @@ const ProductList: FC<ProductListProps> = ({
       toastLoading = toast.loading(
         productsTranslate.products[lang].function.toggleProductStatus.loading
       );
-      await api.put(`/admin/dashboard/products/${slug}/active`, {
+      await api_client.put(`/admin/dashboard/products/${slug}/active`, {
         active: !productsList.find((product) => product.slug === slug)?.active,
       });
       setProductsList((prevProducts) =>
@@ -135,7 +135,7 @@ const ProductList: FC<ProductListProps> = ({
       toastLoading = toast.loading(
         productsTranslate.products[lang].function.handleDelete.loading
       );
-      await api.delete(`/admin/dashboard/products/${slug}`);
+      await api_client.delete(`/admin/dashboard/products/${slug}`);
       setProductsList((prevProducts) =>
         prevProducts.filter((product) => product.slug !== slug)
       );
@@ -203,11 +203,11 @@ const ProductList: FC<ProductListProps> = ({
           value={sortOrder}
           options={[
             {
-              value: "-createdAt",
+              value: "-created_at",
               label: productsTranslate.products[lang].filter.select.newest,
             },
             {
-              value: "createdAt",
+              value: "created_at",
               label: productsTranslate.products[lang].filter.select.oldest,
             },
             {
@@ -221,11 +221,11 @@ const ProductList: FC<ProductListProps> = ({
             },
 
             {
-              value: "-ratingsAverage",
+              value: "-ratings_average",
               label: productsTranslate.products[lang].filter.select.topRated,
             },
             {
-              value: "ratingsAverage",
+              value: "ratings_average",
               label: productsTranslate.products[lang].filter.select.lowestRated,
             },
           ]}
@@ -278,11 +278,11 @@ const ProductList: FC<ProductListProps> = ({
               value={sortOrder}
               options={[
                 {
-                  value: "-createdAt",
+                  value: "-created_at",
                   label: productsTranslate.products[lang].filter.select.newest,
                 },
                 {
-                  value: "createdAt",
+                  value: "created_at",
                   label: productsTranslate.products[lang].filter.select.oldest,
                 },
                 {
@@ -297,12 +297,12 @@ const ProductList: FC<ProductListProps> = ({
                 },
 
                 {
-                  value: "-ratingsAverage",
+                  value: "-ratings_average",
                   label:
                     productsTranslate.products[lang].filter.select.topRated,
                 },
                 {
-                  value: "ratingsAverage",
+                  value: "ratings_average",
                   label:
                     productsTranslate.products[lang].filter.select.lowestRated,
                 },
@@ -335,8 +335,8 @@ const ProductList: FC<ProductListProps> = ({
           }
         >
           {productsList.map((product) => {
-            const discountExpireDate = product.discountExpire
-              ? DateTime.fromJSDate(new Date(product.discountExpire))
+            const discountExpireDate = product.discount_expire
+              ? DateTime.fromJSDate(new Date(product.discount_expire))
               : null;
             const daysToExpire = discountExpireDate?.diffNow("days").days ?? 0;
             // const formattedExpireDate =
@@ -431,7 +431,7 @@ const ProductList: FC<ProductListProps> = ({
                         <span>Rating</span>
                       </div>
                       <span className="font-medium">
-                        {product.ratingsAverage}/5
+                        {product.ratings_average}/5
                       </span>
                     </div>
 
@@ -441,7 +441,7 @@ const ProductList: FC<ProductListProps> = ({
                         <span>Weight</span>
                       </div>
                       <span className="font-medium">
-                        {product.shippingInfo?.weight} kg
+                        {product.shipping_info?.weight} kg
                       </span>
                     </div>
 
@@ -451,9 +451,9 @@ const ProductList: FC<ProductListProps> = ({
                         <span>Dimensions</span>
                       </div>
                       <span className="font-medium">
-                        {product.shippingInfo?.dimensions?.length}x
-                        {product.shippingInfo?.dimensions?.width}x
-                        {product.shippingInfo?.dimensions?.height}cm
+                        {product.shipping_info?.dimensions?.length}x
+                        {product.shipping_info?.dimensions?.width}x
+                        {product.shipping_info?.dimensions?.height}cm
                       </span>
                     </div>
                   </div>
@@ -470,11 +470,11 @@ const ProductList: FC<ProductListProps> = ({
                           {product.active ? <FaCheckCircle /> : <FaArchive />}
                           <span>{product.active ? "Active" : "Archived"}</span>
                         </div>
-                        {product.lastModifiedBy ? (
+                        {product.last_modified_by ? (
                           <div className="flex items-center gap-1 text-gray-400 text-sm">
                             <FaUserEdit />
                             <span className="truncate max-w-[120px]">
-                              {product.lastModifiedBy.name}
+                              {product.last_modified_by.name}
                             </span>
                           </div>
                         ) : null}

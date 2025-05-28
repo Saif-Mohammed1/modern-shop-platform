@@ -77,7 +77,7 @@ class APIFeatures<
       const startDate = new Date(queryObj.date.trim());
       const endDate = new Date(); // Current date
 
-      queryObj.createdAt = {
+      queryObj.created_at = {
         $gte: startDate,
         $lte: endDate,
       };
@@ -87,12 +87,12 @@ class APIFeatures<
     if (queryObj.rating) {
       const rating = queryObj.rating * 1;
       if (rating <= 1) {
-        queryObj.ratingsAverage = { $gte: 0, $lte: 1.9 };
+        queryObj.ratings_average = { $gte: 0, $lte: 1.9 };
       } else if (rating < 5) {
         const maxRating = rating + 0.9;
-        queryObj.ratingsAverage = { $gte: rating, $lte: maxRating };
+        queryObj.ratings_average = { $gte: rating, $lte: maxRating };
       } else {
-        queryObj.ratingsAverage = { $gte: rating };
+        queryObj.ratings_average = { $gte: rating };
       }
       delete queryObj.rating;
     }
@@ -127,7 +127,7 @@ class APIFeatures<
 
       this.query = this.query.sort(sortBy);
     } else {
-      this.query = this.query.sort("-createdAt");
+      this.query = this.query.sort("-created_at");
     }
     return this;
   }

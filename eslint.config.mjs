@@ -11,8 +11,8 @@ import reactHooksPlugin from "eslint-plugin-react-hooks";
 import validateJSXNestingPlugin from "eslint-plugin-validate-jsx-nesting";
 import customRule from "./eslint-plugin-no-void-jsx/dist/index.js";
 import globals from "globals";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+// import path from "node:path";
+// import { fileURLToPath } from "node:url";
 // - "no-duplicate-case": "error",
 // - "no-invalid-regexp": "error",
 // - "no-irregular-whitespace": "error",
@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 // - "no-unreachable": "error",
 // - "no-unsafe-negation": "error",
 // - "no-undef": "error",
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('eslint').Linter.Config} */
 export default [
@@ -38,6 +38,7 @@ export default [
       "**/__test__/**",
       //ignore any file contain .old.*
       "**/*.old.*",
+      "**/migrate.ts",
       "config",
     ],
   },
@@ -65,7 +66,7 @@ export default [
         ecmaVersion: "latest",
         sourceType: "module",
         project: ["tsconfig.json"],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: ".",
         warnOnUnsupportedTypeScriptVersion: true,
       },
       globals: {

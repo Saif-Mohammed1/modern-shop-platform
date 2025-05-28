@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { VerifyEmailTranslate } from "@/public/locales/client/(auth)/VerifyEmail.Translate";
 
@@ -60,7 +60,7 @@ const VerifyEmail = () => {
     try {
       const {
         data: { message },
-      } = await api.put("/customers/update-data/verify-email", {
+      } = await api_client.put("/customers/update-data/verify-email", {
         code: code.join(""),
       });
       await update({
@@ -70,7 +70,7 @@ const VerifyEmail = () => {
 
           verification: {
             ...session?.user.verification,
-            emailVerified: true,
+            email_verified: true,
           },
         },
       });
@@ -105,7 +105,7 @@ const VerifyEmail = () => {
   };
   const onResend = async (): Promise<void> => {
     try {
-      await api.get("/customers/update-data/verify-email");
+      await api_client.get("/customers/update-data/verify-email");
       toast.success(VerifyEmailTranslate[lang].VerifyEmail.resendCodeSuccess);
     } catch (error) {
       toast.error(
