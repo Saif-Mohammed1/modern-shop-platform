@@ -17,6 +17,7 @@ import type { IProductDB } from "../types/products.db.types";
 
 import orderController from "@/app/server/controllers/order.controller";
 import type { CreateOrderDto } from "@/app/server/dtos/order.dto";
+import type { ShippingInfoDto } from "@/app/server/dtos/stripe.dto";
 // import type { IOrder } from "@/app/server/models/Order.model";
 // import type { IProductDB } from "@/app/server/models/Product.model";
 // import type { IUserDB } from "@/app/server/models/User.model";
@@ -812,7 +813,9 @@ export const createRandomNotifications = (
 
 export const createRandomStripeSession = async (
   user_id: IUserDB[],
-  shipping_info: any[]
+  shipping_info: (ShippingInfoDto & {
+    user_id: IUserDB["_id"];
+  })[]
 ) => {
   const req = [];
   for (let i = 0; i < user_id.length; i++) {

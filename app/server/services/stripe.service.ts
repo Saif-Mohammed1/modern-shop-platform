@@ -866,17 +866,14 @@ export class StripeService {
   }
   private async validateCartProducts(cartItems: CartItemsType[]) {
     const productIds = cartItems.map((item) => item._id);
-
     // 1. Bulk fetch with fresh data
     const products = await this.knex<IProductViewBasicDB>(
       "public_products_views_basic"
     )
       .where("stock", ">", 1)
       .whereIn("_id", productIds);
-
     // 2. Create validation map
     const productMap = new Map(products.map((p) => [p._id.toString(), p]));
-
     // 3. Validate each cart item
     const results = {
       validProducts: [] as Array<{
@@ -916,6 +913,7 @@ export class StripeService {
         });
         continue;
       }
+
       // 4. Price validation
       const { discountedPrice: currentPrice } = calculateDiscount(product);
       const { discountedPrice: currentItemPrice } = calculateDiscount(item);

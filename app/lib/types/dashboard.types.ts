@@ -134,6 +134,14 @@ interface ProductAnalytics {
     revenueGrowth: number;
     previousRevenue: number;
   }>;
+  // demandForecast: {
+  reservations: {
+    reservedQuantity: number;
+    reservedValue: number;
+    avgReservationDuration: number;
+    conversionRate: number; // Reservations to actual purchases
+    abandonmentRate: number;
+  };
 }
 interface OrderAnalytics {
   summary: {
@@ -344,72 +352,3 @@ export interface DashboardDataApi {
 
   userInterestProducts: UserInterestProducts;
 }
-
-// export interface DashboardDataApi {
-//   users: {
-//     total: number;
-//     growthPercentage: number;
-//     lastWeek: number;
-//     active: number;
-//     // NEW: Add user demographics
-//     demographics: {
-//       regions: Record<string, number>;
-//       ageGroups: Record<string, number>;
-//     };
-//   };
-//   orders: {
-//     total: number;
-//     completed: number;
-//     pending: number;
-//     cancelled: number;
-//     earnings: {
-//       current: number;
-//       trend: number;
-//       daily: number;
-//       // daily: { date: string; amount: number }[];
-//       // NEW: Add weekly trend data
-//       weeklyTrend: Array<{ date: string; amount: number }>;
-//     };
-//   };
-//   products: {
-//     total: number;
-//     outOfStock: number;
-//     lowStock: number;
-//     active: number;
-//     categoryDistribution: Record<string, number>;
-//     growthPercentage: number;
-//     lastWeek: number;
-//   };
-//   sales: {
-//     total: number;
-//     averageOrderValue: number;
-//     conversionRate: number;
-//   };
-//   refunds: {
-//     total: number;
-//     amount: number;
-//     trend: number;
-//     // recent: IRefundSchema[];
-//   };
-//   inventory: {
-//     totalValue: number;
-//     stockAlerts: number;
-//   };
-//   reports: {
-//     total: number;
-//     resolved: number;
-//     unresolved: number;
-//     resolutionRate: number;
-//   };
-//   recentActivities: {
-//     orders: IOrder[];
-//     refunds: IRefundSchema[];
-//   };
-//   userInterestProducts: Array<{ product_id: string; count: number }>;
-//   topOrderedProducts: Array<{
-//     product_id: string;
-//     totalQuantity: number;
-//     productSlug: string;
-//   }>;
-//   dailyOrders: number;
-// }

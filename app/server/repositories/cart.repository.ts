@@ -58,31 +58,12 @@ export class CartRepository extends BaseRepository<ICartItemDB> {
     const cartItems = (await this.query()
       .where("cart_items.user_id", user_id)
       .join("products", "cart_items.product_id", "products._id")
-      //   .leftJoin("product_images", "products._id", "product_images.product_id")
-      //   .groupBy("cart_items._id", "products._id")
-      //   .select(
-      //     "cart_items._id",
-      //     this.knex.raw(`
-      //   json_build_object(
-      //     'product_id', products._id,
-      //     'name', products.name,
-      //     'price', products.price,
-      //     'slug', products.slug,
-      //     'images', COALESCE(json_agg(
-      //       json_build_object('public_id', product_images.public_id, 'link', product_images.link)
-      //     ) FILTER (WHERE product_images._id IS NOT NULL), '[]'::json),
-      //     'stock', products.stock,
-      //     'category', products.category,
-      //     'discount_expire', products.discount_expire,
-      //     'discount', products.discount
-      //   ) AS item
-      // `)
-      //   )
+
       .leftJoin(
         this.knex.raw(`
               LATERAL (
                 SELECT json_agg(
-                  json_build_object('public_id', pi.public_id, 'link', pi.link)
+                  json_build_object('_id',pi._id,'public_id', pi.public_id, 'link', pi.link)
                 ) AS images
                 FROM product_images pi
                 WHERE pi.product_id = products._id
@@ -102,7 +83,7 @@ export class CartRepository extends BaseRepository<ICartItemDB> {
                   'category', products.category,
                   'discount', products.discount,
                   'stock', products.stock,
-                  'discount_expire', products.discount_expire,
+                  'discount_expire', to_char(products.discount_expire, 'DD/MM/YYYY'),
                   'price', products.price,
                   'slug', products.slug,
                   'quantity', cart_items.quantity,

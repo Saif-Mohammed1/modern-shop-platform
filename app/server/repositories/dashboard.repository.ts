@@ -352,6 +352,7 @@ export class DashboardRepository implements BaseDashboardRepository {
       shippingMetrics,
       riskAnalysis,
       weeklyGrowth,
+      reservationInsights,
     ] = await Promise.all([
       this.knex.raw<{
         rows: DashboardDataAggregate["productAnalytics"]["stockInfo"][];
@@ -494,6 +495,44 @@ export class DashboardRepository implements BaseDashboardRepository {
           this.knex.raw(`CONCAT('Week ', week::text, ' ', year::text) as label`)
         )
         .from("weekly_sales"),
+      // New: Reservation Insights
+      this.knex.raw<{
+        rows: Array<{
+          totalReserved: number;
+          totalReservedValue: number;
+          conversionRate: number;
+          avgReservationDuration: number;
+          abandonmentRate: number;
+        }>;
+      }>(`
+      WITH reservation_stats AS (
+        SELECT
+          SUM(r.quantity) AS total_reserved,
+          SUM(r.quantity * p.price) AS total_reserved_value,
+          COUNT(*) FILTER (WHERE r.status = 'confirmed') AS confirmed_count,
+          COUNT(*) FILTER (WHERE r.status = 'cancelled') AS cancelled_count, 
+          COUNT(*) FILTER (WHERE r.status = 'pending' AND r.expires_at < NOW()) AS expired_count,
+          AVG(EXTRACT(EPOCH FROM (r.expires_at - r.created_at))/3600)::float AS avg_reservation_hours
+        FROM reservations r
+        JOIN products p ON r.product_id = p._id
+        WHERE r.created_at >= NOW() - INTERVAL '30 days'
+      )
+      SELECT
+        COALESCE(total_reserved, 0)::integer AS "totalReserved",
+        COALESCE(total_reserved_value, 0)::float8 AS "totalReservedValue",
+        COALESCE(avg_reservation_hours, 0)::float8 AS "avgReservationDuration",
+        CASE 
+          WHEN total_reserved > 0 
+          THEN (confirmed_count::float / total_reserved) * 100 
+          ELSE 0 
+        END::float8 AS "conversionRate",
+        CASE 
+          WHEN total_reserved > 0 
+          THEN ((cancelled_count + expired_count)::float / total_reserved) * 100 
+          ELSE 0 
+        END::float8 AS "abandonmentRate"
+      FROM reservation_stats
+    `),
     ]);
     // Process results with proper nesting and field names
     return {
@@ -551,7 +590,24 @@ export class DashboardRepository implements BaseDashboardRepository {
           revenueGrowth: Number(row.revenueGrowth || 0),
           previousRevenue: Number(row.previousRevenue || 0),
         })
-      ),
+      ), // New: Reservation analytics
+      reservations: {
+        reservedQuantity: Number(
+          reservationInsights.rows[0]?.totalReserved || 0
+        ),
+        conversionRate: Number(
+          reservationInsights.rows[0]?.conversionRate || 0
+        ),
+        abandonmentRate: Number(
+          reservationInsights.rows[0]?.abandonmentRate || 0
+        ),
+        reservedValue: Number(
+          reservationInsights.rows[0]?.totalReservedValue || 0
+        ),
+        avgReservationDuration: Number(
+          reservationInsights.rows[0]?.avgReservationDuration || 0
+        ),
+      },
     };
   }
 
@@ -1126,7 +1182,6 @@ export class DashboardRepository implements BaseDashboardRepository {
       weeklyTrends,
     };
   }
-  // Report Analytics
 
   // Refund Analytics
   async getRefundAnalytics() {
@@ -1318,6 +1373,7 @@ export class DashboardRepository implements BaseDashboardRepository {
       frequentlyCartAdded,
       frequentlyWishlisted,
       abandonedItems,
+      frequentlyReserved,
     ] = await Promise.all([
       // Cart Insights
       this.knex.raw<{
@@ -1399,6 +1455,31 @@ export class DashboardRepository implements BaseDashboardRepository {
       this.getTopProducts("cart_items", 10),
       this.getTopProducts("wishlist", 10),
       this.getAbandonedProducts(),
+      // New: Frequently Reserved Products
+      this.knex.raw<{
+        rows: Array<{
+          slug: string;
+          name: string;
+          category: string;
+          price: number;
+          count: number;
+          avgReservationHours: number;
+        }>;
+      }>(`
+        SELECT
+          p.slug,
+          p.name,
+          p.category,
+          p.price,
+          COUNT(*)::integer AS "count",
+          ROUND(AVG(EXTRACT(EPOCH FROM (r.expires_at - r.created_at))/3600)::numeric, 2)::float8 AS "avgReservationHours"
+        FROM reservations r
+        JOIN products p ON r.product_id = p._id
+        WHERE r.created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY p.slug, p.name, p.category, p.price
+        ORDER BY count DESC
+        LIMIT 10
+      `),
     ]);
 
     return {
@@ -1439,6 +1520,10 @@ export class DashboardRepository implements BaseDashboardRepository {
           name: row.name,
           stock: Number(row.stock),
           count: Number(row.count),
+        })), // New: Reserved items
+        reservedItems: frequentlyReserved.rows.map((row) => ({
+          ...this.mapProduct(row),
+          avgReservationHours: Number(row.avgReservationHours),
         })),
       },
     };
@@ -1497,6 +1582,44 @@ export class DashboardRepository implements BaseDashboardRepository {
       LIMIT 10
     `);
   }
+  // private async getConversionMetricsOld() {
+  //   const rows = await this.knex.raw<{
+  //     rows: Array<{
+  //       slug: string;
+  //       week: number;
+  //       year: number;
+  //       cartAdds: number;
+  //       wishlistAdds: number;
+  //       purchases: number;
+  //       conversionRate: number;
+  //     }>;
+  //   }>(`
+  //     SELECT
+  //       p.slug,
+  //       EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, o.created_at))::integer AS "week",
+  //       EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, o.created_at))::integer AS "year",
+  //       COUNT(DISTINCT ci._id)::integer AS "cartAdds",
+  //       COUNT(DISTINCT w._id)::integer AS "wishlistAdds",
+  //       COUNT(DISTINCT o._id)::integer AS "purchases",
+  //       ROUND(
+  //         CASE
+  //           WHEN COUNT(DISTINCT ci._id) > 0
+  //           THEN (COUNT(DISTINCT o._id)::float / COUNT(DISTINCT ci._id)) * 100
+  //           ELSE 0
+  //         END::numeric, 2
+  //       )::float8 AS "conversionRate"
+  //     FROM products p
+  //     LEFT JOIN cart_items ci ON p._id = ci.product_id AND ci.created_at >= NOW() - INTERVAL '30 days'
+  //     LEFT JOIN wishlist w ON p._id = w.product_id AND w.created_at >= NOW() - INTERVAL '30 days'
+  //     LEFT JOIN orders o ON p._id = o.product_id AND o.created_at >= NOW() - INTERVAL '30 days'
+  //     GROUP BY p._id, EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, o.created_at)), EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, o.created_at))
+  //     ORDER BY conversionRate DESC
+  //     LIMIT 100
+  //   `);
+
+  //   return this.processConversionData(rows.rows);
+  // }
+  // Helper: Add reservation conversion to existing method
   private async getConversionMetrics() {
     const rows = await this.knex.raw<{
       rows: Array<{
@@ -1505,36 +1628,39 @@ export class DashboardRepository implements BaseDashboardRepository {
         year: number;
         cartAdds: number;
         wishlistAdds: number;
+        reservations: number; // New
         purchases: number;
         conversionRate: number;
       }>;
     }>(`
-      SELECT
-        p.slug,
-        EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, o.created_at))::integer AS "week",
-        EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, o.created_at))::integer AS "year",
-        COUNT(DISTINCT ci._id)::integer AS "cartAdds",
-        COUNT(DISTINCT w._id)::integer AS "wishlistAdds",
-        COUNT(DISTINCT o._id)::integer AS "purchases",
-        ROUND(
-          CASE
-            WHEN COUNT(DISTINCT ci._id) > 0
-            THEN (COUNT(DISTINCT o._id)::float / COUNT(DISTINCT ci._id)) * 100
-            ELSE 0
-          END::numeric, 2
-        )::float8 AS "conversionRate"
-      FROM products p
-      LEFT JOIN cart_items ci ON p._id = ci.product_id AND ci.created_at >= NOW() - INTERVAL '30 days'
-      LEFT JOIN wishlist w ON p._id = w.product_id AND w.created_at >= NOW() - INTERVAL '30 days'
-      LEFT JOIN orders o ON p._id = o.product_id AND o.created_at >= NOW() - INTERVAL '30 days'
-      GROUP BY p._id, EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, o.created_at)), EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, o.created_at))
-      ORDER BY conversionRate DESC
-      LIMIT 100
-    `);
+    SELECT
+      p.slug,
+      EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))::integer AS "week",
+      EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))::integer AS "year",
+      COUNT(DISTINCT ci._id)::integer AS "cartAdds",
+      COUNT(DISTINCT w._id)::integer AS "wishlistAdds",
+      COUNT(DISTINCT r._id)::integer AS "reservations", -- New
+      COUNT(DISTINCT o._id)::integer AS "purchases",
+      ROUND(
+        CASE
+          WHEN COUNT(DISTINCT ci._id) > 0
+          THEN (COUNT(DISTINCT o._id)::float / COUNT(DISTINCT ci._id)) * 100
+          ELSE 0
+        END::numeric, 2
+      )::float8 AS "conversionRate"
+    FROM products p
+    LEFT JOIN cart_items ci ON p._id = ci.product_id AND ci.created_at >= NOW() - INTERVAL '30 days'
+    LEFT JOIN wishlist w ON p._id = w.product_id AND w.created_at >= NOW() - INTERVAL '30 days'
+    LEFT JOIN reservations r ON p._id = r.product_id AND r.created_at >= NOW() - INTERVAL '30 days' -- New
+    LEFT JOIN orders o ON p._id = o.product_id AND o.created_at >= NOW() - INTERVAL '30 days'
+    GROUP BY p._id, EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at)), EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))
+    ORDER BY conversionRate DESC
+    LIMIT 100
+  `);
 
     return this.processConversionData(rows.rows);
   }
-
+  // Update conversion data processor
   private processConversionData(
     rows: Array<{
       slug: string;
@@ -1542,6 +1668,7 @@ export class DashboardRepository implements BaseDashboardRepository {
       year: number;
       cartAdds: number;
       wishlistAdds: number;
+      reservations: number; // New
       purchases: number;
       conversionRate: number;
     }>
@@ -1553,6 +1680,7 @@ export class DashboardRepository implements BaseDashboardRepository {
         year: Number(curr.year),
         cartAdds: Number(curr.cartAdds),
         wishlistAdds: Number(curr.wishlistAdds),
+        reservations: Number(curr.reservations), // New
         purchases: Number(curr.purchases),
         conversionRate: Number(curr.conversionRate),
       };

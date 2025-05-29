@@ -64,7 +64,8 @@ api_client.interceptors.response.use(
       try {
         // Type the refresh token response
         const { data } = await api_client.get<{ access_token: string }>(
-          "/auth/refresh-token"
+          "/auth/refresh-token",
+          { withCredentials: true }
           // {
           //   headers: originalRequest.headers,
           // }
