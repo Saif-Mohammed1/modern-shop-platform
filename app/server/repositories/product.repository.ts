@@ -30,7 +30,10 @@ import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
 import { BaseRepository } from "./BaseRepository";
 
 export class ProductRepository extends BaseRepository<IProductDB> {
-  private productViewBase = "public_products_views_basic";
+  private productView = {
+    Base: "public_products_views_basic",
+    Admin: "admin_products_views",
+  };
   constructor(knex: Knex) {
     super(knex, "products");
     // super(knex, "products");
@@ -180,6 +183,51 @@ export class ProductRepository extends BaseRepository<IProductDB> {
     await query<IAuditLogChangesDB>("audit_log_changes").insert(changeData);
   }
 
+  async getProductsByAdmin(
+    options: QueryOptionConfig
+    // isAdmin?: boolean
+  ): Promise<QueryBuilderResult<IProductDB>> {
+    const queryConfig: QueryBuilderConfig<IProductDB> = {
+      allowedFilters: [
+        "name",
+        "price",
+        "category",
+        "slug",
+        "created_at", // Fixed typo from 'createAt'
+        "ratings_average",
+        "description",
+        "active",
+      ],
+      filterMap: {
+        rating: "ratings_average",
+      },
+      searchFields: ["name", "description"],
+      // select: ["users"],
+
+      enableFullTextSearch: true,
+      allowedSorts: ["created_at", "price", "ratings_average"],
+    };
+
+    const queryBuilder = new QueryBuilder<IProductDB>(
+      this.knex,
+      this.productView.Admin,
+      options.query,
+      queryConfig
+      // true
+    );
+
+    if (options?.populate) {
+      // queryBuilder.join({
+      //   table: "users",
+      //   type: "left",
+      //   on: { left: "user_id", right: "_id" },
+      //   select: ["name"],
+      //   outerKey: "user_id",
+      // });
+    }
+
+    return await queryBuilder.execute();
+  }
   async getProducts(
     options: QueryOptionConfig
     // isAdmin?: boolean
@@ -206,20 +254,11 @@ export class ProductRepository extends BaseRepository<IProductDB> {
 
     const queryBuilder = new QueryBuilder<IProductViewBasicDB>(
       this.knex,
-      this.productViewBase,
+      this.productView.Base,
       options.query,
       queryConfig
       // true
     );
-
-    if (options?.populate) {
-      // queryBuilder.join({
-      //   table: "users",
-      //   type: "left",
-      //   on: { left: "user_id", right: "_id" },
-      //   select: ["name"],
-      // });
-    }
 
     return await queryBuilder.execute();
   }
@@ -233,35 +272,35 @@ export class ProductRepository extends BaseRepository<IProductDB> {
   ): Promise<IProductViewDB | IProductViewBasicDB | null> {
     const segment = slug.replace(/^\(\.\)/, "");
     const query = (trx ?? this.knex)<IProductViewDB | IProductViewBasicDB>(
-      this.productViewBase
+      this.productView.Base
     ).where("slug", segment);
 
     if (options?.populate) {
       query
         .leftJoin(
           "reviews",
-          `${this.productViewBase}._id`,
+          `${this.productView.Base}._id`,
           "reviews.product_id"
         )
         .leftJoin("users", "reviews.user_id", "users._id")
         .select(
-          `${this.productViewBase}._id`,
-          `${this.productViewBase}.name`,
-          `${this.productViewBase}.category`,
-          `${this.productViewBase}.price`,
-          `${this.productViewBase}.discount`,
-          `${this.productViewBase}.discount_expire`,
-          `${this.productViewBase}.description`,
-          `${this.productViewBase}.stock`,
-          `${this.productViewBase}.ratings_average`,
-          `${this.productViewBase}.ratings_quantity`,
-          `${this.productViewBase}.reserved`,
-          `${this.productViewBase}.sold`,
-          `${this.productViewBase}.sku`,
-          `${this.productViewBase}.created_at`,
-          this.knex.raw(`MIN(${this.productViewBase}.images::text) as images`),
+          `${this.productView.Base}._id`,
+          `${this.productView.Base}.name`,
+          `${this.productView.Base}.category`,
+          `${this.productView.Base}.price`,
+          `${this.productView.Base}.discount`,
+          `${this.productView.Base}.discount_expire`,
+          `${this.productView.Base}.description`,
+          `${this.productView.Base}.stock`,
+          `${this.productView.Base}.ratings_average`,
+          `${this.productView.Base}.ratings_quantity`,
+          `${this.productView.Base}.reserved`,
+          `${this.productView.Base}.sold`,
+          `${this.productView.Base}.sku`,
+          `${this.productView.Base}.created_at`,
+          this.knex.raw(`MIN(${this.productView.Base}.images::text) as images`),
           this.knex.raw(
-            `MIN(${this.productViewBase}.shipping_info::text) as shipping_info`
+            `MIN(${this.productView.Base}.shipping_info::text) as shipping_info`
           ),
           this.knex.raw(`
             COALESCE(
@@ -280,24 +319,24 @@ export class ProductRepository extends BaseRepository<IProductDB> {
         )
 
         .groupBy(
-          `${this.productViewBase}._id`,
-          `${this.productViewBase}.name`,
-          `${this.productViewBase}.category`,
-          `${this.productViewBase}.price`,
-          `${this.productViewBase}.discount`,
-          `${this.productViewBase}.discount_expire`,
-          `${this.productViewBase}.description`,
-          `${this.productViewBase}.stock`,
-          `${this.productViewBase}.ratings_average`,
-          `${this.productViewBase}.ratings_quantity`,
-          `${this.productViewBase}.slug`,
-          `${this.productViewBase}.created_at`,
-          `${this.productViewBase}.reserved`,
-          `${this.productViewBase}.sold`,
-          `${this.productViewBase}.sku`
+          `${this.productView.Base}._id`,
+          `${this.productView.Base}.name`,
+          `${this.productView.Base}.category`,
+          `${this.productView.Base}.price`,
+          `${this.productView.Base}.discount`,
+          `${this.productView.Base}.discount_expire`,
+          `${this.productView.Base}.description`,
+          `${this.productView.Base}.stock`,
+          `${this.productView.Base}.ratings_average`,
+          `${this.productView.Base}.ratings_quantity`,
+          `${this.productView.Base}.slug`,
+          `${this.productView.Base}.created_at`,
+          `${this.productView.Base}.reserved`,
+          `${this.productView.Base}.sold`,
+          `${this.productView.Base}.sku`
 
-          // `${this.productViewBase}.images`,
-          // `${this.productViewBase}.shipping_info`
+          // `${this.productView.Base}.images`,
+          // `${this.productView.Base}.shipping_info`
         );
 
       /**    "products._id",
@@ -334,7 +373,9 @@ export class ProductRepository extends BaseRepository<IProductDB> {
     trx?: Knex.Transaction
   ): Promise<IProductViewBasicDB | null> {
     const segment = slug.replace(/^\(\.\)/, "");
-    const query = (trx ?? this.knex)<IProductViewBasicDB>(this.productViewBase);
+    const query = (trx ?? this.knex)<IProductViewBasicDB>(
+      this.productView.Base
+    );
 
     return (await query.where("slug", segment).first()) ?? null;
   }
@@ -355,7 +396,7 @@ export class ProductRepository extends BaseRepository<IProductDB> {
   async getProductsByCategory(
     category: string
   ): Promise<IProductViewBasicDB[]> {
-    const query = this.knex<IProductViewBasicDB>(this.productViewBase);
+    const query = this.knex<IProductViewBasicDB>(this.productView.Base);
 
     return await query.where("category", category).limit(10); //.lean();
   }
@@ -370,7 +411,7 @@ export class ProductRepository extends BaseRepository<IProductDB> {
     newProducts: IProductViewBasicDB[];
     topRating: IProductViewBasicDB[];
   }> {
-    const query = this.knex<IProductViewBasicDB>(this.productViewBase);
+    const query = this.knex<IProductViewBasicDB>(this.productView.Base);
 
     const [topOfferProducts, newProducts, topRating] = await Promise.all([
       query

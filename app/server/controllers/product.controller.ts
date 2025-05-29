@@ -83,13 +83,20 @@ class ProductController {
     );
     return NextResponse.json({ product }, { status: 200 });
   }
+  async getProductsByAdmin(req: NextRequest) {
+    const products = await this.productService.getProductsByAdmin({
+      query: req.nextUrl.searchParams,
+      populate:
+        req.user?.role.includes(UserRole.ADMIN) ||
+        req.user?.role.includes(UserRole.MODERATOR),
+    });
+
+    return NextResponse.json({ products }, { status: 200 });
+  }
   async getProducts(req: NextRequest) {
     const [products, categories] = await Promise.all([
       this.productService.getProducts({
         query: req.nextUrl.searchParams,
-        populate:
-          req.user?.role.includes(UserRole.ADMIN) ||
-          req.user?.role.includes(UserRole.MODERATOR),
       }),
       this.productService.getProductsCategory(),
     ]);

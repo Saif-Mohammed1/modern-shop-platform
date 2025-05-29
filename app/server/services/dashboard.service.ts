@@ -8,30 +8,23 @@ export class DashboardService {
     private readonly repo: DashboardRepository = new DashboardRepository()
   ) {}
   async getMainDashboard(): Promise<DashboardDataApi> {
-    const [
-      // users,
-      // orders,
-      reports,
-      // refunds,
-
-      // userInterestProducts,
-      // products,
-    ] = await Promise.all([
-      // this.repo.getUserAnalytics(),
-      // this.repo.getOrderAnalytics(),
-      // this.repo.getProductAnalytics(),
-      this.repo.getReportAnalytics(),
-      // this.repo.getRefundAnalytics(),
-      // this.repo.getUserInterestAnalytics(),
-    ]);
+    const [users, orders, products, reports, refunds, userInterestProducts] =
+      await Promise.all([
+        this.repo.getUserAnalytics(),
+        this.repo.getOrderAnalytics(),
+        this.repo.getProductAnalytics(),
+        this.repo.getReportAnalytics(),
+        this.repo.getRefundAnalytics(),
+        this.repo.getUserInterestAnalytics(),
+      ]);
 
     return {
-      // users,
-      // orders,
-      // products,
+      users,
+      orders,
+      products,
       reports,
-      // refunds,
-      // userInterestProducts,
+      refunds,
+      userInterestProducts,
     };
   }
 

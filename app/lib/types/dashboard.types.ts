@@ -1,4 +1,5 @@
 // import type { OrderType } from "./orders.db.types";
+
 interface FrequentlyProductsPurchased {
   slug: string;
   count: number;

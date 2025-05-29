@@ -996,9 +996,10 @@ export class DashboardRepository implements BaseDashboardRepository {
           r._id,
           r.issue,
           r.status,
-          p.name AS "product",
+          p.slug AS "product",
           u.name AS "reporter",
-          r.created_at
+          TO_CHAR(r.created_at, 'YYYY-MM-DD') AS "created_at"
+         
         FROM reports r
         JOIN products p ON r.product_id = p._id
         JOIN users u ON r.reporter_id = u._id
@@ -1013,7 +1014,7 @@ export class DashboardRepository implements BaseDashboardRepository {
         SELECT
           issue AS "_id",
           COUNT(*)::int AS "count",
-          ARRAY_AGG(DISTINCT p.name) AS "products"
+          ARRAY_AGG(DISTINCT p.slug) AS "products"
         FROM reports r
         JOIN products p ON r.product_id = p._id
         GROUP BY issue

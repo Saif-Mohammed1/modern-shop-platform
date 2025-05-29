@@ -285,6 +285,19 @@ export class ProductService {
       return result;
     });
   }
+  async getProductsByAdmin(
+    options: QueryOptionConfig
+    // isAdmin?: boolean
+  ): Promise<QueryBuilderResult<IProductDB>> {
+    const products = await this.repository.getProductsByAdmin(options);
+    if (!products || products.docs.length === 0) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.notFoundProducts,
+        404
+      );
+    }
+    return products;
+  }
   async getProducts(
     options: QueryOptionConfig
     // isAdmin?: boolean

@@ -9,7 +9,7 @@ export const GET = async (req: NextRequest) => {
   try {
     await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(req);
 
-    return await productController.getProducts(req);
+    return await productController.getProductsByAdmin(req);
   } catch (error) {
     return ErrorHandler(error, req);
   }

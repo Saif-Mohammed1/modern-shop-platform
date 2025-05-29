@@ -50,7 +50,7 @@ export type ProductType = {
   };
   reviews: ReviewsType[];
 };
-export interface AdminProductType extends ProductType {
+export interface AdminProductType extends Omit<ProductType, "reviews"> {
   active: boolean;
   last_reserved: Date;
 
