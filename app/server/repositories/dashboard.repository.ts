@@ -1447,7 +1447,7 @@ export class DashboardRepository implements BaseDashboardRepository {
                LEFT JOIN cart_items ci ON p._id = ci.product_id AND ci.created_at >= NOW() - INTERVAL '30 days'
                LEFT JOIN wishlist w ON p._id = w.product_id AND w.created_at >= NOW() - INTERVAL '30 days'
                GROUP BY p._id, p.name, p.category
-               ORDER BY interestScore DESC
+               ORDER BY "interestScore" DESC
                LIMIT 10
              `),
 
@@ -1574,7 +1574,8 @@ export class DashboardRepository implements BaseDashboardRepository {
         COUNT(*)::integer AS "count"
       FROM cart_items ci
       JOIN products p ON ci.product_id = p._id
-      LEFT JOIN orders o ON ci.user_id = o.user_id AND ci.product_id = o.product_id
+      LEFT JOIN orders o ON ci.user_id = o.user_id 
+      LEFT JOIN order_items oi ON o._id = oi.order_id AND ci.product_id = oi.product_id
       WHERE ci.created_at >= NOW() - INTERVAL '30 days'
         AND o._id IS NULL
       GROUP BY p._id, p.name, p.stock
@@ -1620,7 +1621,7 @@ export class DashboardRepository implements BaseDashboardRepository {
   //   return this.processConversionData(rows.rows);
   // }
   // Helper: Add reservation conversion to existing method
-  private async getConversionMetrics() {
+  private async getConversionMetrics(): Promise<ConversionMetrics[]> {
     const rows = await this.knex.raw<{
       rows: Array<{
         slug: string;
@@ -1628,35 +1629,45 @@ export class DashboardRepository implements BaseDashboardRepository {
         year: number;
         cartAdds: number;
         wishlistAdds: number;
-        reservations: number; // New
+        reservations: number;
         purchases: number;
         conversionRate: number;
       }>;
     }>(`
-    SELECT
-      p.slug,
-      EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))::integer AS "week",
-      EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))::integer AS "year",
-      COUNT(DISTINCT ci._id)::integer AS "cartAdds",
-      COUNT(DISTINCT w._id)::integer AS "wishlistAdds",
-      COUNT(DISTINCT r._id)::integer AS "reservations", -- New
-      COUNT(DISTINCT o._id)::integer AS "purchases",
-      ROUND(
-        CASE
-          WHEN COUNT(DISTINCT ci._id) > 0
-          THEN (COUNT(DISTINCT o._id)::float / COUNT(DISTINCT ci._id)) * 100
-          ELSE 0
-        END::numeric, 2
-      )::float8 AS "conversionRate"
-    FROM products p
-    LEFT JOIN cart_items ci ON p._id = ci.product_id AND ci.created_at >= NOW() - INTERVAL '30 days'
-    LEFT JOIN wishlist w ON p._id = w.product_id AND w.created_at >= NOW() - INTERVAL '30 days'
-    LEFT JOIN reservations r ON p._id = r.product_id AND r.created_at >= NOW() - INTERVAL '30 days' -- New
-    LEFT JOIN orders o ON p._id = o.product_id AND o.created_at >= NOW() - INTERVAL '30 days'
-    GROUP BY p._id, EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at)), EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))
-    ORDER BY conversionRate DESC
-    LIMIT 100
-  `);
+      SELECT
+        p.slug,
+        EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))::integer AS "week",
+        EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))::integer AS "year",
+        COUNT(DISTINCT ci._id)::integer AS "cartAdds",
+        COUNT(DISTINCT w._id)::integer AS "wishlistAdds",
+        COUNT(DISTINCT r._id)::integer AS "reservations",
+        COUNT(DISTINCT o._id)::integer AS "purchases",
+        ROUND(
+          CASE
+            WHEN COUNT(DISTINCT ci._id) > 0
+            THEN (COUNT(DISTINCT o._id)::float / COUNT(DISTINCT ci._id)) * 100
+            ELSE 0
+          END::numeric, 2
+        )::float8 AS "conversionRate"
+      FROM products p
+      LEFT JOIN cart_items ci ON p._id = ci.product_id AND ci.created_at >= NOW() - INTERVAL '30 days'
+      LEFT JOIN wishlist w ON p._id = w.product_id AND w.created_at >= NOW() - INTERVAL '30 days'
+      LEFT JOIN reservations r ON p._id = r.product_id AND r.created_at >= NOW() - INTERVAL '30 days'
+      LEFT JOIN order_items oi ON p._id = oi.product_id
+      LEFT JOIN orders o ON o._id = oi.order_id AND o.created_at >= NOW() - INTERVAL '30 days'
+      WHERE ci._id IS NOT NULL
+         OR w._id IS NOT NULL
+         OR r._id IS NOT NULL
+         OR o._id IS NOT NULL
+      GROUP BY p._id, p.slug, EXTRACT(WEEK FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at)), 
+               EXTRACT(YEAR FROM COALESCE(ci.created_at, w.created_at, r.created_at, o.created_at))
+      HAVING COUNT(DISTINCT ci._id) > 0
+          OR COUNT(DISTINCT w._id) > 0
+          OR COUNT(DISTINCT r._id) > 0
+          OR COUNT(DISTINCT o._id) > 0
+      ORDER BY "conversionRate" DESC
+      LIMIT 100
+    `);
 
     return this.processConversionData(rows.rows);
   }

@@ -49,8 +49,6 @@
     "knex": "^3.1.0",
     "lottie-react": "^2.4.1",
     "luxon": "^3.5.0",
-    "mongoose": "^8.12.2",
-    "mysql2": "^3.14.1",
     "next": "^15.2.3",
     "next-auth": "^4.24.11",
     "node-cron": "^3.0.3",
