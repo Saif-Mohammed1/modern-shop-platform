@@ -1,13 +1,15 @@
 // import NotFoundComponent from "@/components/notFound/notFound";
 import type { Metadata } from "next";
-// import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 import { lang } from "@/app/lib/utilities/lang";
-import NotFoundComponent from "@/components/notFound/notFound";
+// import NotFoundComponent from "@/components/notFound/notFound";
 
 import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
 
-// const NotFoundComponent = dynamic(() => import('@/components/notFound/notFound'));
+const NotFoundComponent = dynamic(
+  () => import("@/components/notFound/notFound")
+);
 export const metadata: Metadata = {
   title: rootStaticPagesTranslate[lang].notFound.metadata.title,
   description: rootStaticPagesTranslate[lang].notFound.metadata.description,
