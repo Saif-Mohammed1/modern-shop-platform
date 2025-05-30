@@ -388,7 +388,14 @@ export const createRandomReviews = async (
       req.push(reviewController.createReview(reqs));
     }
   }
-  await Promise.all(req);
+  const results = await Promise.allSettled(req);
+  // Map results to include index and email for debugging
+  return results.map((result, index) => ({
+    index,
+    status: result.status,
+    value: result.status === "fulfilled" ? result.value : undefined,
+    reason: result.status === "rejected" ? result.reason : undefined,
+  }));
 };
 
 /* street: string;
@@ -1042,7 +1049,7 @@ function generateRandomPassword(type: "valid" | "invalid" = "valid"): string {
   } else {
     const invalidPatterns = [
       // Strong passwords
-      `${faker.internet.userName()}${faker.number.int(999)}@Aa`,
+      `${faker.internet.username()}${faker.number.int(999)}@Aa`,
       `${faker.word.adjective()}${faker.number.int(999)}#Bb`,
       `${faker.color.human()}${faker.number.int(999)}$Cc`,
       // Fun but valid passwords
