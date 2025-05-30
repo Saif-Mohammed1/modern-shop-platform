@@ -29,6 +29,7 @@ class ErrorHandler {
 
   main = (error: unknown, req: NextRequest): NextResponse => {
     // console.log("error controller", error);
+
     this.correlationId = req.headers.get("X-Correlation-ID") || uuidv4();
     let err: AppError;
 
