@@ -10,7 +10,6 @@ import {
 } from "./app/lib/types/users.db.types";
 import AppError from "./app/lib/utilities/appError";
 import { lang } from "./app/lib/utilities/lang";
-// import { rateLimitIp } from "./components/util/rateLimitIp";
 import { rateLimiter } from "./app/lib/utilities/rate-limiter";
 import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
 

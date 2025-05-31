@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import { getServerSession } from "next-auth";
 import { Toaster } from "react-hot-toast";
 
 import { lang } from "@/app/lib/utilities/lang";
@@ -7,6 +8,7 @@ import NavBar from "@/components/navBar/navBar";
 import Providers from "@/components/providers/providers";
 
 import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
+
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,10 +26,11 @@ export default async function RootLayout({
   children: React.ReactNode;
   interceptor: React.ReactNode;
 }) {
+  const initialSession = await getServerSession();
   return (
     <html lang={lang ?? "en"}>
       <body className={`${inter.className} `}>
-        <Providers>
+        <Providers initialSession={initialSession}>
           <main className="space-y-3 p-2 sm:p-4">
             <NavBar />
             <div className="rounded-3xl bg-red-600 text-white py-3 px-5 text-center overflow-hidden ">

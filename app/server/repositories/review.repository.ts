@@ -160,18 +160,17 @@ export class ReviewRepository extends BaseRepository<IReviewDB> {
       dateFormatFields: {
         created_at: "DD/MM/YYYY",
       },
-      totalCountBy: ["user_id"],
+      totalCountBy: ["_id"],
       excludeLinksFields: ["reviews.user_id", "user_id"],
     };
-
     const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
-      // user_id: user_id,
+      user_id: user_id,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
     });
-    searchParams.set(`reviews.user_id`, user_id);
+    // searchParams.set(`reviews.user_id`, user_id);
     const queryBuilder = new QueryBuilder<IReviewDB>(
       this.knex,
       this.tableName,

@@ -93,9 +93,14 @@ const LoginPage = () => {
         throw new Error(result.error);
       }
       toast.success(loginTranslate[lang].functions.handelVerify2fa.success);
-      router.back(); // Go back to previous page (closes modal)
+      if (callbackUrl) {
+        router.back(); // Go back to previous page (closes modal)
 
-      router.push("/");
+        router.push(callbackUrl);
+      } else {
+        router.back(); // Go back to previous page (closes modal)
+        router.push("/");
+      }
     } catch (error: unknown) {
       const message =
         (error as Error)?.message || loginTranslate[lang].errors.global;

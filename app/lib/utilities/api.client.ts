@@ -1,4 +1,4 @@
-"use client";
+import "client-only";
 import axios, {
   type AxiosRequestConfig,
   type AxiosError,
@@ -16,7 +16,7 @@ interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
 }
 
-// Create Axios instance with proper typing
+// Create Axios instance
 const api_client = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_ENDPOINT,
   withCredentials: true,
@@ -26,9 +26,16 @@ const api_client = axios.create({
 });
 
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshFailed = false; // New flag to stop refresh after failure
 
-// Add proper typing for request interceptor
+// Define subscriber interface with resolve and reject
+interface Subscriber {
+  resolve: (token: string) => void;
+  reject: (error: AppError) => void;
+}
+let refreshSubscribers: Subscriber[] = [];
+
+// Request interceptor to add token
 api_client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = tokenManager.getAccessToken();
   if (token) {
@@ -38,17 +45,18 @@ api_client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-// Add proper typing for response interceptor
+// Response interceptor
 api_client.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as CustomAxiosRequestConfig;
 
-    // Handle non-401 errors or already retried requests
+    // Skip refresh if no 401, already retried, or refresh has failed
     if (
       !error.response ||
       error.response.status !== 401 ||
-      originalRequest._retry
+      originalRequest._retry ||
+      refreshFailed
     ) {
       const message =
         (error.response?.data as { message?: string })?.message ||
@@ -62,25 +70,29 @@ api_client.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Type the refresh token response
         const { data } = await api_client.get<{ access_token: string }>(
           "/auth/refresh-token",
           { withCredentials: true }
-          // {
-          //   headers: originalRequest.headers,
-          // }
         );
         tokenManager.setAccessToken(data.access_token);
         api_client.defaults.headers.common.Authorization = `Bearer ${data.access_token}`;
 
-        refreshSubscribers.forEach((cb) => cb(data.access_token));
+        // Resolve all subscribers with new token
+        refreshSubscribers.forEach((sub) => sub.resolve(data.access_token));
         refreshSubscribers = [];
 
         return api_client(originalRequest);
       } catch (_refreshError) {
         tokenManager.clearAccessToken();
+        tokenManager.setLogOut(true);
 
+        refreshFailed = true; // Mark refresh as permanently failed
         await logOutUser();
+        // Reject all pending subscribers
+        refreshSubscribers.forEach((sub) =>
+          sub.reject(new AppError("Token refresh failed", 401))
+        );
+        refreshSubscribers = [];
         window.location.href = "/auth";
         return Promise.reject(new AppError("Redirecting to login...", 401));
       } finally {
@@ -88,11 +100,17 @@ api_client.interceptors.response.use(
       }
     }
 
-    return new Promise((resolve) => {
-      refreshSubscribers.push((newToken: string) => {
-        originalRequest.headers = originalRequest.headers || {};
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        resolve(api_client(originalRequest));
+    // Queue request if refresh is in progress
+    return new Promise((resolve, reject) => {
+      refreshSubscribers.push({
+        resolve: (newToken: string) => {
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          resolve(api_client(originalRequest));
+        },
+        reject: (error: AppError) => {
+          reject(error);
+        },
       });
     });
   }

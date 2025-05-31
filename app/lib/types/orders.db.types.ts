@@ -77,26 +77,29 @@ export enum PaymentsMethod {
   Paypal = "paypal",
   // Credit_card=""
 }
+
 export type OrderType = {
   _id: string;
-  shipping_address: IShippingInfo;
-  user_id: Partial<UserAuthType>;
-  items: IOrderItemDB[];
-  status: OrderStatus;
+  user_id: string;
+  user_info: Pick<UserAuthType, "name" | "email">;
   invoice_id: string;
   invoice_link: string;
+  currency: string;
   subtotal: number;
+  tax: number;
+  total: number;
+  order_notes?: string[];
+  cancellation_reason?: string;
   payment: {
     method: string;
     transaction_id: string;
   };
-  // shippingCost: number;
-  tax: number;
-  total: number;
-  currency: string;
-  order_notes?: string[];
-  cancellation_reason?: string;
-  // totalPrice: number;
+  status: OrderStatus;
   created_at: Date;
   updated_at: Date;
+  shipping_address: IShippingInfo;
+  items: IOrderItemDB[];
+  // shippingCost: number;
+
+  // totalPrice: number;
 };

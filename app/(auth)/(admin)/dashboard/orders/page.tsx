@@ -33,10 +33,10 @@ const queryParams = async (searchParams: SearchParams) => {
     url.append("status", searchParams.status);
   }
   if (searchParams.startDate !== undefined) {
-    url.append("createAt[gte]", searchParams.startDate);
+    url.append("created_at[gte]", searchParams.startDate);
   }
   if (searchParams.endDate !== undefined) {
-    url.append("createAt[lte]", searchParams.endDate);
+    url.append("created_at[lte]", searchParams.endDate);
   }
   if (searchParams.sort !== undefined) {
     url.append("sort", searchParams.sort);

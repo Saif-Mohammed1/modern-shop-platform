@@ -320,7 +320,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
                     #{order._id.slice(-8)}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {order.user_id.email}
+                    {order.user_info.email}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {/* {moment(order.created_at).format("MMM D, YYYY")} */}

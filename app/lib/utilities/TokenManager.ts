@@ -1,8 +1,9 @@
 class TokenManager {
   private access_token: string | null;
-
+  private logOut: boolean;
   constructor() {
     this.access_token = null;
+    this.logOut = false;
   }
 
   setAccessToken(token: string): void {
@@ -15,6 +16,12 @@ class TokenManager {
 
   clearAccessToken(): void {
     this.access_token = null;
+  }
+  setLogOut(logOut: boolean): void {
+    this.logOut = logOut;
+  }
+  getLogOut(): boolean {
+    return this.logOut;
   }
 }
 

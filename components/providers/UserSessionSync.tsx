@@ -1,5 +1,6 @@
 // UserSessionSync.tsx
 "use client";
+import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
@@ -11,13 +12,20 @@ import {
   loadWishlist,
   useWishlistStore,
 } from "./store/wishlist/wishlist.store";
-export const UserSessionSync = () => {
+export const UserSessionSync = ({
+  initialSession, // Initial session from server-side props
+}: {
+  initialSession: Session | null;
+}) => {
   const { data: session } = useSession();
   useEffect(() => {
     // Use CLIENT session when available, fallback to server session
-    const effectiveSession = session;
+    const effectiveSession = session || initialSession;
     //console.log("From Session", effectiveSession);
-    if (effectiveSession?.error === "RefreshAccessTokenError") {
+    if (
+      effectiveSession?.error === "RefreshAccessTokenError" ||
+      tokenManager.getLogOut()
+    ) {
       void (async () => {
         await logOutUser();
       })();
@@ -35,7 +43,7 @@ export const UserSessionSync = () => {
         tokenManager.setAccessToken(effectiveSession?.user?.access_token);
       }
     }
-  }, [session]);
+  }, [initialSession, session]);
 
   // ✅ Zustand user subscription to load/clear cart + wishlist
   useEffect(() => {
@@ -47,7 +55,9 @@ export const UserSessionSync = () => {
         //console.log("From Zustand user store", user);
         // //console.log("From Zustand user store", initialSession?.user);
         if (user) {
-          void Promise.all([loadCart(), loadWishlist()]);
+          void (async () => {
+            await Promise.all([loadCart(), loadWishlist()]);
+          })();
         } else {
           // clear on logout
           useCartStore.setState({ cartItems: [] });
@@ -59,22 +69,6 @@ export const UserSessionSync = () => {
 
     return unsubscribe;
   }, []);
-  // useEffect(() => {
-  //   const unsubscribe = useWishlistStore.subscribe((state, preState) => {
-  //     // //console.log("From Session", initialSession);
-  //     //console.log("From Zustand wishlist store", state.wishlist);
-  //     //console.log("From Zustand wishlist store", preState.wishlist);
-  //   });
 
-  //   return unsubscribe;
-  // }, []);
-  // useEffect(() => {
-  //   const unsubscribe = useCartStore.subscribe((state, preState) => {
-  //     //console.log("From Zustand cart store", state.cartItems);
-  //     //console.log("From Zustand cart store", preState.cartItems);
-  //   });
-
-  //   return unsubscribe;
-  // }, []);
   return null;
 };

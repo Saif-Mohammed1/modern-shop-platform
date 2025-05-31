@@ -169,48 +169,11 @@ export class OrderRepository extends BaseRepository<IOrderDB> {
   }
   override async findById(id: string): Promise<IOrderDB | null> {
     return (
-      (await this.query()
-        .where("_id", id)
-        .leftJoin(
-          "order_shipping_address",
-          "orders._id",
-          "order_shipping_address.order_id"
-        )
-        .leftJoin("order_items", "orders._id", "order_items.order_id")
-        .leftJoin("users", "orders.user_id", "users._id")
-        // .leftJoin("products", "order_items.product_id", "products._id")
-        .select(
-          "orders.*",
-          "order_shipping_address.street",
-          "order_shipping_address.city",
-          "order_shipping_address.state",
-          "order_shipping_address.postal_code",
-          "order_shipping_address.phone",
-          "order_shipping_address.country",
-          this.knex.raw(
-            `jsonb_agg(
-            json_build_object(
-              'product_id', order_items.product_id,
-              'name', order_items.name,
-              'price', order_items.price,
-              'discount', order_items.discount,
-              'quantity', order_items.quantity,
-              'sku', order_items.sku,
-              'shipping_info_weight', order_items.shipping_info_weight,
-              'shipping_info_dimensions', order_items.shipping_info_dimensions,
-              'final_price', order_items.final_price
-            )
-          ) AS items`
-          )
-        )
-        .groupBy(
-          "orders._id",
-          "order_shipping_address._id",
-          "users._id"
-          // "products._id"
-        )
-        .orderBy("orders.created_at", "desc")) as unknown as IOrderDB
+      ((await this.knex("orders_view").where("_id", id).first()) as IOrderDB) ??
+      null
     );
+
+    // .orderBy("orders.created_at", "desc")) as unknown as IOrderDB;
   }
 
   async updateStatus(
@@ -269,22 +232,22 @@ export class OrderRepository extends BaseRepository<IOrderDB> {
 
     const queryBuilder = new QueryBuilder<IOrderDB>(
       this.knex,
-      this.tableName,
+      "orders_view",
       searchParams,
       queryConfig
     );
 
-    if (options?.populate) {
-      queryBuilder.join({
-        table: "users",
-        type: "left",
-        on: {
-          left: "user_id",
-          right: "_id",
-        },
-        select: ["name", "email"],
-      });
-    }
+    // if (options?.populate) {
+    //   queryBuilder.join({
+    //     table: "users",
+    //     type: "left",
+    //     on: {
+    //       left: "user_id",
+    //       right: "_id",
+    //     },
+    //     select: ["name", "email"],
+    //   });
+    // }
 
     return await queryBuilder.execute();
   }
@@ -329,22 +292,115 @@ export class OrderRepository extends BaseRepository<IOrderDB> {
     }
     const queryBuilder = new QueryBuilder<IOrderDB>(
       this.knex,
-      this.tableName,
+      "orders_view",
       options.query,
-      queryConfig
+      queryConfig,
+      true
     );
+    //   .join({
+    //     table: "order_shipping_address",
+    //     alias: "shipping_address",
+    //     type: "left",
+    //     on: {
+    //       left: "_id",
+    //       right: "order_id",
+    //     },
+    //     // select: ["street", "city", "state", "postal_code", "phone", "country"],
+    //     // outerKey: "_id",
+    //   })
+    //   .aggregate(
+    //     [
+    //       `JSON_BUILD_OBJECT(
+    //       'street', shipping_address.street,
+    //       'city', shipping_address.city,
+    //       'state', shipping_address.state,
+    //       'postal_code', shipping_address.postal_code,
+    //       'phone', shipping_address.phone,
+    //       'country', shipping_address.country
+    //     ) AS shipping_address`,
+    //       `JSON_BUILD_OBJECT(
+    //       'method', orders.payment->>'method',
+    //       'transaction_id', orders.payment->>'transaction_id'
+    //     ) AS payment`,
+    //     ],
+    //     [
+    //       "orders.created_at",
+    //       "orders.updated_at",
+    //       "orders.status",
+    //       "shipping_address.street",
+    //       "shipping_address.city",
+    //       "shipping_address.state",
+    //       "shipping_address.postal_code",
+    //       "shipping_address.phone",
+    //       "shipping_address.country",
+    //     ]
+    //   )
 
-    if (options?.populate) {
-      queryBuilder.join({
-        table: "users",
-        type: "left",
-        on: {
-          left: "user_id",
-          right: "_id",
-        },
-        select: ["name", "email"],
-      });
-    }
+    //   .join({
+    //     table: "order_items",
+    //     type: "left",
+    //     on: {
+    //       left: "_id",
+    //       right: "order_id",
+    //     },
+    //     // select: [
+    //     //   "product_id",
+    //     //   "name",
+    //     //   "price",
+    //     //   "discount",
+    //     //   "quantity",
+    //     //   "sku",
+    //     //   "shipping_info_weight",
+    //     //   "shipping_info_dimensions",
+    //     //   "final_price",
+    //     // ],
+    //     // outerKey: "_id",
+    //   })
+    //   .aggregate(
+    //     [
+    //       `jsonb_agg(
+    //         json_build_object(
+    //           'product_id', order_items.product_id,
+    //           'name', order_items.name,
+    //           'price', order_items.price,
+    //           'discount', order_items.discount,
+    //           'quantity', order_items.quantity,
+    //           'sku', order_items.sku,
+    //           'shipping_info_weight', order_items.shipping_info_weight,
+    //           'shipping_info_dimensions', order_items.shipping_info_dimensions,
+    //           'final_price', order_items.final_price
+    //         )
+    //       ) AS items`,
+    //     ],
+    //     ["orders._id"]
+    //   );
+
+    // if (options?.populate) {
+    //   queryBuilder
+    //     .join({
+    //       table: "users",
+    //       alias: "u",
+    //       // select: ["name", "email"],
+    //       type: "left",
+    //       on: {
+    //         left: "user_id",
+    //         right: "_id",
+    //       },
+    //       // select: ["name", "email"],
+    //       // outerKey: "user_id",
+    //     })
+    //     .aggregate(
+    //       [
+    //         `
+    //     JSONB_BUILD_OBJECT(
+    //       'name', u.name,
+    //       'email', u.email
+    //     ) AS user__id
+    //       `,
+    //       ],
+    //       ["u.name", "u.email"]
+    //     );
+    // }
     return await queryBuilder.execute();
   }
   async getLatestOrder(user_id: string): Promise<IOrderDB | null> {

@@ -26,7 +26,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
     });
     return {
-      title: `${data?.user_id?.name} - ${ordersTranslate.orders[lang].details.metadata.title}`,
+      title: `${data?.user_info?.name} - ${ordersTranslate.orders[lang].details.metadata.title}`,
       description: ordersTranslate.orders[lang].details.metadata.description,
       keywords: ordersTranslate.orders[lang].details.metadata.keywords,
     };

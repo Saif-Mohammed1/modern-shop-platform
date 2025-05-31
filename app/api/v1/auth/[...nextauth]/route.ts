@@ -65,7 +65,11 @@ const authOptions: AuthOptions = {
             const statusCode = result.status;
             const {
               user,
+              access_token,
+              // refreshToken,
             }: {
+              access_token: string;
+              // refreshToken: string;
               user: UserAuthType;
             } = await result.json(); // Extract JSON data
             // Use a type guard to check if `user` has `requires2FA`
@@ -87,9 +91,13 @@ const authOptions: AuthOptions = {
             if ("_id" in user) {
               return {
                 ...user,
-                access_token: user.access_token || "",
-
                 id: String(user._id),
+                access_token,
+                access_token_expires:
+                  Date.now() +
+                  Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
+                    60 *
+                    1000,
               };
             }
             return null;
@@ -108,8 +116,10 @@ const authOptions: AuthOptions = {
           const result = await twoFactorController.verify2FALogin(req);
           const {
             user,
+            access_token,
           }: {
             user: UserAuthType;
+            access_token: string;
           } = await result.json(); // Extract JSON data
 
           if (!user) {
@@ -121,6 +131,7 @@ const authOptions: AuthOptions = {
           return {
             ...user,
             id: String(user._id),
+            access_token,
             access_token_expires:
               Date.now() +
               Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
@@ -175,8 +186,10 @@ const authOptions: AuthOptions = {
       if (!token.error && token.user) {
         const user = token.user as User;
         // Handle token refresh before expiration
+
         if (user.access_token_expires) {
           const remainingTime = user.access_token_expires - Date.now();
+
           if (remainingTime < REFRESH_THRESHOLD) {
             return await refreshAccessTokenHandler(token);
           }
@@ -207,6 +220,7 @@ const authOptions: AuthOptions = {
 
     // error: "/auth/error",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
 // this is next-auth jwt function what shoud be the right type for this

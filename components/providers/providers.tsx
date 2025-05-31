@@ -1,11 +1,18 @@
 "use client";
 
+import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { UserSessionSync } from "./UserSessionSync";
 
-const Providers = ({ children }: { children: React.ReactNode }) => {
+const Providers = ({
+  children,
+  initialSession,
+}: {
+  children: React.ReactNode;
+  initialSession: Session|null
+}) => {
   return (
     <SessionProvider
       refetchInterval={
@@ -15,7 +22,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
       refetchOnWindowFocus={true}
     >
       <NuqsAdapter>
-        <UserSessionSync />
+        <UserSessionSync initialSession={initialSession} />
         {children}
       </NuqsAdapter>
     </SessionProvider>

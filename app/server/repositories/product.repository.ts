@@ -216,15 +216,15 @@ export class ProductRepository extends BaseRepository<IProductDB> {
       // true
     );
 
-    if (options?.populate) {
-      // queryBuilder.join({
-      //   table: "users",
-      //   type: "left",
-      //   on: { left: "user_id", right: "_id" },
-      //   select: ["name"],
-      //   outerKey: "user_id",
-      // });
-    }
+    // if (options?.populate) {
+    //   // queryBuilder.join({
+    //   //   table: "users",
+    //   //   type: "left",
+    //   //   on: { left: "user_id", right: "_id" },
+    //   //   select: ["name"],
+    //   //   outerKey: "user_id",
+    //   // });
+    // }
 
     return await queryBuilder.execute();
   }

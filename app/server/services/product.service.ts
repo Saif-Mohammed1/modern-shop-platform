@@ -289,27 +289,28 @@ export class ProductService {
     options: QueryOptionConfig
     // isAdmin?: boolean
   ): Promise<QueryBuilderResult<IProductDB>> {
-    const products = await this.repository.getProductsByAdmin(options);
-    if (!products || products.docs.length === 0) {
-      throw new AppError(
-        productControllerTranslate[lang].errors.notFoundProducts,
-        404
-      );
-    }
-    return products;
+    return await this.repository.getProductsByAdmin(options);
+    // console.log("Products fetched:", products);
+    // if (!products || products.docs.length === 0) {
+    //   throw new AppError(
+    //     productControllerTranslate[lang].errors.notFoundProducts,
+    //     404
+    //   );
+    // }
+    // return products;
   }
   async getProducts(
     options: QueryOptionConfig
     // isAdmin?: boolean
   ): Promise<QueryBuilderResult<IProductViewBasicDB>> {
-    const products = await this.repository.getProducts(options);
-    if (!products || products.docs.length === 0) {
-      throw new AppError(
-        productControllerTranslate[lang].errors.notFoundProducts,
-        404
-      );
-    }
-    return products;
+    return await this.repository.getProducts(options);
+    // if (!products || products.docs.length === 0) {
+    //   throw new AppError(
+    //     productControllerTranslate[lang].errors.notFoundProducts,
+    //     404
+    //   );
+    // }
+    // return products;
   }
   async getProductById(id: string, trx?: Knex.Transaction) {
     const product = await this.repository.findById(id, trx);

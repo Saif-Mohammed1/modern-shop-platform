@@ -152,6 +152,7 @@ export class QueryBuilder<T extends Record<string, any>> {
             ? dbField.split(".")[1]
             : dbField
           : dbField;
+
       if (aliasKey === "search") {
         this.handleTextSearch(value);
         continue;
@@ -195,11 +196,22 @@ export class QueryBuilder<T extends Record<string, any>> {
             }
             this.query.whereRaw("?? NOT IN (?)", [column, parsedValue]);
             break;
+          case "li":
+            this.query.whereRaw("?? LIKE ?", [column, `%${parsedValue}%`]);
+            break;
+          case "ili":
+            this.query.whereRaw("?? ILIKE ?", [column, `%${parsedValue}%`]);
+            break;
+          case "con":
+            this.query.whereRaw("?? @> ?", [column, parsedValue]);
+            break;
           default:
             logger.warn(`Unsupported operator: ${operator}`);
         }
       } else {
-        whereClauses[dbField as string] = parsedValue;
+        const column = `${this.tableName}.${dbField as string}`;
+        // Default to equality check if no operator is specified
+        whereClauses[column] = parsedValue;
       }
     }
 
@@ -208,7 +220,7 @@ export class QueryBuilder<T extends Record<string, any>> {
   }
 
   private buildColumnRef(field: keyof T): Knex.Raw {
-    return this.knex.raw("??", [field as string]);
+    return this.knex.raw("??.??", [this.tableName, field as string]);
   }
 
   private handleTextSearch(searchTerm: string): void {
@@ -216,9 +228,9 @@ export class QueryBuilder<T extends Record<string, any>> {
       !this.config.enableFullTextSearch ||
       !this.config.searchFields?.length
     ) {
+      /// use iL
       return;
     }
-
     const searchFields = this.config.searchFields
       .map((f) => `to_tsvector('english', ${String(f)})`)
       .join(" || ");
@@ -416,6 +428,8 @@ export class QueryBuilder<T extends Record<string, any>> {
         .clearOrder()
         .clearSelect()
         .clear("group") // 💡 Add this to remove groupBy clauses
+        .clear("limit") // 🚨 Add this
+        .clear("offset") // 🚨 Add this
         .countDistinct(`${this.tableName}._id as total`); // Use distinct to avoid counting duplicates from joins
       // Add this before executing countQuery
       const [result] = (await countQuery) as { total: number }[];
@@ -434,6 +448,8 @@ export class QueryBuilder<T extends Record<string, any>> {
         .clearOrder()
         .clearSelect()
         .clear("group")
+        .clear("limit") // 🚨 Add this
+        .clear("offset") // 🚨 Add this
         .where(`${this.tableName}.user_id`, user_id) // 💡 Add this to remove groupBy clauses
         // .groupBy(countByFields)
         .count(countByFields);
@@ -444,10 +460,14 @@ export class QueryBuilder<T extends Record<string, any>> {
     }
     return this.totalCount ?? 0;
   }
+
   aggregate(queries: string[], groupsBy: string[]): this {
     const q = queries.map((query) => this.knex.raw(query));
     // console.log("q", q);
-    this.query.select(q).groupBy(groupsBy);
+    this.query.select(q);
+    if (groupsBy.length) {
+      this.query.groupBy(groupsBy);
+    }
     return this;
   }
   async execute(): Promise<QueryBuilderResult<T>> {

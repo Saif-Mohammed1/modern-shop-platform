@@ -900,9 +900,17 @@ export class UserRepository extends BaseRepository<IUserDB> {
   ): Promise<QueryBuilderResult<IUserDB>> {
     const queryConfig: QueryBuilderConfig<IUserDB> = {
       allowedFilters: ["name", "email", "role", "status", "created_at"],
-      searchFields: ["name", "email"],
+      searchFields: ["email"],
+      // enableFullTextSearch: true,
       // allowedSorts: ["created_at", "updated_at"],
     };
+
+    // const query = new URLSearchParams(options.query);
+    // if (query.get("email")) {
+    //   const email = query.get("email") as string;
+    //   query.delete("email"); // ✅ remove the strict equality filter
+    //   query.append("email[ili]", email); // ✅ add the ILIKE filter
+    // }
 
     //   allowedSorts: ["created_at", "updated_at"] as Array<keyof IWishlist>,
     //   maxLimit: 100,
