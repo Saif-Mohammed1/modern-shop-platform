@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 // import dynamic from "next/dynamic";
 
 import { lang } from "@/app/lib/utilities/lang";
-// import NotFoundComponent from "@/components/notFound/notFound";
+import NotFoundComponent from "@/components/notFound/notFound";
 
 import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
 
@@ -22,8 +22,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div>
-      {/* <NotFoundComponent /> */}
-      <p>{rootStaticPagesTranslate[lang].notFound.metadata.description}</p>
+      <NotFoundComponent />
     </div>
   );
 }
