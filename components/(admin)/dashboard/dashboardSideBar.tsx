@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type FC, Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   FaChartBar,
@@ -15,12 +15,12 @@ import {
 } from "react-icons/fa";
 
 import api_client from "@/app/lib/utilities/api.client";
-import { deleteCookies } from "@/app/lib/utilities/cookies";
+//import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { logOutUser } from "@/components/providers/store/user/user.store";
 import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
 
-const Sidebar: FC = () => {
+const Sidebar = () => {
   const Links = [
     {
       href: "/dashboard",
@@ -67,7 +67,7 @@ const Sidebar: FC = () => {
     try {
       toastLoading = toast.loading("Logging out...");
       await logOutUser();
-      await deleteCookies("refreshAccessToken");
+      //await deleteCookies("refreshAccessToken");
 
       await api_client.post("/auth/logout");
 

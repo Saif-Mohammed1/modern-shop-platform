@@ -2,7 +2,7 @@
 import { redis } from "./Redis";
 
 const WINDOW_IN_SECONDS = 60; // 1 minute window
-const MAX_REQUESTS = 30; // Maximum allowed requests per window
+const MAX_REQUESTS = 120; // Maximum allowed requests per window
 const KEY_PREFIX = "rate_limit:"; // Redis key prefix for better organization
 
 // Lua script for atomic rate limiting operations

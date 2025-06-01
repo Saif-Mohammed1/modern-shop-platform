@@ -1,10 +1,9 @@
-import type {Metadata} from 'next';
-import type {FC} from 'react';
+import type { Metadata } from "next";
+import type { FC } from "react";
 
-
-import {lang} from '@/app/lib/utilities/lang';
-import Sidebar from '@/components/(admin)/dashboard/dashboardSideBar';
-import {dashboardTranslate} from '@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate';
+import { lang } from "@/app/lib/utilities/lang";
+import Sidebar from "@/components/(admin)/dashboard/dashboardSideBar";
+import { dashboardTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/dashboardTranslate";
 
 export const metadata: Metadata = {
   title: dashboardTranslate.layout.metadata[lang].title,
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
 type LayoutProps = {
   children: React.ReactNode;
 };
-const layout: FC<LayoutProps> = ({children}) => {
+const layout: FC<LayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col md:flex-row gap-2">
       <Sidebar />

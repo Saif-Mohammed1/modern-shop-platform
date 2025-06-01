@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { FaCalendarAlt, FaDollarSign, FaTag } from "react-icons/fa";
@@ -23,10 +24,15 @@ export default function ProductPricing({
   // Convert ISO string to date input format
   useEffect(() => {
     if (discount_expire) {
-      const formattedDate = new Date(discount_expire)
-        .toISOString()
-        .split("T")[0];
-      setValue("discount_expire", formattedDate);
+      const formatted = DateTime.fromFormat(
+        discount_expire,
+        "dd/MM/yyyy"
+      ).toISO();
+      let formattedDate = formatted;
+      if (formatted) {
+        formattedDate = new Date(formatted).toISOString().split("T")[0];
+        setValue("discount_expire", formattedDate);
+      }
     }
     if (discount) {
       setValue("discount", Number(discount).toFixed(2));
@@ -129,7 +135,7 @@ export default function ProductPricing({
           <input
             type="date"
             {...register("discount_expire", {
-              validate: (value) => new Date(value) > new Date(),
+              // validate: (value) => new Date(value) > new Date(),
             })}
             className="form-input"
           />

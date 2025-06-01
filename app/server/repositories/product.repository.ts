@@ -113,7 +113,7 @@ export class ProductRepository extends BaseRepository<IProductDB> {
     if (!dto.sku) {
       dto.sku = generateSKU(dto.category);
     }
-    if (dto.images) {
+    if (dto.images && dto.images.length) {
       const query = trx ?? this.knex;
       const productImages: Omit<IProductImagesDB, "created_at">[] =
         dto.images.map((image) => ({
@@ -469,6 +469,7 @@ export class ProductRepository extends BaseRepository<IProductDB> {
         "created_at",
       ],
       allowedSorts: ["created_at", "updated_at"],
+      excludeLinksFields: ["entity_type"],
     };
 
     //   allowedSorts: ["created_at", "updated_at"] as Array<keyof IWishlist>,
@@ -492,27 +493,47 @@ export class ProductRepository extends BaseRepository<IProductDB> {
       this.knex,
       "audit_logs",
       query,
-      queryConfig
-    ).join({
-      table: "audit_log_changes",
-      alias: "changes",
-      type: "left",
-      on: { left: "_id", right: "audit_log_id" },
-      select: [],
-      outerKey: "changes",
-    });
+      queryConfig,
+      true
+    )
+      .join({
+        table: "audit_log_changes",
+        alias: "changes",
+        type: "left",
+        on: { left: "_id", right: "audit_log_id" },
+        select: [],
+        // outerKey: "changes",
+      })
+      .aggregate(
+        [
+          `ARRAY_AGG(
+      JSON_BUILD_OBJECT(
+        '_id', changes._id,
+        'field', changes.field,
+        'before', changes.before,
+        'after', changes.after,
+        'change_type', changes.change_type
+      )
+    ) AS changes`,
+        ],
+        ["audit_logs._id"]
+      );
 
     if (options?.populate) {
-      queryBuilder.join({
-        table: "users",
-        type: "left",
-        on: { left: "actor", right: "_id" },
-        select: ["name", "email"],
-      });
+      queryBuilder
+        .join({
+          table: "users",
+          type: "left",
+          on: { left: "actor", right: "_id" },
+          // select: ["name", "email"],
+        })
+        .aggregate(
+          ["users.name", "users.email"],
+          ["users.name", "users.email"]
+        );
     }
 
     const logs = await queryBuilder.execute();
-
     // Ensure logs include changes by grouping and selecting changes
     // logs.docs = await Promise.all(
     //   logs.docs.map(async (log) => {

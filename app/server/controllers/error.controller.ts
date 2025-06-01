@@ -183,7 +183,8 @@ class ErrorHandler {
     return NextResponse.json(
       {
         // type: "https://api.yourservice.com/errors/" + err.type,
-        title: err.message,
+        message: err.message,
+        // title: err.message,
         status: err.statusCode,
         instance: req.url,
         correlationId: this.correlationId,

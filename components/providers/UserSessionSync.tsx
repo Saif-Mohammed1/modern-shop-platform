@@ -6,12 +6,9 @@ import { useEffect } from "react";
 
 import tokenManager from "@/app/lib/utilities/TokenManager";
 
-import { loadCart, useCartStore } from "./store/cart/cart.store";
+import { loadCart } from "./store/cart/cart.store";
 import { logOutUser, updateUser, useUserStore } from "./store/user/user.store";
-import {
-  loadWishlist,
-  useWishlistStore,
-} from "./store/wishlist/wishlist.store";
+import { loadWishlist } from "./store/wishlist/wishlist.store";
 export const UserSessionSync = ({
   initialSession, // Initial session from server-side props
 }: {
@@ -60,9 +57,12 @@ export const UserSessionSync = ({
           })();
         } else {
           // clear on logout
-          useCartStore.setState({ cartItems: [] });
-          useWishlistStore.setState({ wishlist: { items: [], _id: "" } });
-          useCartStore.persist.clearStorage();
+          void (async () => {
+            await logOutUser();
+          })();
+          // useCartStore.setState({ cartItems: [] });
+          // useWishlistStore.setState({ wishlist: { items: [], _id: "" } });
+          // useCartStore.persist.clearStorage();
         }
       }
     );

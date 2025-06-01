@@ -9,7 +9,7 @@ import {
   type sessionInfo,
 } from "@/app/lib/types/session.types";
 import api_client from "@/app/lib/utilities/api.client";
-import { deleteCookies } from "@/app/lib/utilities/cookies";
+//import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
 
@@ -56,7 +56,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       await api_client.delete("/customers/");
 
       await logOutUser();
-      await deleteCookies("refreshAccessToken");
+      //await deleteCookies("refreshAccessToken");
 
       await api_client.post("/auth/logout");
 
@@ -131,7 +131,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       );
       await api_client.delete("/auth/refresh-token");
       await logOutUser();
-      await deleteCookies("refreshAccessToken");
+      //await deleteCookies("refreshAccessToken");
 
       toast.success(
         accountSettingsTranslate[lang].functions.handleSignoutAll.success

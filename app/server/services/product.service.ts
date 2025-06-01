@@ -40,8 +40,8 @@ export class ProductService {
       "discount",
       "stock",
       "description",
-      "active",
-      "images",
+      // "active",
+      // "images",
     ];
 
     for (const field of trackedFields) {
@@ -170,6 +170,7 @@ export class ProductService {
         404
       );
     }
+
     let uploadedImages: Omit<
       IProductImagesDB,
       "_id" | "created_at" | "product_id"
@@ -213,7 +214,6 @@ export class ProductService {
             404
           );
         }
-
         const changes = this.getUpdateChanges(oldProduct, updatedProduct);
         if (Object.keys(changes).length > 0) {
           await this.repository.logAction(
@@ -487,11 +487,13 @@ export class ProductService {
     };
     return await this.repository.transaction(async (trx) => {
       // Perform update
-      const updatedProduct = await this.repository.update(
-        slug,
-        { ...updatePayload, actorId, product_id: currentProduct._id },
-        trx
-      );
+      const payload = {
+        ...updatePayload,
+        actorId,
+        product_id: currentProduct._id,
+        discount_expire: updatePayload.discount_expire || undefined,
+      };
+      const updatedProduct = await this.repository.update(slug, payload, trx);
 
       // Log restoration action with proper entity ID
       await this.repository.logAction(

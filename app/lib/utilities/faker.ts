@@ -345,7 +345,14 @@ export const editRandomProducts = async (
     reqs.user = randomUserId;
     req.push(productController.updateProduct(reqs));
   }
-  await Promise.all(req);
+  const results = await Promise.allSettled(req);
+  // Map results to include index and email for debugging
+  return results.map((result, index) => ({
+    index,
+    status: result.status,
+    value: result.status === "fulfilled" ? result.value : undefined,
+    reason: result.status === "rejected" ? result.reason : undefined,
+  }));
 };
 export const createRandomReviews = async (
   product_id: IProductDB[],
@@ -525,7 +532,7 @@ export const createRandomOrders = async (
       );
       const randomTax = faker.number.float({ min: 0, max: 100 }); // in percentage
       const randomSubTotalPrice = randomItems.reduce((acc: number, item) => {
-        return acc + item.final_price;
+        return acc + (item.final_price * item.quantity || 1);
       }, 0);
       const randomTotalPrice =
         randomSubTotalPrice + (randomSubTotalPrice * randomTax) / 100;

@@ -18,7 +18,7 @@ import {
   type UserAuthType,
 } from "@/app/lib/types/users.db.types";
 import api_client from "@/app/lib/utilities/api.client";
-import { deleteCookies } from "@/app/lib/utilities/cookies";
+//import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { navBarTranslate } from "@/public/locales/client/(public)/navBarTranslate";
 
@@ -37,7 +37,7 @@ const AccountNavList = ({ user, setAccountMenuOpen }: AccountNavListProps) => {
       toast.success(
         navBarTranslate[lang].accountNavList.functions.logOut.success
       );
-      await deleteCookies("refreshAccessToken");
+      //await deleteCookies("refreshAccessToken");
       await api_client.post("/auth/logout");
     } catch (error: unknown) {
       const errorMessage =

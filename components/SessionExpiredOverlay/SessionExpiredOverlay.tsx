@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import api_client from "@/app/lib/utilities/api.client";
-import { deleteCookies } from "@/app/lib/utilities/cookies";
+//import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { sessionExpiredOverlayTranslate } from "@/public/locales/client/(public)/sessionExpiredOverlayTranslate";
 
@@ -32,7 +32,7 @@ const SessionExpiredOverlay = () => {
   const handleLogin = async () => {
     try {
       await logOutUser();
-      await deleteCookies("refreshAccessToken");
+      //await deleteCookies("refreshAccessToken");
 
       await api_client.post("/auth/logout");
       // Handle login logic here

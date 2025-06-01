@@ -4,7 +4,7 @@ export interface IProductDB {
   category: string;
   price: number;
   discount: number;
-  discount_expire?: Date;
+  discount_expire?: Date | null;
   user_id: string;
   description: string;
   stock: number;

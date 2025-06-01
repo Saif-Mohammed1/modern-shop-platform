@@ -6,6 +6,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
 import type { UserAuthType } from "@/app/lib/types/users.db.types";
+//import { deleteCookies } from "@/app/lib/utilities/cookies";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 
 import { useCartStore } from "../cart/cart.store";
@@ -33,4 +34,5 @@ export const logOutUser = async () => {
   useCartStore.persist.clearStorage();
   useWishlistStore.setState({ wishlist: { items: [], _id: "" } });
   tokenManager.clearAccessToken();
+  //await deleteCookies("refreshAccessToken");
 };
