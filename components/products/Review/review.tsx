@@ -71,13 +71,6 @@ const ReviewSection = ({
     }
   };
 
-  // const ratingDistribution = () => {
-  //   const distribution = [0, 0, 0, 0, 0];
-  //   moreResults.forEach((review) => {
-  //     distribution[Math.round(review.rating) - 1]++;
-  //   });
-  //   return distribution.map((count) => (count / moreResults.length) * 100);
-  // };
   return (
     <section className="space-y-8">
       <div className="bg-white p-6 rounded-xl shadow-sm">
@@ -113,16 +106,20 @@ const ReviewSection = ({
                   <div
                     className="h-full bg-[rgba(245,158,11,0.5)] transition-all duration-500"
                     style={{
-                      width: `${((reviews.distribution[star] || 0) / totalReviews) * 100}%`,
-                      // width: `${Math.min(100, ((reviews.distribution[star] || 0) / totalReviews) * 100)}%`,
-                    }} // style={{ width: `${ratingDistribution()[4 - idx]}%` }}
+                      width:
+                        totalReviews > 0
+                          ? `${((reviews.distribution[star] || 0) / totalReviews) * 100}%`
+                          : "0%",
+                    }}
                   />
                 </div>
                 <span className="w-12 text-gray-600 text-sm">
-                  {Math.round(
-                    ((reviews.distribution[star] || 0) / totalReviews) * 100
-                  )}
-                  % {/* {Math.round(ratingDistribution()[4 - idx])}% */}
+                  {totalReviews > 0
+                    ? Math.round(
+                        (reviews.distribution[star] / totalReviews) * 100
+                      )
+                    : 0}
+                  %
                 </span>
               </div>
             ))}
