@@ -32,7 +32,9 @@ export const mergeLocalCartWithDB = async () => {
     }
 
     if (!Array.isArray(StoredCart) || StoredCart.length === 0) {
-      localStorage.removeItem("cart");
+      useCartStore.setState({
+        cartItems: [],
+      });
       return;
     }
     await api_client.post(
@@ -40,7 +42,10 @@ export const mergeLocalCartWithDB = async () => {
 
       { products: StoredCart }
     );
-    localStorage.removeItem("cart");
+    // Clear local cart after merging
+    useCartStore.setState({
+      cartItems: [],
+    });
     return {
       message: cartContextTranslate[lang].cartContext.mergeLocalCart.success,
     };

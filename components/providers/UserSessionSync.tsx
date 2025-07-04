@@ -47,10 +47,6 @@ export const UserSessionSync = ({
     const unsubscribe = useUserStore.subscribe(
       (state) => state.user,
       (user) => {
-        // //console.log("From Session", initialSession);
-
-        //console.log("From Zustand user store", user);
-        // //console.log("From Zustand user store", initialSession?.user);
         if (user) {
           void (async () => {
             await Promise.all([loadCart(), loadWishlist()]);
@@ -60,9 +56,6 @@ export const UserSessionSync = ({
           void (async () => {
             await logOutUser();
           })();
-          // useCartStore.setState({ cartItems: [] });
-          // useWishlistStore.setState({ wishlist: { items: [], _id: "" } });
-          // useCartStore.persist.clearStorage();
         }
       }
     );
