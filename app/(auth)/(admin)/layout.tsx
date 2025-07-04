@@ -1,3 +1,5 @@
+// layout.tsx
+
 import type { Metadata } from "next";
 import type { FC } from "react";
 
@@ -15,9 +17,9 @@ type LayoutProps = {
 };
 const layout: FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="flex flex-col md:flex-row gap-2">
+    <div className="flex flex-col  h-screen md:flex-row gap-2">
       <Sidebar />
-      <div className="flex-1 #p-1 #sm:p-3 ">{children} </div>
+      <div className="flex-1 overflow-y-auto h-full">{children} </div>
     </div>
   );
 };
