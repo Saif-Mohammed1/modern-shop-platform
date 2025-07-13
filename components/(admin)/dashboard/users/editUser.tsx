@@ -15,13 +15,13 @@ import {
 import {
   type ClientAuditLogDetails,
   SecurityAuditAction,
-} from "@/app/lib/types/audit.types";
+} from "@/app/lib/types/audit.db.types";
 import {
   type UserAuthType,
   UserRole,
   UserStatus,
-} from "@/app/lib/types/users.types";
-import api from "@/app/lib/utilities/api";
+} from "@/app/lib/types/users.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -63,7 +63,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
   const confirmUpdate = async () => {
     setLoading(true);
     try {
-      const response = await api.patch(
+      const response = await api_client.patch(
         `/admin/dashboard/users/${userData._id}`,
         {
           // [field]: value,
@@ -98,16 +98,24 @@ export default function UserEditPage({ user }: UserEditPageProps) {
     try {
       switch (action) {
         case "forcePasswordReset":
-          await api.get(`/admin/dashboard/users/${userData._id}/security`);
+          await api_client.get(
+            `/admin/dashboard/users/${userData._id}/security`
+          );
           break;
         case "revokeSessions":
-          await api.post(`/admin/dashboard/users/${userData._id}/security`);
+          await api_client.post(
+            `/admin/dashboard/users/${userData._id}/security`
+          );
           break;
         case "lockAccount":
-          await api.put(`/admin/dashboard/users/${userData._id}/security`);
+          await api_client.put(
+            `/admin/dashboard/users/${userData._id}/security`
+          );
           break;
         case "unlockAccount":
-          await api.patch(`/admin/dashboard/users/${userData._id}/security`);
+          await api_client.patch(
+            `/admin/dashboard/users/${userData._id}/security`
+          );
           break;
       }
 
@@ -127,7 +135,7 @@ export default function UserEditPage({ user }: UserEditPageProps) {
   // Dangerous actions
   const handleDeleteUser = async () => {
     try {
-      await api.delete(`/admin/dashboard/users/${userData._id}`);
+      await api_client.delete(`/admin/dashboard/users/${userData._id}`);
       toast.success(
         usersTranslate.users[lang].editUsers.handleDeleteUser.success
       );

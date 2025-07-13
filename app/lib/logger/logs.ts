@@ -1,10 +1,34 @@
 // lib/logger.ts
-import {Logtail} from '@logtail/node';
-import {LogtailTransport} from '@logtail/winston';
-import {ipAddress} from '@vercel/functions';
-import {type NextRequest} from 'next/server';
-import {v4 as uuidv4} from 'uuid';
-import winston from 'winston';
+import { Logtail } from "@logtail/node";
+import { LogtailTransport } from "@logtail/winston";
+import { ipAddress } from "@vercel/functions";
+import { type NextRequest } from "next/server";
+import { v4 as uuidv4 } from "uuid";
+import winston from "winston";
+
+// ANSI color codes for rich terminal output
+const colors = {
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  gray: "\x1b[90m",
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  underline: "\x1b[4m",
+};
+
+// Color mapping for log levels
+const levelColors = {
+  error: colors.red + colors.bold,
+  warn: colors.yellow + colors.bold,
+  info: colors.cyan + colors.bold,
+  debug: colors.magenta + colors.bold,
+  http: colors.green + colors.bold,
+};
 
 // Initialize Logtail
 const logtail =
@@ -13,9 +37,10 @@ const logtail =
         endpoint: process.env.LOGTAIL_INGESTING_HOST,
       })
     : null;
+
 // Environment detection
-const isVercel = process.env.VERCEL === '1';
-const isProduction = process.env.NODE_ENV === 'production';
+const isVercel = process.env.VERCEL === "1";
+const isProduction = process.env.NODE_ENV === "production";
 
 interface AppLogMeta {
   statusCode?: number;
@@ -28,28 +53,60 @@ interface AppLogMeta {
 }
 
 const logger = winston.createLogger({
-  level: isProduction ? 'info' : 'debug',
+  level: isProduction ? "info" : "debug",
   defaultMeta: {
-    service: process.env.APP_NAME || 'app',
-    environment: process.env.NODE_ENV || 'development',
+    service: process.env.APP_NAME || "app",
+    environment: process.env.NODE_ENV || "development",
   },
   format: winston.format.combine(
-    winston.format.timestamp({format: 'ISO8601'}),
-    winston.format.errors({stack: true}),
-    winston.format.json(),
+    winston.format.timestamp({ format: "ISO8601" }),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
   ),
   transports: [
     ...(logtail && isProduction ? [new LogtailTransport(logtail)] : []),
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.timestamp({format: 'ISO8601'}), // Add this
-        winston.format.errors({stack: true}), // Add this
-        winston.format.colorize(),
-        winston.format.printf(({timestamp, level, message, correlationId, ...meta}) => {
-          return `[${timestamp}] [${correlationId || 'no-id'}] ${level}: ${message} ${
-            Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''
-          }`;
-        }),
+        winston.format.timestamp({ format: "ISO8601" }),
+        winston.format.errors({ stack: true }),
+        winston.format.printf(
+          ({ timestamp, level, message, correlationId, stack, ...meta }) => {
+            // Get color for current log level
+            const levelColor =
+              levelColors[level as keyof typeof levelColors] || colors.white;
+            const messageColor = levelColor.replace(colors.bold, "");
+
+            // Create colored components
+            const coloredTimestamp = `${colors.gray}${timestamp}${colors.reset}`;
+            const coloredCorrelationId = `${colors.blue}${correlationId || "no-id"}${colors.reset}`;
+            const coloredLevel = `${levelColor}${level.toUpperCase()}${colors.reset}`;
+            const coloredMessage = `${messageColor}${message}${colors.reset}`;
+
+            // Format stack traces with colors
+            let stackTrace = "";
+            if (stack) {
+              stackTrace = `\n${colors.red}${stack}${colors.reset}`;
+            }
+
+            // Format meta data
+            let metaString = "";
+            const filteredMeta = Object.keys(meta).reduce(
+              (acc, key) => {
+                if (key !== "stack") {
+                  acc[key] = meta[key];
+                }
+                return acc;
+              },
+              {} as Record<string, unknown>
+            );
+
+            if (Object.keys(filteredMeta).length) {
+              metaString = `\n${colors.gray}${JSON.stringify(filteredMeta, null, 2)}${colors.reset}`;
+            }
+
+            return `${coloredTimestamp} [${coloredCorrelationId}] ${coloredLevel}: ${coloredMessage}${stackTrace}${metaString}`;
+          }
+        )
       ),
     }),
   ],
@@ -65,87 +122,78 @@ const logger = winston.createLogger({
 
 // Add correlation ID support
 function createRequestLogger(correlationId: string = uuidv4()) {
-  return logger.child({correlationId});
+  return logger.child({ correlationId });
 }
 
 // Enhanced request error logging
 function logRequestError(
-  err: Error & {statusCode?: number},
+  err: Error & { statusCode?: number },
   req: NextRequest,
-  correlationId?: string,
+  correlationId?: string
 ) {
   const clientIp =
-    req.headers.get('x-client-ip') ||
+    req.headers.get("x-client-ip") ||
     ipAddress(req) ||
-    req.headers.get('x-forwarded-for') ||
-    req.headers.get('x-real-ip') ||
-    'Unknown IP';
+    req.headers.get("x-forwarded-for") ||
+    req.headers.get("x-real-ip") ||
+    "Unknown IP";
   const meta: AppLogMeta = {
     statusCode: err.statusCode,
     path: req.nextUrl.pathname,
     clientIp,
     method: req.method,
-    // error: err,
     error: {
       name: err.name,
       message: err.message,
-      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
-      ...(err.statusCode && {statusCode: err.statusCode}),
+      stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+      ...(err.statusCode && { statusCode: err.statusCode }),
     },
     correlationId,
   };
 
-  const logLevel = err.statusCode && err.statusCode >= 500 ? 'error' : 'warn';
-  // const log = (req as any).logger || logger;
-  // log.log(logLevel, err.message, meta);
+  const logLevel = err.statusCode && err.statusCode >= 500 ? "error" : "warn";
   logger.log(logLevel, err.message, meta);
 }
 
 // Vercel-specific cleanup
 if (isVercel) {
-  process.on('SIGTERM', () => {
-    logger.info('Received SIGTERM - flushing logs');
+  process.on("SIGTERM", () => {
+    logger.info("Received SIGTERM - flushing logs");
     void Promise.allSettled([
       logtail?.flush(),
       new Promise((resolve) => setTimeout(resolve, 2000)),
     ]).finally(() => process.exit(0));
   });
 }
-process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
-  // logtail?.error(err);
-  // Flush logs before exiting
+process.on("uncaughtException", (err) => {
+  logger.error("Uncaught Exception:", err);
   if (logtail) {
     logtail
       .flush()
       .then(() => {
-        logger.info('Flushed logs before exiting');
+        logger.info("Flushed logs before exiting");
       })
       .catch((flushErr) => {
-        logger.error('Error flushing logs before exiting:', flushErr);
+        logger.error("Error flushing logs before exiting:", flushErr);
       });
   }
-  // Exit the process
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // logtail?.error(reason);
-  // Flush logs before exiting
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error("Unhandled Rejection at:", promise, "reason:", reason);
   if (logtail) {
     logtail
       .flush()
       .then(() => {
-        logger.info('Flushed logs before exiting');
+        logger.info("Flushed logs before exiting");
       })
       .catch((flushErr) => {
-        logger.error('Error flushing logs before exiting:', flushErr);
+        logger.error("Error flushing logs before exiting:", flushErr);
       });
   }
-  // Exit the process
   process.exit(1);
 });
 
 export default logger;
-export {logtail, logRequestError, createRequestLogger};
+export { logtail, logRequestError, createRequestLogger };

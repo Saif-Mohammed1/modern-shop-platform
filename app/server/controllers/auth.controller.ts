@@ -13,8 +13,8 @@ class AuthController {
   async register(req: NextRequest) {
     const body = await req.json();
     const userData = UserValidation.validateUserCreateDTO(body);
-    const deviceInfo = await getDeviceFingerprint(req);
-    const user = await this.userService.registerUser(userData, deviceInfo);
+    const device_info = await getDeviceFingerprint(req);
+    const user = await this.userService.registerUser(userData, device_info);
 
     return NextResponse.json(user, { status: 201 });
   }
@@ -23,12 +23,12 @@ class AuthController {
     const body = await req.json();
 
     const result = UserValidation.validateLogin(body);
-    const deviceInfo = await getDeviceFingerprint(req);
+    const device_info = await getDeviceFingerprint(req);
 
     const authResult = await this.userService.authenticateUser(
       result.email,
       result.password,
-      deviceInfo
+      device_info
     );
     if ("requires2FA" in authResult) {
       return NextResponse.json(
@@ -46,9 +46,9 @@ class AuthController {
     return NextResponse.json({ ...authResult }, { status: 200 });
   }
   async logout(_req: NextRequest) {
-    // const deviceInfo = await getDeviceFingerprint(req);
+    // const device_info = await getDeviceFingerprint(req);
     await this.userService.logOut();
-    // await this.userService.logOut(req.user?._id, deviceInfo);
+    // await this.userService.logOut(req.user?._id, device_info);
     return NextResponse.json(
       { message: AuthTranslate[lang].auth.logOut.logOutSuccess },
       { status: 200 }
@@ -57,9 +57,9 @@ class AuthController {
   async forgotPassword(req: NextRequest) {
     const { email } = await req.json();
     const result = UserValidation.isEmailValid(email);
-    const deviceInfo = await getDeviceFingerprint(req);
+    const device_info = await getDeviceFingerprint(req);
 
-    await this.userService.requestPasswordReset(result, deviceInfo);
+    await this.userService.requestPasswordReset(result, device_info);
     return NextResponse.json(
       {
         message: AuthTranslate[lang].auth.forgotPassword.passwordResetLinkSent,
@@ -84,14 +84,14 @@ class AuthController {
     // const token = params.get("token") || undefined;
     // const email = params.get("email") || undefined;
     const body = await req.json();
-    const deviceInfo = await getDeviceFingerprint(req);
+    const device_info = await getDeviceFingerprint(req);
     const result = UserValidation.validatePasswordReset(body);
 
     await this.userService.validatePasswordResetToken(
       result.token,
-      result.email,
+      // result.email,
       result.password,
-      deviceInfo
+      device_info
     );
     return NextResponse.json(
       {
@@ -106,11 +106,11 @@ class AuthController {
     }
     const { email } = await req.json();
     const emailValid = UserValidation.isEmailValid(email);
-    const deviceInfo = await getDeviceFingerprint(req);
+    const device_info = await getDeviceFingerprint(req);
     await this.userService.requestEmailChange(
       req.user?._id.toString(),
       emailValid,
-      deviceInfo
+      device_info
     );
     return NextResponse.json(
       {
@@ -126,8 +126,8 @@ class AuthController {
       token,
       email: req.user?.email,
     });
-    const deviceInfo = await getDeviceFingerprint(req);
-    await this.userService.confirmEmailChange(result.token, deviceInfo);
+    const device_info = await getDeviceFingerprint(req);
+    await this.userService.confirmEmailChange(result.token, device_info);
     return NextResponse.json(
       {
         message: AuthTranslate[lang].auth.confirmEmailChange.emailChangeSuccess,
@@ -141,15 +141,15 @@ class AuthController {
     }
     const { code } = await req.json();
     const result = UserValidation.isVerificationCodeValid(code);
-    const deviceInfo = await getDeviceFingerprint(req);
+    const device_info = await getDeviceFingerprint(req);
     await this.userService.verifyEmail(
       req.user?._id.toString(),
       result,
-      deviceInfo
+      device_info
     );
     return NextResponse.json(
       {
-        message: AuthTranslate[lang].auth.verifyEmail.emailVerified,
+        message: AuthTranslate[lang].auth.verifyEmail.email_verified,
       },
       { status: 200 }
     );
@@ -161,7 +161,7 @@ class AuthController {
   //     await this.userService.verifyEmail(req.user?._id, code);
   //     return NextResponse.json(
   //       {
-  //         message: AuthTranslate[lang].auth.verifyEmail.emailVerified,
+  //         message: AuthTranslate[lang].auth.verifyEmail.email_verified,
   //       },
   //       { status: 200 }
   //     );
@@ -173,10 +173,10 @@ class AuthController {
     if (!req.user?._id) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
-    const deviceInfo = await getDeviceFingerprint(req);
+    const device_info = await getDeviceFingerprint(req);
     await this.userService.sendVerificationCode(
       req.user?._id.toString(),
-      deviceInfo
+      device_info
     );
     return NextResponse.json(
       {
@@ -203,9 +203,9 @@ class AuthController {
     if (!req.user?._id) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
-    const { loginNotificationSent } = await req.json();
+    const { login_notification_sent } = await req.json();
     const result = UserValidation.validateLoginNotificationSent(
-      loginNotificationSent
+      login_notification_sent
     );
     await this.userService.updateLoginNotificationSent(
       req.user?._id.toString(),

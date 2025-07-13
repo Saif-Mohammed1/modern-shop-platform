@@ -1,35 +1,45 @@
-import {z} from 'zod';
+import { z } from "zod";
 
-import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
-import {lang} from '@/app/lib/utilities/lang';
-import {reviewControllerTranslate} from '@/public/locales/server/reviewControllerTranslate';
+import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
+import { reviewControllerTranslate } from "@/public/locales/server/reviewControllerTranslate";
 
 // Custom Zod type for MongoDB ObjectId validation
 
 export class ReviewValidation {
   static createReviewSchema = z.object({
-    userId: zObjectId,
-    productId: zObjectId,
+    user_id: zObjectId,
+    product_id: zObjectId,
     rating: z
       .number({
-        required_error: reviewControllerTranslate[lang].controllers.createReviews.ratingRequired,
+        required_error:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .ratingRequired,
       })
       .min(1, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.ratingLessThanOne,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .ratingLessThanOne,
       })
       .max(5, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.maxRating,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews.maxRating,
       }),
     comment: z
       .string({
         required_error:
-          reviewControllerTranslate[lang].controllers.createReviews.reviewTextRequired,
+          reviewControllerTranslate[lang].controllers.createReviews
+            .reviewTextRequired,
       })
       .min(4, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.minReviewText,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .minReviewText,
       })
       .max(200, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.maxReviewText,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .maxReviewText,
       }),
   });
 
@@ -38,29 +48,39 @@ export class ReviewValidation {
   };
 
   static UpdateReviewDto = z.object({
-    userId: zObjectId,
-    // productId: zObjectId,
+    user_id: zObjectId,
+    // product_id: zObjectId,
     rating: z
       .number({
-        required_error: reviewControllerTranslate[lang].controllers.createReviews.ratingRequired,
+        required_error:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .ratingRequired,
       })
       .min(1, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.ratingLessThanOne,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .ratingLessThanOne,
       })
       .max(5, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.maxRating,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews.maxRating,
       })
       .optional(),
     comment: z
       .string({
         required_error:
-          reviewControllerTranslate[lang].controllers.createReviews.reviewTextRequired,
+          reviewControllerTranslate[lang].controllers.createReviews
+            .reviewTextRequired,
       })
       .min(4, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.minReviewText,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .minReviewText,
       })
       .max(200, {
-        message: reviewControllerTranslate[lang].controllers.createReviews.maxReviewText,
+        message:
+          reviewControllerTranslate[lang].controllers.createReviews
+            .maxReviewText,
       })
       .optional(),
   });
@@ -70,6 +90,8 @@ export class ReviewValidation {
   };
 }
 
-export type createReviewDto = z.infer<typeof ReviewValidation.createReviewSchema>;
+export type createReviewDto = z.infer<
+  typeof ReviewValidation.createReviewSchema
+>;
 
 export type updateReviewDto = z.infer<typeof ReviewValidation.UpdateReviewDto>;

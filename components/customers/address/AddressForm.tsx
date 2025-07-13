@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import type { AddressType } from "@/app/lib/types/address.types";
+import type { AddressType } from "@/app/lib/types/address.db.types";
 import { lang } from "@/app/lib/utilities/lang";
 import Spinner from "@/components/spinner/spinner";
 import Input from "@/components/ui/Input";
@@ -21,7 +21,7 @@ const ukraineCities = getCities("Ukraine");
 //   street: z.string().min(1, AddressTranslate[lang].street.required),
 //   city: z.string().min(1, AddressTranslate[lang].city.required),
 //   state: z.string().min(1, AddressTranslate[lang].state.required),
-//   postalCode: z.string().min(1, AddressTranslate[lang].postalCode.required),
+//   postal_code: z.string().min(1, AddressTranslate[lang].postal_code.required),
 //   phone: z.string().regex(/^\+380\d{9}$/, AddressTranslate[lang].phone.invalid),
 //   country: z.literal("Ukraine"),
 // });
@@ -42,12 +42,12 @@ const addressSchema = z.object({
     })
     .trim()
     .min(1, AddressTranslate[lang].state.required),
-  postalCode: z
+  postal_code: z
     .string({
-      required_error: AddressTranslate[lang].postalCode.required,
+      required_error: AddressTranslate[lang].postal_code.required,
     })
     .trim()
-    .min(1, AddressTranslate[lang].postalCode.required),
+    .min(1, AddressTranslate[lang].postal_code.required),
   phone: z
     .string({
       required_error: AddressTranslate[lang].phone.required,
@@ -138,11 +138,11 @@ const AddressForm = ({
           />
 
           <Input
-            label={addressTranslate[lang].addAddress.form.postalCode.label}
-            {...register("postalCode")}
-            error={errors.postalCode?.message}
+            label={addressTranslate[lang].addAddress.form.postal_code.label}
+            {...register("postal_code")}
+            error={errors.postal_code?.message}
             placeholder={
-              addressTranslate[lang].addAddress.form.postalCode.placeholder
+              addressTranslate[lang].addAddress.form.postal_code.placeholder
             }
           />
 

@@ -4,7 +4,7 @@ import NextAuth, { type AuthOptions, type User, type Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import type { UserAuthType } from "@/app/lib/types/users.types";
+import type { UserAuthType } from "@/app/lib/types/users.db.types";
 import AppError from "@/app/lib/utilities/appError";
 import { lang } from "@/app/lib/utilities/lang";
 import tokenManager from "@/app/lib/utilities/TokenManager";
@@ -12,7 +12,6 @@ import twoFactorController from "@/app/server/controllers/2fa.controller";
 import authController from "@/app/server/controllers/auth.controller";
 import ErrorHandler from "@/app/server/controllers/error.controller";
 import sessionController from "@/app/server/controllers/session.controller";
-import { connectDB } from "@/app/server/db/db";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 
 const REFRESH_THRESHOLD = 3 * 60 * 1000; // Refresh 3 minutes before expiration
@@ -40,7 +39,7 @@ const authOptions: AuthOptions = {
             password: string;
             code: number;
           };
-          await connectDB();
+
           if (!code) {
             if (!email || !password) {
               throw new AppError(
@@ -66,7 +65,11 @@ const authOptions: AuthOptions = {
             const statusCode = result.status;
             const {
               user,
+              access_token,
+              // refreshToken,
             }: {
+              access_token: string;
+              // refreshToken: string;
               user: UserAuthType;
             } = await result.json(); // Extract JSON data
             // Use a type guard to check if `user` has `requires2FA`
@@ -88,9 +91,13 @@ const authOptions: AuthOptions = {
             if ("_id" in user) {
               return {
                 ...user,
-                accessToken: user.accessToken || "",
-
                 id: String(user._id),
+                access_token,
+                access_token_expires:
+                  Date.now() +
+                  Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
+                    60 *
+                    1000,
               };
             }
             return null;
@@ -109,8 +116,10 @@ const authOptions: AuthOptions = {
           const result = await twoFactorController.verify2FALogin(req);
           const {
             user,
+            access_token,
           }: {
             user: UserAuthType;
+            access_token: string;
           } = await result.json(); // Extract JSON data
 
           if (!user) {
@@ -122,7 +131,8 @@ const authOptions: AuthOptions = {
           return {
             ...user,
             id: String(user._id),
-            accessTokenExpires:
+            access_token,
+            access_token_expires:
               Date.now() +
               Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
                 60 *
@@ -153,9 +163,9 @@ const authOptions: AuthOptions = {
     }) {
       // Initial login
       if (user) {
-        // convert accessTokenExpires to readable time
-        const exp = user.accessTokenExpires
-          ? Math.floor(user.accessTokenExpires / 1000)
+        // convert access_token_expires to readable time
+        const exp = user.access_token_expires
+          ? Math.floor(user.access_token_expires / 1000)
           : Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60;
         return {
           ...token,
@@ -167,8 +177,8 @@ const authOptions: AuthOptions = {
       // Session update
       if (trigger === "update" && session?.user) {
         // token.user = session.user;
-        // token.accessToken = session.accessToken;
-        // token.accessTokenExpires = session.;
+        // token.access_token = session.access_token;
+        // token.access_token_expires = session.;
         token.user = session.user;
       }
 
@@ -176,15 +186,17 @@ const authOptions: AuthOptions = {
       if (!token.error && token.user) {
         const user = token.user as User;
         // Handle token refresh before expiration
-        if (user.accessTokenExpires) {
-          const remainingTime = user.accessTokenExpires - Date.now();
+
+        if (user.access_token_expires) {
+          const remainingTime = user.access_token_expires - Date.now();
+
           if (remainingTime < REFRESH_THRESHOLD) {
             return await refreshAccessTokenHandler(token);
           }
         }
 
-        if (user.accessToken) {
-          tokenManager.setAccessToken(user.accessToken);
+        if (user.access_token) {
+          tokenManager.setAccessToken(user.access_token);
         }
       }
       return token;
@@ -208,6 +220,7 @@ const authOptions: AuthOptions = {
 
     // error: "/auth/error",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
 // this is next-auth jwt function what shoud be the right type for this
@@ -223,17 +236,17 @@ async function refreshAccessTokenHandler(token: JWT): Promise<JWT> {
     );
     const result = await sessionController.refreshAccessToken(req);
     const {
-      accessToken,
+      access_token,
     }: {
-      accessToken: string;
+      access_token: string;
     } = await result.json();
-    tokenManager.setAccessToken(accessToken);
+    tokenManager.setAccessToken(access_token);
     return {
       ...token,
       user: {
         ...token.user,
-        accessToken,
-        accessTokenExpires:
+        access_token,
+        access_token_expires:
           Date.now() +
           Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) *
             60 *

@@ -1,3 +1,5 @@
+// layout.tsx
+
 import type { Metadata } from "next";
 import type { FC } from "react";
 

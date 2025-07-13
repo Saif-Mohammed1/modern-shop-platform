@@ -29,14 +29,14 @@ export class DashboardService {
   }
 
   // private combineUserInterest(
-  //   cartProducts: Array<{ productId: any; count: number }>,
-  //   wishlistProducts: Array<{ productId: any; count: number }>
-  // ): Array<{ productId: string; count: number }> {
+  //   cartProducts: Array<{ product_id: any; count: number }>,
+  //   wishlistProducts: Array<{ product_id: any; count: number }>
+  // ): Array<{ product_id: string; count: number }> {
   //   const combined = new Map<string, number>();
 
-  //   const addToMap = (items: Array<{ productId: any; count: number }>) => {
-  //     items.forEach(({ productId, count }) => {
-  //       const id = productId.toString();
+  //   const addToMap = (items: Array<{ product_id: any; count: number }>) => {
+  //     items.forEach(({ product_id, count }) => {
+  //       const id = product_id.toString();
   //       combined.set(id, (combined.get(id) || 0) + count);
   //     });
   //   };
@@ -47,7 +47,7 @@ export class DashboardService {
   //   return Array.from(combined.entries())
   //     .sort((a, b) => b[1] - a[1])
   //     .slice(0, 10)
-  //     .map(([productId, count]) => ({ productId, count }));
+  //     .map(([product_id, count]) => ({ product_id, count }));
   // }
 
   // private generateSlug(name: string): string {
@@ -172,7 +172,7 @@ export class DashboardService {
 //       },
 //       userInterestProducts: combinedInterest,
 //       topOrderedProducts: productPerformance.topOrdered.map((p) => ({
-//         productId: p.productId.toString(),
+//         product_id: p.product_id.toString(),
 //         totalQuantity: p.totalQuantity,
 //         productSlug: this.generateSlug(p.name),
 //       })),
@@ -181,14 +181,14 @@ export class DashboardService {
 //   }
 
 //   private combineUserInterest(
-//     cartProducts: Array<{ productId: any; count: number }>,
-//     wishlistProducts: Array<{ productId: any; count: number }>
-//   ): Array<{ productId: string; count: number }> {
+//     cartProducts: Array<{ product_id: any; count: number }>,
+//     wishlistProducts: Array<{ product_id: any; count: number }>
+//   ): Array<{ product_id: string; count: number }> {
 //     const combined = new Map<string, number>();
 
-//     const addToMap = (items: Array<{ productId: any; count: number }>) => {
-//       items.forEach(({ productId, count }) => {
-//         const id = productId.toString();
+//     const addToMap = (items: Array<{ product_id: any; count: number }>) => {
+//       items.forEach(({ product_id, count }) => {
+//         const id = product_id.toString();
 //         combined.set(id, (combined.get(id) || 0) + count);
 //       });
 //     };
@@ -199,7 +199,7 @@ export class DashboardService {
 //     return Array.from(combined.entries())
 //       .sort((a, b) => b[1] - a[1])
 //       .slice(0, 10)
-//       .map(([productId, count]) => ({ productId, count }));
+//       .map(([product_id, count]) => ({ product_id, count }));
 //   }
 
 //   private generateSlug(name: string): string {

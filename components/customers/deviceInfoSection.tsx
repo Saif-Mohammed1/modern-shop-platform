@@ -1,11 +1,10 @@
-'use client';
+"use client";
 
-
-import {AnimatePresence, motion} from 'framer-motion';
-import {DateTime} from 'luxon';
-import {useRouter} from 'next/navigation';
-import {useState} from 'react';
-import toast from 'react-hot-toast';
+import { AnimatePresence, motion } from "framer-motion";
+import { DateTime } from "luxon";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import {
   FaAndroid,
   FaApple,
@@ -21,19 +20,19 @@ import {
   FaRobot,
   FaSafari,
   FaWindows,
-} from 'react-icons/fa';
-import {MdComputer, MdDelete, MdRefresh, MdSecurity} from 'react-icons/md';
+} from "react-icons/fa";
+import { MdComputer, MdDelete, MdRefresh, MdSecurity } from "react-icons/md";
 
 import {
   // RefreshTokenStatus,
   type sessionInfo,
-} from '@/app/lib/types/session.types';
-import api from '@/app/lib/utilities/api';
-import {lang} from '@/app/lib/utilities/lang';
-import {accountSettingsTranslate} from '@/public/locales/client/(auth)/account/settingsTranslate';
+} from "@/app/lib/types/session.types";
+import api_client from "@/app/lib/utilities/api.client";
+import { lang } from "@/app/lib/utilities/lang";
+import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
 
-import ConfirmationModal from '../ui/ConfirmationModal';
-import Tooltip from '../ui/Tooltip';
+import ConfirmationModal from "../ui/ConfirmationModal";
+import Tooltip from "../ui/Tooltip";
 
 const DeviceSessionCard = ({
   session,
@@ -45,32 +44,38 @@ const DeviceSessionCard = ({
   const router = useRouter();
   const [showRevokeModal, setShowRevokeModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  // const isActive =
+  // const is_active =
   //   session.status === RefreshTokenStatus.Active &&
-  //   DateTime.fromJSDate(new Date(session.expiresAt)) > DateTime.now();
-  const lastUsedRelative = DateTime.fromJSDate(new Date(session.lastUsedAt)).toRelative();
+  //   DateTime.fromJSDate(new Date(session.expires_at)) > DateTime.now();
+  const lastUsedRelative = DateTime.fromJSDate(
+    new Date(session.last_used_at)
+  ).toRelative();
   // const expiresFormatted = DateTime.fromJSDate(
-  //   new Date(session.expiresAt)
+  //   new Date(session.expires_at)
   // ).toLocaleString(DateTime.DATETIME_MED);
-  const lastUsedTooltip = DateTime.fromJSDate(new Date(session.lastUsedAt)).toLocaleString(
-    DateTime.DATETIME_FULL,
-  );
-  const expiresTooltip = DateTime.fromJSDate(new Date(session.expiresAt)).toLocaleString(
-    DateTime.DATETIME_FULL,
-  );
+  const lastUsedTooltip = DateTime.fromJSDate(
+    new Date(session.last_used_at)
+  ).toLocaleString(DateTime.DATETIME_FULL);
+  const expiresTooltip = DateTime.fromJSDate(
+    new Date(session.expires_at)
+  ).toLocaleString(DateTime.DATETIME_FULL);
   const handleRevoke = async () => {
     const toastId = toast.loading(
-      accountSettingsTranslate[lang].devices.functions.handleDelete.loading,
+      accountSettingsTranslate[lang].devices.functions.handleDelete.loading
     );
 
     try {
-      await api.delete(`/customers/device/${session._id}`);
+      await api_client.delete(`/customers/device/${session._id}`);
       revokeUserTokens(session._id);
-      toast.success(accountSettingsTranslate[lang].devices.functions.handleDelete.success);
+      toast.success(
+        accountSettingsTranslate[lang].devices.functions.handleDelete.success
+      );
       router.refresh();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : accountSettingsTranslate[lang].errors.global,
+        error instanceof Error
+          ? error.message
+          : accountSettingsTranslate[lang].errors.global
       );
     } finally {
       toast.dismiss(toastId);
@@ -89,12 +94,16 @@ const DeviceSessionCard = ({
     // };
 
     return (
-      <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="flex items-center gap-2">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center gap-2"
+      >
         <span
-          className={`w-2 h-2 rounded-full animate-pulse ${session.isActive ? 'bg-green-500' : 'bg-gray-300'}`}
+          className={`w-2 h-2 rounded-full animate-pulse ${session.is_active ? "bg-green-500" : "bg-gray-300"}`}
         />
         <span className="text-sm font-medium text-gray-600">
-          {session.isActive
+          {session.is_active
             ? accountSettingsTranslate[lang].devices.status.active
             : accountSettingsTranslate[lang].devices.status.revoked}
         </span>
@@ -109,43 +118,52 @@ const DeviceSessionCard = ({
   };
 
   const DeviceIcon = () => {
-    const {os, device} = session.deviceInfo;
+    const { os, device } = session.device_info;
     const iconConfig = {
-      mobile: {icon: <FaMobileAlt />, color: 'text-blue-400'},
-      linux: {icon: <FaLinux />, color: 'text-purple-500'},
-      windows: {icon: <FaWindows />, color: 'text-blue-600'},
-      mac: {icon: <FaApple />, color: 'text-gray-600'},
-      android: {icon: <FaAndroid />, color: 'text-green-500'},
-      default: {icon: <MdComputer />, color: 'text-gray-500'},
+      mobile: { icon: <FaMobileAlt />, color: "text-blue-400" },
+      linux: { icon: <FaLinux />, color: "text-purple-500" },
+      windows: { icon: <FaWindows />, color: "text-blue-600" },
+      mac: { icon: <FaApple />, color: "text-gray-600" },
+      android: { icon: <FaAndroid />, color: "text-green-500" },
+      default: { icon: <MdComputer />, color: "text-gray-500" },
     };
 
-    const deviceType: keyof typeof iconConfig = device.toLowerCase().includes('mobile')
-      ? 'mobile'
-      : (os.toLowerCase().match(/linux|windows|mac|android/)?.[0] as keyof typeof iconConfig) ||
-        'default';
+    const deviceType: keyof typeof iconConfig = device
+      .toLowerCase()
+      .includes("mobile")
+      ? "mobile"
+      : (os
+          .toLowerCase()
+          .match(
+            /linux|windows|mac|android/
+          )?.[0] as keyof typeof iconConfig) || "default";
 
     return (
       <div className="relative">
         <div className={`text-2xl ${iconConfig[deviceType].color}`}>
           {iconConfig[deviceType].icon}
         </div>
-        {session.deviceInfo.isBot ? <FaRobot className="absolute -top-1 -right-1 text-red-500 text-sm bg-white rounded-full" /> : null}
+        {session.device_info.is_bot ? (
+          <FaRobot className="absolute -top-1 -right-1 text-red-500 text-sm bg-white rounded-full" />
+        ) : null}
       </div>
     );
   };
 
   const BrowserIcon = () => {
-    const {browser} = session.deviceInfo;
+    const { browser } = session.device_info;
     const browserConfig = {
-      chrome: {icon: <FaChrome />, color: 'text-blue-500'},
-      firefox: {icon: <FaFirefox />, color: 'text-orange-500'},
-      safari: {icon: <FaSafari />, color: 'text-blue-600'},
-      default: {icon: <FaRegWindowMaximize />, color: 'text-gray-500'},
+      chrome: { icon: <FaChrome />, color: "text-blue-500" },
+      firefox: { icon: <FaFirefox />, color: "text-orange-500" },
+      safari: { icon: <FaSafari />, color: "text-blue-600" },
+      default: { icon: <FaRegWindowMaximize />, color: "text-gray-500" },
     };
 
     const browserType: keyof typeof browserConfig =
-      (browser?.toLowerCase().match(/chrome|firefox|safari/)?.[0] as keyof typeof browserConfig) ||
-      'default';
+      (browser
+        ?.toLowerCase()
+        .match(/chrome|firefox|safari/)?.[0] as keyof typeof browserConfig) ||
+      "default";
 
     return (
       <div className={`text-xl ${browserConfig[browserType].color}`}>
@@ -156,8 +174,12 @@ const DeviceSessionCard = ({
 
   return (
     <motion.div
-      onHoverStart={() => { setIsHovered(true); }}
-      onHoverEnd={() => { setIsHovered(false); }}
+      onHoverStart={() => {
+        setIsHovered(true);
+      }}
+      onHoverEnd={() => {
+        setIsHovered(false);
+      }}
       className="bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all"
     >
       <div className="flex items-start justify-between gap-4">
@@ -167,24 +189,28 @@ const DeviceSessionCard = ({
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-3">
               <h3 className="font-semibold text-gray-800">
-                {session.deviceInfo.brand} {session.deviceInfo.model || session.deviceInfo.device}
+                {session.device_info.brand}{" "}
+                {session.device_info.model || session.device_info.device}
               </h3>
               <BrowserIcon />
               <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                {session.deviceInfo.os}
+                {session.device_info.os}
               </span>
             </div>
 
             <div className="flex flex-wrap gap-3 text-sm text-gray-600">
               <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded">
                 <FaNetworkWired className="text-gray-500" />
-                <span className="font-mono text-xs">{session.deviceInfo.ip}</span>
+                <span className="font-mono text-xs">
+                  {session.device_info.ip}
+                </span>
               </div>
 
               <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded">
                 <FaGlobe className="text-gray-500" />
                 <span>
-                  {session.deviceInfo.location.city}, {session.deviceInfo.location.country}
+                  {session.device_info.location.city},{" "}
+                  {session.device_info.location.country}
                 </span>
               </div>
             </div>
@@ -201,8 +227,9 @@ const DeviceSessionCard = ({
                 <div className="flex items-center gap-2">
                   <FaKey />
                   <span>
-                    {session.isActive &&
-                    DateTime.fromJSDate(new Date(session.expiresAt)) > DateTime.now()
+                    {session.is_active &&
+                    DateTime.fromJSDate(new Date(session.expires_at)) >
+                      DateTime.now()
                       ? accountSettingsTranslate[lang].devices.details.expires
                       : accountSettingsTranslate[lang].devices.details.expired}
                   </span>
@@ -216,23 +243,36 @@ const DeviceSessionCard = ({
           <StatusBadge />
 
           <AnimatePresence>
-            {(isHovered || session.isActive) ? <motion.div
-                initial={{opacity: 0}}
-                animate={{opacity: 1}}
-                exit={{opacity: 0}}
+            {isHovered || session.is_active ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                {session.isActive ? <Tooltip content={accountSettingsTranslate[lang].devices.actions.revoke}>
+                {session.is_active ? (
+                  <Tooltip
+                    content={
+                      accountSettingsTranslate[lang].devices.actions.revoke
+                    }
+                  >
                     <button
-                      onClick={() => { setShowRevokeModal(true); }}
+                      onClick={() => {
+                        setShowRevokeModal(true);
+                      }}
                       className="p-2 hover:bg-red-50 rounded-lg text-red-500 hover:text-red-700 transition-colors"
                     >
                       <MdDelete className="text-xl" />
                     </button>
-                  </Tooltip> : null}
+                  </Tooltip>
+                ) : null}
 
-                {!session.isActive && (
-                  <Tooltip content={accountSettingsTranslate[lang].devices.actions.renew}>
+                {!session.is_active && (
+                  <Tooltip
+                    content={
+                      accountSettingsTranslate[lang].devices.actions.renew
+                    }
+                  >
                     <button className="p-2 hover:bg-blue-50 rounded-lg text-blue-500 hover:text-blue-700 transition-colors">
                       <MdRefresh className="text-xl" />
                     </button>
@@ -241,27 +281,32 @@ const DeviceSessionCard = ({
 
                 <Tooltip
                   content={
-                    session.deviceInfo.isBot
-                      ? 'Suspicious activity detected'
-                      : 'Verified secure session'
+                    session.device_info.is_bot
+                      ? "Suspicious activity detected"
+                      : "Verified secure session"
                   }
                 >
                   <MdSecurity
-                    className={`text-lg ${session.deviceInfo.isBot ? 'text-red-500' : 'text-green-500'}`}
+                    className={`text-lg ${session.device_info.is_bot ? "text-red-500" : "text-green-500"}`}
                   />
                 </Tooltip>
-              </motion.div> : null}
+              </motion.div>
+            ) : null}
           </AnimatePresence>
         </div>
       </div>
 
       <ConfirmationModal
         isOpen={showRevokeModal}
-        onClose={() => { setShowRevokeModal(false); }}
+        onClose={() => {
+          setShowRevokeModal(false);
+        }}
         onConfirm={handleRevoke}
         title={accountSettingsTranslate[lang].devices.confirmRevoke.title}
         message={accountSettingsTranslate[lang].devices.confirmRevoke.message}
-        confirmText={accountSettingsTranslate[lang].devices.actions.confirmRevoke}
+        confirmText={
+          accountSettingsTranslate[lang].devices.actions.confirmRevoke
+        }
         cancelText={accountSettingsTranslate[lang].button.cancel}
       />
     </motion.div>

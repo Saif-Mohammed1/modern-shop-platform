@@ -6,7 +6,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import type { ProductType } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 
@@ -25,7 +25,12 @@ export type PreviewFile = string;
 export interface FormData
   extends Omit<
     ProductType,
-    "_id" | "slug" | "ratingsAverage" | "ratingsQuantity" | "active" | "images"
+    | "_id"
+    | "slug"
+    | "ratings_average"
+    | "ratings_quantity"
+    | "active"
+    | "images"
   > {
   images: PreviewFile[];
 }
@@ -33,11 +38,11 @@ export interface FormData
 export default function AddProduct() {
   const methods = useForm<FormData>({
     defaultValues: {
-      shippingInfo: {
+      shipping_info: {
         weight: 0,
         dimensions: { length: 0, width: 0, height: 0 },
       },
-      attributes: {},
+      // attributes: {},
       reserved: 0,
       sold: 0,
     },
@@ -68,7 +73,7 @@ export default function AddProduct() {
         toastLoading = toast.loading(
           productsTranslate.products[lang].addProduct.form.productSubmit.loading
         );
-        await api.post("/admin/dashboard/products/", data);
+        await api_client.post("/admin/dashboard/products/", data);
         toast.success(
           productsTranslate.products[lang].addProduct.form.productSubmit.success
         );

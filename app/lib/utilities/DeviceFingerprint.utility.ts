@@ -26,8 +26,10 @@ export const getDeviceFingerprint = async (
 
   const hashedIp = tokensService.hashIpAddress(clientIp);
   const deviceFingerprint = generateDeviceFingerprint({
-    userAgent,
-    ip: clientIp,
+    // userAgent,
+    // ip: clientIp,
+    brand: result.device?.brand || "",
+    model: result.device?.model || "",
     os: result.os?.name || "Unknown OS",
     browser: result.client?.name || "Unknown Browser",
     device: result.device?.type || "Desktop",
@@ -40,7 +42,7 @@ export const getDeviceFingerprint = async (
     device: result.device?.type || "Desktop",
     brand: result.device?.brand || undefined,
     model: result.device?.model || undefined,
-    isBot: !!result.bot,
+    is_bot: !!result.bot,
     ip: hashedIp,
     fingerprint: deviceFingerprint,
     location: {

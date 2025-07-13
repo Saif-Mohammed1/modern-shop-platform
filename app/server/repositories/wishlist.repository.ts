@@ -1,130 +1,87 @@
 // wishlist.repository.ts
-import type { Model, ClientSession } from "mongoose";
 
-// import type {
-//   QueryBuilderConfig,
-//   QueryBuilderResult,
-//   QueryOptionConfig,
-// } from "@/app/lib/types/queryBuilder.types";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
-// import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
+import type { Knex } from "knex";
 
-import ProductModel from "../models/Product.model";
-import type { IWishlist } from "../models/Wishlist.model";
+import type { IWishlistDB } from "@/app/lib/types/wishList.db.types";
+import type { WishlistType } from "@/app/lib/types/wishList.types";
 
 import { BaseRepository } from "./BaseRepository";
 
-export class WishlistRepository extends BaseRepository<IWishlist> {
-  constructor(model: Model<IWishlist>) {
-    super(model);
+export class WishlistRepository extends BaseRepository<IWishlistDB> {
+  constructor(knex: Knex) {
+    super(knex, "wishlist");
   }
-  // override async create(
-  //   dto: Partial<IWishlist>,
-  //   session?: ClientSession
-  // ): Promise<IWishlist> {
-  //   const [Wishlist] = await this.model.create([dto], {
-  //     session,
-  //   });
-  //   return Wishlist;
-  // }
-  async addToWishlist(
-    userId: string,
-    productId: string,
-    session?: ClientSession
-  ): Promise<void> {
-    await this.model.updateOne(
-      { userId },
-      {
-        $addToSet: {
-          items: {
-            productId: assignAsObjectId(productId),
-            // quantity: 1,
-          },
-        },
-      },
-      { upsert: true, session }
-    );
-  }
+
   async deleteWishlist(
-    userId: string,
-    productId: string,
-    session?: ClientSession
+    user_id: string,
+    product_id: string,
+    trx?: Knex.Transaction
   ): Promise<void> {
-    await this.model.updateOne(
-      { userId },
-      { $pull: { items: { productId: assignAsObjectId(productId) } } },
-      { session }
-    );
+    await this.query(trx)
+      .where("user_id", user_id)
+      .andWhere("product_id", product_id)
+      .delete();
   }
 
   async getUserWishlists(
-    userId: string
+    user_id: string
     // options: QueryOptionConfig
-  ): Promise<IWishlist | null> {
-    const wishlist = await this.model
-      .findOne({ userId })
-      .populate([
-        { path: "userId", select: "name" },
-        {
-          path: "items.productId",
-          select: "name price images slug",
-          model: ProductModel,
-        },
-      ])
-      .lean();
-    return wishlist;
+  ): Promise<WishlistType | null> {
+    const wishlist = await this.query()
+      .where("wishlist.user_id", user_id)
+      .join("products", "wishlist.product_id", "products._id")
+      .leftJoin(
+        this.knex.raw(`
+              LATERAL (
+                SELECT json_agg(
+                  json_build_object('public_id', pi.public_id, 'link', pi.link)
+                ) AS images
+                FROM product_images pi
+                WHERE pi.product_id = products._id
+              ) AS image_data
+            `),
+        this.knex.raw("TRUE")
+      )
+      .groupBy("wishlist.user_id")
+      .select(
+        "wishlist.user_id as _id",
+        this.knex.raw(
+          `
+              json_agg(
+                json_build_object(
+                  '_id', products._id,
+                  'name', products.name,
+                  'category', products.category,
+                  'discount', products.discount,
+                  'stock', products.stock,
+                  'discount_expire', products.discount_expire,
+                  'price', products.price,
+                  'slug', products.slug,
+                  'images', COALESCE(image_data.images, '[]'::json)
+                )
+              ) AS items
+            `
+        )
+      )
+      .first();
+
+    return wishlist ? (wishlist as WishlistType) : null;
   }
-  // async getUserWishlists(
-  //   userId: string,
-  //   options: QueryOptionConfig
-  // ): Promise<QueryBuilderResult<IWishlist>> {
-  //   const queryConfig: QueryBuilderConfig<IWishlist> = {
-  //     allowedFilters: ["userId", "items.productId", "createdAt"],
-  //     //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
-  //     //   maxLimit: 100,
-  //   };
-
-  //   const searchParams = new URLSearchParams({
-  //     ...Object.fromEntries(options.query.entries()),
-  //     userId,
-  //     // ...(options?.page && { page: options.page.toString() }),
-  //     // ...(options?.limit && { limit: options.limit.toString() }),
-  //     // ...(options?.sort && { sort: options.sort }),
-  //   });
-  //   const queryBuilder = new QueryBuilder<IWishlist>(
-  //     this.model,
-  //     searchParams,
-  //     queryConfig
-  //   );
-
-  //   if (options?.populate) {
-  //     queryBuilder.populate([
-  //       { path: "userId", select: "name" },
-  //       { path: "items.productId", select: "name price images slug" },
-  //     ]);
-  //   }
-
-  //   return await queryBuilder.execute();
-  // }
 
   async isWishlist(
-    userId: string,
-    productId: string,
-    session?: ClientSession
+    user_id: string,
+    product_id: string,
+    trx?: Knex.Transaction
   ): Promise<boolean> {
-    const exists = await this.model
-      .exists({
-        userId,
-        "items.productId": assignAsObjectId(productId),
-      })
-      .session(session ?? null);
+    const exists = await this.query(trx)
+      .where("user_id", user_id)
+      .andWhere("product_id", product_id)
+      .first();
+
     return !!exists;
   }
 
-  async clearUserWishlists(userId: string): Promise<void> {
-    await this.model.deleteMany({ userId });
-  }
-  async startSession(): Promise<ClientSession> {
-    return await this.model.db.startSession();
+  async clearUserWishlists(user_id: string): Promise<void> {
+    await this.query().where("user_id", user_id).delete();
   }
 }

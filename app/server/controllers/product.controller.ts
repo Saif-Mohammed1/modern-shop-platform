@@ -1,12 +1,10 @@
-import { ipAddress } from "@vercel/functions";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { UserRole } from "@/app/lib/types/users.types";
+import { UserRole } from "@/app/lib/types/users.db.types";
 import AppError from "@/app/lib/utilities/appError";
 import { lang } from "@/app/lib/utilities/lang";
 import { ProductTranslate } from "@/public/locales/server/Product.Translate";
 
-import { LogsValidation } from "../dtos/logs.dto";
 import { ProductValidation } from "../dtos/product.dto";
 import { ProductService } from "../services/product.service";
 import { ReviewService } from "../services/review.service";
@@ -17,24 +15,24 @@ class ProductController {
     private readonly reviewService: ReviewService = new ReviewService()
   ) {}
   async createProduct(req: NextRequest) {
-    const ip =
-      req.headers.get("x-client-ip") ||
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
-      ipAddress(req) ||
-      "Unknown IP";
-    const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
-    const logs = LogsValidation.validateLogs({
-      ipAddress: ip,
-      userAgent,
-    });
+    // const ip =
+    //   req.headers.get("x-client-ip") ||
+    //   req.headers.get("x-forwarded-for") ||
+    //   req.headers.get("x-real-ip") ||
+    //   ipAddress(req) ||
+    //   "Unknown IP";
+    // const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
+    // const logs = LogsValidation.validateLogs({
+    //   ipAddress: ip,
+    //   userAgent,
+    // });
     const body = await req.json();
     const result = ProductValidation.validateCreateProduct({
-      userId: req.user?._id,
+      user_id: req.user?._id,
       ...body,
     });
 
-    const product = await this.productService.createProduct(result, logs);
+    const product = await this.productService.createProduct(result);
     return NextResponse.json({ product }, { status: 201 });
   }
 
@@ -42,24 +40,24 @@ class ProductController {
     if (!req?.slug || !req.user?._id) {
       throw new AppError(ProductTranslate[lang].slug, 400);
     }
-    const ip =
-      req.headers.get("x-client-ip") ||
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
-      ipAddress(req) ||
-      "Unknown IP";
-    const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
-    const logs = LogsValidation.validateLogs({
-      ipAddress: ip,
-      userAgent,
-    });
+    // const ip =
+    //   req.headers.get("x-client-ip") ||
+    //   req.headers.get("x-forwarded-for") ||
+    //   req.headers.get("x-real-ip") ||
+    //   ipAddress(req) ||
+    //   "Unknown IP";
+    // const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
+    // const logs = LogsValidation.validateLogs({
+    //   ipAddress: ip,
+    //   userAgent,
+    // });
     const body = await req.json();
     const result = ProductValidation.validateUpdateProduct(body);
     const product = await this.productService.updateProduct(
       req?.slug,
       result,
-      req.user?._id,
-      logs
+      req.user?._id
+      // logs
     );
     return NextResponse.json({ product }, { status: 200 });
   }
@@ -68,36 +66,41 @@ class ProductController {
     if (!req?.slug || !req.user?._id) {
       throw new AppError(ProductTranslate[lang].slug, 400);
     }
-    const ip =
-      req.headers.get("x-client-ip") ||
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
-      ipAddress(req) ||
-      "Unknown IP";
-    const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
-    const logs = LogsValidation.validateLogs({
-      ipAddress: ip,
-      userAgent,
-    });
+    // const ip =
+    //   req.headers.get("x-client-ip") ||
+    //   req.headers.get("x-forwarded-for") ||
+    //   req.headers.get("x-real-ip") ||
+    //   ipAddress(req) ||
+    //   "Unknown IP";
+    // const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
+    // const logs = LogsValidation.validateLogs({
+    //   ipAddress: ip,
+    //   userAgent,
+    // });
     const product = await this.productService.deleteProduct(
       req?.slug,
-      req.user?._id,
-      logs
+      req.user?._id
     );
     return NextResponse.json({ product }, { status: 200 });
   }
+  async getProductsByAdmin(req: NextRequest) {
+    const [products, categories] = await Promise.all([
+      this.productService.getProductsByAdmin({
+        query: req.nextUrl.searchParams,
+        populate:
+          req.user?.role.includes(UserRole.ADMIN) ||
+          req.user?.role.includes(UserRole.MODERATOR),
+      }),
+      this.productService.getProductsCategory(),
+    ]);
+
+    return NextResponse.json({ products, categories }, { status: 200 });
+  }
   async getProducts(req: NextRequest) {
     const [products, categories] = await Promise.all([
-      this.productService.getProducts(
-        {
-          query: req.nextUrl.searchParams,
-          populate:
-            req.user?.role.includes(UserRole.ADMIN) ||
-            req.user?.role.includes(UserRole.MODERATOR),
-        },
-        req.user?.role.includes(UserRole.ADMIN) ||
-          req.user?.role.includes(UserRole.MODERATOR)
-      ),
+      this.productService.getProducts({
+        query: req.nextUrl.searchParams,
+      }),
       this.productService.getProductsCategory(),
     ]);
     return NextResponse.json({ products, categories }, { status: 200 });
@@ -112,13 +115,14 @@ class ProductController {
       { status: 200 }
     );
   }
+
   async getProductBySlug(req: NextRequest) {
     if (!req.slug) {
       throw new AppError(ProductTranslate[lang].slug, 400);
     }
     const product = await this.productService.getProductBySlug(req?.slug, {
       populate: true,
-      select: "rating comment userId createdAt",
+      // select: "rating comment user_id created_at",
     });
     const distribution = product?._id
       ? await this.reviewService.getRatingDistributionByProductId(
@@ -145,23 +149,23 @@ class ProductController {
     if (!req?.slug || !req.user?._id) {
       throw new AppError(ProductTranslate[lang].slug, 400);
     }
-    const ip =
-      req.headers.get("x-client-ip") ||
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
-      ipAddress(req) ||
-      "Unknown IP";
+    // const ip =
+    //   req.headers.get("x-client-ip") ||
+    //   req.headers.get("x-forwarded-for") ||
+    //   req.headers.get("x-real-ip") ||
+    //   ipAddress(req) ||
+    //   "Unknown IP";
 
-    const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
-    const logs = LogsValidation.validateLogs({
-      ipAddress: ip,
-      userAgent,
-    });
+    // const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
+    // const logs = LogsValidation.validateLogs({
+    //   ipAddress: ip,
+    //   userAgent,
+    // });
     await this.productService.deleteProductImages(
       req?.slug,
       public_id,
-      req.user?._id,
-      logs
+      req.user?._id
+      // logs
     );
     return NextResponse.json(
       { message: ProductTranslate[lang].deleteImageSuccess },
@@ -196,18 +200,18 @@ class ProductController {
     if (!req?.slug || !req.user?._id) {
       throw new AppError(ProductTranslate[lang].slug, 400);
     }
-    const ip =
-      req.headers.get("x-client-ip") ||
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
-      ipAddress(req) ||
-      "Unknown IP";
+    // const ip =
+    //   req.headers.get("x-client-ip") ||
+    //   req.headers.get("x-forwarded-for") ||
+    //   req.headers.get("x-real-ip") ||
+    //   ipAddress(req) ||
+    //   "Unknown IP";
 
-    const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
-    const logs = LogsValidation.validateLogs({
-      ipAddress: ip,
-      userAgent,
-    });
+    // const userAgent = req.headers.get("user-agent") ?? "Unknown User Agent";
+    // const logs = LogsValidation.validateLogs({
+    //   ipAddress: ip,
+    //   userAgent,
+    // });
     const { versionId } = await req.json();
     if (!versionId) {
       throw new AppError(ProductTranslate[lang].dto.versionId.required, 400);
@@ -215,8 +219,8 @@ class ProductController {
     const product = await this.productService.restoreProductVersion(
       req?.slug,
       versionId,
-      req.user?._id,
-      logs
+      req.user?._id
+      // logs
     );
     return NextResponse.json({ product }, { status: 200 });
   }

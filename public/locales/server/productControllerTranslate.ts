@@ -3,72 +3,73 @@ export const productControllerTranslate = {
     model: {
       schema: {
         name: {
-          required: 'name must be required',
+          required: "name must be required",
         },
         category: {
-          required: 'category must be required',
+          required: "category must be required",
         },
         price: {
-          min: 'Price must be greater than 0',
-          required: 'price must be required',
+          min: "Price must be greater than 0",
+          required: "price must be required",
         },
         discount: {
-          required: 'discount must be less than price',
+          required: "discount must be less than price",
         },
-        discountExpire: {
-          required: 'discountExpire must be required',
+        discount_expire: {
+          required: "discount_expire must be required",
         },
         images: {
           link: {
-            required: 'link must be required',
+            required: "link must be required",
           },
           public_id: {
-            required: 'public_id  must be required',
+            required: "public_id  must be required",
           },
         },
         user: {
-          required: 'Product must belong to a user.',
+          required: "Product must belong to a user.",
         },
         description: {
-          required: 'Product must have a description.',
+          required: "Product must have a description.",
         },
         stock: {
-          min: 'Stock must be greater or equal to 0',
-          required: 'Product must have a stock.',
+          min: "Stock must be greater or equal to 0",
+          required: "Product must have a stock.",
         },
-        ratingsAverage: {
-          min: 'Rating must be above 1.0',
-          max: 'Rating must be below or equal 5.0',
+        ratings_average: {
+          min: "Rating must be above 1.0",
+          max: "Rating must be below or equal 5.0",
         },
-        ratingsQuantity: {
-          required: 'ratingsQuantity must be required',
+        ratings_quantity: {
+          required: "ratings_quantity must be required",
         },
-        createdAt: {
-          required: 'createdAt must be required',
+        created_at: {
+          required: "created_at must be required",
         },
       },
     },
     functions: {
       validateBase64Image: {
-        invalidImageFormat: 'Invalid image format.',
-        invalidImageType: 'Invalid image type. Only JPEG, PNG, and GIF are allowed.',
-        imageSizeExceeds: 'Image size exceeds 2MB.',
+        invalidImageFormat: "Invalid image format.",
+        invalidImageType:
+          "Invalid image type. Only JPEG, PNG, and GIF are allowed.",
+        imageSizeExceeds: "Image size exceeds 2MB.",
       },
       updateProductActivity: {
-        success: 'Product updated successfully',
-        error: 'Error updating product',
+        success: "Product updated successfully",
+        error: "Error updating product",
       },
     },
 
     errors: {
-      noProductHistory: 'No product history found.',
-      notFoundProduct: 'Product not found.',
-      notFoundProducts: 'There are no products.',
-      noProductFoundWithId: 'No product found with that ID',
-      HistoricalProductNotFound: 'No historical product found.',
-      requiredFields: 'Please fill in all required fields.',
-      noDocumentFoundWithId: 'No document found with that ID',
-      ImageDeletedSuccessfully: 'Image deleted successfully',
+      noProductHistory: "No product history found.",
+      notFoundProduct: "Product not found.",
+      notFoundProducts: "There are no products.",
+      noProductFoundWithId: "No product found with that ID",
+      HistoricalProductNotFound: "No historical product found.",
+      requiredFields: "Please fill in all required fields.",
+      noDocumentFoundWithId: "No document found with that ID",
+      ImageDeletedSuccessfully: "Image deleted successfully",
     },
   },
   uk: {
@@ -81,13 +82,13 @@ export const productControllerTranslate = {
           required: "Категорія має бути обов'язковою",
         },
         price: {
-          min: 'ціна має бути більше 0',
+          min: "ціна має бути більше 0",
           required: "ціна має бути обов'язковою",
         },
         discount: {
-          required: 'знижка має бути менше, ніж ціна',
+          required: "знижка має бути менше, ніж ціна",
         },
-        discountExpire: {
+        discount_expire: {
           required: "знижка закінчується має бути обов'язковою",
         },
         images: {
@@ -99,48 +100,49 @@ export const productControllerTranslate = {
           },
         },
         user: {
-          required: 'Продукт повинен належати користувачеві.',
+          required: "Продукт повинен належати користувачеві.",
         },
         description: {
-          required: 'Продукт повинен мати опис.',
+          required: "Продукт повинен мати опис.",
         },
         stock: {
-          min: 'Запас повинен бути більше або рівним 0',
-          required: 'Продукт повинен мати запас.',
+          min: "Запас повинен бути більше або рівним 0",
+          required: "Продукт повинен мати запас.",
         },
-        ratingsAverage: {
-          min: 'Рейтинг повинен бути вище 1.0',
-          max: 'Рейтинг повинен бути нижче або рівним 5.0',
+        ratings_average: {
+          min: "Рейтинг повинен бути вище 1.0",
+          max: "Рейтинг повинен бути нижче або рівним 5.0",
         },
-        ratingsQuantity: {
-          required: "ratingsQuantity має бути обов'язковим",
+        ratings_quantity: {
+          required: "ratings_quantity має бути обов'язковим",
         },
-        createdAt: {
-          required: "createdAt має бути обов'язковим",
+        created_at: {
+          required: "created_at має бути обов'язковим",
         },
       },
     },
     functions: {
       validateBase64Image: {
-        invalidImageFormat: 'Недійсний формат зображення.',
-        invalidImageType: 'Недійсний тип зображення. Дозволені лише JPEG, PNG та GIF.',
-        imageSizeExceeds: 'Розмір зображення перевищує 2 МБ.',
+        invalidImageFormat: "Недійсний формат зображення.",
+        invalidImageType:
+          "Недійсний тип зображення. Дозволені лише JPEG, PNG та GIF.",
+        imageSizeExceeds: "Розмір зображення перевищує 2 МБ.",
       },
       updateProductActivity: {
-        success: 'Продукт успішно оновлено',
-        error: 'Помилка оновлення продукту',
+        success: "Продукт успішно оновлено",
+        error: "Помилка оновлення продукту",
       },
     },
 
     errors: {
-      noProductHistory: 'Історія прод продуктом не знайдена.',
-      notFoundProduct: 'Продукт не знайдено.',
-      notFoundProducts: 'Продуктів немає.',
-      noProductFoundWithId: 'Продукт з таким ідентифікатором не знайдено',
-      HistoricalProductNotFound: 'Історичний продукт не знайдено.',
+      noProductHistory: "Історія прод продуктом не знайдена.",
+      notFoundProduct: "Продукт не знайдено.",
+      notFoundProducts: "Продуктів немає.",
+      noProductFoundWithId: "Продукт з таким ідентифікатором не знайдено",
+      HistoricalProductNotFound: "Історичний продукт не знайдено.",
       requiredFields: "Будь ласка, заповніть всі обов'язкові поля.",
-      noDocumentFoundWithId: 'Документ з таким ідентифікатором не знайдено',
-      ImageDeletedSuccessfully: 'Зображення успішно видалено',
+      noDocumentFoundWithId: "Документ з таким ідентифікатором не знайдено",
+      ImageDeletedSuccessfully: "Зображення успішно видалено",
     },
   },
 } as const;

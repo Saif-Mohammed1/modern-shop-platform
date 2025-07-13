@@ -1,6 +1,6 @@
 import { type IpVersion, z } from "zod";
 
-import { AuditSource } from "@/app/lib/types/audit.types";
+import { AuditSource } from "@/app/lib/types/audit.db.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { ProductTranslate } from "@/public/locales/server/Product.Translate";
 

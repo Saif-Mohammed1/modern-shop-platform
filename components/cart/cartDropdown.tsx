@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { FiX } from "react-icons/fi";
 
-import { type CartItemsType } from "@/app/lib/types/cart.types";
+import { type CartItemsType } from "@/app/lib/types/cart.db.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
@@ -44,9 +44,9 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
       const message = error instanceof Error ? error.message : errorMessage;
       toast.error(message);
     } finally {
-      if (toastId) {
-        toast.dismiss(toastId);
-      }
+      // if (toastId) {
+      toast.dismiss(toastId);
+      // }
     }
   };
 
@@ -131,15 +131,15 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
   // const calculatePrice = (item: CartItemsType) => {
   //   const now = new Date();
-  //   const discountExpire = item.discountExpire
-  //     ? new Date(item.discountExpire)
+  //   const discount_expire = item.discount_expire
+  //     ? new Date(item.discount_expire)
   //     : null;
   // const discountPercentage =
   //   item.discount > 0
   //     ? Math.round((item.discount / item.price) * 100)
   //     : 0;
   //   const isValidDiscount =
-  //     !!item.discount && !!discountExpire && discountExpire > now;
+  //     !!item.discount && !!discount_expire && discount_expire > now;
   //   return isValidDiscount ? item.price - item.discount : item.price;
   // };
   return (

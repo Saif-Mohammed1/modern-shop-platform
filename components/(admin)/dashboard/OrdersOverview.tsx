@@ -38,7 +38,7 @@ export function OrdersOverview({ data }: { data: DashboardDataApi["orders"] }) {
           <div className="space-y-4">
             {data.topProducts.map((product) => (
               <div
-                key={product.productId}
+                key={product.product_id}
                 className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
               >
                 <span className="truncate">{product.name}</span>

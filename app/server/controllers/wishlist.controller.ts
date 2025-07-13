@@ -18,22 +18,22 @@ class WishlistController {
     }
 
     const check = WishlistValidation.validateCreateWishlist({
-      productId: req.id,
-      userId: req.user._id,
+      product_id: req.id,
+      user_id: req.user._id,
     });
     const result = await this.wishlistService.toggleWishlist(
-      check.userId.toString(),
-      check.productId.toString()
+      check.user_id.toString(),
+      check.product_id.toString()
     );
 
     return NextResponse.json(result, { status: 200 });
   }
 
   async getMyWishlists(req: NextRequest) {
-    const userId = String(req.user?._id);
+    const user_id = String(req.user?._id);
 
-    const result = await this.wishlistService.getUserWishlists(userId);
-    // const result = await this.wishlistService.getUserWishlists(userId, {
+    const result = await this.wishlistService.getUserWishlists(user_id);
+    // const result = await this.wishlistService.getUserWishlists(user_id, {
     //   query: req.nextUrl.searchParams,
 
     //   populate: true,
@@ -47,12 +47,12 @@ class WishlistController {
     }
 
     const check = WishlistValidation.validateCreateWishlist({
-      productId: req.id,
-      userId: req.user._id,
+      product_id: req.id,
+      user_id: req.user._id,
     });
     const isWishlist = await this.wishlistService.checkWishlist(
-      check.userId.toString(),
-      check.productId.toString()
+      check.user_id.toString(),
+      check.product_id.toString()
     );
 
     return NextResponse.json({ isWishlist }, { status: 200 });

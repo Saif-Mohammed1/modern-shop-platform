@@ -1,17 +1,16 @@
-import type { Model, ClientSession } from "mongoose";
+import type { Knex } from "knex";
 
+import type { IReviewDB } from "@/app/lib/types/products.db.types";
 import type {
   QueryBuilderConfig,
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
 import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
-
-import type { createReviewDto } from "../dtos/reviews.dto";
-import type { IReview } from "../models/Review.model";
+import { redis } from "@/app/lib/utilities/Redis";
 
 import { BaseRepository } from "./BaseRepository";
+
 interface RatingDistribution {
   "1": number;
   "2": number;
@@ -19,144 +18,108 @@ interface RatingDistribution {
   "4": number;
   "5": number;
 }
-export class ReviewRepository extends BaseRepository<IReview> {
-  constructor(model: Model<IReview>) {
-    super(model);
-  }
-  override async create(
-    data: createReviewDto,
-    session?: ClientSession
-  ): Promise<IReview> {
-    const [review] = await this.model.create([data], { session });
-    return review;
-  }
+interface RatingRow {
+  rating: number;
+  count: number;
+}
 
-  override async findById(id: IReview["_id"]): Promise<IReview | null> {
-    return await this.model.findById(id).lean();
+export class ReviewRepository extends BaseRepository<IReviewDB> {
+  constructor(knex: Knex) {
+    super(knex, "reviews");
   }
 
   async findByProduct(
-    productId: string,
+    product_id: string,
     options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IReview>> {
-    const queryConfig: QueryBuilderConfig<IReview> = {
-      allowedFilters: ["userId", "productId", "createdAt"],
-      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
+  ): Promise<QueryBuilderResult<IReviewDB>> {
+    const queryConfig: QueryBuilderConfig<IReviewDB> = {
+      allowedFilters: ["user_id", "product_id", "created_at"],
+      //   allowedSorts: ["created_at", "updated_at"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
     };
 
     const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
-      productId,
+      product_id: product_id,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
     });
 
-    const queryBuilder = new QueryBuilder<IReview>(
-      this.model,
+    const queryBuilder = new QueryBuilder<IReviewDB>(
+      this.knex,
+      this.tableName,
       searchParams,
       queryConfig
     );
 
     if (options?.populate) {
-      queryBuilder.populate([{ path: "productId", select: "name slug" }]);
+      queryBuilder.join({
+        table: "products",
+        type: "left",
+        on: { left: "product_id", right: "_id" },
+        select: ["name", "slug"],
+        // queryBuilder.join([{ path: "product_id", select: "name slug" }]);
+      });
     }
 
     return await queryBuilder.execute();
   }
   async findByProductAndUser(
-    productId: IReview["productId"],
-    userId: IReview["userId"]
-  ): Promise<IReview | null> {
-    return await this.model.findOne({ productId, userId }).lean();
-  }
-  override async update(
-    id: IReview["_id"],
-    input: Partial<IReview>,
-    session?: ClientSession
-  ): Promise<IReview | null> {
-    return await this.model
-      .findByIdAndUpdate(id, input, { new: true, session })
-      .lean();
+    product_id: IReviewDB["product_id"],
+    user_id: IReviewDB["user_id"]
+  ): Promise<IReviewDB | null> {
+    return (
+      (await this.query()
+        .where("user_id", user_id)
+        .where("product_id", product_id)
+        .first()) ?? null
+    );
   }
 
-  async deleteReview(
-    id: IReview["_id"],
-    session?: ClientSession
-  ): Promise<void> {
-    await this.model.findByIdAndDelete(id, { session });
-  }
   async getRatingDistribution(): Promise<number[]> {
-    const distribution = await this.model.aggregate([
-      {
-        $group: {
-          _id: { $round: ["$rating", 0] }, // Round rating to nearest int (1-5)
-          count: { $sum: 1 }, // Count occurrences
-        },
-      },
-      {
-        $sort: { _id: 1 }, // Ensure sorting from 1-star to 5-star
-      },
-    ]);
+    const cacheKey = "rating_distribution";
+    const cached = await redis.get(cacheKey);
+    if (typeof cached === "string") {
+      return JSON.parse(cached) as number[];
+    }
 
-    const ratings = [0, 0, 0, 0, 0]; // Default 0 for all ratings
+    const distribution = (await this.query()
+      .select(
+        this.knex.raw("ROUND(rating) as rating"),
+        this.knex.raw("COUNT(*) as count")
+      )
+      .groupByRaw("ROUND(rating)")
+      .orderBy("rating", "asc")) as unknown as RatingRow[];
 
-    distribution.forEach(({ _id, count }) => {
-      ratings[_id - 1] = count; // Store count at correct index
+    const ratings = [0, 0, 0, 0, 0];
+    distribution.forEach(({ rating, count }) => {
+      const ratingIndex = Number(rating) - 1;
+      if (ratingIndex >= 0 && ratingIndex < 5) {
+        ratings[ratingIndex] = Number(count);
+      }
     });
 
+    await redis.setex(cacheKey, 3600, JSON.stringify(ratings)); // Cache for 1 hour
     return ratings;
   }
 
   async getRatingDistributionByProductId(
-    productId: string
+    product_id: string
   ): Promise<RatingDistribution> {
-    interface AggregationResult {
-      distribution?: RatingDistribution;
+    const cacheKey = `rating_distribution_${product_id}`;
+    const cached = await redis.get(cacheKey);
+    if (typeof cached === "string") {
+      return JSON.parse(cached) as RatingDistribution;
     }
 
-    const distribution = await this.model.aggregate<AggregationResult>([
-      {
-        $match: { productId: assignAsObjectId(productId) },
-      },
-      {
-        $group: {
-          _id: { $round: ["$rating", 0] }, // Round rating (1-5)
-          count: { $sum: 1 }, // Count occurrences
-        },
-      },
-      {
-        $sort: { _id: 1 }, // Sort from 1-star to 5-star
-      },
-      {
-        $group: {
-          _id: null,
-          ratings: { $push: { k: { $toString: "$_id" }, v: "$count" } }, // Convert _id to string keys
-        },
-      },
-      {
-        $set: {
-          distribution: {
-            $arrayToObject: {
-              $concatArrays: [
-                [
-                  { k: "1", v: 0 },
-                  { k: "2", v: 0 },
-                  { k: "3", v: 0 },
-                  { k: "4", v: 0 },
-                  { k: "5", v: 0 },
-                ],
-                "$ratings",
-              ],
-            },
-          },
-        },
-      },
-      {
-        $project: { _id: 0, distribution: 1 }, // Remove _id
-      },
-    ]);
+    const raw = await this.query()
+      .select(this.knex.raw("ROUND(rating)::int as rating"))
+      .count("* as count")
+      .where("product_id", product_id)
+      .groupByRaw("ROUND(rating)::int")
+      .orderBy("rating", "asc");
+    const rows = raw as unknown as RatingRow[];
 
     const defaultDistribution: RatingDistribution = {
       "1": 0,
@@ -166,39 +129,66 @@ export class ReviewRepository extends BaseRepository<IReview> {
       "5": 0,
     };
 
-    return distribution[0]?.distribution || defaultDistribution;
+    const result = { ...defaultDistribution };
+
+    for (const row of rows) {
+      result[row.rating.toString() as keyof RatingDistribution] = Number(
+        row.count
+      );
+    }
+
+    await redis.setex(cacheKey, 3600, JSON.stringify(result)); // Cache for 1 hour
+    return result;
   }
   async getMyReviews(
-    userId: string,
+    user_id: string,
     options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IReview>> {
-    const queryConfig: QueryBuilderConfig<IReview> = {
-      allowedFilters: ["userId", "productId", "createdAt"],
-      //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
+  ): Promise<QueryBuilderResult<IReviewDB>> {
+    const queryConfig: QueryBuilderConfig<IReviewDB> = {
+      allowedFilters: ["user_id", "product_id", "created_at"],
+      //   allowedSorts: ["created_at", "updated_at"] as Array<keyof IWishlist>,
       //   maxLimit: 100,
+      selectFields: [
+        "_id",
+        "user_id",
+        "product_id",
+        "rating",
+        "comment",
+        "created_at",
+        // "this.knex.raw(`TO_CHAR(created_at, 'DD/MM/YYYY') AS created_at`)",
+      ],
+      dateFormatFields: {
+        created_at: "DD/MM/YYYY",
+      },
+      totalCountBy: ["_id"],
+      excludeLinksFields: ["reviews.user_id", "user_id"],
     };
-
     const searchParams = new URLSearchParams({
       ...Object.fromEntries(options.query.entries()),
-      userId,
+      user_id: user_id,
       // ...(options?.page && { page: options.page.toString() }),
       // ...(options?.limit && { limit: options.limit.toString() }),
       // ...(options?.sort && { sort: options.sort }),
     });
-
-    const queryBuilder = new QueryBuilder<IReview>(
-      this.model,
+    // searchParams.set(`reviews.user_id`, user_id);
+    const queryBuilder = new QueryBuilder<IReviewDB>(
+      this.knex,
+      this.tableName,
       searchParams,
       queryConfig
     );
 
     if (options?.populate) {
-      queryBuilder.populate([{ path: "productId", select: "name slug" }]);
+      queryBuilder.join({
+        table: "products",
+        type: "left",
+        on: { left: "product_id", right: "_id" },
+
+        select: ["name", "slug"],
+        outerKey: "product_id",
+      });
     }
 
     return await queryBuilder.execute();
-  }
-  async startSession(): Promise<ClientSession> {
-    return await this.model.db.startSession();
   }
 }

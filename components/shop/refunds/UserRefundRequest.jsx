@@ -2,17 +2,16 @@
 
 import { useState } from "react";
 
-import api from "@/app/lib/utilities/api";
-
-const UserRefundRequest = ({ userId, initialRefunds = [] }) => {
+import api_client from "@/app/lib/utilities/api.client";
+const UserRefundRequest = ({ user_id, initialRefunds = [] }) => {
   const [refunds, setRefunds] = useState(initialRefunds);
   const [issue, setIssue] = useState("");
   const [reason, setReason] = useState("");
-  const [invoiceId, setInvoiceId] = useState("");
+  const [invoice_id, setInvoiceId] = useState("");
 
   const handleRefundSubmit = () => {
-    api
-      .post("/refunds", { issue, reason, invoiceId, user: userId })
+    api_client
+      .post("/refunds", { issue, reason, invoice_id, user: user_id })
       .then((response) => {
         setRefunds([...refunds, response.data]);
         setIssue("");
@@ -28,7 +27,7 @@ const UserRefundRequest = ({ userId, initialRefunds = [] }) => {
         <label className="block mb-2 text-sm font-medium">Invoice ID</label>
         <input
           type="text"
-          value={invoiceId}
+          value={invoice_id}
           onChange={(e) => setInvoiceId(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
           placeholder="Enter your invoice ID"
@@ -71,7 +70,7 @@ const UserRefundRequest = ({ userId, initialRefunds = [] }) => {
           >
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-semibold">
-                Refund for Invoice: {refund.invoiceId}
+                Refund for Invoice: {refund.invoice_id}
               </h3>
               <span
                 className={`px-3 py-1 rounded ${
@@ -93,7 +92,7 @@ const UserRefundRequest = ({ userId, initialRefunds = [] }) => {
             </p>
             <p className="text-sm text-gray-500">
               Requested on:{" "}
-              {new Date(refund.createdAt).toLocaleDateString("en-US")}
+              {new Date(refund.created_at).toLocaleDateString("en-US")}
             </p>
           </div>
         ))

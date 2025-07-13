@@ -1,14 +1,13 @@
 "use client";
 import { useState } from "react";
 
-import api from "@/app/lib/utilities/api";
-
+import api_client from "@/app/lib/utilities/api.client";
 const AdminRefundReview = () => {
   const [refunds, setRefunds] = useState([]);
 
   const handleRefundDecision = async (refundId, decision) => {
     try {
-      await api.patch(`/refunds/${refundId}`, { status: decision });
+      await api_client.patch(`/refunds/${refundId}`, { status: decision });
 
       setRefunds((prevRefunds) =>
         prevRefunds.map((refund) =>
@@ -34,7 +33,7 @@ const AdminRefundReview = () => {
           >
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-semibold">
-                Refund for Invoice: {refund.invoiceId}
+                Refund for Invoice: {refund.invoice_id}
               </h3>
               <span
                 className={`px-3 py-1 rounded ${
@@ -55,7 +54,7 @@ const AdminRefundReview = () => {
               <strong>Reason:</strong> {refund.reason}
             </p>
             <p className="text-sm text-gray-500">
-              Requested on: {new Date(refund.createdAt).toLocaleDateString()}
+              Requested on: {new Date(refund.created_at).toLocaleDateString()}
             </p>
 
             {refund.status === "pending" && (

@@ -6,7 +6,7 @@ import { parseAsInteger, useQueryState } from "nuqs";
 import type { FC } from "react";
 import toast from "react-hot-toast";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import {
   Table,
@@ -58,7 +58,7 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
       loading = toast.loading(
         ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.loading
       );
-      await api.post(`/admin/dashboard/products/${slug}/restore`, {
+      await api_client.post(`/admin/dashboard/products/${slug}/restore`, {
         versionId,
       });
       toast.success(

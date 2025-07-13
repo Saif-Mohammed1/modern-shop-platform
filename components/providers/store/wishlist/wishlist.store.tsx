@@ -3,9 +3,9 @@
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
-import type { ProductType } from "@/app/lib/types/products.types";
+import type { ProductCartPick } from "@/app/lib/types/cart.db.types";
 import type { WishlistType } from "@/app/lib/types/wishList.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { useUserStore } from "@/components/providers/store/user/user.store";
 import { accountWishlistTranslate } from "@/public/locales/client/(auth)/account/wishlistTranslate";
@@ -15,14 +15,14 @@ interface InitialState {
   wishlist: WishlistType;
 }
 const initialState: InitialState = {
-  wishlist: { items: [], userId: "" },
+  wishlist: { items: [], _id: "" },
 };
 export const useWishlistStore = create<InitialState>()(() => initialState);
 
 export const isInWishlist = (id: string) => {
   return useWishlistStore
     .getState()
-    .wishlist.items.some((item) => item.productId._id === id);
+    .wishlist.items.some((item) => item._id === id);
 };
 
 export const loadWishlist = async () => {
@@ -44,33 +44,33 @@ export const loadWishlist = async () => {
       useWishlistStore.setState({
         wishlist: {
           items: [],
-          userId: "",
+          _id: "",
         },
       });
     }
   }
 };
 
-export const toggleWishlist = async (product: ProductType) => {
+export const toggleWishlist = async (product: ProductCartPick) => {
   const { user } = useUserStore.getState();
 
   if (user) {
     try {
       const exists = useWishlistStore
         .getState()
-        .wishlist.items.some((item) => item.productId._id === product._id);
+        .wishlist.items.some((item) => item._id === product._id);
       if (exists) {
         useWishlistStore.setState((state) => ({
           ...state,
           wishlist: {
             ...state.wishlist,
             items: state.wishlist.items.filter(
-              (item) => item.productId._id !== product._id
+              (item) => item._id !== product._id
             ),
           },
         }));
         // Remove from wishlist
-        await api.post(`/customers/wishlist/${product._id}`);
+        await api_client.post(`/customers/wishlist/${product._id}`);
 
         toast.success(
           accountWishlistTranslate[lang].WishListCard.functions
@@ -83,17 +83,11 @@ export const toggleWishlist = async (product: ProductType) => {
           wishlist: {
             ...state.wishlist,
 
-            items: [
-              ...state.wishlist.items,
-
-              {
-                productId: product,
-              },
-            ],
+            items: [...state.wishlist.items, product],
           },
         }));
 
-        await api.post(`/customers/wishlist/${product._id}`);
+        await api_client.post(`/customers/wishlist/${product._id}`);
         toast.success(
           accountWishlistTranslate[lang].WishListCard.functions
             .handleWishlistClick.success

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import type { ReviewsType } from "@/app/lib/types/reviews.types";
-import api from "@/app/lib/utilities/api";
+import type { ReviewsType } from "@/app/lib/types/reviews.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountReviewsTranslate } from "@/public/locales/client/(auth)/account/reviewsTranslate";
 
@@ -35,7 +35,7 @@ const ReviewHistory = ({
             hasNext: boolean;
           };
         };
-      } = await api.get(`/customers/reviews?page=${newPage}`);
+      } = await api_client.get(`/customers/reviews?page=${newPage}`);
       setMoreResults([...moreResults, ...data.docs]);
       setPage(newPage);
       setShowMore(data.meta.hasNext);
@@ -52,7 +52,7 @@ const ReviewHistory = ({
   //     // Fetch reviews for the user
   //     const fetchReviews = async () => {
   //       try {
-  //         const response = await axios.get(`/api/reviews/${userId}`);
+  //         const response = await axios.get(`/api/reviews/${user_id}`);
   //         setReviews(response.data.data);
   //         setLoading(false);
   //       } catch (err) {
@@ -62,7 +62,7 @@ const ReviewHistory = ({
   //     };
 
   //     fetchReviews();
-  //   }, [userId]);
+  //   }, [user_id]);
 
   //   if (loading) return <div>Loading...</div>;
   //   if (error) return <div>Error: {error}</div>;
@@ -89,12 +89,12 @@ const ReviewHistory = ({
                 >
                   <Link
                     className="text-blue-500"
-                    href={`/shop/${review.productId.slug}`}
+                    href={`/shop/${review.product_id[0].slug}`}
                     target="_blank"
                   >
                     <h2 className="text-xl font-semibold mb-2">
                       {accountReviewsTranslate[lang].review.product}:{" "}
-                      {review.productId.name}
+                      {review.product_id[0].name}
                     </h2>
                   </Link>
                   <p className="mb-2">
@@ -114,7 +114,7 @@ const ReviewHistory = ({
                   </p>
                   <p className="text-gray-500 text-sm">
                     {accountReviewsTranslate[lang].review.reviewedOn}:{" "}
-                    {new Date(review.createdAt).toLocaleDateString()}
+                    {new Date(review.created_at).toLocaleDateString()}
                   </p>
                 </div>
               ))}

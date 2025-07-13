@@ -1,108 +1,117 @@
-import type { Model, ClientSession } from "mongoose";
+import type { Knex } from "knex";
 
-import type { CartItemsType } from "@/app/lib/types/cart.types";
-import { assignAsObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import type { ICartItemDB, CartItemsType } from "@/app/lib/types/cart.db.types";
+import { generateUUID } from "@/app/lib/utilities/id";
 
 import type { localCartDto } from "../dtos/cart.dto";
-import type { ICart } from "../models/Cart.model";
-import type { IProduct } from "../models/Product.model";
 
 import { BaseRepository } from "./BaseRepository";
 
 // Repository Service Pattern
-export class CartRepository extends BaseRepository<ICart> {
-  constructor(model: Model<ICart>) {
-    super(model);
+export class CartRepository extends BaseRepository<ICartItemDB> {
+  constructor(knex: Knex) {
+    super(knex, "cart_items");
   }
 
   /**
    * Check if item exists in cart
    */
-  async existingItem(productId: string, userId: string): Promise<ICart | null> {
-    const cartItems = await this.model.findOne({ userId }).lean();
-    if (!cartItems) {
-      return null;
-    }
-    const item = cartItems.items.find(
-      (item) => item.productId.toString() === productId
-    );
-    if (!item) {
-      return null;
-    }
-    return {
-      ...cartItems,
-      items: [item],
-      // items: cartItems.items.filter(
-      //   (item) => item.productId.toString() === productId
-      // ),
-    };
+  async existingItem(
+    product_id: string,
+    user_id: string
+  ): Promise<ICartItemDB | null> {
+    const cartItems =
+      (await this.query()
+        .where("user_id", user_id)
+        .andWhere("product_id", product_id)
+        .first()) ?? null;
+
+    return cartItems;
   }
   /**
    * Add item to user's cart
    */
-  async addToCart(
-    userId: string,
-    productId: string,
-    session?: ClientSession
-  ): Promise<void> {
-    await this.model.updateOne(
-      { userId },
-      {
-        $addToSet: {
-          items: {
-            productId: assignAsObjectId(productId),
-            quantity: 1,
-          },
-        },
-        $set: { expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) }, // Set expiresAt to one week from now
-      },
-      { upsert: true, session }
-    );
-  }
+  // async addToCart(
+  //   user_id: string,
+  //   product_id: string,
+  //   trx?: Knex.Transaction
+  // ): Promise<void> {
+  //   await this.knex.updateOne(
+  //     { user_id },
+  //     {
+  //       $addToSet: {
+  //         items: {
+  //           product_id: assignAsObjectId(product_id),
+  //           quantity: 1,
+  //         },
+  //       },
+  //       $set: { expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) }, // Set expires_at to one week from now
+  //     },
+  //     { upsert: true, trx }
+  //   );
+  // }
   /**
    * Get user's cart with populated product details
    */
   // Optimized cart population with lean data
-  async getUserCart(userId: string): Promise<CartItemsType[]> {
-    const cartItems = await this.model
-      .findOne({ userId })
-      .populate<{ items: { productId: IProduct; quantity: number }[] }>({
-        path: "items.productId",
-        select: "name price images stock slug category discountExpire discount",
-        match: {
-          active: true,
-          stock: { $gte: 1 },
-        },
-        options: { lean: true },
-      })
-      .lean();
+  async getUserCart(user_id: string): Promise<CartItemsType[]> {
+    const cartItems = (await this.query()
+      .where("cart_items.user_id", user_id)
+      .join("products", "cart_items.product_id", "products._id")
+
+      .leftJoin(
+        this.knex.raw(`
+              LATERAL (
+                SELECT json_agg(
+                  json_build_object('_id',pi._id,'public_id', pi.public_id, 'link', pi.link)
+                ) AS images
+                FROM product_images pi
+                WHERE pi.product_id = products._id
+              ) AS image_data
+            `),
+        this.knex.raw("TRUE")
+      )
+      .groupBy("cart_items.user_id")
+      .select(
+        "cart_items.user_id as _id",
+        this.knex.raw(
+          `
+              json_agg(
+                json_build_object(
+                  '_id', products._id,
+                  'name', products.name,
+                  'category', products.category,
+                  'discount', products.discount,
+                  'stock', products.stock,
+                  'discount_expire', to_char(products.discount_expire, 'DD/MM/YYYY'),
+                  'price', products.price,
+                  'slug', products.slug,
+                  'quantity', cart_items.quantity,
+                  'images', COALESCE(image_data.images, '[]'::json)
+                )
+              ) AS items
+            `
+        )
+      )
+      .first()) as { items: CartItemsType[]; _id: string };
     if (!cartItems) {
       return [];
     }
-    // Filter out null productId and map to desired structure
-    return (
-      cartItems.items
-        .filter((item) => !!item.productId)
-        // .filter((item) => item.productId !== null)
-        .map(({ productId, quantity }) => ({
-          ...productId,
-          _id: productId?._id.toString(),
-          expiresAt: cartItems.expiresAt,
-          quantity,
-        }))
-    );
+    // Filter out null product_id and map to desired structure
+
+    return cartItems.items ? cartItems.items : [];
   }
-  // async getCartWithProducts(userId: string): Promise<ICart[]> {
-  //   return await this.model.aggregate([
-  //     { $match: { userId: assignAsObjectId(userId) } },
+  // async getCartWithProducts(user_id: string): Promise<ICartItemDB[]> {
+  //   return await this.knex.aggregate([
+  //     { $match: { user_id: assignAsObjectId(user_id) } },
   //     {
   //       $lookup: {
   //         from: "Product",
-  //         localField: "productId",
+  //         localField: "product_id",
   //         foreignField: "_id",
   //         as: "product",
   //         pipeline: [
-  //           { $match: { isActive: true } },
+  //           { $match: { is_active: true } },
   //           { $project: { name: 1, price: 1, images: 1, stock: 1, slug: 1 } },
   //         ],
   //       },
@@ -121,165 +130,113 @@ export class CartRepository extends BaseRepository<ICart> {
    * increase cart item quantity
    */
   async increaseQuantity(
-    userId: string,
-    productId: string,
+    user_id: string,
+    product_id: string,
     newQuantity: number,
-    session?: ClientSession
+    trx?: Knex.Transaction
   ): Promise<void> {
-    const exists = await this.model.exists({
-      userId,
-      "items.productId": productId,
-    });
-
-    if (!exists) {
-      // Handle new item addition
-      await this.model.updateOne(
-        { userId },
-        {
-          $push: {
-            items: {
-              productId: assignAsObjectId(productId),
-              quantity: newQuantity,
-            },
-          },
-        },
-        { session, upsert: true }
-      );
-      return;
-    }
-    await this.model.updateOne(
-      { userId, "items.productId": assignAsObjectId(productId) },
-      {
-        $inc: { "items.$.quantity": newQuantity },
-        $set: {
-          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        }, // Set expiresAt to one week from now
-      },
-      { session, upsert: true }
-    );
+    const id = generateUUID();
+    await this.query(trx)
+      .insert({
+        user_id: user_id,
+        product_id: product_id,
+        quantity: newQuantity,
+        _id: id,
+      })
+      .onConflict(["user_id", "product_id"])
+      .merge({
+        quantity: this.knex.raw("cart_items.quantity + ?", newQuantity),
+        updated_at: this.knex.fn.now(),
+      });
   }
   /**
    * Decrease cart item quantity
    */
   async decreaseQuantity(
-    userId: string,
-    productId: string,
-    session?: ClientSession
+    user_id: string,
+    product_id: string,
+    trx?: Knex.Transaction
   ): Promise<void> {
-    await this.model.updateOne(
-      { userId, "items.productId": assignAsObjectId(productId) },
-      { $inc: { "items.$.quantity": -1 } },
-      { session }
-    );
+    const cartItem = await this.query(trx)
+      .where("user_id", user_id)
+      .andWhere("product_id", product_id)
+      .first();
+
+    if (cartItem) {
+      if (cartItem.quantity > 1) {
+        await this.query(trx)
+          .where("user_id", user_id)
+          .andWhere("product_id", product_id)
+          .increment("quantity", -1);
+      } else {
+        await this.removeProductFromCart(user_id, product_id, trx);
+      }
+    }
   }
   /**
    * Remove item from cart
    */
   async removeProductFromCart(
-    userId: string,
-    productId: string,
-    session?: ClientSession
+    user_id: string,
+    product_id: string,
+    trx?: Knex.Transaction
   ): Promise<void> {
-    await this.model.updateOne(
-      { userId },
-      { $pull: { items: { productId: assignAsObjectId(productId) } } },
-      { session }
-    );
+    await this.query(trx)
+      .where("user_id", user_id)
+      .andWhere("product_id", product_id)
+      .delete();
   }
 
   /**
    * Clear user's entire cart
    */
-  async clearCart(userId: string, session?: ClientSession): Promise<boolean> {
-    const cart = await this.model.deleteMany({ userId }, { session });
-    return cart.deletedCount !== 0;
+  async clearCart(user_id: string, trx?: Knex.Transaction): Promise<boolean> {
+    const cart = await this.query(trx).where("user_id", user_id).delete();
+    return cart > 0;
   }
   async saveLocalCartToDB(
-    userId: string,
+    user_id: string,
     products: localCartDto,
-    session?: ClientSession
+    trx?: Knex.Transaction
   ): Promise<void> {
     // Convert local cart items to ObjectIds
-    const productUpdates = products.map(({ _id, quantity }) => ({
-      productId: _id,
-      quantity,
-    }));
-
-    await this.model.updateOne(
-      { userId },
-      {
-        // Add new items that don't exist in cart
-        $addToSet: {
-          items: {
-            $each: productUpdates.filter((newItem) => ({
-              $not: {
-                $in: [newItem.productId, "$items.productId"],
-              },
-            })),
-          },
-        },
-        // Update quantities for existing items
-        $set: {
-          "items.$[elem].quantity": {
-            $let: {
-              vars: {
-                matchedProduct: {
-                  $arrayElemAt: [
-                    productUpdates,
-                    {
-                      $indexOfArray: [
-                        productUpdates.map((p) => p.productId),
-                        "$elem.productId",
-                      ],
-                    },
-                  ],
-                },
-              },
-              in: "$$matchedProduct.quantity",
-            },
-          },
-        },
-      },
-      {
-        arrayFilters: [
-          { "elem.productId": { $in: productUpdates.map((p) => p.productId) } },
-        ],
-        upsert: true,
-        session,
-      }
+    const productUpdates = products.map(
+      ({ _id, quantity }): Omit<ICartItemDB, "created_at" | "updated_at"> => ({
+        _id: generateUUID(),
+        user_id: user_id,
+        product_id: _id,
+        quantity,
+      })
     );
+
+    await this.query(trx)
+      .insert(productUpdates)
+      .onConflict(["user_id", "product_id"])
+      .merge();
   }
+
   // async saveLocalCartToDB(
-  //   userId: string,
+  //   user_id: string,
   //   products: localCartDto,
-  //   session?: ClientSession
+  //   trx?: Knex.Transaction
   // ): Promise<void> {
   //   const bulkOps = products.map(({ _id, quantity }) => ({
   //     updateOne: {
-  //       filter: { userId, productId: _id },
+  //       filter: { user_id, product_id: _id },
   //       update: { quantity },
   //       upsert: true,
   //       setDefaultsOnInsert: true,
   //     },
   //   }));
-  //   await this.model.bulkWrite(bulkOps, { session });
+  //   await this.knex.bulkWrite(bulkOps, { trx });
   // }
   async deleteManyByProductId(
-    userId: string,
+    user_id: string,
     productIds: string[]
   ): Promise<void> {
-    await this.model.updateMany(
-      { userId },
-      {
-        $pull: {
-          items: {
-            productId: { $in: productIds.map((id) => assignAsObjectId(id)) },
-          },
-        },
-      }
-    );
-  }
-  async startSession(): Promise<ClientSession> {
-    return await this.model.db.startSession();
+    await this.query()
+      .where("user_id", user_id)
+      .whereIn("product_id", productIds)
+      .delete();
   }
 }

@@ -11,7 +11,7 @@ const Providers = ({
   initialSession,
 }: {
   children: React.ReactNode;
-  initialSession: Session | null;
+  initialSession: Session|null
 }) => {
   return (
     <SessionProvider

@@ -1,28 +1,36 @@
-import type {QueryOptionConfig} from '@/app/lib/types/queryBuilder.types';
-import AppError from '@/app/lib/utilities/appError';
-import {lang} from '@/app/lib/utilities/lang';
-import {OrderTranslate} from '@/public/locales/server/Order.Translate';
+import type { Knex } from "knex";
 
-import type {CreateOrderDto, UpdateOrderDto, UpdateOrderStatusDto} from '../dtos/order.dto';
-import OrderModel from '../models/Order.model';
-import {OrderRepository} from '../repositories/order.repository';
+import {
+  AuditSource,
+  type AuditAction,
+  type IAuditLogChangesDB,
+} from "@/app/lib/types/audit.db.types";
+import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
+import AppError from "@/app/lib/utilities/appError";
+import { lang } from "@/app/lib/utilities/lang";
+import { OrderTranslate } from "@/public/locales/server/Order.Translate";
+
+import { connectDB } from "../db/db";
+import type {
+  CreateOrderDto,
+  UpdateOrderDto,
+  // UpdateOrderDto,
+  UpdateOrderStatusDto,
+} from "../dtos/order.dto";
+import { OrderRepository } from "../repositories/order.repository";
 
 export class OrderService {
-  constructor(private readonly repository: OrderRepository = new OrderRepository(OrderModel)) {}
-  async createOrder(dto: CreateOrderDto) {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-
-    try {
-      const order = await this.repository.create(dto, session);
-      await session.commitTransaction();
-      return order;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      await session.endSession();
-    }
+  constructor(
+    private readonly repository: OrderRepository = new OrderRepository(
+      connectDB()
+    )
+  ) {}
+  async createOrder(dto: CreateOrderDto, trx?: Knex.Transaction) {
+    // return await this.repository.transaction(async (trx) => {
+    // const order =
+    return await this.repository.createOrder(dto, trx);
+    // return order;
+    // });
   }
 
   async getOrders(options: QueryOptionConfig) {
@@ -36,20 +44,20 @@ export class OrderService {
     }
     return order;
   }
-  async getLatestOrder(userId: string) {
-    const order = await this.repository.getLatestOrder(userId);
+  async getLatestOrder(user_id: string) {
+    const order = await this.repository.getLatestOrder(user_id);
     if (!order) {
       throw new AppError(OrderTranslate[lang].errors.noDocumentsFound, 404);
     }
     return order;
   }
-  async getOrdersByUserId(userId: string, options: QueryOptionConfig) {
-    return await this.repository.findByUser(userId, options);
+  async getOrdersByUserId(user_id: string, options: QueryOptionConfig) {
+    return await this.repository.findByUser(user_id, options);
   }
   async updateOrderStatus(
     orderId: string,
 
-    status: UpdateOrderStatusDto['status'],
+    status: UpdateOrderStatusDto["status"]
   ) {
     const order = await this.repository.updateStatus(orderId, status);
     if (!order) {
@@ -58,25 +66,37 @@ export class OrderService {
     return order;
   }
   async updateOrder(id: string, dto: UpdateOrderDto) {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-    try {
-      const order = await this.repository.update(id, dto, session);
+    return await this.repository.transaction(async (trx) => {
+      const order = await this.repository.updateDetails(id, dto, trx);
       if (!order) {
         throw new AppError(OrderTranslate[lang].errors.noDocumentsFound, 404);
       }
-
-      await session.commitTransaction();
       return order;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      await session.endSession();
-    }
+    });
   }
 
   async deleteOrder(id: string) {
     return await this.repository.delete(id);
+  }
+  async createAuditLog(
+    action: AuditAction,
+    entityId: string,
+    actor: string,
+    changes: Omit<IAuditLogChangesDB, "_id" | "created_at" | "audit_log_id">[],
+    context: Record<string, any>,
+    source: AuditSource = AuditSource.WEB,
+    trx?: Knex.Transaction
+  ) {
+    await this.repository.logAction(
+      action,
+      entityId,
+      actor,
+      changes,
+      context,
+      // logs.ipAddress,
+      // logs.userAgent,
+      source, // Add source to LogsTypeDto
+      trx
+    );
   }
 }

@@ -1,11 +1,13 @@
 "use client";
 
-import Lottie from "lottie-react";
+// import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { lang } from "@/app/lib/utilities/lang";
 import { rootStaticPagesTranslate } from "@/public/locales/client/(public)/rootStaticPagesTranslate";
+const DynamicLottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 import notFoundAnimation from "/public/animations/notFound.json";
 
@@ -16,7 +18,7 @@ const NotFoundComponent = () => {
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
       {/* Animated Illustration */}
       <div className="max-w-md w-full mb-8">
-        <Lottie
+        <DynamicLottie
           animationData={notFoundAnimation}
           loop={true}
           className="w-full h-full"
@@ -49,7 +51,9 @@ const NotFoundComponent = () => {
 
       {/* Go Back Button */}
       <button
-        onClick={() => { router.back(); }}
+        onClick={() => {
+          router.back();
+        }}
         className="mt-8 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
       >
         {rootStaticPagesTranslate[lang].notFound.button.goBack}

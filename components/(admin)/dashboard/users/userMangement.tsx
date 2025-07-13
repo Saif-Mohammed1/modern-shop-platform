@@ -31,7 +31,7 @@ import {
   MdSmartphone,
 } from "react-icons/md";
 
-import type { UserStatus } from "@/app/lib/types/users.types";
+import type { UserStatus } from "@/app/lib/types/users.db.types";
 import { cn } from "@/app/lib/utilities/cn";
 
 interface LoginHistory {
@@ -64,43 +64,43 @@ interface UserPreferencesProps {
   };
 }
 interface Security {
-  twoFactorEnabled: boolean;
+  two_factor_enabled: boolean;
   rateLimits: {
     login: {
       locked: boolean;
-      lastAttempt: string;
+      last_attempt: string;
       attempts: number;
     };
     passwordReset: {
       attempts: number;
-      lastAttempt: Date;
-      lockUntil: Date;
+      last_attempt: Date;
+      lock_until: Date;
     };
     verification: {
       attempts: number;
-      lastAttempt: Date;
-      lockUntil: Date;
+      last_attempt: Date;
+      lock_until: Date;
     };
     "2fa": {
       attempts: number;
-      lastAttempt: Date;
-      lockUntil: Date;
+      last_attempt: Date;
+      lock_until: Date;
     };
     backup_recovery: {
       attempts: number;
-      lastAttempt: Date;
-      lockUntil: Date;
+      last_attempt: Date;
+      lock_until: Date;
     };
   };
   behavioralFlags: {
-    suspiciousDeviceChange: boolean;
-    impossibleTravel: boolean;
-    requestVelocity: number;
+    suspicious_device_change: boolean;
+    impossible_travel: boolean;
+    request_velocity: number;
   };
   auditLog: AuditLog[];
   loginHistory: LoginHistory[];
-  lastLogin: string;
-  passwordChangedAt: string;
+  last_login: string;
+  password_changed_at: string;
 }
 export interface User {
   _id: string;
@@ -108,10 +108,10 @@ export interface User {
   email: string;
   phone?: string;
   role: string;
-  createdAt: string;
+  created_at: string;
   verification: {
-    emailVerified: boolean;
-    phoneVerified: boolean;
+    email_verified: boolean;
+    phone_verified: boolean;
   };
   authMethods: string[];
   security: Security;
@@ -185,8 +185,10 @@ export default function UserAdminPage({ user }: { user: User }) {
 
 function AccountHealthIndicator({ security }: { security: Security }) {
   const warnings = [
-    security.behavioralFlags.impossibleTravel && "Suspicious location activity",
-    security.behavioralFlags.suspiciousDeviceChange && "Device change detected",
+    security.behavioralFlags.impossible_travel &&
+      "Suspicious location activity",
+    security.behavioralFlags.suspicious_device_change &&
+      "Device change detected",
     security.rateLimits.login.attempts > 3 && "Multiple failed logins",
   ].filter(Boolean);
 
@@ -221,11 +223,11 @@ function UserProfileCard({ user }: { user: User }) {
       <dl className="grid grid-cols-2 gap-4">
         <DetailItem
           label="Registered"
-          value={new Date(user.createdAt).toLocaleDateString()}
+          value={new Date(user.created_at).toLocaleDateString()}
         />
         <DetailItem
           label="Last Active"
-          value={<RelativeTime date={user.security?.lastLogin} />}
+          value={<RelativeTime date={user.security?.last_login} />}
         />
         <DetailItem
           label="Authentication"
@@ -236,7 +238,7 @@ function UserProfileCard({ user }: { user: User }) {
                   {method.toLowerCase()}
                 </span>
               ))}
-              {user.security.twoFactorEnabled ? (
+              {user.security.two_factor_enabled ? (
                 <span className="badge badge-success">
                   <FiLock size={14} className="mr-1" />
                   2FA Enabled
@@ -251,7 +253,7 @@ function UserProfileCard({ user }: { user: User }) {
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 {user.email}
-                {user.verification.emailVerified ? (
+                {user.verification.email_verified ? (
                   <AiOutlineCheckCircle className="text-green-600" size={16} />
                 ) : (
                   <FiMail className="text-yellow-600 " size={16} />
@@ -260,7 +262,7 @@ function UserProfileCard({ user }: { user: User }) {
               {user.phone ? (
                 <div className="flex items-center gap-1.5">
                   {user.phone}
-                  {user.verification.phoneVerified ? (
+                  {user.verification.phone_verified ? (
                     <AiOutlineCheckCircle
                       className="text-green-600"
                       size={16}
@@ -312,9 +314,9 @@ function SecurityStatusCard({ security }: { security: Security }) {
         />
         <SecurityMetric
           label="Request Velocity"
-          value={`${security.behavioralFlags.requestVelocity}/hr`}
+          value={`${security.behavioralFlags.request_velocity}/hr`}
           status={
-            security.behavioralFlags.requestVelocity > 100
+            security.behavioralFlags.request_velocity > 100
               ? "warning"
               : "normal"
           }
@@ -324,7 +326,7 @@ function SecurityStatusCard({ security }: { security: Security }) {
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Last Password Change</span>
-          <RelativeTime date={security.passwordChangedAt} />
+          <RelativeTime date={security.password_changed_at} />
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Recent Security Events</span>

@@ -10,17 +10,17 @@ export interface PriceCalculation {
 }
 
 export const calculateDiscount = (
-  item: Pick<ProductType, "price" | "discount" | "discountExpire">
+  item: Pick<ProductType, "price" | "discount" | "discount_expire">
 ): PriceCalculation => {
   const now = new Date();
   const expireDate =
-    item.discountExpire instanceof Date
-      ? item.discountExpire
-      : new Date(item.discountExpire || "");
+    item.discount_expire instanceof Date
+      ? item.discount_expire
+      : new Date(item.discount_expire || "");
 
   const isDiscountValid =
     !!item.discount &&
-    !!item.discountExpire &&
+    !!item.discount_expire &&
     !isNaN(expireDate.getTime()) &&
     expireDate > now;
 

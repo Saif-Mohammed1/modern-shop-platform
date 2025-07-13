@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
-import api from "@/app/lib/utilities/api";
+import { OrderStatus, type OrderType } from "@/app/lib/types/orders.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
 import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
@@ -30,7 +30,7 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
   const handleStatusUpdate = async () => {
     try {
       setIsUpdating(true);
-      await api.put(`/admin/dashboard/orders/${order._id}`, { status });
+      await api_client.put(`/admin/dashboard/orders/${order._id}`, { status });
       toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
       router.refresh();
     } catch (error: unknown) {
@@ -46,7 +46,7 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Order #{order.invoiceId}</h1>
+          <h1 className="text-2xl font-bold">Order #{order.invoice_id}</h1>
           <StatusBadge status={order.status as OrderStatus} />
         </div>
         <Button
@@ -65,16 +65,17 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
         <CardContent className="grid grid-cols-2 gap-4">
           <div>
             <p className="font-medium">Contact</p>
-            <p>{order.shippingAddress.phone}</p>
+            <p>{order.shipping_address.phone}</p>
           </div>
           <div>
             <p className="font-medium">Address</p>
             <p>
-              {order.shippingAddress.street}, {order.shippingAddress.city}
+              {order.shipping_address.street}, {order.shipping_address.city}
               <br />
-              {order.shippingAddress.state} {order.shippingAddress.postalCode}
+              {order.shipping_address.state}{" "}
+              {order.shipping_address.postal_code}
               <br />
-              {order.shippingAddress.country}
+              {order.shipping_address.country}
             </p>
           </div>
         </CardContent>
@@ -96,24 +97,24 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
                     Attributes: {JSON.stringify(item.attributes)}
                   </p>
                 )} */}
-                {item.attributes
+                {/* {item.attributes
                   ? Object.entries(item.attributes).map(([key, value]) => (
                       <div key={key} className="flex justify-between">
                         <dt className="text-gray-600 capitalize">{key}</dt>
                         <dd className="text-gray-900 font-medium">{value}</dd>
                       </div>
                     ))
-                  : null}
+                  : null} */}
               </div>
               <div className="text-right">
                 <p>
                   {item.quantity} ×{" "}
-                  {formatCurrency(item.finalPrice, {
+                  {formatCurrency(item.final_price, {
                     currency: order.currency,
                   })}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {formatCurrency(item.quantity * item.finalPrice, {
+                  {formatCurrency(item.quantity * item.final_price, {
                     currency: order.currency,
                   })}
                 </p>
@@ -148,11 +149,11 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
           </div>
           <div className="pt-4">
             <p className="text-sm text-muted-foreground">
-              Invoice ID: {order.invoiceId}
+              Invoice ID: {order.invoice_id}
             </p>
-            {order.invoiceLink ? (
+            {order.invoice_link ? (
               <a
-                href={order.invoiceLink}
+                href={order.invoice_link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline text-sm"
@@ -187,11 +188,11 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
         </CardContent>
       </Card>
 
-      {order.orderNotes && order.orderNotes.length > 0 ? (
+      {order.order_notes && order.order_notes.length > 0 ? (
         <Card>
           <CardHeader className="text-lg font-semibold">Order Notes</CardHeader>
           <CardContent className="space-y-2">
-            {order.orderNotes.map((note, index) => (
+            {order.order_notes.map((note, index) => (
               <p key={index} className="text-sm text-muted-foreground">
                 {note}
               </p>

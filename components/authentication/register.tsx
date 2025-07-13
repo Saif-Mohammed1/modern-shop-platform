@@ -11,11 +11,10 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { FiLock, FiMail, FiUser } from "react-icons/fi";
 import { z } from "zod";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
-
 
 import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
 import Spinner from "../spinner/spinner";
@@ -98,7 +97,7 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await api.post("/auth/register", data);
+      await api_client.post("/auth/register", data);
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,

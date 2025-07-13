@@ -15,8 +15,12 @@ import {
 import validator from "validator";
 import { z } from "zod";
 
-import { AuthMethod, UserRole, UserStatus } from "@/app/lib/types/users.types";
-import api from "@/app/lib/utilities/api";
+import {
+  AuthMethod,
+  UserRole,
+  UserStatus,
+} from "@/app/lib/types/users.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -145,7 +149,7 @@ const AddUser = () => {
         data: {
           error?: string;
         };
-      } = await api.post("/admin/dashboard/users", formData);
+      } = await api_client.post("/admin/dashboard/users", formData);
 
       if (response.data.error) {
         throw new Error(response.data.error);

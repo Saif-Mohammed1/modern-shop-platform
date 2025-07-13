@@ -151,7 +151,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
           </h1>
           <div className="flex items-center gap-2 mb-1 md:mb-4">
             <StarRatings
-              rating={product.ratingsAverage}
+              rating={product.ratings_average}
               starRatedColor="#ffb829"
               numberOfStars={5}
               starDimension="20px"
@@ -159,7 +159,7 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
               name="rating"
             />{" "}
             <span className="text-sm text-gray-500">
-              ({product.ratingsQuantity}{" "}
+              ({product.ratings_quantity}{" "}
               {shopPageTranslate[lang].modelProductDetails.reviews})
             </span>
           </div>
@@ -254,10 +254,10 @@ const ModelProductDetail = ({ product }: { product: ProductType }) => {
             </span>
           </button>
         </div>
-        {product.discountExpire ? (
+        {product.discount_expire ? (
           <div className="text-sm text-gray-500 text-center">
             {shopPageTranslate[lang].modelProductDetails.Offer}{" "}
-            {new Date(product.discountExpire).toLocaleDateString(lang, {
+            {new Date(product.discount_expire).toLocaleDateString(lang, {
               day: "numeric",
               month: "long",
             })}

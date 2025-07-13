@@ -99,7 +99,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         </div>
 
         <div className="space-y-2">
-          <StarRating rating={product.ratingsAverage} />
+          <StarRating rating={product.ratings_average} />
           <h3 className="font-medium line-clamp-2 text-sm">{product.name}</h3>
           <PriceDisplay price={product.price} discount={product.discount} />
         </div>

@@ -8,8 +8,8 @@ import toast from "react-hot-toast";
 import { FiCalendar, FiEye, FiTrash2 } from "react-icons/fi";
 import { HiFilter } from "react-icons/hi";
 
-import { OrderStatus, type OrderType } from "@/app/lib/types/orders.types";
-import api from "@/app/lib/utilities/api";
+import { OrderStatus, type OrderType } from "@/app/lib/types/orders.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Pagination, {
   type PaginationType,
@@ -140,7 +140,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
 
   const handleStatusUpdate = async (id: string, status: OrderStatus) => {
     try {
-      await api.put(`/admin/dashboard/orders/${id}`, { status });
+      await api_client.put(`/admin/dashboard/orders/${id}`, { status });
       setOrders((prev) =>
         prev.map((order) => (order._id === id ? { ...order, status } : order))
       );
@@ -154,7 +154,7 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/admin/dashboard/orders/${id}`);
+      await api_client.delete(`/admin/dashboard/orders/${id}`);
       setOrders((prev) => prev.filter((order) => order._id !== id));
       toast.success(ordersTranslate.functions[lang].handleDelete.success);
     } catch (error) {
@@ -320,14 +320,14 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
                     #{order._id.slice(-8)}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {order.userId.email}
+                    {order.user_info.email}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {/* {moment(order.createdAt).format("MMM D, YYYY")} */}
-                    {DateTime.fromJSDate(new Date(order.createdAt)).toFormat(
+                    {/* {moment(order.created_at).format("MMM D, YYYY")} */}
+                    {DateTime.fromJSDate(new Date(order.created_at)).toFormat(
                       "MMM d, yyyy"
                     )}
-                    {/* <RelativeTime date={order.createdAt.toString()} /> */}
+                    {/* <RelativeTime date={order.created_at.toString()} /> */}
                   </td>
                   <td className="px-4 py-3 text-sm font-semibold text-gray-700">
                     ${order.total.toFixed(2)}

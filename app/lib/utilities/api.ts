@@ -1,3 +1,4 @@
+import "server-only";
 import axios, {
   type AxiosRequestConfig,
   type AxiosError,
@@ -23,7 +24,14 @@ const api = axios.create({
 });
 
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshFailed = false; // New flag to stop refresh after failure
+
+// Define subscriber interface with resolve and reject
+interface Subscriber {
+  resolve: (token: string) => void;
+  reject: (error: AppError) => void;
+}
+let refreshSubscribers: Subscriber[] = [];
 
 // Add proper typing for request interceptor
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
@@ -45,7 +53,8 @@ api.interceptors.response.use(
     if (
       !error.response ||
       error.response.status !== 401 ||
-      originalRequest._retry
+      originalRequest._retry ||
+      refreshFailed
     ) {
       const message =
         (error.response?.data as { message?: string })?.message ||
@@ -54,28 +63,31 @@ api.interceptors.response.use(
       return Promise.reject(new AppError(message, statusCode));
     }
 
+    // If we reach here, it means we need to refresh the token
     if (!isRefreshing) {
       isRefreshing = true;
       originalRequest._retry = true;
 
       try {
         // Type the refresh token response
-        const { data } = await api.get<{ accessToken: string }>(
+        const { data } = await api.get<{ access_token: string }>(
           "/auth/refresh-token",
           {
             headers: originalRequest.headers,
           }
         );
 
-        tokenManager.setAccessToken(data.accessToken);
-        api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
+        tokenManager.setAccessToken(data.access_token);
+        api.defaults.headers.common.Authorization = `Bearer ${data.access_token}`;
 
-        refreshSubscribers.forEach((cb) => cb(data.accessToken));
+        refreshSubscribers.forEach((sub) => sub.resolve(data.access_token));
         refreshSubscribers = [];
 
         return api(originalRequest);
       } catch (_refreshError) {
+        refreshFailed = true; // Set flag to prevent further refresh attempts
         tokenManager.clearAccessToken();
+        tokenManager.setLogOut(true);
 
         if (typeof window !== "undefined") {
           window.location.href = "/auth";
@@ -90,11 +102,17 @@ api.interceptors.response.use(
       }
     }
 
-    return new Promise((resolve) => {
-      refreshSubscribers.push((newToken: string) => {
-        originalRequest.headers = originalRequest.headers || {};
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        resolve(api(originalRequest));
+    // Queue request if refresh is in progress
+    return new Promise((resolve, reject) => {
+      refreshSubscribers.push({
+        resolve: (newToken: string) => {
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          resolve(api(originalRequest));
+        },
+        reject: (error: AppError) => {
+          reject(error);
+        },
       });
     });
   }

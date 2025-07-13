@@ -7,18 +7,18 @@ import { toast } from "react-hot-toast";
 import { FiEdit3, FiX } from "react-icons/fi";
 import StarRatings from "react-star-ratings";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 
 type CreateReviewProps = {
   reviewsLength: number;
-  productId: string;
+  product_id: string;
 };
 
 const MAX_COMMENT_LENGTH = 500;
 
-const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
+const CreateReview = ({ reviewsLength, product_id }: CreateReviewProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rating, setRating] = useState(0);
@@ -28,7 +28,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
   const checkOrder = async () => {
     setIsLoading(true);
     try {
-      // await toast.promise(api.patch(`/customers/reviews/${productId}`), {
+      // await toast.promise(api_client.patch(`/customers/reviews/${product_id}`), {
       //   loading:
       //     reviewsTranslate[lang].createReviewsSection.functions.checkOrder
       //       .loading,
@@ -37,7 +37,7 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
       //       .success,
       //   error: (error) => error.message || reviewsTranslate[lang].errors.global,
       // });
-      await api.patch(`/customers/reviews/${productId}`);
+      await api_client.patch(`/customers/reviews/${product_id}`);
       toast.success(
         reviewsTranslate[lang].createReviewsSection.functions.checkOrder.success
       );
@@ -70,7 +70,10 @@ const CreateReview = ({ reviewsLength, productId }: CreateReviewProps) => {
     }
 
     try {
-      await api.post(`/customers/reviews/${productId}`, { rating, comment });
+      await api_client.post(`/customers/reviews/${product_id}`, {
+        rating,
+        comment,
+      });
       toast.success(
         reviewsTranslate[lang].createReviewsSection.functions.handleSubmit
           .success

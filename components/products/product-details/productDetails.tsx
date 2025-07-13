@@ -13,7 +13,7 @@ import StarRatings from "react-star-ratings";
 
 import type { ProductType } from "@/app/lib/types/products.types";
 // import type { ReviewsType } from "@/app/lib/types/reviews.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import ReviewSection from "@/components/products/Review/review";
@@ -116,7 +116,7 @@ const ProductDetail = ({
               docs: ProductType[];
             };
           };
-        } = await api.get(`/shop/?category=${product.category}&limit=8`);
+        } = await api_client.get(`/shop/?category=${product.category}&limit=8`);
 
         setRelatedProducts(data.products.docs);
       } catch (_error) {
@@ -213,14 +213,14 @@ const ProductDetail = ({
               </h1>
               <div className="flex items-center space-x-2">
                 <StarRatings
-                  rating={product.ratingsAverage}
+                  rating={product.ratings_average}
                   starRatedColor="#f59e0b"
                   numberOfStars={5}
                   starDimension="20px"
                   starSpacing="2px"
                 />
                 <span className="text-gray-600">
-                  ({product.ratingsQuantity}{" "}
+                  ({product.ratings_quantity}{" "}
                   {shopPageTranslate[lang].content.reviews})
                 </span>
               </div>
@@ -329,7 +329,7 @@ const ProductDetail = ({
               <div className="bg-yellow-50 p-3 rounded-lg">
                 <p className="text-sm text-yellow-700">
                   {shopPageTranslate[lang].content.discountExpires}{" "}
-                  {new Date(product.discountExpire || "").toLocaleDateString(
+                  {new Date(product.discount_expire || "").toLocaleDateString(
                     lang,
                     {
                       year: "numeric",
@@ -337,7 +337,7 @@ const ProductDetail = ({
                       day: "numeric",
                     }
                   )}
-                  {/* {formatDateTime(product.discountExpire)} */}
+                  {/* {formatDateTime(product.discount_expire)} */}
                 </p>
               </div>
             ) : null}
@@ -349,14 +349,14 @@ const ProductDetail = ({
               {shopPageTranslate[lang].content.specifications}
             </h3>
             <dl className="grid grid-cols-2 gap-4">
-              {product.attributes
+              {/* {product.attributes
                 ? Object.entries(product.attributes).map(([key, value]) => (
                     <div key={key} className="flex justify-between">
                       <dt className="text-gray-600 capitalize">{key}</dt>
                       <dd className="text-gray-900 font-medium">{value}</dd>
                     </div>
                   ))
-                : null}
+                : null} */}
               <div className="flex justify-between">
                 <dt className="text-gray-600">
                   {shopPageTranslate[lang].content.category}
@@ -390,10 +390,10 @@ const ProductDetail = ({
             hasNextPage: product.reviews.length === 5,
             distribution: distribution,
           }}
-          productId={product._id}
+          product_id={product._id}
           user={user}
-          averageRating={product.ratingsAverage}
-          totalReviews={product.ratingsQuantity}
+          averageRating={product.ratings_average}
+          totalReviews={product.ratings_quantity}
         />
       </section>
       {/* Related Products */}

@@ -9,7 +9,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Spinner from "../spinner/spinner";
 
@@ -40,7 +40,7 @@ const RegisterPage = () => {
     }
     setIsLoading(true);
     try {
-      await api.post("/auth/register", {
+      await api_client.post("/auth/register", {
         name,
         email,
         password,

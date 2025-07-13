@@ -18,11 +18,11 @@ const queryParams = async (searchParams: SearchParams) => {
   const url = new URLSearchParams();
 
   // Append each parameter only if it's not undefined
-  if (searchParams.email !== undefined) {
-    url.append("email", searchParams.email);
-  }
+  // if (searchParams.email !== undefined) {
+  //   url.append("email", searchParams.email);
+  // }
   if (searchParams.search !== undefined) {
-    url.append("search", searchParams.search);
+    url.append("email[ili]", searchParams.search);
   }
   if (searchParams.status !== undefined) {
     url.append("status", searchParams.status);

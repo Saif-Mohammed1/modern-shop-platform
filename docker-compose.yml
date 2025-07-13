@@ -2,24 +2,24 @@
 services:
   next_app:
     depends_on:
-      mongodb:
-        condition: service_healthy # Wait for MongoDB to be healthy
+      postgres:
+        condition: service_healthy # Wait for db to be healthy
     env_file:
       - ./config/.env
-  mongodb:
-    image: mongo
-    ports:
-      - '27017:27017'
+    postgres:
+    image: postgres:15
     restart: always
+    ports:
+      - '5432:5432'
     volumes:
-      - mongodb_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
     env_file:
       - ./config/.env
     healthcheck:
-      test: ['CMD-SHELL', 'mongo --quiet --eval ''db.adminCommand("ping")''']
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 5
-
 volumes:
-  mongodb_data:
+  postgres_data:
+   

@@ -1,13 +1,17 @@
 // src/app/lib/schemas/security.schemas.ts
-import {type IpVersion, z} from 'zod';
+import { type IpVersion, z } from "zod";
 
-import {zObjectId} from '@/app/lib/utilities/assignAsObjectId';
-import {lang} from '@/app/lib/utilities/lang';
-import {TwoFactorTranslate} from '@/public/locales/server/TwoFactor.Translate';
-import {userZodValidatorTranslate} from '@/public/locales/server/userControllerTranslate';
+import { zObjectId } from "@/app/lib/utilities/assignAsObjectId";
+import { lang } from "@/app/lib/utilities/lang";
+import { TwoFactorTranslate } from "@/public/locales/server/TwoFactor.Translate";
+import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 
 export class TwoFactorValidation {
-  private static allowedEmailDomains = ['gmail.com', 'yahoo.com', 'outlook.com'];
+  private static allowedEmailDomains = [
+    "gmail.com",
+    "yahoo.com",
+    "outlook.com",
+  ];
   static TwoFactorLoginSchema = z.object({
     tempToken: z
       .string({
@@ -41,7 +45,7 @@ export class TwoFactorValidation {
         message: TwoFactorTranslate[lang].dto.ipAddress.required,
       })
       .ip({
-        version: 'v4' as IpVersion,
+        version: "v4" as IpVersion,
         message: TwoFactorTranslate[lang].dto.ipAddress.invalid,
       }),
     userAgent: z
@@ -57,8 +61,12 @@ export class TwoFactorValidation {
         timezone: z.string().optional(),
       })
       .optional(),
-    deviceHash: z.string().min(64, TwoFactorTranslate[lang].dto.deviceHash.invalid),
-    deviceType: z.enum(['desktop', 'mobile', 'tablet', 'bot', 'unknown']).default('unknown'),
+    deviceHash: z
+      .string()
+      .min(64, TwoFactorTranslate[lang].dto.deviceHash.invalid),
+    deviceType: z
+      .enum(["desktop", "mobile", "tablet", "bot", "unknown"])
+      .default("unknown"),
     browser: z
       .object({
         name: z.string().optional(),
@@ -78,7 +86,7 @@ export class TwoFactorValidation {
   });
 
   static TwoFactorInitSchema = z.object({
-    userId: zObjectId,
+    user_id: zObjectId,
   });
 
   static TwoFactorVerifySchema = z.object({
@@ -87,7 +95,7 @@ export class TwoFactorValidation {
         message: TwoFactorTranslate[lang].dto.temToken.required,
       })
       .length(6),
-    // deviceInfo: this.SecurityMetadataSchema,
+    // device_info: this.SecurityMetadataSchema,
   });
 
   static BackupCodeVerifySchema = z.object({
@@ -98,7 +106,7 @@ export class TwoFactorValidation {
       .regex(/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/, {
         message: TwoFactorTranslate[lang].dto.code.regex,
       }),
-    deviceInfo: this.SecurityMetadataSchema,
+    device_info: this.SecurityMetadataSchema,
   });
 
   static TwoFactorDisableSchema = z.object({
@@ -112,12 +120,12 @@ export class TwoFactorValidation {
 
   static TwoFactorAuditLogSchema = z.object({
     action: z.enum([
-      '2FA_INIT',
-      '2FA_SUCCESS',
-      '2FA_FAILED_ATTEMPT',
-      'BACKUP_CODE_USED',
-      '2FA_DISABLED',
-      'BACKUP_CODE_REGENERATED',
+      "2FA_INIT",
+      "2FA_SUCCESS",
+      "2FA_FAILED_ATTEMPT",
+      "BACKUP_CODE_USED",
+      "2FA_DISABLED",
+      "BACKUP_CODE_REGENERATED",
     ]),
     metadata: this.SecurityMetadataSchema,
     timestamp: z.date(),
@@ -128,7 +136,7 @@ export class TwoFactorValidation {
       .array(
         z.string({
           message: TwoFactorTranslate[lang].dto.backupCode.backUp,
-        }),
+        })
       )
       .length(5, {
         message: TwoFactorTranslate[lang].dto.backupCode.array,
@@ -139,7 +147,7 @@ export class TwoFactorValidation {
       })
       .email(userZodValidatorTranslate[lang].email.invalid)
       .refine((email) => {
-        const domain = email.split('@')[1];
+        const domain = email.split("@")[1];
         return this.allowedEmailDomains.includes(domain);
       }, userZodValidatorTranslate[lang].email.domainNotAllowed),
   });
@@ -148,7 +156,9 @@ export class TwoFactorValidation {
   }
 }
 
-export type SecurityMetadataType = z.infer<typeof TwoFactorValidation.SecurityMetadataSchema>;
+export type SecurityMetadataType = z.infer<
+  typeof TwoFactorValidation.SecurityMetadataSchema
+>;
 // /**// src/app/lib/utilities/security.ts
 // import { UAParser } from 'ua-parser-js';
 // import { SecurityMetadata } from "@/app/lib/features/2fa/2fa.interface";

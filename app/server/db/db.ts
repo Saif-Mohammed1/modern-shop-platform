@@ -1,62 +1,28 @@
-import mongoose, { type Connection } from "mongoose";
+import knex, { type Knex } from "knex";
 
-// if (process.env.NODE_ENV === "development") {
-//   mongoose.set("debug", true);
-// }
+import AppError from "@/app/lib/utilities/appError";
+import config from "@/knexfile";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable.");
+// Extend NodeJS global type to include knexInstance
+declare global {
+   
+  var knexInstance: Knex | undefined;
 }
 
-// Extend the global object
-let cached = global.mongoose as {
-  conn: Connection | null;
-  promise: Promise<Connection> | null;
+// Initialize cached connection
+let cachedDb: Knex | null = global.knexInstance || null;
+
+const connectDB = (): Knex => {
+  if (!cachedDb) {
+    try {
+      cachedDb = knex(config.development);
+      // Save to global to prevent multiple instances in development
+      global.knexInstance = cachedDb;
+    } catch (_error) {
+      throw new AppError("Failed to connect to database", 500);
+    }
+  }
+  return cachedDb;
 };
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
-
-const connectDB = async (): Promise<Connection> => {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    // No longer need useNewUrlParser and useUnifiedTopology options
-    cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => {
-      return mongoose.connection;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (error) {
-    cached.promise = null;
-    throw new Error(
-      `Failed to connect to MongoDB: ${(error as Error).message}`
-    );
-  }
-
-  return cached.conn;
-};
-
-// export default connectDB;
-
-const disconnectDB = async (): Promise<void> => {
-  if (mongoose.connection.readyState === 0) {
-    return; // Already disconnected
-  }
-  try {
-    await mongoose.disconnect();
-  } catch (error) {
-    throw new Error(
-      `Failed to disconnect from MongoDB: ${(error as Error).message}`
-    );
-  }
-};
-
-export { connectDB, disconnectDB };
+export { connectDB };

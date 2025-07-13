@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { FaImage, FaTrash } from "react-icons/fa";
 
 import type { OldImage } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 
@@ -58,7 +58,7 @@ export default function ProductImages({
           productsTranslate.products[lang].editProduct.removeImage.loading
         );
 
-        await api.put(`/admin/dashboard/products/${slug}/remove-image`, {
+        await api_client.put(`/admin/dashboard/products/${slug}/remove-image`, {
           public_id: imageToRemove.public_id,
         });
         toast.success(

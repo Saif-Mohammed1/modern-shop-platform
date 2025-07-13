@@ -1,67 +1,93 @@
-import type { Types, ClientSession } from "mongoose";
+import type { Knex } from "knex";
 
 import {
   AuditAction,
   AuditSource,
-  EntityType,
-} from "@/app/lib/types/audit.types";
+  type IAuditLogChangesDB,
+} from "@/app/lib/types/audit.db.types";
 import type {
-  QueryBuilderConfig,
+  IProductDB,
+  IProductImagesDB,
+  IProductViewBasicDB,
+  IProductViewDB,
+} from "@/app/lib/types/products.db.types";
+import type {
   QueryBuilderResult,
   QueryOptionConfig,
 } from "@/app/lib/types/queryBuilder.types";
 import AppError from "@/app/lib/utilities/appError";
 import { destroyImage, uploadImage } from "@/app/lib/utilities/cloudinary";
 import { lang } from "@/app/lib/utilities/lang";
-import { QueryBuilder } from "@/app/lib/utilities/queryBuilder";
 import { productControllerTranslate } from "@/public/locales/server/productControllerTranslate";
 
-import type { LogsTypeDto } from "../dtos/logs.dto";
+import { connectDB } from "../db/db";
 import type { CreateProductDto, UpdateProductDto } from "../dtos/product.dto";
-import AuditLogModel, { type IAuditLog } from "../models/audit-log.model";
-import ProductModel, { type IProduct } from "../models/Product.model";
 import { ProductRepository } from "../repositories/product.repository";
 
+type productType = IProductViewDB | IProductViewBasicDB | IProductDB;
 export class ProductService {
   constructor(
     private readonly repository: ProductRepository = new ProductRepository(
-      ProductModel
+      connectDB()
     )
   ) {}
-  async logAction(
-    action: AuditAction,
-    entityId: string,
-    actor: Types.ObjectId,
-    changes: Array<{
-      field: string;
-      before?: any;
-      after?: any;
-      changeType: "ADD" | "MODIFY" | "REMOVE";
-    }>,
-    ipAddress: string,
-    userAgent: string,
-    source: AuditSource = AuditSource.WEB,
-    session?: ClientSession
-  ) {
-    await AuditLogModel.create(
-      [
-        {
-          actor,
-          action,
-          entityType: EntityType.PRODUCT,
-          entityId,
-          changes,
-          ipAddress,
-          userAgent,
-          source,
-        },
-      ],
-      { session }
-    );
-  }
 
-  private getUpdateChanges(oldDoc: IProduct, newDoc: IProduct) {
+  private getUpdateChanges(oldDoc: productType, newDoc: productType) {
     const changes = [];
+    const trackedFields = [
+      "name",
+      "price",
+      "discount",
+      "stock",
+      "description",
+      // "active",
+      // "images",
+    ];
+
+    for (const field of trackedFields) {
+      const oldValue = oldDoc[field as keyof productType];
+      const newValue = newDoc[field as keyof productType];
+
+      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+        changes.push({
+          field,
+          before: oldValue,
+          after: newValue,
+          change_type: "MODIFY" as const,
+        });
+      }
+    }
+    return changes;
+  }
+  async findById(id: string, trx?: Knex.Transaction) {
+    return await this.repository.findById(id, trx);
+  }
+  async createProduct(
+    dto: CreateProductDto
+    // logs: LogsTypeDto
+  ): Promise<IProductDB> {
+    let uploadedImages: Omit<
+      IProductImagesDB,
+      "_id" | "created_at" | "product_id"
+    >[] = []; // [];
+    if (
+      typeof dto.images[0] === "string" &&
+      this.isBase64Image(dto.images[0])
+    ) {
+      for (const image of dto.images as string[]) {
+        if (!this.isBase64Image(image)) {
+          throw new AppError("Invalid base64 image format", 400);
+        }
+
+        const result = await uploadImage(image, "shop/shop-products");
+        uploadedImages.push({
+          link: result.secure_url,
+          public_id: result.public_id,
+        });
+      }
+    } else {
+      uploadedImages = dto.images as { link: string; public_id: string }[];
+    }
     const trackedFields = [
       "name",
       "price",
@@ -71,223 +97,223 @@ export class ProductService {
       "active",
       "images",
     ];
+    const { user_id, images, ...productData } = dto;
+    const imgs = JSON.stringify(uploadedImages);
+    const getChanges = Object.keys(productData)
+      .map((key) => {
+        const before = trackedFields.includes(key) ? "" : undefined;
 
-    for (const field of trackedFields) {
-      const oldValue = oldDoc[field as keyof IProduct];
-      const newValue = newDoc[field as keyof IProduct];
+        const after = trackedFields.includes(key)
+          ? productData[key as keyof typeof productData]
+          : undefined;
+        return {
+          field: key,
+          before,
+          after,
+          change_type: "ADD" as const,
+        };
+      })
+      .filter((changes) => trackedFields.includes(changes.field));
 
-      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-        changes.push({
-          field,
-          before: oldValue,
-          after: newValue,
-          changeType: "MODIFY" as const,
-        });
-      }
-    }
-    return changes;
-  }
-  async createProduct(
-    dto: CreateProductDto,
-    logs: LogsTypeDto
-  ): Promise<IProduct> {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-    try {
-      let uploadedImages: IProduct["images"] = []; // [];
+    return await this.repository.transaction(async (trx) => {
+      try {
+        const product = await this.repository.createProduct(
+          {
+            ...dto,
+            images: uploadedImages, // Ensure images are in the correct format
+          },
+          trx
+        );
 
-      // If images are base64 strings, upload them
-      if (typeof dto.images[0] === "string") {
-        for (const image of dto.images as string[]) {
-          this.validateBase64Image(image);
-          const result = await uploadImage(image, "shop/shop-products");
+        await this.repository.logAction(
+          AuditAction.CREATE,
+          product.slug,
+          dto.user_id,
+          [
+            ...getChanges,
+            {
+              field: "images",
+              before: "",
+              after: imgs,
+              change_type: "ADD" as const,
+            },
+          ],
+          // logs.ipAddress,
+          // logs.userAgent,
+          AuditSource.API, // Add source to LogsTypeDto
+          trx
+        );
 
-          uploadedImages.push({
-            link: result.secure_url,
-            public_id: result.public_id,
-          });
+        return product;
+      } catch (error) {
+        if (uploadedImages.length > 0) {
+          const deleteImg = uploadedImages.map((image) =>
+            destroyImage(image.public_id)
+          );
+          await Promise.all(deleteImg);
         }
-      } else {
-        // If already formatted as objects, keep them
-        uploadedImages = dto.images as { link: string; public_id: string }[];
+        throw error;
       }
-      dto.images = uploadedImages;
-
-      const product = await this.repository.create(dto, session);
-
-      const { userId, ...productData } = dto;
-      productData.images = uploadedImages;
-
-      const changes = Object.entries(productData).map(([field, value]) => ({
-        field,
-        after: value,
-        changeType: "ADD" as const,
-      }));
-
-      await this.logAction(
-        AuditAction.CREATE,
-        product.slug,
-        dto.userId,
-        changes,
-        logs.ipAddress,
-        logs.userAgent,
-        logs.source as AuditSource, // Add source to LogsTypeDto
-        session
-      );
-
-      await session.commitTransaction();
-      return product;
-    } catch (error) {
-      await session.abortTransaction();
-
-      throw error;
-    } finally {
-      await session.endSession();
-    }
+    });
   }
 
   async updateProduct(
     slug: string,
     dto: UpdateProductDto,
-    actorId: CreateProductDto["userId"],
-    logs: LogsTypeDto
-  ): Promise<IProduct | null> {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-    try {
-      const oldProduct = await this.repository.getProductBySlug(slug);
-      if (!oldProduct) {
-        throw new AppError(
-          productControllerTranslate[lang].errors.noProductFoundWithId,
-          404
-        );
-      }
-      let uploadedImages: IProduct["images"] = []; // [];
-
-      // If images are base64 strings, upload them
-      if (dto.images) {
-        const images = dto.images.filter((img) => !(typeof img === "object"));
-        for (const image of images) {
-          this.validateBase64Image(image);
-          const result = await uploadImage(image, "shop/shop-products");
-
-          uploadedImages.push({
-            link: result.secure_url,
-            public_id: result.public_id,
-          });
-        }
-      }
-      dto.images = [...(oldProduct.images || []), ...uploadedImages].filter(
-        Boolean
+    actorId: CreateProductDto["user_id"]
+    // logs: LogsTypeDto
+  ): Promise<IProductDB | null> {
+    const oldProduct = await this.repository.getProductBySlug(slug);
+    if (!oldProduct) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.noProductFoundWithId,
+        404
       );
-      const updatedProduct = await this.repository.update(
-        slug,
-        { ...dto, actorId },
-        session
-      );
-
-      if (!updatedProduct) {
-        throw new AppError(
-          productControllerTranslate[lang].errors.noProductFoundWithId,
-          404
-        );
-      }
-
-      const changes = this.getUpdateChanges(oldProduct, updatedProduct);
-      if (Object.keys(changes).length > 0) {
-        await this.logAction(
-          AuditAction.UPDATE,
-          updatedProduct.slug,
-          actorId,
-          changes,
-          logs.ipAddress,
-          logs.userAgent,
-          logs.source as AuditSource, // Add source to LogsTypeDto
-          session
-        );
-      }
-
-      await session.commitTransaction();
-      return updatedProduct;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      await session.endSession();
     }
+
+    let uploadedImages: Omit<
+      IProductImagesDB,
+      "_id" | "created_at" | "product_id"
+    >[] = []; // [];
+
+    // If images are base64 strings, upload them
+    if (dto.images) {
+      const images = dto.images.filter((img) => !(typeof img === "object"));
+      for (const image of images) {
+        if (!this.isBase64Image(image)) {
+          throw new AppError("Invalid base64 image format", 400);
+        }
+        this.validateBase64Image(image);
+        const result = await uploadImage(image, "shop/shop-products");
+
+        uploadedImages.push({
+          link: result.secure_url,
+          public_id: result.public_id,
+        });
+      }
+    }
+    //  const updatedImages = [...(oldProduct.images || []), ...uploadedImages].filter(
+    //     Boolean
+    //   );
+    return await this.repository.transaction(async (trx) => {
+      try {
+        const updatedProduct = await this.repository.update(
+          slug,
+          {
+            ...dto,
+            actorId,
+            images: uploadedImages,
+            product_id: oldProduct._id,
+          },
+          trx
+        );
+
+        if (!updatedProduct) {
+          throw new AppError(
+            productControllerTranslate[lang].errors.noProductFoundWithId,
+            404
+          );
+        }
+        const changes = this.getUpdateChanges(oldProduct, updatedProduct);
+        if (Object.keys(changes).length > 0) {
+          await this.repository.logAction(
+            AuditAction.UPDATE,
+            updatedProduct.slug,
+            actorId,
+            changes,
+            // logs.ipAddress,
+            // logs.userAgent,
+            AuditSource.API, // Add source to LogsTypeDto
+            trx
+          );
+        }
+
+        return updatedProduct;
+      } catch (error) {
+        if (uploadedImages.length > 0) {
+          const deleteImg = uploadedImages.map((image) =>
+            destroyImage(image.public_id)
+          );
+          await Promise.all(deleteImg);
+        }
+        throw error;
+      }
+    });
   }
 
   async deleteProduct(
     slug: string,
-    actorId: CreateProductDto["userId"],
-    logs: LogsTypeDto
+    actorId: CreateProductDto["user_id"]
+    // logs: LogsTypeDto
   ): Promise<boolean> {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-    try {
-      const product = await this.repository.getProductBySlug(slug);
-      if (!product) {
-        throw new AppError(
-          productControllerTranslate[lang].errors.noProductFoundWithId,
-          404
-        );
-      }
-      if (product.images) {
-        // const utapi = new UTApi();
-        for (const image of product.images) {
-          //   await utapi.deleteFiles(public_id);
-
-          // for cloudainry
-          await destroyImage(image.public_id);
-        }
-      }
-      const result = await this.repository.delete(
-        product._id.toString(),
-        session
-      );
-      await this.logAction(
-        AuditAction.DELETE,
-        product.slug,
-        actorId,
-        [
-          {
-            changeType: "REMOVE",
-            field: "product",
-            before: product,
-            after: undefined,
-          },
-        ],
-
-        logs.ipAddress,
-        logs.userAgent,
-        logs.source as AuditSource, // Add source to LogsTypeDto
-        session
-      );
-      await session.commitTransaction();
-      return result;
-    } catch (error) {
-      await session.abortTransaction();
-
-      throw error;
-    } finally {
-      await session.endSession();
-    }
-  }
-  async getProducts(
-    options: QueryOptionConfig,
-    isAdmin?: boolean
-  ): Promise<QueryBuilderResult<IProduct>> {
-    const products = await this.repository.getProducts(options, isAdmin);
-    if (!products || products.docs.length === 0) {
+    const product = await this.repository.getProductBySlug(slug);
+    if (!product) {
       throw new AppError(
-        productControllerTranslate[lang].errors.notFoundProducts,
+        productControllerTranslate[lang].errors.noProductFoundWithId,
         404
       );
     }
-    return products;
+    if (product.images) {
+      // const utapi = new UTApi();
+      const deleteImg = product.images.map((image) =>
+        destroyImage(image.public_id)
+      );
+      await Promise.all(deleteImg);
+    }
+    return await this.repository.transaction(async (trx) => {
+      const [result] = await Promise.all([
+        this.repository.delete(product._id.toString(), trx),
+        this.repository.logAction(
+          AuditAction.DELETE,
+          product.slug,
+          actorId,
+          [
+            {
+              change_type: "REMOVE",
+              field: "product",
+              before: product,
+              after: "",
+            },
+          ],
+
+          // logs.ipAddress,
+          // logs.userAgent,
+          AuditSource.API, // Add source to LogsTypeDto
+          trx
+        ),
+      ]);
+      return result;
+    });
   }
-  async getProductById(id: string, session?: ClientSession) {
-    const product = await this.repository.findById(id, session);
+  async getProductsByAdmin(
+    options: QueryOptionConfig
+    // isAdmin?: boolean
+  ): Promise<QueryBuilderResult<IProductDB>> {
+    return await this.repository.getProductsByAdmin(options);
+    // console.log("Products fetched:", products);
+    // if (!products || products.docs.length === 0) {
+    //   throw new AppError(
+    //     productControllerTranslate[lang].errors.notFoundProducts,
+    //     404
+    //   );
+    // }
+    // return products;
+  }
+  async getProducts(
+    options: QueryOptionConfig
+    // isAdmin?: boolean
+  ): Promise<QueryBuilderResult<IProductViewBasicDB>> {
+    return await this.repository.getProducts(options);
+    // if (!products || products.docs.length === 0) {
+    //   throw new AppError(
+    //     productControllerTranslate[lang].errors.notFoundProducts,
+    //     404
+    //   );
+    // }
+    // return products;
+  }
+  async getProductById(id: string, trx?: Knex.Transaction) {
+    const product = await this.repository.findById(id, trx);
     if (!product) {
       throw new AppError(
         productControllerTranslate[lang].errors.noProductFoundWithId,
@@ -298,7 +324,9 @@ export class ProductService {
   }
   async getProductBySlug(
     slug: string,
-    options?: { populate?: boolean; select?: string }
+    options?: {
+      populate?: boolean; //select?: string
+    }
   ) {
     const product = await this.repository.getProductBySlug(slug, options);
     if (!product) {
@@ -329,69 +357,33 @@ export class ProductService {
   async deleteProductImages(
     slug: string,
     public_id: string,
-    actorId: CreateProductDto["userId"],
-    logs: LogsTypeDto
+    actorId: CreateProductDto["user_id"]
+    // logs: LogsTypeDto
   ) {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-    try {
-      const product = await this.repository.getProductBySlug(
-        slug,
-        undefined,
-        session
-      );
-      if (!product) {
-        throw new AppError(
-          productControllerTranslate[lang].errors.noProductFoundWithId,
-          404
-        );
-      }
+    await this.repository.transaction(async (trx) => {
+      await Promise.all([
+        this.repository.deleteProductImages(public_id, trx),
 
-      // Filter images to delete
-      const imagesToDelete = product.images.filter((image) =>
-        public_id.includes(image.public_id)
-      );
-
-      // Delete images from Cloudinary
-      for (const image of imagesToDelete) {
-        await destroyImage(image.public_id);
-      }
-
-      // Remove deleted images from the document
-      product.images = product.images.filter(
-        (image) => !public_id.includes(image.public_id)
-      );
-      await this.repository.updateProductImages(
-        product._id.toString(),
-        product.images,
-        actorId,
-        session
-      );
-      const changes = imagesToDelete.map((image) => ({
-        field: "images",
-        before: image,
-        after: undefined,
-        changeType: "REMOVE" as const,
-      }));
-
-      await this.logAction(
-        AuditAction.IMAGE_REMOVE, // Fixed action type
-        product.slug,
-        actorId,
-        changes,
-        logs.ipAddress,
-        logs.userAgent,
-        logs.source as AuditSource, // Add source to LogsTypeDto
-        session
-      );
-
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      await session.endSession();
-    }
+        this.repository.logAction(
+          AuditAction.IMAGE_REMOVE, // Fixed action type
+          slug,
+          actorId,
+          [
+            {
+              field: "images",
+              before: public_id,
+              after: "",
+              change_type: "REMOVE" as const,
+            },
+          ],
+          // logs.ipAddress,
+          // logs.userAgent,
+          AuditSource.API, // Add source to LogsTypeDto
+          trx
+        ),
+      ]);
+    });
+    await destroyImage(public_id);
     // await product.save();
   }
   validateBase64Image(image: string): void {
@@ -441,200 +433,107 @@ export class ProductService {
   }
   async toggleProductActivity(
     slug: string,
-    userId: CreateProductDto["userId"]
+    user_id: CreateProductDto["user_id"]
   ) {
-    return await this.repository.toggleProductActivity(slug, userId);
+    await this.repository.toggleProductActivity(slug, user_id);
   }
   async getProductHistory(
     slug: string,
     options: QueryOptionConfig,
     versionId?: string
-  ): Promise<QueryBuilderResult<IAuditLog>> {
-    const queryConfig: QueryBuilderConfig<IAuditLog> = {
-      allowedFilters: [
-        "entityType",
-        "entityId",
-        "actor",
-        "action",
-        "createdAt",
-      ],
-
-      allowedSorts: ["createdAt", "updatedAt"],
-    };
-
-    //   allowedSorts: ["createdAt", "updatedAt"] as Array<keyof IWishlist>,
-    //   maxLimit: 100,
-    const query = new URLSearchParams({
-      ...options.query,
-      entityType: EntityType.PRODUCT,
-      entityId: slug,
-    });
-
-    if (versionId) {
-      const targetVersion = await AuditLogModel.findById(versionId);
-      if (!targetVersion) {
-        throw new AppError("Invalid version", 400);
-      }
-      query.append("createAt[lte]", targetVersion.createdAt.toISOString());
-    }
-    const queryBuilder = new QueryBuilder<IAuditLog>(
-      AuditLogModel,
-      query,
-      queryConfig
-    );
-
-    if (options?.populate) {
-      queryBuilder.populate([{ path: "actor", select: "name email" }]);
-    }
-
-    const logs = await queryBuilder.execute();
-
-    return this.reconstructProduct(logs);
+  ) {
+    return await this.repository.getProductHistory(slug, options, versionId);
   }
 
-  private reconstructProduct(
-    logsResult: QueryBuilderResult<IAuditLog>
-  ): QueryBuilderResult<IAuditLog> {
-    let product: Record<string, any> = {};
-    const reconstructedVersions: any[] = [];
-
-    for (const log of logsResult.docs) {
-      switch (log.action) {
-        case AuditAction.CREATE:
-          log.changes.forEach((change) => {
-            if (change.changeType === "ADD") {
-              product[change.field] = change.after;
-            }
-          });
-          break;
-
-        case AuditAction.UPDATE:
-          log.changes.forEach((change) => {
-            product[change.field] = change.after;
-          });
-          break;
-
-        case AuditAction.DELETE:
-          product = {};
-          break;
-
-        case AuditAction.RESTORE:
-          product = log.changes[0]?.after || {};
-          break;
-
-        case AuditAction.IMAGE_ADD:
-          product.images = product.images || [];
-          log.changes.forEach((change) => {
-            (product.images as Array<{ link: string; public_id: string }>).push(
-              change.after
-            );
-          });
-          break;
-
-        case AuditAction.IMAGE_REMOVE:
-          product.images = (
-            (product.images as Array<{ link: string; public_id: string }>) || []
-          ).filter(
-            (img) =>
-              !log.changes.some(
-                (c: { before?: { public_id: string } }) =>
-                  c.before && c.before.public_id === img.public_id
-              )
-          );
-          break;
-      }
-
-      // Save snapshot at each version
-      reconstructedVersions.push({
-        ...product,
-        versionId: log._id,
-        timestamp: log.createdAt,
-      });
-    }
-
-    return {
-      ...logsResult,
-      docs: reconstructedVersions, // Return product versions with pagination
-    };
-  }
   async restoreProductVersion(
     slug: string,
     versionId: string,
-    actorId: Types.ObjectId,
-    logs: LogsTypeDto
-  ): Promise<IProduct> {
-    const session = await this.repository.startSession();
-    session.startTransaction();
-
-    try {
-      // Get current product first to ensure it exists
-      const currentProduct = await this.repository.getProductBySlug(slug);
-      if (!currentProduct) {
-        throw new AppError(
-          productControllerTranslate[lang].errors.noProductFoundWithId,
-          404
-        );
-      }
-
-      // Get historical version data using product ID
-      const historicalData = await this.getProductHistory(
-        slug,
-        { query: new URLSearchParams() }, // Default query options
-        versionId
+    actorId: string
+    // logs: LogsTypeDto
+  ): Promise<IProductDB> {
+    // Get current product first to ensure it exists
+    const currentProduct = await this.repository.getProductBySlug(slug);
+    if (!currentProduct) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.noProductFoundWithId,
+        404
       );
+    }
 
-      if (!historicalData.docs.length) {
-        throw new AppError(
-          productControllerTranslate[lang].errors.HistoricalProductNotFound,
-          404
-        );
-      }
+    // Get historical version data using product ID
+    const historicalData = await this.getProductHistory(
+      slug,
+      { query: new URLSearchParams() }, // Default query options
+      versionId
+    );
 
-      // Get the reconstructed product version
-      const productVersion = historicalData.docs[0] as unknown as IProduct;
-
-      // Prepare update payload, filtering out null, undefined, or empty values
-      const updatePayload: Partial<IProduct> = {
-        name: productVersion.name || undefined,
-        price: productVersion.price ?? undefined,
-        discount: productVersion.discount ?? undefined,
-        stock: productVersion.stock ?? undefined,
-        description: productVersion.description || undefined,
-      };
-
-      // Remove keys that are still `undefined`
-      Object.keys(updatePayload).forEach(
-        (key) =>
-          updatePayload[key as keyof IProduct] === undefined &&
-          delete updatePayload[key as keyof IProduct]
+    if (!historicalData.docs.length) {
+      throw new AppError(
+        productControllerTranslate[lang].errors.HistoricalProductNotFound,
+        404
       );
+    }
+
+    // Get the reconstructed product version
+    const productVersion = historicalData.docs[0] as unknown as IProductDB;
+
+    // Prepare update payload, filtering out null, undefined, or empty values
+    const updatePayload: Partial<IProductDB> = {
+      name: productVersion.name || undefined,
+      price: productVersion.price ?? undefined,
+      discount: productVersion.discount ?? undefined,
+      stock: productVersion.stock ?? undefined,
+      description: productVersion.description || undefined,
+    };
+    return await this.repository.transaction(async (trx) => {
       // Perform update
-      const updatedProduct = await this.repository.update(
-        slug,
-        updatePayload,
-        session
-      );
+      const payload = {
+        ...updatePayload,
+        actorId,
+        product_id: currentProduct._id,
+        discount_expire: updatePayload.discount_expire || undefined,
+      };
+      const updatedProduct = await this.repository.update(slug, payload, trx);
 
       // Log restoration action with proper entity ID
-      await this.logAction(
+      await this.repository.logAction(
         AuditAction.RESTORE,
         currentProduct.slug, // Use ObjectId instead of slug
         actorId,
         this.getUpdateChanges(currentProduct, updatedProduct!),
-        logs.ipAddress,
-        logs.userAgent,
-        logs.source as AuditSource, // Add source to LogsTypeDto
-        session
+        // logs.ipAddress,
+        // logs.userAgent,
+        AuditSource.API, // Add source to LogsTypeDto
+        trx
       );
 
-      await session.commitTransaction();
       return updatedProduct!;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      await session.endSession();
-    }
+    });
+  }
+  async createLogs(
+    action: AuditAction,
+    entityId: string,
+    actor: string,
+    changes: Omit<IAuditLogChangesDB, "_id" | "created_at" | "audit_log_id">[],
+    source: AuditSource = AuditSource.WEB,
+    trx?: Knex.Transaction
+  ) {
+    await this.repository.logAction(
+      action,
+      entityId,
+      actor,
+      changes,
+      // logs.ipAddress,
+      // logs.userAgent,
+      source, // Add source to LogsTypeDto
+      trx
+    );
+  }
+  private isBase64Image(str: string): boolean {
+    const base64Pattern =
+      /^data:image\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/=\n\r]+$/;
+
+    return base64Pattern.test(str.trim());
   }
 }
 /**   topOfferProducts: products[0].topOfferProducts,

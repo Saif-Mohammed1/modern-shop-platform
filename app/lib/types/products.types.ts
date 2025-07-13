@@ -1,5 +1,6 @@
-import type { ReviewsType } from "./reviews.types";
-import type { UserAuthType } from "./users.types";
+import type { ReviewsType } from "./reviews.db.types";
+import type { IUserDB } from "./users.db.types";
+// import type { UserAuthType } from "./users.db.types";
 
 export type ProductsSearchParams = {
   category?: string;
@@ -17,37 +18,29 @@ export type ProductsSearchParams = {
 export type Event = React.ChangeEvent<HTMLInputElement | HTMLSelectElement>;
 
 export type OldImage = {
+  _id: string;
   public_id: string;
   link: string;
 };
-// type UserAuthType = {
-//   name: string;
-//   _id: string;
-// };
+
 export type ProductType = {
   _id: string;
-
   name: string;
   category: string;
   price: number;
   discount: number;
-  discountExpire?: Date; //| string;
-  images: OldImage[] | [];
-  userId: Partial<UserAuthType>;
+  discount_expire?: Date;
   description: string;
   stock: number;
-  ratingsAverage: number;
-  ratingsQuantity: number;
-  createdAt: string;
+  ratings_average: number;
+  ratings_quantity: number;
   slug: string;
-  active: boolean;
-  reserved?: number;
-  lastReserved?: Date;
-  sold?: number;
-
+  reserved: number;
+  sold: number;
+  created_at: string; // formatted as 'DD/MM/YYYY'
   sku: string;
-  attributes?: Record<string, any>;
-  shippingInfo: {
+  images: OldImage[] | [];
+  shipping_info: {
     weight: number;
     dimensions: {
       length: number;
@@ -56,5 +49,12 @@ export type ProductType = {
     };
   };
   reviews: ReviewsType[];
-  lastModifiedBy?: UserAuthType;
 };
+export interface AdminProductType extends Omit<ProductType, "reviews"> {
+  active: boolean;
+  last_reserved: Date;
+
+  // attributes?: Record<string, any>;
+
+  last_modified_by: Pick<IUserDB, "_id" | "name">;
+}

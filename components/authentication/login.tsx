@@ -7,11 +7,10 @@ import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
-import api from "@/app/lib/utilities/api";
+import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTranslate";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
-
 
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
 import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
@@ -94,9 +93,14 @@ const LoginPage = () => {
         throw new Error(result.error);
       }
       toast.success(loginTranslate[lang].functions.handelVerify2fa.success);
-      router.back(); // Go back to previous page (closes modal)
+      if (callbackUrl) {
+        router.back(); // Go back to previous page (closes modal)
 
-      router.push("/");
+        router.push(callbackUrl);
+      } else {
+        router.back(); // Go back to previous page (closes modal)
+        router.push("/");
+      }
     } catch (error: unknown) {
       const message =
         (error as Error)?.message || loginTranslate[lang].errors.global;
@@ -115,7 +119,7 @@ const LoginPage = () => {
 
       const {
         data: { message },
-      } = await api.post("/auth/2fa/backup/validate", {
+      } = await api_client.post("/auth/2fa/backup/validate", {
         email,
         codes,
       });
@@ -135,7 +139,7 @@ const LoginPage = () => {
   // const handleResend = async () => {
   //   // setIsLoading(true);
   //   try {
-  //     await api.put("/auth/2fa", {
+  //     await api_client.put("/auth/2fa", {
   //       email,
   //     });
 

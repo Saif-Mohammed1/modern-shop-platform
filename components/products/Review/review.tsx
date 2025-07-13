@@ -6,9 +6,9 @@ import StarRatings from "react-star-ratings";
 
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
-import type { ReviewsType } from "@/app/lib/types/reviews.types";
-import type { UserAuthType } from "@/app/lib/types/users.types";
-import api from "@/app/lib/utilities/api";
+import type { ReviewsType } from "@/app/lib/types/reviews.db.types";
+import type { UserAuthType } from "@/app/lib/types/users.db.types";
+import api_client from "@/app/lib/utilities/api.client";
 // import CustomButton from "@/components/button/button";
 import { lang } from "@/app/lib/utilities/lang";
 import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
@@ -31,13 +31,13 @@ type ReviewSectionProps = {
   };
   averageRating: number;
   totalReviews: number;
-  productId: string;
+  product_id: string;
   user: UserAuthType | null;
 };
 
 const ReviewSection = ({
   reviews,
-  productId,
+  product_id,
   user,
   averageRating,
   totalReviews,
@@ -60,7 +60,9 @@ const ReviewSection = ({
             hasNext: boolean;
           };
         };
-      } = await api.get(`/customers/reviews/${productId}/?page=${newPage}`);
+      } = await api_client.get(
+        `/customers/reviews/${product_id}/?page=${newPage}`
+      );
       setMoreResults((prev) => [...prev, ...data.docs]);
       setPage(newPage);
       setShowMore(data.meta.hasNext);
@@ -69,13 +71,6 @@ const ReviewSection = ({
     }
   };
 
-  // const ratingDistribution = () => {
-  //   const distribution = [0, 0, 0, 0, 0];
-  //   moreResults.forEach((review) => {
-  //     distribution[Math.round(review.rating) - 1]++;
-  //   });
-  //   return distribution.map((count) => (count / moreResults.length) * 100);
-  // };
   return (
     <section className="space-y-8">
       <div className="bg-white p-6 rounded-xl shadow-sm">
@@ -111,16 +106,20 @@ const ReviewSection = ({
                   <div
                     className="h-full bg-[rgba(245,158,11,0.5)] transition-all duration-500"
                     style={{
-                      width: `${((reviews.distribution[star] || 0) / totalReviews) * 100}%`,
-                      // width: `${Math.min(100, ((reviews.distribution[star] || 0) / totalReviews) * 100)}%`,
-                    }} // style={{ width: `${ratingDistribution()[4 - idx]}%` }}
+                      width:
+                        totalReviews > 0
+                          ? `${((reviews.distribution[star] || 0) / totalReviews) * 100}%`
+                          : "0%",
+                    }}
                   />
                 </div>
                 <span className="w-12 text-gray-600 text-sm">
-                  {Math.round(
-                    ((reviews.distribution[star] || 0) / totalReviews) * 100
-                  )}
-                  % {/* {Math.round(ratingDistribution()[4 - idx])}% */}
+                  {totalReviews > 0
+                    ? Math.round(
+                        (reviews.distribution[star] / totalReviews) * 100
+                      )
+                    : 0}
+                  %
                 </span>
               </div>
             ))}
@@ -159,22 +158,25 @@ const ReviewSection = ({
                 <div className="flex gap-4 items-start">
                   <Image
                     src="/users/cat.png"
-                    // src={review.userId?.avatar || "/users/default-avatar.svg"}
+                    // src={review.user_id?.avatar || "/users/default-avatar.svg"}
                     width={48}
                     height={48}
-                    alt={review.userId?.name ?? "default-avatar"}
+                    alt={review.user_name ?? "default-avatar"}
                     className="rounded-full flex-shrink-0"
                   />
                   <div className="flex-1">
                     <div className="flex justify-between items-start flex-wrap gap-2">
                       <div>
-                        <h3 className="font-semibold">{review.userId.name}</h3>
+                        <h3 className="font-semibold">{review.user_name}</h3>
                         <p className="text-sm text-gray-500">
-                          {new Date(review.createdAt).toLocaleDateString(lang, {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          {new Date(review.created_at).toLocaleDateString(
+                            lang,
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )}
                         </p>
                       </div>
                       <StarRatings
@@ -219,7 +221,7 @@ const ReviewSection = ({
       {user?.email ? (
         <div className="sticky bottom-6 bg-white p-6 rounded-xl shadow-lg">
           <CreateReview
-            productId={productId}
+            product_id={product_id}
             reviewsLength={moreResults.length}
           />
         </div>

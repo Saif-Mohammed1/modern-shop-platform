@@ -1,59 +1,63 @@
 // import type { QueryOptionConfig } from "@/app/lib/types/queryBuilder.types";
-import type { ClientSession } from "mongoose";
 
+import type { Knex } from "knex";
+
+import { generateUUID } from "@/app/lib/utilities/id";
 import { lang } from "@/app/lib/utilities/lang";
 import { WishlistTranslate } from "@/public/locales/server/Wishlist.Translate";
 
-import WishlistModel from "../models/Wishlist.model";
+import { connectDB } from "../db/db";
 import { WishlistRepository } from "../repositories/wishlist.repository";
 
 export class WishlistService {
   constructor(
     private readonly repository: WishlistRepository = new WishlistRepository(
-      WishlistModel
+      connectDB()
     )
   ) {}
-  async getUserWishlists(userId: string) {
-    return await this.repository.getUserWishlists(userId);
+  async getUserWishlists(user_id: string) {
+    return await this.repository.getUserWishlists(user_id);
   }
-  // async getUserWishlists(userId: string, options: QueryOptionConfig) {
-  //   return await this.repository.getUserWishlists(userId, options);
+  // async getUserWishlists(user_id: string, options: QueryOptionConfig) {
+  //   return await this.repository.getUserWishlists(user_id, options);
   // }
-  async toggleWishlist(userId: string, productId: string) {
-    const session = await this.repository.startSession();
-    try {
-      const exists = await this.checkWishlist(userId, productId);
-      return await session.withTransaction(async () => {
-        if (exists) {
-          // Remove from wishlist
-          await this.repository.deleteWishlist(userId, productId, session);
-          // const exists = await this.checkWishlist(userId, productId, session);
-          // console.log("exists", exists);
-          return {
-            success: true,
-            message: WishlistTranslate[lang].wishlist.remove,
-            added: false,
-          };
-        }
-        // Add to wishlist
-        await this.repository.addToWishlist(userId, productId, session);
-
+  async toggleWishlist(user_id: string, product_id: string) {
+    const exists = await this.checkWishlist(user_id, product_id);
+    return await this.repository.transaction(async (trx) => {
+      if (exists) {
+        // Remove from wishlist
+        await this.repository.deleteWishlist(user_id, product_id, trx);
+        // const exists = await this.checkWishlist(user_id, product_id, trx);
+        // console.log("exists", exists);
         return {
           success: true,
-          message: WishlistTranslate[lang].wishlist.add,
-          added: true,
+          message: WishlistTranslate[lang].wishlist.remove,
+          added: false,
         };
-      });
-    } finally {
-      await session.endSession();
-    }
+      }
+      // Add to wishlist
+      await this.repository.create(
+        {
+          _id: generateUUID(),
+          product_id: product_id,
+          user_id: user_id,
+        },
+        trx
+      );
+
+      return {
+        success: true,
+        message: WishlistTranslate[lang].wishlist.add,
+        added: true,
+      };
+    });
   }
 
   async checkWishlist(
-    userId: string,
-    productId: string,
-    session?: ClientSession
+    user_id: string,
+    product_id: string,
+    trx?: Knex.Transaction
   ) {
-    return await this.repository.isWishlist(userId, productId, session);
+    return await this.repository.isWishlist(user_id, product_id, trx);
   }
 }

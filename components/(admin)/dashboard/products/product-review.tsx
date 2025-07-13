@@ -65,15 +65,15 @@ export default function ProductReview({
         {
           label:
             productsTranslate.products[lang].addProduct.form.productReview
-              .finalPrice,
+              .final_price,
           value: `$${values.price - values.discount}`,
         },
         {
           label:
             productsTranslate.products[lang].addProduct.form.productReview
-              .discountExpire,
-          value: values.discountExpire
-            ? new Date(values.discountExpire).toLocaleDateString()
+              .discount_expire,
+          value: values.discount_expire
+            ? new Date(values.discount_expire).toLocaleDateString()
             : "N/A",
         },
       ],
@@ -87,7 +87,7 @@ export default function ProductReview({
             productsTranslate.products[lang].addProduct.form.productShipping
               .labels.weight,
 
-          value: `${values.shippingInfo?.weight} ${
+          value: `${values.shipping_info?.weight} ${
             productsTranslate.products[lang].addProduct.form.productShipping
               .labels.kg
           }`,
@@ -96,7 +96,7 @@ export default function ProductReview({
           label:
             productsTranslate.products[lang].addProduct.form.productShipping
               .labels.dimensions,
-          value: `${values.shippingInfo?.dimensions?.length}x${values.shippingInfo?.dimensions?.width}x${values.shippingInfo?.dimensions?.height} cm`,
+          value: `${values.shipping_info?.dimensions?.length}x${values.shipping_info?.dimensions?.width}x${values.shipping_info?.dimensions?.height} cm`,
         },
       ],
     },
