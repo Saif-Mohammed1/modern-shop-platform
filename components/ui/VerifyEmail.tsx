@@ -1,23 +1,53 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-import api_client from "@/app/lib/utilities/api.client";
+// import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { VerifyEmailTranslate } from "@/public/locales/client/(auth)/VerifyEmail.Translate";
 
 import Input from "./Input";
 import SubmitButton from "./SubmitButton";
 
+const VERIFY_EMAIL_MUTATION = gql`
+  mutation VerifyEmail($code: String!) {
+    verifyEmail(code: $code) {
+      message
+    }
+  }
+`;
+const SEND_NEW_CODE_MUTATION = gql`
+  mutation SendNewVerificationCode {
+    sendNewVerificationCode {
+      message
+    }
+  }
+`;
+type SendNewCodeResponse = {
+  sendNewVerificationCode: {
+    message: string;
+  };
+};
+type VerifyEmailResponse = {
+  verifyEmail: {
+    message: string;
+  };
+};
 const VerifyEmail = () => {
   // const [code, setCode] = useState<string[]>([..." ".repeat(8)]);// not work
   const [code, setCode] = useState<string[]>(Array(8).fill(""));
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const { data: session, update } = useSession();
   const router = useRouter();
+
+  const [verifyEmail] = useMutation<VerifyEmailResponse>(VERIFY_EMAIL_MUTATION);
+  const [sendNewVerificationCode] = useMutation<SendNewCodeResponse>(
+    SEND_NEW_CODE_MUTATION
+  );
   const handleChange = (index: number, value: string) => {
     // if (!/^[a-zA-Z0-9]{8}$/.test(value)) return;
     const newCode = [...code];
@@ -58,11 +88,16 @@ const VerifyEmail = () => {
     e.preventDefault();
 
     try {
-      const {
-        data: { message },
-      } = await api_client.put("/customers/update-data/verify-email", {
-        code: code.join(""),
+      const result = await verifyEmail({
+        variables: { code: code.join("") },
       });
+
+      if (!result.data?.verifyEmail) {
+        throw new Error(VerifyEmailTranslate[lang].VerifyEmail.fail);
+      }
+
+      const { message } = result.data.verifyEmail;
+
       await update({
         ...session,
         user: {
@@ -105,7 +140,7 @@ const VerifyEmail = () => {
   };
   const onResend = async (): Promise<void> => {
     try {
-      await api_client.get("/customers/update-data/verify-email");
+      await sendNewVerificationCode();
       toast.success(VerifyEmailTranslate[lang].VerifyEmail.resendCodeSuccess);
     } catch (error) {
       toast.error(

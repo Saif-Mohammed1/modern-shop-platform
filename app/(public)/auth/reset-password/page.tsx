@@ -18,6 +18,13 @@ type SearchParams = {
   email: string;
   error: string;
 };
+const IS_EMAIL_AND_TOKEN_VALID_MUTATION = `
+  mutation IsEmailAndTokenValid($token: String!, $email: EmailAddress!) {
+    isEmailAndTokenValid(token: $token, email: $email) {
+      message
+    }
+  }
+`;
 const page = async (props: { searchParams: Promise<SearchParams> }) => {
   const searchParams = await props.searchParams;
   const token = searchParams.token || undefined;
@@ -27,7 +34,10 @@ const page = async (props: { searchParams: Promise<SearchParams> }) => {
     notFound();
   }
   try {
-    await api.get(`/auth/reset-password/?token=${token}&email=${email}`);
+    await api.post("/graphql", {
+      query: IS_EMAIL_AND_TOKEN_VALID_MUTATION,
+      variables: { token, email },
+    });
 
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">

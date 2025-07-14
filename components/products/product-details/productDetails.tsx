@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useQuery } from "@apollo/client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -13,7 +14,6 @@ import StarRatings from "react-star-ratings";
 
 import type { ProductType } from "@/app/lib/types/products.types";
 // import type { ReviewsType } from "@/app/lib/types/reviews.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import ReviewSection from "@/components/products/Review/review";
@@ -30,7 +30,31 @@ import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppag
 
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
-
+const GET_RELATED_PRODUCTS = gql`
+  query GetRelatedProducts($category: String!, $limit: Int) {
+    getProducts(filter: { category: $category, limit: $limit }) {
+      products {
+        docs {
+          _id
+          name
+          category
+          price
+          discount
+          discount_expire
+          description
+          ratings_average
+          ratings_quantity
+          slug
+          images {
+            _id
+            link
+            public_id
+          }
+        }
+      }
+    }
+  }
+`;
 const ProductDetail = ({
   product,
   distribution,
@@ -42,6 +66,7 @@ const ProductDetail = ({
     [key: string]: number;
   };
   // relatedProducts: ProductType[];
+  // relatedProducts: ProductType[];
   // reviews: {
   //   data: ReviewsType[];
   //   hasNextPage: boolean;
@@ -50,6 +75,25 @@ const ProductDetail = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState<ProductType[]>([]);
   const [quantity, setQuantity] = useState(1);
+
+  const {
+    data,
+    loading,
+    error: _relatedProductsError,
+  } = useQuery<{
+    getProducts: {
+      products: {
+        docs: ProductType[];
+      };
+    };
+  }>(GET_RELATED_PRODUCTS, {
+    variables: { category: product.category, limit: 8 },
+    skip: !product.category,
+  });
+  // const result = useQuery(GET_RELATED_PRODUCTS, {
+  //   variables: { category: product.category, limit: 8 },
+  //   skip: !product.category,
+  // });
 
   const user = useUserStore((state) => state.user);
 
@@ -104,36 +148,42 @@ const ProductDetail = ({
     }
     // Add to cart logic here
   };
-
   useEffect(() => {
-    const getrelatedProducts = async () => {
-      try {
-        const {
-          data,
-        }: {
-          data: {
-            products: {
-              docs: ProductType[];
-            };
-          };
-        } = await api_client.get(`/shop/?category=${product.category}&limit=8`);
+    const { docs } = data?.getProducts?.products || {};
+    if (docs) {
+      setRelatedProducts(docs);
+    }
+  }, [data, loading]);
 
-        setRelatedProducts(data.products.docs);
-      } catch (_error) {
-        setRelatedProducts([]);
-        // console.error(error);
-      }
-    };
-    // Immediately invoke and handle promise properly
-    void (async () => {
-      try {
-        await getrelatedProducts();
-      } catch (error) {
-        /* eslint-disable no-console */
-        console.error("Error fetching related products:", error);
-      }
-    })();
-  }, [product.category]);
+  // useEffect(() => {
+  //   const getrelatedProducts = async () => {
+  //     try {
+  //       const {
+  //         data,
+  //       }: {
+  //         data: {
+  //           products: {
+  //             docs: ProductType[];
+  //           };
+  //         };
+  //       } = await api_client.get(`/shop/?category=${product.category}&limit=8`);
+
+  //       setRelatedProducts(data.products.docs);
+  //     } catch (_error) {
+  //       setRelatedProducts([]);
+  //       // console.error(error);
+  //     }
+  //   };
+  //   // Immediately invoke and handle promise properly
+  //   void (async () => {
+  //     try {
+  //       await getrelatedProducts();
+  //     } catch (error) {
+  //       /* eslint-disable no-console */
+  //       console.error("Error fetching related products:", error);
+  //     }
+  //   })();
+  // }, [product.category]);
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

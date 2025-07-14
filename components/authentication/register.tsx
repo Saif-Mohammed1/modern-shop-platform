@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +12,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { FiLock, FiMail, FiUser } from "react-icons/fi";
 import { z } from "zod";
 
-import api_client from "@/app/lib/utilities/api.client";
+// import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
@@ -19,6 +20,7 @@ import { userZodValidatorTranslate } from "@/public/locales/server/userControlle
 import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
 import Spinner from "../spinner/spinner";
 import Input from "../ui/Input";
+
 
 // Allowed email domains
 const allowedEmailDomains = ["gmail.com", "yahoo.com", "outlook.com"];
@@ -79,6 +81,11 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+const CREATE_USER_MUTATION = gql`
+  mutation CreateUser($input: CreateUser!) {
+    registerUser(input: $input)
+  }
+`;
 const RegisterPage = () => {
   const {
     register,
@@ -95,9 +102,22 @@ const RegisterPage = () => {
   const callbackUrl = params.get("callbackUrl");
   const router = useRouter();
 
+  const [registerUser] = useMutation(CREATE_USER_MUTATION);
+
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await api_client.post("/auth/register", data);
+      await registerUser({
+        variables: {
+          input: {
+            name: data.name,
+            email: data.email,
+            phone: data.phone || "",
+            password: data.password,
+            confirmPassword: data.confirmPassword,
+          },
+        },
+      });
+      // await api_client.post("/auth/register", data);
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,

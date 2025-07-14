@@ -26,53 +26,106 @@ type SearchParams = {
   min?: string;
   max?: string;
 };
+const GET__FULL_PRODUCTS = `
+  query GetProducts($filter: SearchParams) {
+    getProducts(filter: $filter) {
+      products {
+        docs {
+          _id
+          name
+          category
+          price
+          discount
+          discount_expire
+          description
+          ratings_average
+          ratings_quantity
+          slug
+
+          images {
+            _id
+            link
+            public_id
+          }
+        }
+        meta {
+          total
+          page
+          limit
+          totalPages
+          hasNext
+          hasPrev
+        }
+        links {
+          first
+          prev
+          next
+          last
+        }
+      }
+      categories
+    }
+  }
+`;
 const queryParams = async (searchParams: SearchParams) => {
-  const url = new URLSearchParams();
+  // const url = new URLSearchParams();
 
-  // Append each parameter only if it's not undefined
-  if (searchParams.category !== undefined) {
-    url.append("category", searchParams.category);
-  }
-  if (searchParams.name !== undefined) {
-    url.append("name", searchParams.name);
-  }
-  if (searchParams.search !== undefined) {
-    url.append("search", searchParams.search);
-  }
-  if (searchParams.sort !== undefined) {
-    url.append("sort", searchParams.sort);
-  }
-  if (searchParams.fields !== undefined) {
-    url.append("fields", searchParams.fields);
-  }
-  if (searchParams.page !== undefined) {
-    url.append("page", searchParams.page);
-  }
-  if (searchParams.limit !== undefined) {
-    url.append("limit", searchParams.limit);
-  }
-  if (searchParams.rating !== undefined) {
-    url.append("rating[gte]", searchParams.rating);
-    url.append("rating[lte]", "5");
-    // url.append("sort", "-ratings_average");
-  }
-  // if (searchParams.min !== undefined) {
-  //   url.append("price[gte]", searchParams.min);
+  // // Append each parameter only if it's not undefined
+  // if (searchParams.category !== undefined) {
+  //   url.append("category", searchParams.category);
   // }
-  // if (searchParams.max !== undefined) {
-  //   url.append("price[lte]", searchParams.max);
+  // if (searchParams.name !== undefined) {
+  //   url.append("name", searchParams.name);
   // }
+  // if (searchParams.search !== undefined) {
+  //   url.append("search", searchParams.search);
+  // }
+  // if (searchParams.sort !== undefined) {
+  //   url.append("sort", searchParams.sort);
+  // }
+  // if (searchParams.fields !== undefined) {
+  //   url.append("fields", searchParams.fields);
+  // }
+  // if (searchParams.page !== undefined) {
+  //   url.append("page", searchParams.page);
+  // }
+  // if (searchParams.limit !== undefined) {
+  //   url.append("limit", searchParams.limit);
+  // }
+  // if (searchParams.rating !== undefined) {
+  //   url.append("rating[gte]", searchParams.rating);
+  //   url.append("rating[lte]", "5");
+  //   // url.append("sort", "-ratings_average");
+  // }
+  // // if (searchParams.min !== undefined) {
+  // //   url.append("price[gte]", searchParams.min);
+  // // }
+  // // if (searchParams.max !== undefined) {
+  // //   url.append("price[lte]", searchParams.max);
+  // // }
 
-  const queryString = url.toString();
-
+  // const queryString = url.toString();
+  const filter = {
+    ...searchParams,
+    page: searchParams.page ? +searchParams.page : undefined,
+    limit: searchParams.limit ? +searchParams.limit : undefined,
+    rating: searchParams.rating ? +searchParams.rating : undefined,
+  };
   const {
     data: {
-      products: { docs, meta, links },
-      categories,
+      data: {
+        getProducts: {
+          products: { docs, meta, links },
+          categories,
+        },
+      },
     },
-  } = await api.get(`/shop/${queryString ? `?${queryString}` : ""}`, {
+  } = await api.post("/graphql", {
+    query: GET__FULL_PRODUCTS,
+    variables: { filter },
     headers: Object.fromEntries((await headers()).entries()), // convert headers to object
   });
+
   return {
     docs,
     pagination: {

@@ -1,0 +1,245 @@
+import { getDeviceFingerprint } from "@/app/lib/utilities/DeviceFingerprint.utility";
+import { lang } from "@/app/lib/utilities/lang";
+import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
+
+import { UserValidation, type UserCreateDTO } from "../../dtos/user.dto";
+import { AuthMiddleware } from "../../middlewares/auth.middleware";
+import { UserService } from "../../services/user.service";
+import type { Context } from "../apollo-server";
+
+const userService: UserService = new UserService();
+export const authResolvers = {
+  Query: {
+    getUser: async (_parent: unknown, _args: unknown, { req }: Context) => {
+      // Extract token from authorization header
+      const authHeader = req.headers.get("authorization");
+      const token = authHeader?.replace("Bearer ", "");
+
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      // Here you would typically verify the token and get user data
+      // For now, throwing an error to indicate this needs proper implementation
+      throw new Error(
+        "getUser query not implemented - requires token verification"
+      );
+    },
+    getUserById: async (
+      _parent: unknown,
+      { id }: { id: string },
+      _context: Context
+    ) => {
+      const user = await userService.findUserById(id);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return user;
+    },
+    getActiveSessions: async (
+      _parent: unknown,
+      _args: unknown,
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const sessions = await userService.getActiveSessions(
+        req.user?._id.toString()!
+      );
+      return sessions;
+    },
+  },
+  Mutation: {
+    registerUser: async (
+      _parent: unknown,
+      { input }: { input: UserCreateDTO },
+      { req }: Context
+    ) => {
+      const userData = UserValidation.validateUserCreateDTO(input);
+      const device_info = await getDeviceFingerprint(req);
+      return await userService.registerUser(userData, device_info);
+    },
+    loginUser: async (
+      _parent: unknown,
+      { email, password }: { email: string; password: string },
+      { req }: Context
+    ) => {
+      const result = UserValidation.validateLogin({
+        email,
+        password,
+      });
+      const device_info = await getDeviceFingerprint(req);
+
+      return await userService.authenticateUser(
+        result.email,
+        result.password,
+        device_info
+      );
+      //   if ("requires2FA" in authResult) {
+      //     return {
+      //       requires2FA: true,
+      //       tempToken: authResult.tempToken,
+      //       expires: authResult.expires,
+      //       message: authResult.message,
+      //     };
+      //   }
+    },
+    logoutUser: async (_parent: unknown, _args: unknown, _context: Context) => {
+      // const device_info = await getDeviceFingerprint(req);
+      await userService.logOut();
+      // await this.userService.logOut(req.user?._id, device_info);
+
+      return { message: AuthTranslate[lang].auth.logOut.logOutSuccess };
+    },
+    forgotPassword: async (
+      _parent: unknown,
+      { email }: { email: string },
+      { req }: Context
+    ) => {
+      const result = UserValidation.isEmailValid(email);
+      const device_info = await getDeviceFingerprint(req);
+
+      await userService.requestPasswordReset(result, device_info);
+      return {
+        message: AuthTranslate[lang].auth.forgotPassword.passwordResetLinkSent,
+      };
+    },
+    isEmailAndTokenValid: async (
+      _parent: unknown,
+      { email, token }: { email: string; token: string },
+      _context: Context
+    ) => {
+      const result = UserValidation.validateEmailAndToken({ token, email });
+      await userService.validateEmailAndToken(result.token, result.email);
+      return {
+        message: AuthTranslate[lang].auth.isEmailAndTokenValid.tokenIsValid,
+      };
+    },
+    resetPassword: async (
+      _parent: unknown,
+      {
+        input,
+      }: {
+        input: {
+          email: string;
+          token: string;
+          password: string;
+          confirmPassword: string;
+        };
+      },
+      { req }: Context
+    ) => {
+      const device_info = await getDeviceFingerprint(req);
+      const result = UserValidation.validatePasswordReset(input);
+
+      await userService.validatePasswordResetToken(
+        result.token,
+        // result.email,
+        result.password,
+        device_info
+      );
+      return {
+        message: AuthTranslate[lang].auth.resetPassword.passwordResetSuccess,
+      };
+    },
+
+    requestEmailChange: async (
+      _parent: unknown,
+      { email }: { email: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+
+      //   if (!req.user?._id) {
+      //     throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+      //   }
+      const emailValid = UserValidation.isEmailValid(email);
+      const device_info = await getDeviceFingerprint(req);
+      await userService.requestEmailChange(
+        req.user?._id.toString()!,
+        emailValid,
+        device_info
+      );
+      return {
+        message: AuthTranslate[lang].auth.requestEmailChange.confirmation,
+      };
+    },
+    confirmEmailChange: async (
+      _parent: unknown,
+      { token }: { token: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const result = UserValidation.validateEmailAndToken({
+        token,
+        email: req.user?.email,
+      });
+      const device_info = await getDeviceFingerprint(req);
+      await userService.confirmEmailChange(result.token, device_info);
+      return {
+        message: AuthTranslate[lang].auth.confirmEmailChange.emailChangeSuccess,
+      };
+    },
+    verifyEmail: async (
+      _parent: unknown,
+      { code }: { code: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+
+      const result = UserValidation.isVerificationCodeValid(code);
+      const device_info = await getDeviceFingerprint(req);
+      await userService.verifyEmail(
+        req.user?._id.toString()!,
+        result,
+        device_info
+      );
+      return {
+        message: AuthTranslate[lang].auth.verifyEmail.email_verified,
+      };
+    },
+    sendNewVerificationCode: async (
+      _parent: unknown,
+      _args: unknown,
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const device_info = await getDeviceFingerprint(req);
+      await userService.sendVerificationCode(
+        req.user?._id.toString()!,
+        device_info
+      );
+      return {
+        message: AuthTranslate[lang].auth.sendNewVerificationCode.success,
+      };
+    },
+    updateName: async (
+      _parent: unknown,
+      { name }: { name: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const result = UserValidation.validateName(name);
+      await userService.updateName(req.user?._id.toString()!, result);
+      return {
+        message: AuthTranslate[lang].auth.updateName.success,
+      };
+    },
+    updateLoginNotificationSent: async (
+      _parent: unknown,
+      { login_notification_sent }: { login_notification_sent: boolean },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const result = UserValidation.validateLoginNotificationSent(
+        login_notification_sent
+      );
+      await userService.updateLoginNotificationSent(
+        req.user?._id.toString()!,
+        result
+      );
+      return {
+        message: AuthTranslate[lang].auth.updateLoginNotificationSent.success,
+      };
+    },
+  },
+};

@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+  <head>
+    <title>GraphQL Playground</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/graphiql@3.0.6/graphiql.min.css"
+    />
+    <style>
+      html,
+      body,
+      #graphiql {
+        height: 100%;
+        margin: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="graphiql">Loading...</div>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://cdn.jsdelivr.net/npm/graphiql@3.0.6/graphiql.min.js"
+    ></script>
+    <script>
+      const graphQLFetcher = (graphiQLParams) =>
+        fetch("/api/v1/graphql", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(graphiQLParams),
+          credentials: "same-origin",
+        })
+          .then(function (response) {
+            return response.text();
+          })
+          .then(function (responseBody) {
+            try {
+              return JSON.parse(responseBody);
+            } catch (e) {
+              return responseBody;
+            }
+          });
+
+      ReactDOM.render(
+        React.createElement(GraphiQL, {
+          fetcher: graphQLFetcher,
+          defaultVariableEditorOpen: true,
+        }),
+        document.getElementById("graphiql")
+      );
+    </script>
+  </body>
+</html>

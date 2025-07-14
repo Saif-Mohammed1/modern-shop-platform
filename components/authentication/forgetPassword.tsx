@@ -1,21 +1,36 @@
 "use client";
-
+import { gql, useMutation } from "@apollo/client";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 
-import api_client from "@/app/lib/utilities/api.client";
+// import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { forgetPasswordTranslate } from "@/public/locales/client/(public)/auth/forgetPasswordTranslate";
 
 import Spinner from "../spinner/spinner";
 
+interface ForgotPasswordResponse {
+  forgotPassword: {
+    message: string;
+  };
+}
+
+const FORGOT_PASSWORD_MUTATION = gql`
+  mutation ForgotPassword($email: EmailAddress!) {
+    forgotPassword(email: $email) {
+      message
+    }
+  }
+`;
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   // const [token, setToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   // const [hasToken, setHasToken] = useState(false); // New state to toggle token input
-
+  const [forgotPassword] = useMutation<ForgotPasswordResponse>(
+    FORGOT_PASSWORD_MUTATION
+  );
   const handlePasswordReset = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -29,13 +44,11 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
 
     try {
-      const {
-        data: { message },
-      } = await api_client.post("/auth/forgot-password", {
-        email,
-      });
+      const { data } = await forgotPassword({ variables: { email } });
 
-      toast.success(message);
+      if (data?.forgotPassword?.message) {
+        toast.success(data.forgotPassword.message);
+      }
       setEmail("");
     } catch (error: unknown) {
       if (error instanceof Error) {

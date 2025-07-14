@@ -42,6 +42,13 @@ type Props = {
   error?: string;
 };
 
+const RESET_PASSWORD_MUTATION = `
+  mutation ResetPassword($input: resetPasswordInput!) {
+    resetPassword(input: $input) {
+      message
+    }
+  }
+`;
 async function handleResetPassword(formData: FormData) {
   "use server";
 
@@ -65,11 +72,16 @@ async function handleResetPassword(formData: FormData) {
   }
   let redirectPath: string | null = null;
   try {
-    await api.post("/auth/reset-password", {
-      email: data.email,
-      confirmPassword: data.confirmPassword,
-      token: data.token,
-      password: data.password,
+    await api.post("/graphql", {
+      query: RESET_PASSWORD_MUTATION,
+      variables: {
+        input: {
+          email: data.email,
+          confirmPassword: data.confirmPassword,
+          token: data.token,
+          password: data.password,
+        },
+      },
     });
 
     redirectPath = "/auth";
