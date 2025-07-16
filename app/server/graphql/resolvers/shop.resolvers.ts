@@ -97,6 +97,15 @@ export const shopResolvers = {
         distribution,
       };
     },
+
+    getTopOffersAndNewProducts: async (
+      _parent: unknown,
+      _args: unknown,
+      _context: Context
+    ) => {
+      const products = await productService.getTopOffersAndNewProducts();
+      return products;
+    },
   },
   Mutation: {
     createProduct: async (

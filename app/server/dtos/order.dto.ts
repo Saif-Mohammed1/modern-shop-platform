@@ -25,32 +25,38 @@ export class OrderValidation {
       .string({
         required_error: OrderTranslate[lang].dto.street.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.street.required),
     city: z
       .string({
         required_error: OrderTranslate[lang].dto.city.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.city.required),
     state: z
       .string({
         required_error: OrderTranslate[lang].dto.state.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.state.required),
     postal_code: z
       .string({
         required_error: OrderTranslate[lang].dto.postal_code.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.postal_code.required),
     phone: z
       .string({
         required_error: OrderTranslate[lang].dto.phone.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.phone.required),
     country: z
       .string({
         required_error: OrderTranslate[lang].dto.country.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.country.required),
   });
   static OrderItemSchema = z.object({
     product_id: zObjectId,
@@ -58,7 +64,8 @@ export class OrderValidation {
       .string({
         required_error: OrderTranslate[lang].dto.items.name.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.items.name.required),
     price: z
       .number({
         required_error: OrderTranslate[lang].dto.items.price.required,
@@ -75,7 +82,8 @@ export class OrderValidation {
       .string({
         required_error: OrderTranslate[lang].dto.items.sku.required,
       })
-      .min(0),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.items.sku.required),
 
     attributes: z.record(z.string(), z.any()).optional(), // Flexible key-value attributes
     shipping_info: z.object({
@@ -103,12 +111,14 @@ export class OrderValidation {
       .string({
         required_error: OrderTranslate[lang].dto.invoice_id.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.invoice_id.required),
     invoice_link: z
       .string({
         required_error: OrderTranslate[lang].dto.invoice_link.required,
       })
-      .min(1),
+      .trim()
+      .min(1, OrderTranslate[lang].dto.invoice_link.required),
     total: z
       .number({
         required_error: OrderTranslate[lang].dto.totalPrice.required,
@@ -131,15 +141,17 @@ export class OrderValidation {
         .string({
           required_error: OrderTranslate[lang].dto.paymentMethod.required,
         })
-        .min(1),
+        .trim()
+        .min(1, OrderTranslate[lang].dto.paymentMethod.required),
       transaction_id: z
         .string({
           required_error: OrderTranslate[lang].dto.transactionId.required,
         })
-        .min(1),
+        .trim()
+        .min(1, OrderTranslate[lang].dto.transactionId.required),
     }),
-    order_notes: z.array(z.string()).optional(),
-    cancellationReason: z.string().optional(),
+    order_notes: z.array(z.string().trim().min(1)).optional(),
+    cancellationReason: z.string().trim().optional(),
   });
 
   static UpdateOrderDtoSchema = this.CreateOrderDtoSchema.partial();

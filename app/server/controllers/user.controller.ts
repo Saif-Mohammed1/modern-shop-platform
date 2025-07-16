@@ -9,18 +9,13 @@ import { UserTranslate } from "@/public/locales/server/User.translate";
 import { UserValidation } from "../dtos/user.dto";
 import { UserService } from "../services/user.service";
 
-import sessionController from "./session.controller";
-
 class UserController {
   constructor(private readonly userService: UserService = new UserService()) {}
   async deactivateAccount(req: NextRequest) {
     if (!req.user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
-
     await this.userService.deactivateAccount(String(req.user._id));
-
-    await sessionController.revokeAllUserTokens(req);
 
     return NextResponse.json(
       { message: UserTranslate[lang].deactivateAccount },

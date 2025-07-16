@@ -17,12 +17,10 @@ import type { ProductType } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import ReviewSection from "@/components/products/Review/review";
-import { addToCartItems } from "@/components/providers/store/cart/cart.store";
+import { useCartHook } from "@/components/providers/store/cart/useCartHook";
 import { useUserStore } from "@/components/providers/store/user/user.store";
-import {
-  isInWishlist,
-  toggleWishlist,
-} from "@/components/providers/store/wishlist/wishlist.store";
+import { useToggleWishlist } from "@/components/providers/store/wishlist/useToggleWishlist";
+import { isInWishlist } from "@/components/providers/store/wishlist/wishlist.store";
 import ComponentLoading from "@/components/spinner/componentLoading";
 import Input from "@/components/ui/Input";
 import RelatedProducts from "@/components/ui/relatedProducts";
@@ -96,6 +94,8 @@ const ProductDetail = ({
   // });
 
   const user = useUserStore((state) => state.user);
+  const { addToCartItems } = useCartHook();
+  const { toggleWishlist } = useToggleWishlist();
 
   const stock = product.stock - (product.reserved ?? 0);
   const { discountPercentage, discountedPrice, isDiscountValid } =

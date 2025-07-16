@@ -7,7 +7,7 @@ import { AuthMiddleware } from "@/app/server/middlewares/auth.middleware";
 
 export const GET = async (req: NextRequest) => {
   try {
-    await AuthMiddleware.requireAuth()(req);
+    await AuthMiddleware.requireAuthUnverified()(req);
     return await authController.sendNewVerificationCode(req);
   } catch (error) {
     return ErrorHandler(error, req);
@@ -16,7 +16,7 @@ export const GET = async (req: NextRequest) => {
 
 export const PUT = async (req: NextRequest) => {
   try {
-    await AuthMiddleware.requireAuth()(req);
+    await AuthMiddleware.requireAuthUnverified()(req);
     return await authController.verifyEmail(req);
   } catch (error) {
     return ErrorHandler(error, req);

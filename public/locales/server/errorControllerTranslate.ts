@@ -730,6 +730,24 @@ export const errorControllerTranslate = {
       globalError: "Something went wrong! Please try again later.",
     },
     controllers: {
+      // GraphQL Error Messages
+      graphqlValidationError:
+        "GraphQL validation failed. Please check your query syntax.",
+      badUserInputError:
+        "Invalid input provided. Please check your data and try again.",
+      unauthenticatedError:
+        "Authentication required. Please log in to access this resource.",
+      forbiddenError:
+        "Access denied. You don't have permission to perform this action.",
+      persistedQueryNotFoundError:
+        "Persisted query not found. Please check your query configuration.",
+      internalServerError:
+        "Internal server error occurred. Please try again later.",
+      graphqlParseError:
+        "Failed to parse GraphQL query. Please check your syntax.",
+      graphqlExecutionError:
+        "GraphQL execution failed. Please check your query and variables.",
+      // Database Error Messages
       zodError: (path: string) => `Invalid value provided for ${path}`,
       uniqueViolationError: (field: string, value: string) =>
         `${field} '${value}' already exists. Please use a different value.`,
@@ -745,8 +763,18 @@ export const errorControllerTranslate = {
         `Database configuration error - unknown table: ${table}`,
       genericDBError: (code: string) =>
         `Database operation failed (Error code: ${code})`,
+
+      // Token Error Messages
       invalidTokenError: "Invalid authentication token",
       expiredTokenError: "Authentication token has expired",
+
+      // Specific validation error messages
+      phoneValidationError:
+        "Phone number must be in valid international format (e.g., +1234567890) or left empty",
+      emailValidationError:
+        "Please provide a valid email address from an allowed domain",
+      passwordValidationError:
+        "Password must be 10-40 characters with uppercase, lowercase, number and special character",
     },
   },
   uk: {
@@ -754,6 +782,24 @@ export const errorControllerTranslate = {
       globalError: "Сталася помилка! Будь ласка, спробуйте ще раз пізніше.",
     },
     controllers: {
+      // GraphQL Error Messages
+      graphqlValidationError:
+        "Помилка валідації GraphQL. Будь ласка, перевірте синтаксис запиту.",
+      badUserInputError:
+        "Надано недійсні дані. Будь ласка, перевірте ваші дані та спробуйте ще раз.",
+      unauthenticatedError:
+        "Необхідна аутентифікація. Будь ласка, увійдіть в систему для доступу до цього ресурсу.",
+      forbiddenError:
+        "Доступ заборонено. У вас немає дозволу на виконання цієї дії.",
+      persistedQueryNotFoundError:
+        "Збережений запит не знайдено. Будь ласка, перевірте конфігурацію запиту.",
+      internalServerError:
+        "Внутрішня помилка сервера. Будь ласка, спробуйте ще раз пізніше.",
+      graphqlParseError:
+        "Не вдалося розібрати GraphQL запит. Будь ласка, перевірте синтаксис.",
+      graphqlExecutionError:
+        "Виконання GraphQL запиту не вдалося. Будь ласка, перевірте ваш запит та змінні.",
+      // Database Error Messages
       zodError: (path: string) => `Недійсне значення для ${path}`,
       uniqueViolationError: (field: string, value: string) =>
         `${field} '${value}' вже існує. Будь ласка, використовуйте інше значення.`,
@@ -768,8 +814,18 @@ export const errorControllerTranslate = {
         `Помилка конфігурації бази даних - невідома таблиця: ${table}`,
       genericDBError: (code: string) =>
         `Операція з базою даних не вдалася (код помилки: ${code})`,
+
+      // Token Error Messages
       invalidTokenError: "Недійсний токен аутентифікації",
       expiredTokenError: "Термін дії токена аутентифікації закінчився",
+
+      // Specific validation error messages
+      phoneValidationError:
+        "Номер телефону має бути у правильному міжнародному форматі (наприклад, +1234567890) або залишений порожнім",
+      emailValidationError:
+        "Будь ласка, вкажіть дійсну електронну адресу з дозволеного домену",
+      passwordValidationError:
+        "Пароль має містити 10-40 символів з великими та малими літерами, цифрою та спеціальним символом",
     },
   },
 } as const;

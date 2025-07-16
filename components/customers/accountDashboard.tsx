@@ -1,11 +1,11 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import type { Event } from "@/app/lib/types/products.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountDashboardTranslate } from "@/public/locales/client/(auth)/account/dashboardTranslate";
 
@@ -23,9 +23,48 @@ type UserDataType = {
   phone: string;
   emailVerify: boolean;
 };
+const UPDATE_USER_NOTIFICATION = gql`
+  mutation ($request: Boolean!) {
+    updateLoginNotificationSent(login_notification_sent: $request) {
+      message
+    }
+  }
+`;
+const UPDATE_USER_NAME = gql`
+  mutation ($request: String!) {
+    updateName(name: $request) {
+      message
+    }
+  }
+`;
+const SEND_VERIFICATION_CODE = gql`
+  mutation {
+    sendNewVerificationCode {
+      message
+    }
+  }
+`;
+const VERIFY_EMAIL = gql`
+  mutation ($request: String!) {
+    verifyEmail(code: $request) {
+      message
+    }
+  }
+`;
+const REQUEST_EMAIL_CHANGE = gql`
+  mutation ($request: EmailAddress!) {
+    requestEmailChange(email: $request) {
+      message
+    }
+  }
+`;
 const AccountDashboard = () => {
   const { data: session, update } = useSession();
-
+  const [updateUserName] = useMutation(UPDATE_USER_NAME);
+  const [updateLoginNotificationSent] = useMutation(UPDATE_USER_NOTIFICATION);
+  const [sendVerificationCode] = useMutation(SEND_VERIFICATION_CODE);
+  const [verifyEmail] = useMutation(VERIFY_EMAIL);
+  const [requestEmailChange] = useMutation(REQUEST_EMAIL_CHANGE);
   //   const { user } = use(UserContext); // Assuming these methods exist in your UserContext
   const [isEditing, setIsEditing] = useState<{
     [key in EditableFields]: boolean;
@@ -95,7 +134,9 @@ const AccountDashboard = () => {
         toast.loading(
           accountDashboardTranslate[lang].functions.handleApplyChanges.loading
         );
-        await api_client.put("/customers/update-data", updatedData);
+        await updateUserName({
+          variables: { request: updatedData.name },
+        });
 
         await update({
           ...session,
@@ -131,9 +172,12 @@ const AccountDashboard = () => {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleApplyChanges.loading
       );
-      await api_client.patch("/customers/update-data", {
-        login_notification_sent: !session?.user?.login_notification_sent,
+      await updateLoginNotificationSent({
+        variables: {
+          request: !session?.user?.login_notification_sent,
+        },
       });
+
       await update({
         ...session,
         user: {
@@ -167,7 +211,7 @@ const AccountDashboard = () => {
         accountDashboardTranslate[lang].functions.handleSendVerificationLink
           .loading
       );
-      await api_client.get("/customers/update-data/verify-email");
+      await sendVerificationCode();
       toast.success(
         accountDashboardTranslate[lang].functions.handleSendVerificationLink
           .success
@@ -200,8 +244,8 @@ const AccountDashboard = () => {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleVerifyToken.loading
       );
-      await api_client.put("/customers/update-data/verify-email", {
-        verificationCode: verification_token,
+      await verifyEmail({
+        variables: { request: verification_token },
       });
 
       toast.success(
@@ -240,8 +284,8 @@ const AccountDashboard = () => {
       loadingToast = toast.loading(
         accountDashboardTranslate[lang].functions.handleEmailChange.loading
       );
-      await api_client.post("/customers/update-data/change-email", {
-        newEmail: changeEmail,
+      await requestEmailChange({
+        variables: { request: changeEmail },
       });
       setUserData((prevState) => ({
         ...prevState,

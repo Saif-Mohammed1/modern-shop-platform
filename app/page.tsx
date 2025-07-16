@@ -14,18 +14,88 @@ export const metadata: Metadata = {
   description: rootStaticPagesTranslate[lang].home.metadata.description,
   keywords: rootStaticPagesTranslate[lang].home.metadata.keywords,
 };
+
+const GET_TOP_OFFERS_AND_NEW_PRODUCTS = `query {
+  getTopOffersAndNewProducts{
+      topOfferProducts {
+        _id
+          name
+          category
+          price
+          discount
+          discount_expire
+          description
+          ratings_average
+          ratings_quantity
+          slug
+
+          images {
+            _id
+            link
+            public_id
+          }
+
+      }
+    newProducts {
+      _id
+          name
+          category
+          price
+          discount
+          discount_expire
+          description
+          ratings_average
+          ratings_quantity
+          slug
+
+          images {
+            _id
+            link
+            public_id
+          }
+
+    }
+    topRating {
+      _id
+          name
+          category
+          price
+          discount
+          discount_expire
+          description
+          ratings_average
+          ratings_quantity
+          slug
+
+          images {
+            _id
+            link
+            public_id
+          }
+
+    }
+
+    
+  }
+}
+`;
 export default async function Home() {
   try {
     const headersStore = await headers();
     const headersObj = Object.fromEntries(headersStore.entries());
-    const { data } = await api.get("/shop/home", {
+    const {
+      data: {
+        data: { getTopOffersAndNewProducts },
+      },
+    } = await api.post("/graphql", {
+      query: GET_TOP_OFFERS_AND_NEW_PRODUCTS,
       headers: headersObj,
     });
 
     return (
       // <ComponentLoading>
       <HomeComponent
-        productData={data}
+        productData={getTopOffersAndNewProducts}
         // topOfferProducts={topOfferProducts}
         // newProducts={newProducts}
         // topRating={topRating}

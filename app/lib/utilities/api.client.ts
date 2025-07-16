@@ -16,6 +16,29 @@ interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
 }
 
+// GraphQL Response interfaces
+interface GraphQLError {
+  message: string;
+  extensions?: {
+    code: string;
+    status: number;
+  };
+}
+
+interface GraphQLResponse {
+  data?: any;
+  errors?: GraphQLError[];
+}
+
+interface RefreshTokenResponse {
+  data: {
+    refreshAccessToken: {
+      access_token: string;
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
 // Create Axios instance
 const api_client = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_ENDPOINT,
@@ -47,7 +70,42 @@ api_client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 // Response interceptor
 api_client.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse<GraphQLResponse>) => {
+    // Handle GraphQL errors (GraphQL always returns 200 but may have errors in response body)
+    if (
+      response.data &&
+      response.data.errors &&
+      Array.isArray(response.data.errors)
+    ) {
+      const graphqlError = response.data.errors[0]; // Take the first error
+      const message = graphqlError.message || "GraphQL Error";
+      const statusCode = graphqlError.extensions?.status || 500;
+      const errorCode = graphqlError.extensions?.code;
+
+      // Create a synthetic axios error for GraphQL authentication errors
+      // This allows the existing token refresh logic to work with GraphQL errors
+      if (errorCode === "UNAUTHENTICATED" || statusCode === 401) {
+        const authError = {
+          config: response.config,
+          response: {
+            ...response,
+            status: 401,
+            data: { message },
+          },
+          message: message,
+          isAxiosError: true,
+        } as AxiosError;
+
+        // Re-throw as axios error to trigger the existing auth logic
+        return Promise.reject(authError);
+      }
+
+      // Handle other GraphQL errors
+      return Promise.reject(new AppError(message, statusCode));
+    }
+
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as CustomAxiosRequestConfig;
 
@@ -70,15 +128,38 @@ api_client.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const { data } = await api_client.get<{ access_token: string }>(
-          "/auth/refresh-token",
+        // Use GraphQL mutation for token refresh
+        const refreshQuery = `
+          mutation {
+            refreshAccessToken {
+              access_token
+            }
+          }
+        `;
+
+        const response = await api_client.post<RefreshTokenResponse>(
+          "/graphql",
+          {
+            query: refreshQuery,
+          },
           { withCredentials: true }
         );
-        tokenManager.setAccessToken(data.access_token);
-        api_client.defaults.headers.common.Authorization = `Bearer ${data.access_token}`;
+
+        // Handle GraphQL response for refresh token
+        if (response.data.errors && response.data.errors.length > 0) {
+          throw new Error(response.data.errors[0].message);
+        }
+
+        if (!response.data.data?.refreshAccessToken?.access_token) {
+          throw new Error("Invalid refresh response structure");
+        }
+
+        const newToken = response.data.data.refreshAccessToken.access_token;
+        tokenManager.setAccessToken(newToken);
+        api_client.defaults.headers.common.Authorization = `Bearer ${newToken}`;
 
         // Resolve all subscribers with new token
-        refreshSubscribers.forEach((sub) => sub.resolve(data.access_token));
+        refreshSubscribers.forEach((sub) => sub.resolve(newToken));
         refreshSubscribers = [];
 
         return api_client(originalRequest);

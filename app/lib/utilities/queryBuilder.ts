@@ -220,7 +220,15 @@ export class QueryBuilder<T extends Record<string, any>> {
   }
 
   private buildColumnRef(field: keyof T): Knex.Raw {
-    return this.knex.raw("??.??", [this.tableName, field as string]);
+    const fieldStr = field as string;
+    // Check if field already contains a table prefix (e.g., "user_sessions.user_id")
+    if (fieldStr.includes(".")) {
+      // Field already has table prefix, use it as-is
+      const [tableName, columnName] = fieldStr.split(".");
+      return this.knex.raw("??.??", [tableName, columnName]);
+    }
+    // Field doesn't have prefix, add the default table name
+    return this.knex.raw("??.??", [this.tableName, fieldStr]);
   }
 
   private handleTextSearch(searchTerm: string): void {

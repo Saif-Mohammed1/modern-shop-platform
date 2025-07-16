@@ -191,13 +191,13 @@ export class DashboardRepository implements BaseDashboardRepository {
       this.knex<IDeviceDetailsDB>("device_details")
         .select<
           DashboardDataAggregate["userAnalytics"]["DeviceUsage"][]
-        >("device", "os", this.knex.raw(`COUNT(*) as count`), this.knex.raw(`COUNT(DISTINCT device_fingerprints.location_city) as "citiesCoverage"`))
+        >("device_details.device", "device_details.os", this.knex.raw(`COUNT(*) as count`), this.knex.raw(`COUNT(DISTINCT device_fingerprints.location_city) as "citiesCoverage"`))
         .leftJoin(
           "device_fingerprints",
           "device_details.fingerprint",
           "device_fingerprints.fingerprint"
         )
-        .groupBy("device", "os")
+        .groupBy("device_details.device", "device_details.os")
         .orderBy("count", "desc"),
 
       // Weekly Growth with window functions

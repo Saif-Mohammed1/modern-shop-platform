@@ -10,16 +10,16 @@ import type { ProductType } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
-import { addToCartItems } from "@/components/providers/store/cart/cart.store";
+import { useCartHook } from "@/components/providers/store/cart/useCartHook";
 import { useUserStore } from "@/components/providers/store/user/user.store";
-import {
-  isInWishlist,
-  toggleWishlist,
-} from "@/components/providers/store/wishlist/wishlist.store";
+import { useToggleWishlist } from "@/components/providers/store/wishlist/useToggleWishlist";
+import { isInWishlist } from "@/components/providers/store/wishlist/wishlist.store";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const user = useUserStore((state) => state.user);
+  const { addToCartItems } = useCartHook();
+  const { toggleWishlist } = useToggleWishlist();
 
   const toggleWishlistHandler = async () => {
     let toastLoading;

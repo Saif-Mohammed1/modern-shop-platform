@@ -65,7 +65,7 @@ class CartController {
       {
         success: true,
 
-        message: CartTranslate[lang].clearCart,
+        message: CartTranslate[lang].messages.clearCart,
       },
       { status: 200 }
     );
@@ -88,7 +88,7 @@ class CartController {
     return NextResponse.json(
       {
         success: true,
-        message: CartTranslate[lang].mergeLocalCart,
+        message: CartTranslate[lang].messages.mergeLocalCart,
       },
       { status: 200 }
     );

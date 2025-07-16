@@ -17,11 +17,13 @@ export class TwoFactorValidation {
       .string({
         message: TwoFactorTranslate[lang].dto.temToken.required,
       })
+      .trim()
       .min(1, TwoFactorTranslate[lang].dto.temToken.required),
     code: z
       .string({
         message: TwoFactorTranslate[lang].dto.code.required,
       })
+      .trim()
       .length(6, TwoFactorTranslate[lang].dto.code.regex),
     // TOTP code
 
@@ -52,6 +54,7 @@ export class TwoFactorValidation {
       .string({
         message: TwoFactorTranslate[lang].dto.userAgent.required,
       })
+      .trim()
       .min(1, TwoFactorTranslate[lang].dto.userAgent.required),
     location: z
       .object({
@@ -94,6 +97,7 @@ export class TwoFactorValidation {
       .string({
         message: TwoFactorTranslate[lang].dto.temToken.required,
       })
+      .trim()
       .length(6),
     // device_info: this.SecurityMetadataSchema,
   });
@@ -103,6 +107,7 @@ export class TwoFactorValidation {
       .string({
         message: TwoFactorTranslate[lang].dto.code.required,
       })
+      .trim()
       .regex(/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/, {
         message: TwoFactorTranslate[lang].dto.code.regex,
       }),
@@ -111,9 +116,12 @@ export class TwoFactorValidation {
 
   static TwoFactorDisableSchema = z.object({
     // verificationMethod: z.enum(["password", "backup_code"]),
-    code: z.string({
-      message: TwoFactorTranslate[lang].dto.code.required,
-    }),
+    code: z
+      .string({
+        message: TwoFactorTranslate[lang].dto.code.required,
+      })
+      .trim()
+      .min(1, TwoFactorTranslate[lang].dto.code.required),
 
     // password: z.string().optional(),
   });
@@ -145,6 +153,8 @@ export class TwoFactorValidation {
       .string({
         required_error: userZodValidatorTranslate[lang].email.required,
       })
+      .trim()
+      .min(1, userZodValidatorTranslate[lang].email.required)
       .email(userZodValidatorTranslate[lang].email.invalid)
       .refine((email) => {
         const domain = email.split("@")[1];

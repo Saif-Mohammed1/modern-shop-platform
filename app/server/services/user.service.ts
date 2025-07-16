@@ -713,7 +713,11 @@ export class UserService {
   }
 
   async deactivateAccount(user_id: string): Promise<void> {
-    await this.repository.updateUserStatus(user_id, UserStatus.SUSPENDED);
+    await Promise.all([
+      this.repository.updateUserStatus(user_id, UserStatus.SUSPENDED),
+      this.sessionService.revokeAllSessions(user_id),
+      this.logOut(),
+    ]);
   }
 
   // async deleteAccount(user_id: string): Promise<void> {

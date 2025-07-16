@@ -7,6 +7,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 
 import type { UserAuthType } from "@/app/lib/types/users.db.types";
 //import { deleteCookies } from "@/app/lib/utilities/cookies";
+import { deleteCookies } from "@/app/lib/utilities/cookies";
 import tokenManager from "@/app/lib/utilities/TokenManager";
 
 import { useCartStore } from "../cart/cart.store";
@@ -28,11 +29,11 @@ export const updateUser = (newUser: UserAuthType | null) => {
 };
 
 export const logOutUser = async () => {
-  await signOut();
+  await Promise.all([signOut(), deleteCookies("refreshAccessToken")]);
+
   updateUser(null);
   useCartStore.setState({ cartItems: [] });
   useCartStore.persist.clearStorage();
   useWishlistStore.setState({ wishlist: { items: [], _id: "" } });
   tokenManager.clearAccessToken();
-  //await deleteCookies("refreshAccessToken");
 };

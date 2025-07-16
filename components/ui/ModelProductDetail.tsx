@@ -10,11 +10,9 @@ import StarRatings from "react-star-ratings";
 import type { ProductType } from "@/app/lib/types/products.types";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
-import { addToCartItems } from "@/components/providers/store/cart/cart.store";
-import {
-  isInWishlist,
-  toggleWishlist,
-} from "@/components/providers/store/wishlist/wishlist.store";
+import { useCartHook } from "@/components/providers/store/cart/useCartHook";
+import { useToggleWishlist } from "@/components/providers/store/wishlist/useToggleWishlist";
+import { isInWishlist } from "@/components/providers/store/wishlist/wishlist.store";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 import Input from "./Input";
@@ -24,6 +22,8 @@ import Input from "./Input";
 const ModelProductDetail = ({ product }: { product: ProductType }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const router = useRouter();
+  const { addToCartItems } = useCartHook();
+  const { toggleWishlist } = useToggleWishlist();
 
   // const [isWishlisted, setIsWishlisted] = useState(false);
   // const [isZoomed, setIsZoomed] = useState(false);

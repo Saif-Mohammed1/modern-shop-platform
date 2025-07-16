@@ -13,7 +13,7 @@ import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTrans
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
 
 import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
-import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
+import { useCartHook } from "../providers/store/cart/useCartHook";
 import Spinner from "../spinner/spinner";
 
 const LoginPage = () => {
@@ -26,6 +26,7 @@ const LoginPage = () => {
   const [requiredTwoFactor, setRequiredTwoFactor] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
+  const { mergeLocalCartWithDB } = useCartHook();
   const callbackUrl = params.get("callbackUrl");
 
   const handleLogin = async (e: FormEvent) => {
@@ -233,11 +234,7 @@ const LoginPage = () => {
               {loginTranslate[lang].form.signUp}
             </Link>
           </div>
-          <div className="text-center mt-4">
-            <p className="text-gray-500">
-              {loginTranslate[lang].functions.handleLogin.termsAgreement}
-            </p>
-          </div>
+
           {/* <div className="text-center mt-4">
             <Link
               href="/auth/terms"

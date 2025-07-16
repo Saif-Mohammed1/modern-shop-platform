@@ -1,38 +1,39 @@
 export const authTypeDefs = /* GraphQL */ `
-  scalar DateTime
   scalar EmailAddress
-
-  type Sessions{
-  _id: String
-  user_id: String
-  device_id: String
-  hashed_token: String
-  is_active: Boolean;
-  revoked_at: DateTime
-  expires_at: DateTime
-  last_used_at: DateTime
-  created_at: DateTime
-  updated_at: DateTime
+  type GeoLocation {
+    city: String
+    country: String
+    latitude: Float
+    longitude: Float
+    source: String
   }
-  
-  type PaginationMeta {
-    total: Int!
-    page: Int!
-    limit: Int!
-    totalPages: Int!
-    hasNext: Boolean!
-    hasPrev: Boolean!
+  type DeviceInfo {
+    os: String
+    browser: String
+    device: String
+    brand: String
+    model: String
+    is_bot: Boolean
+    ip: String
+    location: GeoLocation
+    fingerprint: String
+  }
+  type Sessions {
+    _id: String
+    user_id: String
+    device_id: String
+    device_info: DeviceInfo
+    hashed_token: String
+    is_active: Boolean
+    revoked_at: DateTime
+    expires_at: DateTime
+    last_used_at: DateTime
+    created_at: DateTime
+    updated_at: DateTime
   }
 
-  type Links {
-    first: String
-    prev: String
-    next: String
-    last: String
-  }
-
-  type ProductsResult {
-    docs: [Product!]!
+  type SessionsResult {
+    docs: [Sessions!]!
     meta: PaginationMeta!
     links: Links
   }
@@ -68,7 +69,7 @@ export const authTypeDefs = /* GraphQL */ `
     email: EmailAddress!
     phone: String!
     role: String!
-    created_at: String!
+    created_at: DateTime!
     verification: VerificationStatus!
     two_factor_enabled: Boolean!
     login_notification_sent: Boolean!
@@ -101,9 +102,6 @@ export const authTypeDefs = /* GraphQL */ `
     marketingOptIn: Boolean
   }
   union LoginResponse = UserResult | TwoFALoginType
-  type responseWithMessage {
-    message: String!
-  }
 
   input resetPasswordInput {
     email: String!
@@ -114,8 +112,7 @@ export const authTypeDefs = /* GraphQL */ `
   type Query {
     getUser: UserAuthType!
     getUserById(id: ID!): UserAuthType!
-    getActiveSessions: ProductsResult!
-
+    getActiveSessions: SessionsResult!
   }
   type Mutation {
     registerUser(input: CreateUser!): UserResult!

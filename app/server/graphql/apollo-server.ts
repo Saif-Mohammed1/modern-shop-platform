@@ -7,11 +7,19 @@ import type { NextRequest } from "next/server";
 
 import logger from "@/app/lib/logger/logs";
 import type { IUserDB } from "@/app/lib/types/users.db.types";
+import AppError from "@/app/lib/utilities/appError";
 
 import { authResolvers } from "./resolvers/auth.resolvers";
+import { cartResolvers } from "./resolvers/cart.resolvers";
+import { sessionsResolvers } from "./resolvers/sessions.resolvers";
 import { shopResolvers } from "./resolvers/shop.resolvers";
+import { wishlistResolvers } from "./resolvers/wishlist.resolvers";
 import { authTypeDefs } from "./schema/auth.schema";
+import { cartTypeDefs } from "./schema/cart.schema";
+import { CommonTypeDefs } from "./schema/common.schema";
+import { sessionsTypeDefs } from "./schema/sessions.schema";
 import { shopTypeDefs } from "./schema/shop.schema";
+import { wishlistTypeDefs } from "./schema/wishlist.schema";
 
 const scalarResolvers = {
   DateTime: DateTimeResolver,
@@ -19,11 +27,21 @@ const scalarResolvers = {
 };
 
 // Merge all schemas and resolvers
-const typeDefs = mergeTypeDefs([shopTypeDefs, authTypeDefs]);
+const typeDefs = mergeTypeDefs([
+  CommonTypeDefs,
+  shopTypeDefs,
+  authTypeDefs,
+  sessionsTypeDefs,
+  wishlistTypeDefs,
+  cartTypeDefs,
+]);
 const resolvers = mergeResolvers([
+  scalarResolvers,
   shopResolvers,
   authResolvers,
-  scalarResolvers,
+  sessionsResolvers,
+  wishlistResolvers,
+  cartResolvers,
 ]);
 
 // Create executable schema
@@ -40,15 +58,110 @@ export interface Context {
 export const apolloServer = new ApolloServer<Context>({
   schema,
   introspection: process.env.NODE_ENV !== "production",
+
   formatError: (formattedError, error) => {
-    logger.error("GraphQL Error:", error);
+    try {
+      // Extract the original error that might be wrapped inside the GraphQL error
+      // Type guard to check if error has originalError property
+      const originalError =
+        error && typeof error === "object" && "originalError" in error
+          ? (error as { originalError?: unknown }).originalError
+          : null;
 
-    // Don't expose internal errors in production
-    if (process.env.NODE_ENV === "production") {
-      return new Error("Internal server error");
+      const errorToCheck = originalError || error;
+
+      // Debug logging for development
+      if (process.env.NODE_ENV === "development") {
+        logger.debug("GraphQL Error Debug:", {
+          formattedMessage: formattedError.message,
+          originalMessage:
+            errorToCheck instanceof Error
+              ? errorToCheck.message
+              : String(errorToCheck),
+          statusCode:
+            errorToCheck instanceof AppError
+              ? errorToCheck.statusCode
+              : undefined,
+          isAppError: errorToCheck instanceof AppError,
+        });
+      }
+
+      // If the original error is an AppError, preserve its properties
+      if (errorToCheck instanceof AppError) {
+        // In production, return sanitized errors
+        if (process.env.NODE_ENV === "production") {
+          // Only expose client errors (4xx), hide server errors (5xx)
+          if (errorToCheck.statusCode >= 500) {
+            return {
+              message: "Internal server error",
+              extensions: {
+                code: "INTERNAL_SERVER_ERROR",
+                status: 500,
+              },
+            };
+          }
+
+          return {
+            message: errorToCheck.message,
+            extensions: {
+              code:
+                errorToCheck.statusCode === 401
+                  ? "UNAUTHENTICATED"
+                  : errorToCheck.statusCode >= 400 &&
+                      errorToCheck.statusCode < 500
+                    ? "CLIENT_ERROR"
+                    : "INTERNAL_SERVER_ERROR",
+              status: errorToCheck.statusCode,
+            },
+          };
+        }
+
+        // In development, return detailed error information
+        return {
+          message: errorToCheck.message,
+          locations: formattedError.locations,
+          path: formattedError.path,
+          extensions: {
+            code:
+              errorToCheck.statusCode === 401
+                ? "UNAUTHENTICATED"
+                : errorToCheck.statusCode >= 400 &&
+                    errorToCheck.statusCode < 500
+                  ? "CLIENT_ERROR"
+                  : "INTERNAL_SERVER_ERROR",
+            status: errorToCheck.statusCode,
+            stack: errorToCheck.stack,
+          },
+        };
+      }
+
+      // For other types of errors, return a safe formatted error
+      return {
+        message:
+          process.env.NODE_ENV === "production"
+            ? "Internal server error"
+            : formattedError.message,
+        locations: formattedError.locations,
+        path: formattedError.path,
+        extensions: {
+          code: "INTERNAL_SERVER_ERROR",
+          status: 500,
+          ...(process.env.NODE_ENV === "development" && {
+            stack: error instanceof Error ? error.stack : undefined,
+          }),
+        },
+      };
+    } catch (formatError) {
+      // Fallback error formatting
+      logger.error("Error formatting failed:", formatError);
+      return {
+        message: "Internal server error",
+        extensions: {
+          code: "INTERNAL_SERVER_ERROR",
+          status: 500,
+        },
+      };
     }
-
-    return formattedError;
   },
   plugins: [
     ApolloServerPluginLandingPageLocalDefault({
@@ -60,13 +173,40 @@ export const apolloServer = new ApolloServer<Context>({
       async requestDidStart() {
         return {
           async didResolveOperation(requestContext) {
+            const queryPreview = requestContext.request.query
+              ? `${requestContext.request.query.substring(0, 500)}${requestContext.request.query.length > 500 ? "..." : ""}`
+              : "";
+
             logger.info("GraphQL Operation:", {
               operationName: requestContext.request.operationName,
-              query: requestContext.request.query,
+              variables: requestContext.request.variables,
+              query: queryPreview,
             });
           },
           async didEncounterErrors(requestContext) {
-            logger.error("GraphQL Errors:", requestContext.errors);
+            // Enhanced error logging with context
+            requestContext.errors.forEach((error, index) => {
+              logger.error(`GraphQL Error ${index + 1}:`, {
+                message: error.message,
+                path: error.path,
+                locations: error.locations,
+                extensions: error.extensions,
+                operationName: requestContext.request.operationName,
+                variables: requestContext.request.variables,
+              });
+            });
+          },
+          async willSendResponse(requestContext) {
+            // Log successful responses in development
+            if (
+              process.env.NODE_ENV === "development" &&
+              !requestContext.errors?.length
+            ) {
+              logger.debug("GraphQL Success:", {
+                operationName: requestContext.request.operationName,
+                hasData: requestContext.response.body.kind === "single",
+              });
+            }
           },
         };
       },

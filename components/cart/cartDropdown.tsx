@@ -12,11 +12,7 @@ import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import { cartDropdownTranslate } from "@/public/locales/client/(public)/cartDropdownTranslate";
 
-import {
-  addToCartItems,
-  clearProductFromCartItem,
-  decrementCartItemQuantity,
-} from "../providers/store/cart/cart.store";
+import { useCartHook } from "../providers/store/cart/useCartHook";
 import { useUserStore } from "../providers/store/user/user.store";
 
 type CartDropdownProps = {
@@ -28,6 +24,11 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
   const user = useUserStore((state) => state.user);
   const router = useRouter();
   const cartRef = useRef<HTMLDivElement>(null);
+  const {
+    addToCartItems,
+    decrementCartItemQuantity,
+    clearProductFromCartItem,
+  } = useCartHook();
 
   const handleCartAction = async (
     action: () => Promise<void>,
@@ -175,15 +176,17 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
             cartItems.map((item) => {
               const { discountedPrice: price } = calculateDiscount(item);
               const total = (price * item.quantity).toFixed(2);
+              const imageUrl = imageSrc(item);
               return (
                 <div key={item._id} className="flex items-center gap-4 mb-4">
-                  <div className="relative w-16 h-16">
+                  <div className=" w-16 h-16">
                     <Image
-                      src={imageSrc(item)}
+                      src={imageUrl}
                       alt={item.name}
                       fill
                       className="rounded-md object-cover"
                       sizes="64px"
+                      loading="lazy"
                     />
                   </div>
 

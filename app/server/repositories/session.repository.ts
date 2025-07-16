@@ -100,7 +100,7 @@ export class SessionRepository extends BaseRepository<ISessionDB> {
     };
 
     const query = new URLSearchParams();
-    query.set("user_sessions.user_id", user_id);
+    query.set("user_id", user_id);
     const queryBuilder = new QueryBuilder<ISessionDB>(
       this.knex,
       this.tableName,

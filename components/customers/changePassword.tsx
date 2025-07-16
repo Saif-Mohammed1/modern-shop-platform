@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
@@ -8,7 +9,6 @@ import {
   RefreshTokenStatus,
   type sessionInfo,
 } from "@/app/lib/types/session.types";
-import api_client from "@/app/lib/utilities/api.client";
 //import { deleteCookies } from "@/app/lib/utilities/cookies";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
@@ -16,9 +16,87 @@ import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account
 import { logOutUser } from "../providers/store/user/user.store";
 
 import DeviceInfoSection from "./deviceInfoSection";
+const GET_SESSION_INFO = gql`
+  query {
+    getActiveSessions {
+      docs {
+        _id
+        user_id
+        device_id
+        device_info {
+          os
+          browser
+          device
+          brand
+          model
+          is_bot
+          ip
+          location {
+            city
+            country
+            latitude
+            longitude
+            source
+          }
+          fingerprint
+        }
+        hashed_token
+        is_active
+        revoked_at
+        expires_at
+        last_used_at
+        created_at
+        updated_at
+      }
+    }
+  }
+`;
 
-const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
-  const [devicesList, setDevicesList] = useState(devices || []);
+const DELETE_CUSTOMER_ACCOUNT = gql`
+  mutation {
+    deactivateAccount {
+      message
+    }
+  }
+`;
+
+const REVOKE_ALL_SESSIONS = gql`
+  mutation {
+    revokeAllUserTokens {
+      message
+    }
+  }
+`;
+const UPDATE_PASS = gql`
+  mutation ($request: NewPassword!) {
+    updatePassword(input: $request) {
+      message
+    }
+  }
+`;
+const ChangePassword = () => {
+  // const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
+  const [devicesList, setDevicesList] = useState<sessionInfo[]>([]);
+  const _query = useQuery<{
+    getActiveSessions: {
+      docs: sessionInfo[];
+    };
+  }>(GET_SESSION_INFO, {
+    onCompleted: (data) => {
+      if (data?.getActiveSessions?.docs) {
+        setDevicesList(data.getActiveSessions.docs);
+      }
+    },
+    onError: (error) => {
+      toast.error(
+        error.message || accountSettingsTranslate[lang].errors.global
+      );
+    },
+  });
+  const [deleteCustomerAccount] = useMutation(DELETE_CUSTOMER_ACCOUNT);
+  const [updatePassword] = useMutation(UPDATE_PASS);
+  const [revokeAllSessions] = useMutation(REVOKE_ALL_SESSIONS);
+
   const [isEditing, setIsEditing] = useState(false);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -53,12 +131,9 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       );
 
       // API call to delete the user account
-      await api_client.delete("/customers/");
-
+      await deleteCustomerAccount();
       await logOutUser();
       //await deleteCookies("refreshAccessToken");
-
-      await api_client.post("/auth/logout");
 
       toast.success(
         accountSettingsTranslate[lang].functions.handleDeleteAccount.success
@@ -97,10 +172,12 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
         accountSettingsTranslate[lang].functions.handlePasswordUpdate.loading
       );
 
-      await api_client.patch("/customers/update-password", {
-        password,
-        newPassword,
-        confirmPassword,
+      await updatePassword({
+        variables: {
+          password,
+          newPassword,
+          confirmPassword,
+        },
       });
 
       toast.success(
@@ -129,7 +206,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       loadingToast = toast.loading(
         accountSettingsTranslate[lang].functions.handleSignoutAll.loading
       );
-      await api_client.delete("/auth/refresh-token");
+      await revokeAllSessions();
       await logOutUser();
       //await deleteCookies("refreshAccessToken");
 
@@ -150,11 +227,7 @@ const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
       toast.dismiss(loadingToast);
     }
   };
-  useEffect(() => {
-    if (devices) {
-      setDevicesList(devices);
-    }
-  }, [devices]);
+
   return (
     <div className="w-full max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg min-h-screen overflow-hidden">
       <h1 className="text-2xl font-bold mb-6">

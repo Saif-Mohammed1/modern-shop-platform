@@ -24,7 +24,7 @@ export class CartValidation {
   });
   static localCartSchema = z.array(
     z.object({
-      _id: zObjectId,
+      product_id: zObjectId,
       quantity: z
         .number({
           message: CartTranslate[lang].dto.quantity.number,

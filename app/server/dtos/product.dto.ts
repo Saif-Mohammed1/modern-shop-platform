@@ -62,6 +62,8 @@ export class ProductValidation {
       .string({
         required_error: ProductTranslate[lang].dto.name.required,
       })
+      .trim()
+      .min(1, ProductTranslate[lang].dto.name.required)
       .min(6, {
         message: ProductTranslate[lang].dto.name.minlength,
       })
@@ -69,9 +71,12 @@ export class ProductValidation {
         message: ProductTranslate[lang].dto.name.maxlength,
       }),
 
-    category: z.string({
-      required_error: ProductTranslate[lang].dto.category.required,
-    }),
+    category: z
+      .string({
+        required_error: ProductTranslate[lang].dto.category.required,
+      })
+      .trim()
+      .min(1, ProductTranslate[lang].dto.category.required),
     price: z
       .number({
         required_error: ProductTranslate[lang].dto.price.required,
@@ -108,6 +113,8 @@ export class ProductValidation {
       .string({
         required_error: ProductTranslate[lang].dto.description.required,
       })
+      .trim()
+      .min(1, ProductTranslate[lang].dto.description.required)
       .min(50, {
         message: ProductTranslate[lang].dto.description.minlength,
       }),
@@ -136,7 +143,7 @@ export class ProductValidation {
       })
       .default(0),
     active: z.boolean().default(true),
-    sku: z.string().optional(), // Automatically generated
+    sku: z.string().trim().optional(), // Automatically generated
     reserved: z
       .number()
       .min(0, {

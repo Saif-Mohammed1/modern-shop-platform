@@ -5,8 +5,7 @@ import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
-
-import { apolloClientConfig } from "@/app/lib/utilities/apollo-client";
+import apolloClient from "@/app/lib/utilities/apollo-client";
 
 import { UserSessionSync } from "./UserSessionSync";
 
@@ -18,7 +17,7 @@ const Providers = ({
   initialSession: Session | null;
 }) => {
   return (
-    <ApolloProvider client={apolloClientConfig}>
+    <ApolloProvider client={apolloClient}>
       <SessionProvider
         refetchInterval={
           Number(process.env.JWT_ACCESS_TOKEN_COOKIE_EXPIRES_IN || 15) * 60 - 80

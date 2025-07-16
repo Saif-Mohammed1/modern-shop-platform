@@ -18,6 +18,7 @@ export class LogsValidation {
       .string({
         required_error: ProductTranslate[lang].dto.userAgent.required,
       })
+      .trim()
       .min(1, ProductTranslate[lang].dto.userAgent.required),
     source: z
       .enum(Object.values(AuditSource) as [string, ...string[]])

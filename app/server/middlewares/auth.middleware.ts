@@ -30,17 +30,22 @@ const validateToken = (token: string | null | undefined) => {
   return tokenSchema.safeParse(token);
 };
 
+/**
+ * Authentication Middleware
+ *
+ * Provides two levels of authentication:
+ * 1. requireAuth() - Full authentication (requires email verification)
+ * 2. requireAuthUnverified() - Partial authentication (allows unverified emails)
+ */
 export class AuthMiddleware {
   private static userService = new UserService();
   private static tokenService = new TokensService();
+
+  // Full authentication - requires verified email
   static requireAuth(roles?: UserRole[]) {
     return async (req: NextRequest) => {
-      // try {
-      // const authHeader = req?.headers?.get("authorization")
       const token =
         req?.headers?.get("authorization")?.split(" ")[1] ?? undefined;
-      // const token =
-      //   authHeader?.startsWith("Bearer") && authHeader.split(" ")[1];
       const result = validateToken(token);
 
       if (!result.success || !result.data) {
@@ -50,10 +55,7 @@ export class AuthMiddleware {
         );
       }
       const decoded = await this.tokenService.decodedAccessToken(result.data);
-      const user = await this.userService.findUserById(
-        decoded.user_id
-        // "-security"
-      );
+      const user = await this.userService.findUserById(decoded.user_id);
 
       if (!user) {
         throw new AppError(commonTranslations[lang].userNotExists, 404);
@@ -71,14 +73,40 @@ export class AuthMiddleware {
       }
 
       req.user = user;
-      // } catch (error) {
-      // if (error instanceof Error && error.name === 'handleJWTExpiredError')
-      //   {throw new AppError(
-      //     errorControllerTranslate[lang].controllers['handleJWTExpiredError'].message,
-      //     401,
-      //   );}
-      //   throw error;
-      // }
+    };
+  }
+
+  // Partial authentication - allows unverified users (for email verification, etc.)
+  static requireAuthUnverified(roles?: UserRole[]) {
+    return async (req: NextRequest) => {
+      const token =
+        req?.headers?.get("authorization")?.split(" ")[1] ?? undefined;
+      const result = validateToken(token);
+
+      if (!result.success || !result.data) {
+        throw new AppError(
+          authControllerTranslate[lang].functions.isAuth.noExistingToken,
+          401
+        );
+      }
+      const decoded = await this.tokenService.decodedAccessToken(result.data);
+      const user = await this.userService.findUserById(decoded.user_id);
+
+      if (!user) {
+        throw new AppError(commonTranslations[lang].userNotExists, 404);
+      }
+
+      // Note: We don't check email_verified here - that's the key difference!
+
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new AppError(commonTranslations[lang].userSuspended, 403);
+      }
+
+      if (roles && roles.length > 0) {
+        await this.enforceRole(roles, user);
+      }
+
+      req.user = user;
     };
   }
 

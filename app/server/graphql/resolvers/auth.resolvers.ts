@@ -7,8 +7,38 @@ import { AuthMiddleware } from "../../middlewares/auth.middleware";
 import { UserService } from "../../services/user.service";
 import type { Context } from "../apollo-server";
 
+// Type definitions for LoginResponse union
+interface UserResult {
+  user: object;
+  access_token: string;
+  refreshToken: string;
+}
+
+interface TwoFALoginType {
+  requires2FA: boolean;
+  tempToken: string;
+  expires: string;
+  message?: string;
+}
+
+type LoginResponseType = UserResult | TwoFALoginType;
+
 const userService: UserService = new UserService();
 export const authResolvers = {
+  LoginResponse: {
+    __resolveType(obj: LoginResponseType): string | null {
+      // If the object has a 'user' property, it's a UserResult
+      if ("user" in obj) {
+        return "UserResult";
+      }
+      // If the object has a 'requires2FA' property, it's a TwoFALoginType
+      if ("requires2FA" in obj) {
+        return "TwoFALoginType";
+      }
+      // Default fallback
+      return null;
+    },
+  },
   Query: {
     getUser: async (_parent: unknown, _args: unknown, { req }: Context) => {
       // Extract token from authorization header
@@ -184,7 +214,7 @@ export const authResolvers = {
       { code }: { code: string },
       { req }: Context
     ) => {
-      await AuthMiddleware.requireAuth([])(req);
+      await AuthMiddleware.requireAuthUnverified([])(req);
 
       const result = UserValidation.isVerificationCodeValid(code);
       const device_info = await getDeviceFingerprint(req);
@@ -202,7 +232,7 @@ export const authResolvers = {
       _args: unknown,
       { req }: Context
     ) => {
-      await AuthMiddleware.requireAuth([])(req);
+      await AuthMiddleware.requireAuthUnverified([])(req);
       const device_info = await getDeviceFingerprint(req);
       await userService.sendVerificationCode(
         req.user?._id.toString()!,

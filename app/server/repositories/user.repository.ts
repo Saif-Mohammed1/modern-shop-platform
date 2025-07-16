@@ -993,29 +993,34 @@ export class UserRepository extends BaseRepository<IUserDB> {
     const IMPOSSIBLE_TRAVEL_THRESHOLD = 800; // km/h
     const NEW_DEVICE_GRACE_PERIOD = 7 * 24 * 60 * 60 * 1000; // 1 week
     const loginHistory = (await q<ILoginHistoryDB>("login_history")
-      .where("user_id", user._id)
+      .where("login_history.user_id", user._id)
       .orderBy("created_at", "desc")
       .innerJoin(
         "device_fingerprints",
         "login_history.device_id",
         "device_fingerprints._id"
       )
+      .leftJoin(
+        "device_details",
+        "device_fingerprints.fingerprint",
+        "device_details.fingerprint"
+      )
       .select(
         "login_history.*",
         this.knex.raw(
           `COALESCE(jsonb_build_object(
-            'device', device_fingerprints.device,
-            'os', device_fingerprints.os,
-            'browser', device_fingerprints.browser,
+            'device', device_details.device,
+            'os', device_details.os,
+            'browser', device_details.browser,
             'ip', device_fingerprints.ip,
-            'fingerprint', device_fingerprints.fingerprint
+            'fingerprint', device_fingerprints.fingerprint,
             'location', jsonb_build_object(
               'city', device_fingerprints.location_city,
               'country', device_fingerprints.location_country,
               'latitude', device_fingerprints.location_latitude,
               'longitude', device_fingerprints.location_longitude, 
               'source', device_fingerprints.location_source
-        )), '{}'::json) as device_info`
+        )), '{}'::jsonb) as device_info`
         )
       )
       .limit(MAX_LOGIN_HISTORY)) as unknown as (ILoginHistoryDB & {

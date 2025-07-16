@@ -19,7 +19,7 @@ export const refreshTokenControllerTranslate = {
     },
     functions: {
       refreshAccessToken: {
-        requiredFields: "Missing required fields",
+        requiredFields: "Session expired please login again",
       },
       verifyRefreshToken: {
         invalidRefreshToken: "Invalid refresh token",
@@ -44,6 +44,9 @@ export const refreshTokenControllerTranslate = {
       revokeAllUserTokens: {
         message: "All user tokens revoked",
       },
+      revokeSession: {
+        message: "Session revoked successfully",
+      },
     },
   },
   uk: {
@@ -66,7 +69,7 @@ export const refreshTokenControllerTranslate = {
     },
     functions: {
       refreshAccessToken: {
-        requiredFields: "Відсутні обов'язкові поля",
+        requiredFields: "Сесія закінчилася, будь ласка, увійдіть знову",
       },
       verifyRefreshToken: {
         invalidRefreshToken: "Недійсний токен оновлення",
@@ -90,6 +93,9 @@ export const refreshTokenControllerTranslate = {
       },
       revokeAllUserTokens: {
         message: "Всі токени користувача анульовано",
+      },
+      revokeSession: {
+        message: "Сесію успішно анульовано",
       },
     },
   },

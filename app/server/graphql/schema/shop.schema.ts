@@ -1,26 +1,28 @@
 export const shopTypeDefs = /* GraphQL */ `
-  scalar DateTime
-
-  type PaginationMeta {
-    total: Int!
-    page: Int!
-    limit: Int!
-    totalPages: Int!
-    hasNext: Boolean!
-    hasPrev: Boolean!
-  }
-
-  type Links {
-    first: String
-    prev: String
-    next: String
-    last: String
-  }
-
   type ProductsResult {
-    docs: [Product!]!
+    docs: [ProductBase!]!
     meta: PaginationMeta!
     links: Links
+  }
+
+  type ProductBase {
+    _id: String
+    name: String
+    category: String
+    price: Float
+    discount: Float
+    discount_expire: String
+    description: String
+    stock: Int
+    ratings_average: Float
+    ratings_quantity: Int
+    slug: String
+    reserved: Int
+    sold: Int
+    sku: String
+    created_at: String
+    images: [ProductImage]
+    shipping_info: ProductShipping
   }
 
   type Product {
@@ -29,7 +31,7 @@ export const shopTypeDefs = /* GraphQL */ `
     category: String
     price: Float
     discount: Float
-    discount_expire: DateTime
+    discount_expire: String
     description: String
     stock: Int
     ratings_average: Float
@@ -73,7 +75,7 @@ export const shopTypeDefs = /* GraphQL */ `
     category: String
     price: Float
     discount: Float
-    discount_expire: DateTime
+    discount_expire: String
     description: String
     stock: Int
     slug: String
@@ -126,10 +128,15 @@ export const shopTypeDefs = /* GraphQL */ `
     limit: Int
     rating: Float
   }
+  type TopOfferProducts {
+    topOfferProducts: [ProductBase!]
+    newProducts: [ProductBase!]
+    topRating: [ProductBase!]
+  }
   type Query {
     getProducts(filter: SearchParams): ProductsWithCategories
     getProductBySlug(slug: String!, populate: Boolean): ProductWithDistribution
-    getTopOffersAndNewProducts: Product
+    getTopOffersAndNewProducts: TopOfferProducts!
   }
   type Mutation {
     createProduct(product: ProductInput!): Product

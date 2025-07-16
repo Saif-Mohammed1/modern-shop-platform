@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { FiLock, FiMail, FiUser } from "react-icons/fi";
+import { FiLock, FiMail, FiUser, FiPhone } from "react-icons/fi";
 import { z } from "zod";
 
 // import api_client from "@/app/lib/utilities/api.client";
@@ -17,10 +17,11 @@ import { lang } from "@/app/lib/utilities/lang";
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
 
-import { mergeLocalCartWithDB } from "../providers/store/cart/cartAction";
+import { useCartHook } from "../providers/store/cart/useCartHook";
 import Spinner from "../spinner/spinner";
 import Input from "../ui/Input";
 
+import TermsAgreement from "./TermsAgreement";
 
 // Allowed email domains
 const allowedEmailDomains = ["gmail.com", "yahoo.com", "outlook.com"];
@@ -73,6 +74,11 @@ const registerSchema = z
           userZodValidatorTranslate[lang].confirmPassword.required,
       })
       .trim(),
+    agreeToTerms: z
+      .boolean()
+      .refine((val) => val === true, {
+        message: registerTranslate[lang].form.terms.required,
+      }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: userZodValidatorTranslate[lang].confirmPassword.invalid,
@@ -83,13 +89,22 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const CREATE_USER_MUTATION = gql`
   mutation CreateUser($input: CreateUser!) {
-    registerUser(input: $input)
+    registerUser(input: $input) {
+      user {
+        _id
+        name
+        email
+      }
+      access_token
+      refreshToken
+    }
   }
 `;
 const RegisterPage = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -101,7 +116,7 @@ const RegisterPage = () => {
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl");
   const router = useRouter();
-
+  const { mergeLocalCartWithDB } = useCartHook();
   const [registerUser] = useMutation(CREATE_USER_MUTATION);
 
   const onSubmit = async (data: RegisterFormValues) => {
@@ -180,6 +195,17 @@ const RegisterPage = () => {
           placeholder={registerTranslate[lang].form.email.placeholder}
           error={errors.email?.message}
         />
+
+        {/* Phone Field (Optional) */}
+        <Input
+          icon={<FiPhone />}
+          {...register("phone")}
+          label={registerTranslate[lang].form.phone.label}
+          placeholder={registerTranslate[lang].form.phone.placeholder}
+          error={errors.phone?.message}
+          type="tel"
+        />
+
         {/* Password Field */}
         {/* <div>
           <label className="block text-gray-600">
@@ -281,9 +307,17 @@ const RegisterPage = () => {
             {showConfirmPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
           </button>
         </div>
+
+        {/* Terms Agreement */}
+        <TermsAgreement
+          control={control}
+          name="agreeToTerms"
+          error={errors.agreeToTerms?.message}
+        />
+
         <button
           type="submit"
-          disabled={!!errors.name || !!errors.email || !!errors.password}
+          disabled={!!errors.name || !!errors.email || !!errors.phone || !!errors.password || !!errors.confirmPassword || !!errors.agreeToTerms}
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
         >
           {isSubmitting ? <Spinner /> : registerTranslate[lang].form.submit}

@@ -31,6 +31,12 @@ export class ReviewValidation {
           reviewControllerTranslate[lang].controllers.createReviews
             .reviewTextRequired,
       })
+      .trim()
+      .min(
+        1,
+        reviewControllerTranslate[lang].controllers.createReviews
+          .reviewTextRequired
+      )
       .min(4, {
         message:
           reviewControllerTranslate[lang].controllers.createReviews
@@ -72,6 +78,12 @@ export class ReviewValidation {
           reviewControllerTranslate[lang].controllers.createReviews
             .reviewTextRequired,
       })
+      .trim()
+      .min(
+        1,
+        reviewControllerTranslate[lang].controllers.createReviews
+          .reviewTextRequired
+      )
       .min(4, {
         message:
           reviewControllerTranslate[lang].controllers.createReviews

@@ -201,10 +201,13 @@ export class CartRepository extends BaseRepository<ICartItemDB> {
   ): Promise<void> {
     // Convert local cart items to ObjectIds
     const productUpdates = products.map(
-      ({ _id, quantity }): Omit<ICartItemDB, "created_at" | "updated_at"> => ({
+      ({
+        product_id,
+        quantity,
+      }): Omit<ICartItemDB, "created_at" | "updated_at"> => ({
         _id: generateUUID(),
         user_id: user_id,
-        product_id: _id,
+        product_id,
         quantity,
       })
     );

@@ -8,10 +8,87 @@ import {
   allowedRoles,
   type UserAuthType,
 } from "./app/lib/types/users.db.types";
-import AppError from "./app/lib/utilities/appError";
 import { lang } from "./app/lib/utilities/lang";
-import { rateLimiter } from "./app/lib/utilities/rate-limiter";
+import {
+  rateLimiter,
+  type RateLimitType,
+  type RateLimitResult,
+} from "./app/lib/utilities/rate-limiter";
 import { tooManyRequestsTranslate } from "./public/locales/client/(public)/tooManyRequestsTranslate";
+
+// Helper function to get client IP with better fallback
+const getClientIp = (req: NextRequest): string => {
+  // Try multiple headers for IP detection
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    // Take the first IP from the chain
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp;
+  }
+
+  const vercelIp = ipAddress(req);
+  if (vercelIp && vercelIp !== "127.0.0.1") {
+    return vercelIp;
+  }
+
+  // Fallback to remote address
+  const cfConnectingIp = req.headers.get("cf-connecting-ip");
+  if (cfConnectingIp) {
+    return cfConnectingIp;
+  }
+
+  // Last resort - use a unique identifier based on user agent + timestamp
+  // This prevents all users being treated as the same IP
+  const userAgent = req.headers.get("user-agent") || "unknown";
+  return `fallback:${Buffer.from(userAgent).toString("base64").substring(0, 16)}`;
+};
+
+// Determine rate limit type based on path
+const getRateLimitType = (pathname: string): RateLimitType => {
+  if (
+    pathname.includes("/auth") ||
+    pathname.includes("/login") ||
+    pathname.includes("/register")
+  ) {
+    return "auth";
+  }
+  if (pathname.includes("/graphql")) {
+    return "graphql";
+  }
+  if (pathname.includes("/password") || pathname.includes("/verify")) {
+    return "critical";
+  }
+  return "api";
+};
+
+// Create proper 429 response
+const createRateLimitResponse = (limit: RateLimitResult) => {
+  const response = new NextResponse(
+    JSON.stringify({
+      error: tooManyRequestsTranslate[lang].title,
+      message: `Too many requests. Try again in ${limit.retryAfter} seconds.`,
+      retryAfter: limit.retryAfter,
+    }),
+    {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  // Add rate limit headers
+  response.headers.set("X-RateLimit-Limit", limit.limit.toString());
+  response.headers.set("X-RateLimit-Remaining", limit.remaining.toString());
+  response.headers.set("X-RateLimit-Reset", limit.reset.toString());
+  response.headers.set("Retry-After", limit.retryAfter.toString());
+
+  return response;
+};
 
 // import { createRequestLogger } from "./app/lib/logger/logs";
 const PROTECTED_ROUTES = [
@@ -49,16 +126,23 @@ const authMiddleware = async (req: NextRequest) => {
 
   try {
     // Handle security headers and client identification
-
-    const clientIp =
-      req.headers.get("x-forwarded-for") ||
-      ipAddress(req) ||
-      req.headers.get("x-real-ip") ||
-      "127.0.0.1";
+    const clientIp = getClientIp(req);
     response.headers.set("x-client-ip", clientIp);
-
-    // Attach to headers
     response.headers.set("X-Correlation-ID", correlationId);
+
+    // ✅ ENHANCED RATE LIMITING - Apply to ALL requests, not just API
+    const rateLimitType = getRateLimitType(pathname);
+    const limit = await rateLimiter.limit(clientIp, rateLimitType);
+
+    // Always add rate limit headers
+    response.headers.set("X-RateLimit-Limit", limit.limit.toString());
+    response.headers.set("X-RateLimit-Remaining", limit.remaining.toString());
+    response.headers.set("X-RateLimit-Reset", limit.reset.toString());
+
+    if (!limit.allowed) {
+      // Return proper 429 response instead of throwing error
+      return createRateLimitResponse(limit);
+    }
 
     if (
       isAuth &&
@@ -67,34 +151,6 @@ const authMiddleware = async (req: NextRequest) => {
       !user?.verification?.email_verified
     ) {
       return NextResponse.redirect(new URL("/verify-email", req.url));
-    }
-    // Handle rate limiting for API routes
-    if (pathname.startsWith("/api")) {
-      // const { failed } = rateLimitIp(clientIp);
-
-      const limit = await rateLimiter.limit(clientIp);
-
-      if (!limit.allowed) {
-        response.headers.set("X-RateLimit-Limit", limit.limit.toString());
-        response.headers.set(
-          "X-RateLimit-Remaining",
-          limit.remaining.toString()
-        );
-        response.headers.set("X-RateLimit-Reset", limit.reset.toString());
-        response.headers.set("Retry-After", limit.retryAfter.toString());
-        //  return res.status(429).json({
-        //    error: `Too many requests. Retry after ${limit.retryAfter} seconds`,
-        //  });
-        throw new AppError(tooManyRequestsTranslate[lang].title, 429);
-
-        // NextResponse.redirect(new URL(CUSTOM_ERROR_PATH, req.url));
-      }
-
-      // Apply rate limit headers to all responses
-
-      response.headers.set("X-RateLimit-Limit", limit.limit.toString());
-      response.headers.set("X-RateLimit-Remaining", limit.remaining.toString());
-      response.headers.set("X-RateLimit-Reset", limit.reset.toString());
     }
 
     // Handle cookie management
@@ -116,7 +172,21 @@ const authMiddleware = async (req: NextRequest) => {
         maxAge: 60 * 60 * 24 * 365, // 1 year
       });
     }
-    // Add this before your existing protected route logic
+
+    // Check if this is an auth-related route
+    const isAuthRoute =
+      pathname.startsWith(AUTH_PATH) ||
+      pathname === "/auth/login" ||
+      pathname === "/auth/register" ||
+      pathname === "/login" ||
+      pathname === "/register";
+
+    // PRIORITY: Handle authenticated users accessing auth pages
+    if (isAuth && isAuthRoute) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    // Handle email verification logic
     if (pathname === "/verify-email") {
       if (!isAuth) {
         return NextResponse.redirect(new URL(AUTH_PATH, req.url));
@@ -126,17 +196,25 @@ const authMiddleware = async (req: NextRequest) => {
       }
       return NextResponse.next();
     }
+
+    // Redirect to email verification if needed (but not for auth routes)
+    if (
+      isAuth &&
+      !isAuthRoute &&
+      !pathname.startsWith("/api") &&
+      !pathname.startsWith("/verify-email") &&
+      !pathname.startsWith("/_next") &&
+      !user?.verification?.email_verified
+    ) {
+      return NextResponse.redirect(new URL("/verify-email", req.url));
+    }
+
     // Handle route protection logic
     const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
       pathname.startsWith(route)
     );
 
     if (isAuth) {
-      // Redirect authenticated users away from auth pages
-      if (pathname.startsWith(AUTH_PATH)) {
-        return NextResponse.redirect(new URL("/", req.url));
-      }
-
       // Admin dashboard protection
       if (pathname.startsWith(DASHBOARD_PATH) && !isAuthorizedUser) {
         return NextResponse.rewrite(new URL(NOT_FOUND_PATH, req.url));
@@ -163,18 +241,13 @@ export default withAuth(authMiddleware, {
   callbacks: {
     authorized: ({ token, req }) => {
       const { pathname } = req.nextUrl;
+
       const needsAuth = PROTECTED_ROUTES.some((route) =>
         pathname.startsWith(route)
       );
-      /**
-       * Only protect the /account route, all other routes are public
-       *
-          ***** both are same
-      * if (pathname.startsWith("/account")) {
-        return !!token;
-            }
-      * or return pathname.startsWith("/account") ? !!token : true;
- */
+
+      // For protected routes, require authentication
+      // For public routes (including auth pages), allow access - our middleware will handle redirects
       return needsAuth ? !!token : true;
     },
   },

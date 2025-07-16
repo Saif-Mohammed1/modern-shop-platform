@@ -24,12 +24,16 @@ export class UserValidation {
         .string({
           required_error: userZodValidatorTranslate[lang].name.required,
         })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].name.required)
         .min(3, userZodValidatorTranslate[lang].name.minLength)
         .max(50, userZodValidatorTranslate[lang].name.maxLength),
       email: z
         .string({
           required_error: userZodValidatorTranslate[lang].email.required,
         })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].email.required)
         .email(userZodValidatorTranslate[lang].email.invalid)
         .refine((email) => {
           const domain = email.split("@")[1];
@@ -37,25 +41,30 @@ export class UserValidation {
         }, userZodValidatorTranslate[lang].email.domainNotAllowed),
       phone: z
         .string()
-        .regex(
-          /^\+?[1-9]\d{1,14}$/,
-          userZodValidatorTranslate[lang].phone.invalid
-        ) // Supports E.164 format
-        .optional(),
+        .optional()
+        .transform((val) => val?.trim() || "")
+        .refine((val) => val === "" || /^\+?[1-9]\d{1,14}$/.test(val), {
+          message: userZodValidatorTranslate[lang].phone.invalid,
+        }),
       password: z
         .string({
           required_error: userZodValidatorTranslate[lang].password.required,
         })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].password.required)
         .min(10, userZodValidatorTranslate[lang].password.minLength)
         .max(40, userZodValidatorTranslate[lang].password.maxLength)
         .regex(
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
           userZodValidatorTranslate[lang].password.invalid
         ),
-      confirmPassword: z.string({
-        required_error:
-          userZodValidatorTranslate[lang].confirmPassword.required,
-      }),
+      confirmPassword: z
+        .string({
+          required_error:
+            userZodValidatorTranslate[lang].confirmPassword.required,
+        })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].confirmPassword.required),
       // role: z.enum(["customer", "admin", "moderator"]).default("customer"),
       preferences: z
         .object({
@@ -77,7 +86,7 @@ export class UserValidation {
       role: z
         .enum(Object.values(UserRole) as [string, ...string[]])
         .default("customer"),
-      confirmPassword: z.string().optional(), // Make confirmPassword optional
+      confirmPassword: z.string().trim().optional(), // Make confirmPassword optional
     })
     .refine(
       (data) => !data.confirmPassword || data.password === data.confirmPassword,
@@ -93,6 +102,8 @@ export class UserValidation {
       .string({
         required_error: userZodValidatorTranslate[lang].email.required,
       })
+      .trim()
+      .min(1, userZodValidatorTranslate[lang].email.required)
       .email(userZodValidatorTranslate[lang].email.invalid)
       .refine((email) => {
         const domain = email.split("@")[1];
@@ -102,28 +113,38 @@ export class UserValidation {
       .string({
         required_error: userZodValidatorTranslate[lang].password.required,
       })
+      .trim()
+      .min(1, userZodValidatorTranslate[lang].password.required)
       .min(10, userZodValidatorTranslate[lang].password.invalid), // Generic message for security
   });
   static changePasswordSchema = z
     .object({
-      currentPassword: z.string({
-        required_error:
-          userZodValidatorTranslate[lang].currentPassword.required,
-      }),
+      currentPassword: z
+        .string({
+          required_error:
+            userZodValidatorTranslate[lang].currentPassword.required,
+        })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].currentPassword.required),
       newPassword: z
         .string({
           required_error: userZodValidatorTranslate[lang].password.required,
         })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].password.required)
         .min(10, userZodValidatorTranslate[lang].password.minLength)
         .max(40, userZodValidatorTranslate[lang].password.maxLength)
         .regex(
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
           userZodValidatorTranslate[lang].password.invalid
         ),
-      confirmPassword: z.string({
-        required_error:
-          userZodValidatorTranslate[lang].confirmPassword.required,
-      }),
+      confirmPassword: z
+        .string({
+          required_error:
+            userZodValidatorTranslate[lang].confirmPassword.required,
+        })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].confirmPassword.required),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
       message: userZodValidatorTranslate[lang].confirmPassword.invalid,
@@ -131,13 +152,18 @@ export class UserValidation {
     });
   static passwordResetSchema = z
     .object({
-      token: z.string({
-        required_error: userZodValidatorTranslate[lang].token.required,
-      }),
+      token: z
+        .string({
+          required_error: userZodValidatorTranslate[lang].token.required,
+        })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].token.required),
       email: z
         .string({
           required_error: userZodValidatorTranslate[lang].email.required,
         })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].email.required)
         .email(userZodValidatorTranslate[lang].email.invalid)
         .refine((email) => {
           const domain = email.split("@")[1];
@@ -147,16 +173,21 @@ export class UserValidation {
         .string({
           required_error: userZodValidatorTranslate[lang].password.required,
         })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].password.required)
         .min(10, userZodValidatorTranslate[lang].password.minLength)
         .max(40, userZodValidatorTranslate[lang].password.maxLength)
         .regex(
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
           userZodValidatorTranslate[lang].password.invalid
         ),
-      confirmPassword: z.string({
-        required_error:
-          userZodValidatorTranslate[lang].confirmPassword.required,
-      }),
+      confirmPassword: z
+        .string({
+          required_error:
+            userZodValidatorTranslate[lang].confirmPassword.required,
+        })
+        .trim()
+        .min(1, userZodValidatorTranslate[lang].confirmPassword.required),
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: userZodValidatorTranslate[lang].confirmPassword.invalid,
@@ -164,9 +195,10 @@ export class UserValidation {
     });
 
   static updateUserByAdminSchema = z.object({
-    name: z.string().optional(),
+    name: z.string().trim().optional(),
     email: z
       .string()
+      .trim()
       .email(userZodValidatorTranslate[lang].email.invalid)
       .refine((email) => {
         const domain = email.split("@")[1];
@@ -300,14 +332,19 @@ export class UserValidation {
           .string({
             required_error: userZodValidatorTranslate[lang].email.required,
           })
+          .trim()
+          .min(1, userZodValidatorTranslate[lang].email.required)
           .email(userZodValidatorTranslate[lang].email.invalid)
           .refine((email) => {
             const domain = email.split("@")[1];
             return this.allowedEmailDomains.includes(domain);
           }, userZodValidatorTranslate[lang].email.domainNotAllowed),
-        token: z.string({
-          required_error: userZodValidatorTranslate[lang].token.required,
-        }),
+        token: z
+          .string({
+            required_error: userZodValidatorTranslate[lang].token.required,
+          })
+          .trim()
+          .min(1, userZodValidatorTranslate[lang].token.required),
       })
       .parse(data);
 
