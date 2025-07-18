@@ -1,6 +1,6 @@
 "use client";
 
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { gql, useMutation } from "@apollo/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
@@ -16,41 +16,6 @@ import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account
 import { logOutUser } from "../providers/store/user/user.store";
 
 import DeviceInfoSection from "./deviceInfoSection";
-const GET_SESSION_INFO = gql`
-  query {
-    getActiveSessions {
-      docs {
-        _id
-        user_id
-        device_id
-        device_info {
-          os
-          browser
-          device
-          brand
-          model
-          is_bot
-          ip
-          location {
-            city
-            country
-            latitude
-            longitude
-            source
-          }
-          fingerprint
-        }
-        hashed_token
-        is_active
-        revoked_at
-        expires_at
-        last_used_at
-        created_at
-        updated_at
-      }
-    }
-  }
-`;
 
 const DELETE_CUSTOMER_ACCOUNT = gql`
   mutation {
@@ -74,25 +39,9 @@ const UPDATE_PASS = gql`
     }
   }
 `;
-const ChangePassword = () => {
-  // const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
-  const [devicesList, setDevicesList] = useState<sessionInfo[]>([]);
-  const _query = useQuery<{
-    getActiveSessions: {
-      docs: sessionInfo[];
-    };
-  }>(GET_SESSION_INFO, {
-    onCompleted: (data) => {
-      if (data?.getActiveSessions?.docs) {
-        setDevicesList(data.getActiveSessions.docs);
-      }
-    },
-    onError: (error) => {
-      toast.error(
-        error.message || accountSettingsTranslate[lang].errors.global
-      );
-    },
-  });
+const ChangePassword = ({ devices }: { devices: sessionInfo[] }) => {
+  const [devicesList, setDevicesList] = useState<sessionInfo[]>(devices || []);
+
   const [deleteCustomerAccount] = useMutation(DELETE_CUSTOMER_ACCOUNT);
   const [updatePassword] = useMutation(UPDATE_PASS);
   const [revokeAllSessions] = useMutation(REVOKE_ALL_SESSIONS);
@@ -335,7 +284,10 @@ const ChangePassword = () => {
 
       {/* Delete Account Confirmation Modal */}
       {showDeleteModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div
+          //  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-100"
+        >
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
             <h2 className="text-xl font-bold text-red-600 mb-4">
               {accountSettingsTranslate[lang].showDeleteModal.title}
@@ -369,7 +321,7 @@ const ChangePassword = () => {
           {accountSettingsTranslate[lang].devices.title}
         </h1>{" "}
         <div className="max-h-[50vh] md:max-h-[70vh] overflow-y-auto">
-          {devicesList && devicesList.length ? (
+          {devicesList.length > 0 ? (
             devicesList.map((device) => (
               <DeviceInfoSection
                 key={device._id}

@@ -9,7 +9,7 @@ type Props = {
     slug: string;
   }>;
 };
-const GET_PRODUCT = `
+const GET_PRODUCT = /* GraphQL */ `
   query GetProductMetaData($slug: String!) {
     getProductBySlug(slug: $slug) {
       product {

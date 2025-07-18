@@ -12,6 +12,13 @@ const UserOrderTracking = ({
   orders: OrderType[];
   hasNextPage: boolean;
 }) => {
+  // const UserOrderTracking = ({
+  //   orders,
+  //   hasNextPage,
+  // }: {
+  //   orders: OrderType[];
+  //   hasNextPage: boolean;
+  // }) => {
   const t = accountOrdersTranslate[lang].orderTracking;
 
   if (orders.length === 0) {

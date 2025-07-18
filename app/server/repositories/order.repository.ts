@@ -14,6 +14,7 @@ import type {
   IOrderItemDB,
   IOrderShippingAddressDB,
   OrderStatus,
+  OrderType,
 } from "@/app/lib/types/orders.db.types";
 import type {
   QueryBuilderConfig,
@@ -215,8 +216,8 @@ export class OrderRepository extends BaseRepository<IOrderDB> {
   async findByUser(
     user_id: string,
     options: QueryOptionConfig
-  ): Promise<QueryBuilderResult<IOrderDB>> {
-    const queryConfig: QueryBuilderConfig<IOrderDB> = {
+  ): Promise<QueryBuilderResult<OrderType>> {
+    const queryConfig: QueryBuilderConfig<OrderType> = {
       allowedFilters: ["user_id", "created_at"],
       //   allowedSorts: ["created_at", "updated_at"] as Array<keyof IOrderDB>,
       //   maxLimit: 100,
@@ -230,7 +231,7 @@ export class OrderRepository extends BaseRepository<IOrderDB> {
       // ...(options?.sort && { sort: options.sort }),
     });
 
-    const queryBuilder = new QueryBuilder<IOrderDB>(
+    const queryBuilder = new QueryBuilder<OrderType>(
       this.knex,
       "orders_view",
       searchParams,
@@ -403,37 +404,37 @@ export class OrderRepository extends BaseRepository<IOrderDB> {
     // }
     return await queryBuilder.execute();
   }
-  async getLatestOrder(user_id: string): Promise<IOrderDB | null> {
-    return (await this.query()
-      .where("user_id", user_id)
-      .leftJoin(
-        "order_shipping_address",
-        "orders._id",
-        "order_shipping_address.order_id"
-      )
-      .leftJoin("order_items", "orders._id", "order_items.order_id")
-      .leftJoin("users", "orders.user_id", "users._id")
-      .select(
-        "orders.*",
-        "order_shipping_address.*",
-        this.knex.raw(
-          `jsonb_agg(
-            json_build_object(
-              'product_id', order_items.product_id,
-              'name', order_items.name,
-              'price', order_items.price,
-              'discount', order_items.discount,
-              'quantity', order_items.quantity,
-              'sku', order_items.sku,
-              'shipping_info_weight', order_items.shipping_info_weight,
-              'shipping_info_dimensions', order_items.shipping_info_dimensions,
-              'final_price', order_items.final_price
-            )
-          ) AS items`
-        )
-      )
-      .groupBy("orders._id", "order_shipping_address._id")
-      .first()) as unknown as IOrderDB;
+  async getLatestOrder(user_id: string): Promise<OrderType | null> {
+    // return (await this.query()
+    //   .where("user_id", user_id)
+    //   .leftJoin(
+    //     "order_shipping_address",
+    //     "orders._id",
+    //     "order_shipping_address.order_id"
+    //   )
+    //   .leftJoin("order_items", "orders._id", "order_items.order_id")
+    //   .leftJoin("users", "orders.user_id", "users._id")
+    //   .select(
+    //     "orders.*",
+    //     "order_shipping_address.*",
+    //     this.knex.raw(
+    //       `jsonb_agg(
+    //         json_build_object(
+    //           'product_id', order_items.product_id,
+    //           'name', order_items.name,
+    //           'price', order_items.price,
+    //           'discount', order_items.discount,
+    //           'quantity', order_items.quantity,
+    //           'sku', order_items.sku,
+    //           'shipping_info_weight', order_items.shipping_info_weight,
+    //           'shipping_info_dimensions', order_items.shipping_info_dimensions,
+    //           'final_price', order_items.final_price
+    //         )
+    //       ) AS items`
+    //     )
+    //   )
+    //   .groupBy("orders._id", "order_shipping_address._id")
+    //   .first()) as unknown as IOrderDB;
 
     // this.model
     //   .findOne({ user_id })
@@ -441,47 +442,53 @@ export class OrderRepository extends BaseRepository<IOrderDB> {
     //     created_at: -1,
     //   })
     //   .lean();
+    return (await this.knex("orders_view")
+      .where("user_id", user_id)
+      .orderBy("created_at", "desc")
+      .first()) as unknown as OrderType;
   }
   async findByUserAndProduct(
     user_id: string,
     product_id: string
-  ): Promise<IOrderDB | null> {
-    return (await this.query()
-      .where("user_id", user_id)
-      .andWhere("product_id", product_id)
-      .leftJoin(
-        "order_shipping_address",
-        "orders._id",
-        "order_shipping_address.order_id"
-      )
-      .leftJoin("order_items", "orders._id", "order_items.order_id")
-      .leftJoin("users", "orders.user_id", "users._id")
-      .select(
-        "orders.*",
-        "order_shipping_address.street",
-        "order_shipping_address.city",
-        "order_shipping_address.state",
-        "order_shipping_address.postal_code",
-        "order_shipping_address.phone",
-        "order_shipping_address.country",
-        this.knex.raw(
-          `jsonb_agg(
-            json_build_object(
-              'product_id', order_items.product_id,
-              'name', order_items.name,
-              'price', order_items.price,
-              'discount', order_items.discount,
-              'quantity', order_items.quantity,
-              'sku', order_items.sku,
-              'shipping_info_weight', order_items.shipping_info_weight,
-              'shipping_info_dimensions', order_items.shipping_info_dimensions,
-              'final_price', order_items.final_price
-            )
-          ) AS items`
-        )
-      )
-      .groupBy("orders._id", "order_shipping_address._id")
-      .first()) as unknown as IOrderDB;
+  ): Promise<OrderType | null> {
+    return (
+      (await this.knex("orders_view")
+        .where("user_id", user_id)
+        .andWhere("product_id", product_id)
+        // .leftJoin(
+        //   "order_shipping_address",
+        //   "orders._id",
+        //   "order_shipping_address.order_id"
+        // )
+        // .leftJoin("order_items", "orders._id", "order_items.order_id")
+        // .leftJoin("users", "orders.user_id", "users._id")
+        // .select(
+        //   "orders.*",
+        //   "order_shipping_address.street",
+        //   "order_shipping_address.city",
+        //   "order_shipping_address.state",
+        //   "order_shipping_address.postal_code",
+        //   "order_shipping_address.phone",
+        //   "order_shipping_address.country",
+        //   this.knex.raw(
+        //     `jsonb_agg(
+        //       json_build_object(
+        //         'product_id', order_items.product_id,
+        //         'name', order_items.name,
+        //         'price', order_items.price,
+        //         'discount', order_items.discount,
+        //         'quantity', order_items.quantity,
+        //         'sku', order_items.sku,
+        //         'shipping_info_weight', order_items.shipping_info_weight,
+        //         'shipping_info_dimensions', order_items.shipping_info_dimensions,
+        //         'final_price', order_items.final_price
+        //       )
+        //     ) AS items`
+        //   )
+        // )
+        // .groupBy("orders._id", "order_shipping_address._id")
+        .first()) as unknown as OrderType
+    );
   }
   async logAction(
     action: AuditAction,

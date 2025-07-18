@@ -1,14 +1,37 @@
 "use client";
 
+import { gql, useLazyQuery } from "@apollo/client";
 import Link from "next/link";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 import type { ReviewsType } from "@/app/lib/types/reviews.db.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountReviewsTranslate } from "@/public/locales/client/(auth)/account/reviewsTranslate";
 
 import CustomButton from "../button/button";
+import LoadingSpinner from "../spinner/LoadingSpinner";
+
+const GET_REVIEWS = gql`
+  query ($request: Filter) {
+    getMyReviews(filter: $request) {
+      docs {
+        _id
+        user_id
+        product_id {
+          name
+          slug
+        }
+        rating
+        comment
+        created_at
+      }
+      meta {
+        hasNext
+      }
+    }
+  }
+`;
 
 const ReviewHistory = ({
   reviewsList,
@@ -17,59 +40,47 @@ const ReviewHistory = ({
   hasNextPage: boolean;
   reviewsList: ReviewsType[];
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [moreResults, setMoreResults] = useState(reviewsList || []);
-  const [page, setPage] = useState(1);
-  const [showMore, setShowMore] = useState(hasNextPage);
+  const [reviews, setReviews] = useState<ReviewsType[]>(reviewsList || []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState<boolean>(hasNextPage || false);
 
-  const getMoreResults = async () => {
-    try {
-      setLoading(true);
-      const newPage = page + 1;
-      const {
-        data,
-      }: {
-        data: {
-          docs: ReviewsType[];
-          meta: {
-            hasNext: boolean;
-          };
-        };
-      } = await api_client.get(`/customers/reviews?page=${newPage}`);
-      setMoreResults([...moreResults, ...data.docs]);
-      setPage(newPage);
-      setShowMore(data.meta.hasNext);
-    } catch (_error) {
-      return null;
-    } finally {
-      setLoading(false);
-    }
-    return null;
+  const [getMoreReviews, { loading }] = useLazyQuery<{
+    getMyReviews: {
+      docs: ReviewsType[];
+      meta: {
+        hasNext: boolean;
+      };
+    };
+  }>(GET_REVIEWS, {
+    fetchPolicy: "cache-and-network",
+    onCompleted: (data) => {
+      if (data?.getMyReviews) {
+        setReviews((prevReviews) => [
+          ...prevReviews,
+          ...data.getMyReviews.docs,
+        ]);
+        setHasMore(data.getMyReviews.meta.hasNext);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || accountReviewsTranslate[lang].noReviewFound);
+    },
+  });
+
+  const loadMoreReviews = async () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+
+    await getMoreReviews({
+      variables: {
+        request: {
+          page: nextPage,
+          limit: 10,
+        },
+      },
+    });
   };
-  // const [error, setError] = useState(null);
 
-  //   useEffect(() => {
-  //     // Fetch reviews for the user
-  //     const fetchReviews = async () => {
-  //       try {
-  //         const response = await axios.get(`/api/reviews/${user_id}`);
-  //         setReviews(response.data.data);
-  //         setLoading(false);
-  //       } catch (err) {
-  //         setError(err.message);
-  //         setLoading(false);
-  //       }
-  //     };
-
-  //     fetchReviews();
-  //   }, [user_id]);
-
-  //   if (loading) return <div>Loading...</div>;
-  //   if (error) return <div>Error: {error}</div>;
-
-  // useEffect(() => {
-  //   setReviews(reviewsList);
-  // }, [reviewsList]);
   return (
     <div className="container mx-auto mt-8 p-6 bg-gray-100 rounded-lg shadow-lg">
       <h1 className="text-3xl font-bold mb-6">
@@ -79,10 +90,18 @@ const ReviewHistory = ({
         className="mx-auto p-6 bg-gray-100 rounded-lg shadow-lg
 "
       >
-        {moreResults.length > 0 ? (
+        {loading && reviews.length === 0 ? (
+          <div className="flex justify-center items-center min-h-[300px]">
+            <LoadingSpinner
+              size="lg"
+              variant="dots"
+              text="Loading reviews..."
+            />
+          </div>
+        ) : reviews.length > 0 ? (
           <>
             <div className="max-h-[80vh] overflow-y-scroll ">
-              {moreResults.map((review) => (
+              {reviews.map((review) => (
                 <div
                   key={review._id}
                   className="p-4 mb-4 bg-white rounded shadow-lg border border-gray-200"
@@ -120,8 +139,8 @@ const ReviewHistory = ({
               ))}
             </div>{" "}
             <CustomButton
-              showMore={showMore}
-              getMoreResults={getMoreResults}
+              showMore={hasMore}
+              getMoreResults={loadMoreReviews}
               loading={loading}
             />
           </>

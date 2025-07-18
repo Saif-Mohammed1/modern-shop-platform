@@ -29,7 +29,6 @@ export const authTypeDefs = /* GraphQL */ `
     expires_at: DateTime
     last_used_at: DateTime
     created_at: DateTime
-    updated_at: DateTime
   }
 
   type SessionsResult {

@@ -137,22 +137,6 @@ const LoginPage = () => {
       setIsLoading2fa(false);
     }
   };
-  // const handleResend = async () => {
-  //   // setIsLoading(true);
-  //   try {
-  //     await api_client.put("/auth/2fa", {
-  //       email,
-  //     });
-
-  //     toast.success(loginTranslate[lang].functions.handelResend2fa.success);
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       toast.error(error.message || loginTranslate[lang].errors.global);
-  //     } else {
-  //       toast.error(loginTranslate[lang].errors.global);
-  //     }
-  //   }
-  // };
   return (
     <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
       {requiredTwoFactor ? (

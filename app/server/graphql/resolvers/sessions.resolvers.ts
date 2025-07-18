@@ -22,6 +22,7 @@ export const sessionsResolvers = {
       const refreshToken =
         cookiesStore?.get("refreshAccessToken")?.value ||
         req?.cookies?.get("refreshAccessToken")?.value;
+
       if (!refreshToken) {
         throw new AppError(
           refreshTokenControllerTranslate[

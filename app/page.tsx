@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-import api from "@/app/lib/utilities/api";
 import { lang } from "@/app/lib/utilities/lang";
 import ErrorHandler from "@/components/Error/errorHandler";
 import HomeComponent from "@/components/home/home";
 
 import { rootStaticPagesTranslate } from "../public/locales/client/(public)/rootStaticPagesTranslate";
+
+import type { ProductType } from "./lib/types/products.types";
+import { api_gql } from "./lib/utilities/api.graphql";
 
 // import ComponentLoading from "@/components/spinner/componentLoading";//no need this we use next loading
 export const metadata: Metadata = {
@@ -15,82 +17,78 @@ export const metadata: Metadata = {
   keywords: rootStaticPagesTranslate[lang].home.metadata.keywords,
 };
 
-const GET_TOP_OFFERS_AND_NEW_PRODUCTS = `query {
-  getTopOffersAndNewProducts{
+const GET_TOP_OFFERS_AND_NEW_PRODUCTS = /* GraphQL */ `
+  query {
+    getTopOffersAndNewProducts {
       topOfferProducts {
         _id
-          name
-          category
-          price
-          discount
-          discount_expire
-          description
-          ratings_average
-          ratings_quantity
-          slug
+        name
+        category
+        price
+        discount
+        discount_expire
+        description
+        ratings_average
+        ratings_quantity
+        slug
 
-          images {
-            _id
-            link
-            public_id
-          }
-
+        images {
+          _id
+          link
+          public_id
+        }
       }
-    newProducts {
-      _id
-          name
-          category
-          price
-          discount
-          discount_expire
-          description
-          ratings_average
-          ratings_quantity
-          slug
+      newProducts {
+        _id
+        name
+        category
+        price
+        discount
+        discount_expire
+        description
+        ratings_average
+        ratings_quantity
+        slug
 
-          images {
-            _id
-            link
-            public_id
-          }
+        images {
+          _id
+          link
+          public_id
+        }
+      }
+      topRating {
+        _id
+        name
+        category
+        price
+        discount
+        discount_expire
+        description
+        ratings_average
+        ratings_quantity
+        slug
 
+        images {
+          _id
+          link
+          public_id
+        }
+      }
     }
-    topRating {
-      _id
-          name
-          category
-          price
-          discount
-          discount_expire
-          description
-          ratings_average
-          ratings_quantity
-          slug
-
-          images {
-            _id
-            link
-            public_id
-          }
-
-    }
-
-    
   }
-}
 `;
+interface TopOfferProducts {
+  topOfferProducts: ProductType[];
+  newProducts: ProductType[];
+  topRating: ProductType[];
+}
 export default async function Home() {
   try {
     const headersStore = await headers();
     const headersObj = Object.fromEntries(headersStore.entries());
-    const {
-      data: {
-        data: { getTopOffersAndNewProducts },
-      },
-    } = await api.post("/graphql", {
-      query: GET_TOP_OFFERS_AND_NEW_PRODUCTS,
-      headers: headersObj,
-    });
+    const { getTopOffersAndNewProducts } = await api_gql<{
+      getTopOffersAndNewProducts: TopOfferProducts;
+    }>(GET_TOP_OFFERS_AND_NEW_PRODUCTS, undefined, headersObj);
 
     return (
       // <ComponentLoading>

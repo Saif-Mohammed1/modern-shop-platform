@@ -25,7 +25,8 @@ const ConfirmModal = ({ title, children, onConfirm }: ConfirmModalProps) => {
       <Dialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
-        className="fixed inset-0 z-10 overflow-y-auto"
+        // className="fixed inset-0 z-10 overflow-y-auto"
+        className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-100"
       >
         <div className="flex items-center justify-center min-h-screen">
           {/* <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />  */}

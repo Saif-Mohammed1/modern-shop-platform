@@ -1,12 +1,13 @@
 // UserSessionSync.tsx
 "use client";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useLazyQuery } from "@apollo/client";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 
 import type { CartItemsType } from "@/app/lib/types/cart.db.types";
+import type { UserAuthType } from "@/app/lib/types/users.db.types";
 import type { WishlistType } from "@/app/lib/types/wishList.types";
 import { lang } from "@/app/lib/utilities/lang";
 import tokenManager from "@/app/lib/utilities/TokenManager";
@@ -62,23 +63,29 @@ export const UserSessionSync = ({
   initialSession: Session | null;
 }) => {
   const { data: session } = useSession();
-  const _query = useQuery<{ getMyWishlists: WishlistType }>(GET_WISHLIST, {
-    skip: !session?.user,
-    onCompleted: (data) => {
-      useWishlistStore.setState({ wishlist: data.getMyWishlists });
-    },
-    onError: (err) => {
-      toast.error(
-        err.message ||
-          accountWishlistTranslate[lang].wishListContext.loadWishlist.error
-      );
-      useWishlistStore.setState({ wishlist: { items: [], _id: "" } });
-    },
-  });
-  const _queryCart = useQuery<{ getMyCart: { products: CartItemsType[] } }>(
-    GET_CART,
+  const [getMyWishlists] = useLazyQuery<{ getMyWishlists: WishlistType }>(
+    GET_WISHLIST,
     {
-      skip: !session?.user,
+      fetchPolicy: "cache-and-network", // Better UX with cache
+      onCompleted: (data) => {
+        useWishlistStore.setState({ wishlist: data.getMyWishlists });
+      },
+      onError: (err) => {
+        toast.error(
+          err.message ||
+            accountWishlistTranslate[lang].wishListContext.loadWishlist.error
+        );
+        useWishlistStore.setState({ wishlist: { items: [], _id: "" } });
+      },
+    }
+  );
+  const [getMyCart] = useLazyQuery<{
+    getMyCart: { products: CartItemsType[] };
+  }>(
+    GET_CART,
+
+    {
+      fetchPolicy: "cache-and-network", // Better UX with cache
       onCompleted: (data) => {
         useCartStore.setState({
           cartItems: data.getMyCart.products,
@@ -115,27 +122,48 @@ export const UserSessionSync = ({
       }
     }
   }, [initialSession, session]);
+  const handleUserChange = useCallback(
+    (user: UserAuthType | null) => {
+      if (user) {
+        void (async () => {
+          await Promise.all([getMyCart(), getMyWishlists()]);
+        })();
+      } else {
+        void (async () => {
+          await logOutUser();
+        })();
+      }
+    },
+    [getMyCart, getMyWishlists]
+  );
 
-  // ✅ Zustand user subscription to load/clear cart + wishlist
   useEffect(() => {
     const unsubscribe = useUserStore.subscribe(
       (state) => state.user,
-      (user) => {
-        if (!user) {
-          //   void (async () => {
-          //     await Promise.all([loadCart(), loadWishlist()]);
-          //   })();
-          // } else {
-          // clear on logout
-          void (async () => {
-            await logOutUser();
-          })();
-        }
-      }
+      handleUserChange
     );
-
     return unsubscribe;
-  }, []);
+  }, [handleUserChange]);
+  // ✅ Zustand user subscription to load/clear cart + wishlist
+  // useEffect(() => {
+  //   const unsubscribe = useUserStore.subscribe(
+  //     (state) => state.user,
+  //     (user) => {
+  //       if (user) {
+  //         void (async () => {
+  //           await Promise.all([getMyCart(), getMyWishlists()]);
+  //         })();
+  //       } else {
+  //         // clear on logout
+  //         void (async () => {
+  //           await logOutUser();
+  //         })();
+  //       }
+  //     }
+  //   );
+
+  //   return unsubscribe;
+  // }, [getMyCart, getMyWishlists]);
 
   return null;
 };

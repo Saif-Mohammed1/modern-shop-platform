@@ -179,7 +179,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
               const imageUrl = imageSrc(item);
               return (
                 <div key={item._id} className="flex items-center gap-4 mb-4">
-                  <div className=" w-16 h-16">
+                  <div className="relative w-16 h-16">
                     <Image
                       src={imageUrl}
                       alt={item.name}
@@ -213,7 +213,7 @@ const CartDropdown = ({ setIsCartOpen, cartItems }: CartDropdownProps) => {
 
                       <input
                         type="number"
-                        className="text-sm #w-12 text-center bg-transparent"
+                        className="text-sm w-12 text-center bg-transparent"
                         value={item.quantity}
                         min={1}
                         max={item.stock}

@@ -9,16 +9,24 @@ import logger from "@/app/lib/logger/logs";
 import type { IUserDB } from "@/app/lib/types/users.db.types";
 import AppError from "@/app/lib/utilities/appError";
 
+import { addressResolvers } from "./resolvers/address.resolvers";
 import { authResolvers } from "./resolvers/auth.resolvers";
 import { cartResolvers } from "./resolvers/cart.resolvers";
+import { ordersResolvers } from "./resolvers/orders.resolvers";
+import { reviewsResolvers } from "./resolvers/reviws.resolvers";
 import { sessionsResolvers } from "./resolvers/sessions.resolvers";
 import { shopResolvers } from "./resolvers/shop.resolvers";
+import { userResolvers } from "./resolvers/user.resolvers";
 import { wishlistResolvers } from "./resolvers/wishlist.resolvers";
+import { addressTypeDefs } from "./schema/addresses.schema";
 import { authTypeDefs } from "./schema/auth.schema";
 import { cartTypeDefs } from "./schema/cart.schema";
 import { CommonTypeDefs } from "./schema/common.schema";
+import { ordersTypeDefs } from "./schema/order.schema";
+import { reviewsTypeDefs } from "./schema/reviews.schema";
 import { sessionsTypeDefs } from "./schema/sessions.schema";
 import { shopTypeDefs } from "./schema/shop.schema";
+import { userTypeDefs } from "./schema/user.schema";
 import { wishlistTypeDefs } from "./schema/wishlist.schema";
 
 const scalarResolvers = {
@@ -34,6 +42,10 @@ const typeDefs = mergeTypeDefs([
   sessionsTypeDefs,
   wishlistTypeDefs,
   cartTypeDefs,
+  userTypeDefs,
+  addressTypeDefs,
+  reviewsTypeDefs,
+  ordersTypeDefs,
 ]);
 const resolvers = mergeResolvers([
   scalarResolvers,
@@ -42,6 +54,10 @@ const resolvers = mergeResolvers([
   sessionsResolvers,
   wishlistResolvers,
   cartResolvers,
+  userResolvers,
+  addressResolvers,
+  reviewsResolvers,
+  ordersResolvers,
 ]);
 
 // Create executable schema

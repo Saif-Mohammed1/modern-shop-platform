@@ -75,22 +75,13 @@ export const shopResolvers = {
           404
         );
       }
-      const distributionRaw = product?._id
+      const distribution = product?._id
         ? await reviewService.getRatingDistributionByProductId(
             product._id.toString()
           )
         : null;
 
       // Transform the distribution to match GraphQL schema
-      const distribution = distributionRaw
-        ? {
-            one: distributionRaw["1"] || 0,
-            two: distributionRaw["2"] || 0,
-            three: distributionRaw["3"] || 0,
-            four: distributionRaw["4"] || 0,
-            five: distributionRaw["5"] || 0,
-          }
-        : null;
 
       return {
         product,

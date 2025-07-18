@@ -12,11 +12,11 @@ import { redis } from "@/app/lib/utilities/Redis";
 import { BaseRepository } from "./BaseRepository";
 
 interface RatingDistribution {
-  "1": number;
-  "2": number;
-  "3": number;
-  "4": number;
-  "5": number;
+  one: number;
+  two: number;
+  three: number;
+  four: number;
+  five: number;
 }
 interface RatingRow {
   rating: number;
@@ -121,7 +121,7 @@ export class ReviewRepository extends BaseRepository<IReviewDB> {
       .orderBy("rating", "asc");
     const rows = raw as unknown as RatingRow[];
 
-    const defaultDistribution: RatingDistribution = {
+    const defaultDistribution = {
       "1": 0,
       "2": 0,
       "3": 0,
@@ -132,13 +132,19 @@ export class ReviewRepository extends BaseRepository<IReviewDB> {
     const result = { ...defaultDistribution };
 
     for (const row of rows) {
-      result[row.rating.toString() as keyof RatingDistribution] = Number(
-        row.count
-      );
+      result[row.rating.toString() as keyof typeof defaultDistribution] =
+        Number(row.count);
     }
+    const distribution = {
+      one: result["1"] || 0,
+      two: result["2"] || 0,
+      three: result["3"] || 0,
+      four: result["4"] || 0,
+      five: result["5"] || 0,
+    };
 
-    await redis.setex(cacheKey, 3600, JSON.stringify(result)); // Cache for 1 hour
-    return result;
+    await redis.setex(cacheKey, 3600, JSON.stringify(distribution)); // Cache for 1 hour
+    return distribution;
   }
   async getMyReviews(
     user_id: string,
