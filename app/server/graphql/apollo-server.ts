@@ -15,6 +15,7 @@ import { authResolvers } from "./resolvers/auth.resolvers";
 import { cartResolvers } from "./resolvers/cart.resolvers";
 import { dashboardResolvers } from "./resolvers/dashboard.resolvers";
 import { ordersResolvers } from "./resolvers/orders.resolvers";
+import { refundResolvers } from "./resolvers/refund.resolvers";
 import { reviewsResolvers } from "./resolvers/reviws.resolvers";
 import { sessionsResolvers } from "./resolvers/sessions.resolvers";
 import { shopResolvers } from "./resolvers/shop.resolvers";
@@ -27,6 +28,7 @@ import { cartTypeDefs } from "./schema/cart.schema";
 import { CommonTypeDefs } from "./schema/common.schema";
 import { dashboardTypeDefs } from "./schema/dashboard.schema";
 import { ordersTypeDefs } from "./schema/order.schema";
+import { refundTypeDefs } from "./schema/refund.schema";
 import { reviewsTypeDefs } from "./schema/reviews.schema";
 import { sessionsTypeDefs } from "./schema/sessions.schema";
 import { shopTypeDefs } from "./schema/shop.schema";
@@ -53,6 +55,7 @@ const typeDefs = mergeTypeDefs([
   reviewsTypeDefs,
   ordersTypeDefs,
   dashboardTypeDefs,
+  refundTypeDefs,
 ]);
 const resolvers = mergeResolvers([
   scalarResolvers,
@@ -67,6 +70,7 @@ const resolvers = mergeResolvers([
   reviewsResolvers,
   ordersResolvers,
   dashboardResolvers,
+  refundResolvers,
 ]);
 
 // Create executable schema

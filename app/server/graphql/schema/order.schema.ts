@@ -160,6 +160,7 @@ export const ordersTypeDefs = /* GraphQL */ `
     getOrders(filter: OrderFilter): OrderResult!
     getOrderById(id: String!): Order!
     getOrdersByUserId(filter: OrderFilter): OrderResult!
+    getOrdersByAdmin(filter: OrderFilter): OrderResult!
     getLatestOrder: Order!
   }
 
