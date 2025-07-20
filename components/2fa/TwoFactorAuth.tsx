@@ -1,11 +1,11 @@
 "use client";
 
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { RiShieldUserLine } from "react-icons/ri";
 
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { accountTwoFactorTranslate } from "@/public/locales/client/(auth)/account/twoFactorTranslate";
 
@@ -14,6 +14,86 @@ import BackupCodesDisplay from "./backupCodesDisplay";
 import RecoveryManagement from "./recoveryManagement";
 import SecurityDashboard from "./securityDashboard";
 import SetupFlow from "./setupFlow";
+
+// GraphQL Mutations and Queries
+const ENABLE_2FA = gql`
+  mutation Enable2FA {
+    enable2FA {
+      qrCode
+      manualEntryCode
+      backupCodes
+    }
+  }
+`;
+
+const VERIFY_2FA = gql`
+  mutation Verify2FA($token: String!) {
+    verify2FA(token: $token) {
+      message
+    }
+  }
+`;
+
+const DISABLE_2FA = gql`
+  mutation Disable2FA {
+    disable2FA {
+      message
+    }
+  }
+`;
+
+const REGENERATE_BACKUP_CODES = gql`
+  mutation RegenerateBackupCodes {
+    regenerateBackupCodes {
+      newCodes
+    }
+  }
+`;
+
+const GET_AUDIT_LOGS = gql`
+  query GetTwoFactorAuditLogs {
+    getTwoFactorAuditLogs {
+      timestamp
+      action
+      metadata
+    }
+  }
+`;
+
+// Response types
+interface Enable2FAResponse {
+  enable2FA: {
+    qrCode: string;
+    manualEntryCode: string;
+    backupCodes: string[];
+  };
+}
+
+interface Verify2FAResponse {
+  verify2FA: {
+    message: string;
+  };
+}
+
+interface Disable2FAResponse {
+  disable2FA: {
+    message: string;
+  };
+}
+
+interface RegenerateBackupCodesResponse {
+  regenerateBackupCodes: {
+    newCodes: string[];
+  };
+}
+
+interface AuditLogsResponse {
+  getTwoFactorAuditLogs: {
+    timestamp: string;
+    action: string;
+    metadata: string;
+  }[];
+}
 
 interface SecurityMetadata {
   ipAddress: string;
@@ -39,109 +119,160 @@ const TwoFactorAuthDashboard = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
+
+  // GraphQL Mutations
+  const [enable2FAMutation] = useMutation<Enable2FAResponse>(ENABLE_2FA, {
+    onCompleted: (data) => {
+      setSetupData(data.enable2FA);
+      setView("setup");
+      setLoading(false);
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleEnable2FA.success
+      );
+    },
+    onError: (error) => {
+      setLoading(false);
+      const errorMessage =
+        error.graphQLErrors?.[0]?.message ||
+        (error.networkError ? "Network error occurred" : null) ||
+        accountTwoFactorTranslate[lang].functions.handleEnable2FA.failed;
+      toast.error(errorMessage);
+    },
+  });
+
+  const [verify2FAMutation] = useMutation<Verify2FAResponse>(VERIFY_2FA, {
+    onCompleted: () => {
+      setView("backup");
+      setLoading(false);
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleVerify2FA.success
+      );
+    },
+    onError: (error) => {
+      setLoading(false);
+      const errorMessage =
+        error.graphQLErrors?.[0]?.message ||
+        (error.networkError ? "Network error occurred" : null) ||
+        accountTwoFactorTranslate[lang].functions.handleVerify2FA.failed;
+      toast.error(errorMessage);
+    },
+  });
+
+  const [disable2FAMutation] = useMutation<Disable2FAResponse>(DISABLE_2FA, {
+    onCompleted: () => {
+      void update({
+        ...session,
+        user: { ...session?.user, isTwoFactorAuthEnabled: false },
+      });
+      setView("main");
+      setLoading(false);
+      toast.success(
+        accountTwoFactorTranslate[lang].functions.handleDisable2FA.success
+      );
+    },
+    onError: (error) => {
+      setLoading(false);
+      const errorMessage =
+        error.graphQLErrors?.[0]?.message ||
+        (error.networkError ? "Network error occurred" : null) ||
+        accountTwoFactorTranslate[lang].functions.handleDisable2FA.failed;
+      toast.error(errorMessage);
+    },
+  });
+
+  const [regenerateBackupCodesMutation] =
+    useMutation<RegenerateBackupCodesResponse>(REGENERATE_BACKUP_CODES, {
+      onCompleted: (data) => {
+        setSetupData((prev) => ({
+          ...prev!,
+          backupCodes: data.regenerateBackupCodes.newCodes,
+        }));
+        setGeneratedCodes(data.regenerateBackupCodes.newCodes);
+        toast.success(
+          accountTwoFactorTranslate[lang].functions.handleRegenerateBackupCodes
+            .success
+        );
+      },
+      onError: (error) => {
+        const errorMessage =
+          error.graphQLErrors?.[0]?.message ||
+          (error.networkError ? "Network error occurred" : null) ||
+          accountTwoFactorTranslate[lang].functions.handleRegenerateBackupCodes
+            .failed;
+        toast.error(errorMessage);
+      },
+    });
+
+  const { refetch: refetchAuditLogs } = useQuery<AuditLogsResponse>(
+    GET_AUDIT_LOGS,
+    {
+      skip: true,
+      onCompleted: (data) => {
+        const logs = data.getTwoFactorAuditLogs.map((log) => ({
+          timestamp: new Date(log.timestamp),
+          action: log.action,
+          metadata: JSON.parse(log.metadata) as SecurityMetadata,
+        }));
+        setAuditLogs(logs);
+      },
+      onError: (error) => {
+        const errorMessage =
+          error.graphQLErrors?.[0]?.message ||
+          (error.networkError ? "Network error occurred" : null) ||
+          accountTwoFactorTranslate[lang].functions.handleLoadAuditLogs.failed;
+        toast.error(errorMessage);
+      },
+    }
+  );
   // Main 2FA Status Management
   const handleEnable2FA = async () => {
     try {
       setLoading(true);
-      const { data } = await api_client.post("/auth/2fa");
-      setSetupData(data);
-      setView("setup");
-      toast.success(
-        accountTwoFactorTranslate[lang].functions.handleEnable2FA.success
-      );
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          accountTwoFactorTranslate[lang].functions.handleEnable2FA.failed
-      );
-    } finally {
-      setLoading(false);
+      await enable2FAMutation();
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     }
   };
 
   const verify2FAToken = async (token: string) => {
     try {
       setLoading(true);
-      await api_client.post("/auth/2fa/verify", { token });
-
-      setView("backup");
-      toast.success(
-        accountTwoFactorTranslate[lang].functions.handleVerify2FA.success
-      );
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          accountTwoFactorTranslate[lang].functions.handleVerify2FA.failed
-      );
-    } finally {
-      setLoading(false);
+      await verify2FAMutation({
+        variables: { token },
+      });
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     }
   };
 
   const handleDisable2FA = async () => {
     try {
       setLoading(true);
-      await api_client.post("/auth/2fa/disable");
-      await update({
-        ...session,
-        user: { ...session?.user, isTwoFactorAuthEnabled: false },
-      });
-      setView("main");
-      toast.success(
-        accountTwoFactorTranslate[lang].functions.handleDisable2FA.success
-      );
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          accountTwoFactorTranslate[lang].functions.handleDisable2FA.failed
-      );
-    } finally {
-      setLoading(false);
+      await disable2FAMutation();
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     }
   };
 
-  // Backup Codes Management
-  // const verifyBackupCode = async (code: string) => {
-  //   try {
-  //     await api_client.post("/auth/2fa/backup/verify", { code });
-  //     toast.success("Backup code verified!");
-  //   } catch (error: any) {
-  //     toast.error(error?.message || "Invalid backup code");
-  //   }
-  // };
-
   const regenerateBackupCodes = async () => {
     try {
-      const {
-        data: { newCodes },
-      } = await api_client.post("/auth/2fa/recovery");
-      setSetupData((prev) => ({ ...prev!, backupCodes: newCodes }));
-      setGeneratedCodes(newCodes);
-      toast.success(
-        accountTwoFactorTranslate[lang].functions.handleRegenerateBackupCodes
-          .success
-      );
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          accountTwoFactorTranslate[lang].functions.handleRegenerateBackupCodes
-            .failed
-      );
+      await regenerateBackupCodesMutation();
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     }
   };
 
   // Audit Logs
   const loadAuditLogs = async () => {
     try {
-      const {
-        data: { logs },
-      } = await api_client.get("/auth/2fa/audit");
-      setAuditLogs(logs);
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          accountTwoFactorTranslate[lang].functions.handleLoadAuditLogs.failed
-      );
+      await refetchAuditLogs();
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     }
   };
   const onComplete = async () => {

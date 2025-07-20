@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { DateTime } from "luxon";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
@@ -9,7 +10,6 @@ import { FiCalendar, FiEye, FiTrash2 } from "react-icons/fi";
 import { HiFilter } from "react-icons/hi";
 
 import { OrderStatus, type OrderType } from "@/app/lib/types/orders.db.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Pagination, {
   type PaginationType,
@@ -82,6 +82,35 @@ const statusOptions: StatusOption[] = [
     label: ordersTranslate.orders[lang].filter.select.options.disputed,
   },
 ];
+
+const UPDATE_ORDER_STATUS = gql`
+  mutation UpdateOrderStatus($id: String!, $status: String!) {
+    updateOrderStatus(id: $id, status: $status) {
+      _id
+      status
+    }
+  }
+`;
+const DELETE_ORDER = gql`
+  mutation DeleteOrder($id: String!) {
+    deleteOrder(id: $id) {
+      message
+    }
+  }
+`;
+
+interface UpdateMutationResponse {
+  updateOrderStatus: {
+    _id: string;
+    status: OrderStatus;
+  };
+}
+interface DeleteMutationResponse {
+  deleteOrder: {
+    message: string;
+  };
+}
+
 interface AdminOrdersDashboardProps {
   initialOrders: OrderType[];
   pagination: PaginationType;
@@ -93,7 +122,48 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
   const [orders, setOrders] = useState<OrderType[]>(initialOrders || []);
   const [loading, setLoading] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+  const [updateOrderStatus] = useMutation<UpdateMutationResponse>(
+    UPDATE_ORDER_STATUS,
+    {
+      onCompleted: (data) => {
+        const updatedOrder = data.updateOrderStatus;
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === updatedOrder._id
+              ? { ...order, status: updatedOrder.status }
+              : order
+          )
+        );
+        toast.success(
+          ordersTranslate.functions[lang].handleStatusUpdate.success
+        );
+      },
+      onError: (error) => {
+        toast.error(
+          (error as Error)?.message || ordersTranslate.functions[lang].error
+        );
+      },
+    }
+  );
 
+  const [deleteOrder] = useMutation<DeleteMutationResponse>(DELETE_ORDER, {
+    onCompleted: (data) => {
+      toast.success(data.deleteOrder.message);
+      // Remove the deleted order from the list
+      setOrders((prevOrders) =>
+        prevOrders.filter((order) => order._id !== deletingOrderId)
+      );
+      setDeletingOrderId(null);
+    },
+    onError: (error) => {
+      toast.error(
+        (error as Error)?.message || ordersTranslate.functions[lang].error
+      );
+      setDeletingOrderId(null);
+    },
+  });
   // get all orders that relate to email
   const [searchInput, setSearchInput] = useQueryState(
     "email",
@@ -140,27 +210,23 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
 
   const handleStatusUpdate = async (id: string, status: OrderStatus) => {
     try {
-      await api_client.put(`/admin/dashboard/orders/${id}`, { status });
-      setOrders((prev) =>
-        prev.map((order) => (order._id === id ? { ...order, status } : order))
-      );
-      toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
-    } catch (error) {
-      toast.error(
-        (error as Error)?.message || ordersTranslate.functions[lang].error
-      );
+      setUpdatingOrderId(id);
+      await updateOrderStatus({
+        variables: { id, status },
+      });
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await api_client.delete(`/admin/dashboard/orders/${id}`);
-      setOrders((prev) => prev.filter((order) => order._id !== id));
-      toast.success(ordersTranslate.functions[lang].handleDelete.success);
-    } catch (error) {
-      toast.error(
-        (error as Error)?.message || ordersTranslate.functions[lang].error
-      );
+      setDeletingOrderId(id);
+      await deleteOrder({
+        variables: { id },
+      });
+    } finally {
+      setDeletingOrderId(null);
     }
   };
 
@@ -343,7 +409,13 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
                         )
                       }
                       customStyle={StatusColors[order.status]}
+                      disabled={updatingOrderId === order._id}
                     />
+                    {updatingOrderId === order._id && (
+                      <div className="text-xs text-blue-500 mt-1">
+                        Updating...
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 flex items-center gap-2">
                     <Link
@@ -363,6 +435,8 @@ const AdminOrdersDashboard: FC<AdminOrdersDashboardProps> = ({
                         size="sm"
                         icon={<FiTrash2 />}
                         danger
+                        disabled={deletingOrderId === order._id}
+                        loading={deletingOrderId === order._id}
                       />
                     </ConfirmModal>
                   </td>

@@ -12,7 +12,6 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { FiLock, FiMail, FiUser, FiPhone } from "react-icons/fi";
 import { z } from "zod";
 
-// import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { registerTranslate } from "@/public/locales/client/(public)/auth/registerTranslate";
 import { userZodValidatorTranslate } from "@/public/locales/server/userControllerTranslate";
@@ -74,11 +73,9 @@ const registerSchema = z
           userZodValidatorTranslate[lang].confirmPassword.required,
       })
       .trim(),
-    agreeToTerms: z
-      .boolean()
-      .refine((val) => val === true, {
-        message: registerTranslate[lang].form.terms.required,
-      }),
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+      message: registerTranslate[lang].form.terms.required,
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: userZodValidatorTranslate[lang].confirmPassword.invalid,
@@ -132,7 +129,6 @@ const RegisterPage = () => {
           },
         },
       });
-      // await api_client.post("/auth/register", data);
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
@@ -317,7 +313,14 @@ const RegisterPage = () => {
 
         <button
           type="submit"
-          disabled={!!errors.name || !!errors.email || !!errors.phone || !!errors.password || !!errors.confirmPassword || !!errors.agreeToTerms}
+          disabled={
+            !!errors.name ||
+            !!errors.email ||
+            !!errors.phone ||
+            !!errors.password ||
+            !!errors.confirmPassword ||
+            !!errors.agreeToTerms
+          }
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
         >
           {isSubmitting ? <Spinner /> : registerTranslate[lang].form.submit}

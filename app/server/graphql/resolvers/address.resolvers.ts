@@ -8,6 +8,7 @@ import {
 } from "../../dtos/address.dto";
 import { AuthMiddleware } from "../../middlewares/auth.middleware";
 import { AddressService } from "../../services/address.service";
+import { GlobalFilterValidator } from "../../validators/global-filter.validator";
 import type { Context } from "../apollo-server";
 
 const addressService = new AddressService();
@@ -65,10 +66,13 @@ export const addressResolvers = {
       { req }: Context
     ) => {
       await AuthMiddleware.requireAuth([])(req);
+
+      // Validate ID format
+      const validatedId = GlobalFilterValidator.validateId(id);
+
       const user_id = String(req.user?._id);
       const result = AddressValidation.validateId({
-        id,
-
+        id: validatedId,
         user_id,
       });
       await addressService.deleteMyAddress(
@@ -87,12 +91,16 @@ export const addressResolvers = {
       { req }: Context
     ) => {
       await AuthMiddleware.requireAuth([])(req);
+
+      // Validate ID format
+      const validatedId = GlobalFilterValidator.validateId(id);
+
       const user_id = String(req.user?._id);
       const result = AddressValidation.validateUpdateAddress({
         ...input,
         user_id,
       });
-      const address = await addressService.updateAddress(id, result);
+      const address = await addressService.updateAddress(validatedId, result);
       return address;
     },
   },

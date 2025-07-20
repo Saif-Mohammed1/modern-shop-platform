@@ -1,6 +1,7 @@
 import { WishlistValidation } from "../../dtos/wishlist.dto";
 import { AuthMiddleware } from "../../middlewares/auth.middleware";
 import { WishlistService } from "../../services/wishlist.service";
+import { GlobalFilterValidator } from "../../validators/global-filter.validator";
 import type { Context } from "../apollo-server";
 
 const wishlistService: WishlistService = new WishlistService();
@@ -31,10 +32,14 @@ export const wishlistResolvers = {
       { req }: Context
     ) => {
       await AuthMiddleware.requireAuth([])(req);
+
+      // Validate ID format
+      const validatedId = GlobalFilterValidator.validateId(id);
+
       const user_id = String(req.user?._id);
 
       const check = WishlistValidation.validateCreateWishlist({
-        product_id: id,
+        product_id: validatedId,
         user_id,
       });
       const result = await wishlistService.toggleWishlist(
@@ -50,9 +55,13 @@ export const wishlistResolvers = {
       { req }: Context
     ) => {
       await AuthMiddleware.requireAuth([])(req);
+
+      // Validate ID format
+      const validatedId = GlobalFilterValidator.validateId(id);
+
       const user_id = String(req.user?._id);
       const check = WishlistValidation.validateCreateWishlist({
-        product_id: id,
+        product_id: validatedId,
         user_id,
       });
       const isWishlist = await wishlistService.checkWishlist(

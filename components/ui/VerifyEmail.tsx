@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-// import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { VerifyEmailTranslate } from "@/public/locales/client/(auth)/VerifyEmail.Translate";
 

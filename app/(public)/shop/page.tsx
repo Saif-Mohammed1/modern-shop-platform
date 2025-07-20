@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-import api from "@/app/lib/utilities/api";
+import { api_gql } from "@/app/lib/utilities/api.graphql";
 import { lang } from "@/app/lib/utilities/lang";
 import ErrorHandler from "@/components/Error/errorHandler";
 import Shop from "@/components/shop/shop";
@@ -73,19 +73,20 @@ const queryParams = async (searchParams: SearchParams) => {
     rating: searchParams.rating ? +searchParams.rating : undefined,
   };
   const {
-    data: {
-      data: {
-        getProducts: {
-          products: { docs, meta, links },
-          categories,
-        },
-      },
+    getProducts: {
+      products: { docs, meta, links },
+      categories,
     },
-  } = await api.post("/graphql", {
-    query: GET__FULL_PRODUCTS,
-    variables: { filter },
-    headers: Object.fromEntries((await headers()).entries()), // convert headers to object
-  });
+  } = await api_gql<{
+    getProducts: {
+      products: { docs: any[]; meta: any; links: any };
+      categories: any[];
+    };
+  }>(
+    GET__FULL_PRODUCTS,
+    { filter },
+    Object.fromEntries((await headers()).entries())
+  );
 
   return {
     docs,

@@ -1,12 +1,12 @@
 // components/ProductVersionHistory.tsx
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { parseAsInteger, useQueryState } from "nuqs";
 import type { FC } from "react";
 import toast from "react-hot-toast";
 
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import {
   Table,
@@ -21,6 +21,17 @@ import { ProductTranslate } from "@/public/locales/client/(public)/ProductTransl
 import Pagination, { type PaginationType } from "../pagination/Pagination";
 import Button from "../ui/Button";
 import ConfirmModal from "../ui/ConfirmModal";
+
+// GraphQL mutation for restoring product version
+const RESTORE_PRODUCT_VERSION = gql`
+  mutation RestoreProductVersion($slug: String!, $versionId: String!) {
+    restoreProductVersion(slug: $slug, versionId: $versionId) {
+      _id
+      name
+      slug
+    }
+  }
+`;
 
 // components/ProductVersionHistory.tsx
 
@@ -49,31 +60,34 @@ const ProductVersionHistory: FC<VersionHistoryResponse> = ({
     parseAsInteger.withDefault(1).withOptions({ shallow: false })
   );
   const router = useRouter();
-  const onPaginationChange = (page: number) => {
-    void setCurrentPage(page);
-  };
-  const handleRestore = async (versionId: string) => {
-    let loading;
-    try {
-      loading = toast.loading(
-        ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.loading
-      );
-      await api_client.post(`/admin/dashboard/products/${slug}/restore`, {
-        versionId,
-      });
+
+  // Apollo Client mutation hook
+  const [restoreProductVersion] = useMutation(RESTORE_PRODUCT_VERSION, {
+    onCompleted: () => {
       toast.success(
         ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.success
       );
-      // Reload the page
-      router.refresh();
-    } catch (err: unknown) {
+      router.refresh(); // Reload the page
+    },
+    onError: (error) => {
       toast.error(
-        (err as Error)?.message ||
+        error.message ||
           ProductTranslate[lang].ProductVersionHistory.fun.handleRestore.error
       );
-    } finally {
-      toast.dismiss(loading);
-    }
+    },
+  });
+
+  const onPaginationChange = (page: number) => {
+    void setCurrentPage(page);
+  };
+
+  const handleRestore = async (versionId: string) => {
+    await restoreProductVersion({
+      variables: {
+        slug,
+        versionId,
+      },
+    });
   };
   return (
     <section className="border rounded-lg overflow-hidden">

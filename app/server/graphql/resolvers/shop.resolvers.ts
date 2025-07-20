@@ -1,9 +1,13 @@
+import { UserRole } from "@/app/lib/types/users.db.types";
 import AppError from "@/app/lib/utilities/appError";
 import { lang } from "@/app/lib/utilities/lang";
 import { productControllerTranslate } from "@/public/locales/server/productControllerTranslate";
 
+import { ProductValidation } from "../../dtos/product.dto";
+import { AuthMiddleware } from "../../middlewares/auth.middleware";
 import { ProductService } from "../../services/product.service";
 import { ReviewService } from "../../services/review.service";
+import { GlobalFilterValidator } from "../../validators/global-filter.validator";
 import type { Context } from "../apollo-server";
 
 const productService: ProductService = new ProductService();
@@ -18,6 +22,29 @@ type SearchParams = {
   limit?: number;
   rating?: number;
 };
+interface CreateProduct {
+  name: string;
+  category: string;
+  price: number;
+  description: string;
+  stock: number;
+  sku?: string;
+  reserved?: number;
+  sold?: number;
+  images: string[];
+  shipping_info: {
+    weight: number;
+    dimensions: {
+      length: number;
+      width: number;
+      height: number;
+    };
+  };
+  user_id: string;
+  active: boolean;
+  discount?: number;
+  discount_expire?: Date;
+}
 export const shopResolvers = {
   Query: {
     getProducts: async (
@@ -97,15 +124,162 @@ export const shopResolvers = {
       const products = await productService.getTopOffersAndNewProducts();
       return products;
     },
+
+    getProductHistory: async (
+      _parent: unknown,
+      {
+        slug,
+        productHistoryFilter = {},
+      }: {
+        slug: string;
+        productHistoryFilter?: {
+          sort?: string;
+          page?: number;
+          limit?: number;
+          actor?: string;
+          action?: string;
+        };
+      },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(
+        req
+      );
+      const filter = GlobalFilterValidator.validate({
+        ...productHistoryFilter,
+      });
+      const query = new URLSearchParams();
+      if (filter?.sort) {
+        query.append("sort", filter.sort);
+      }
+      if (filter?.page) {
+        query.append("page", filter.page.toString());
+      }
+      if (filter?.limit) {
+        query.append("limit", filter.limit.toString());
+      }
+      if (filter?.actor) {
+        query.append("actor", filter.actor);
+      }
+      if (filter?.action) {
+        query.append("action", filter.action);
+      }
+
+      const history = await productService.getProductHistory(slug, { query });
+      return history;
+    },
   },
   Mutation: {
     createProduct: async (
       _parent: unknown,
-      _args: unknown,
+      { product }: { product: CreateProduct },
       { req }: Context
     ) => {
-      await productService.createProduct(req);
-      return { message: "Product created successfully" };
+      await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(
+        req
+      );
+      const user_id = String(req.user?._id);
+      const dto = ProductValidation.validateCreateProduct({
+        ...product,
+        user_id,
+      });
+
+      const result = await productService.createProduct(dto);
+      return { product: result };
+    },
+
+    updateProduct: async (
+      _parent: unknown,
+      { _id, product }: { _id: string; product: CreateProduct },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(
+        req
+      );
+      const user_id = String(req.user?._id);
+
+      // First get the product to find its slug
+      const existingProduct = await productService.getProductById(_id);
+      if (!existingProduct) {
+        throw new Error("Product not found");
+      }
+
+      const dto = ProductValidation.validateUpdateProduct({
+        ...product,
+        user_id,
+      });
+
+      const result = await productService.updateProduct(
+        existingProduct.slug,
+        dto,
+        user_id
+      );
+      return result;
+    },
+
+    removeProductImage: async (
+      _parent: unknown,
+      { slug, public_id }: { slug: string; public_id: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(
+        req
+      );
+
+      const user_id = String(req.user?._id);
+      await productService.deleteProductImages(slug, public_id, user_id);
+
+      return { message: "Image removed successfully" };
+    },
+
+    deleteProduct: async (
+      _parent: unknown,
+      { _id }: { _id: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(
+        req
+      );
+
+      const user_id = String(req.user?._id);
+      const result = await productService.deleteProduct(_id, user_id);
+
+      return result;
+    },
+
+    toggleProductStatus: async (
+      _parent: unknown,
+      { slug }: { slug: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(
+        req
+      );
+
+      const user_id = String(req.user?._id);
+      await productService.toggleProductActivity(slug, user_id);
+
+      // Return the updated product
+      const updatedProduct = await productService.getProductBySlug(slug, {});
+      return updatedProduct;
+    },
+
+    restoreProductVersion: async (
+      _parent: unknown,
+      { slug, versionId }: { slug: string; versionId: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([UserRole.ADMIN, UserRole.MODERATOR])(
+        req
+      );
+      const user_id = String(req.user?._id);
+
+      const restoredProduct = await productService.restoreProductVersion(
+        slug,
+        versionId,
+        user_id
+      );
+      return restoredProduct;
     },
   },
 };

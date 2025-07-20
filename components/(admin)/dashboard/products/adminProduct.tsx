@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { DateTime } from "luxon";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,7 +25,6 @@ import { MdHistory } from "react-icons/md";
 import { TfiReload } from "react-icons/tfi";
 
 import type { AdminProductType, Event } from "@/app/lib/types/products.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import Pagination, {
@@ -36,6 +36,37 @@ import SearchBar from "@/components/ui/SearchBar";
 import Select from "@/components/ui/Select";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
+
+// GraphQL Mutations
+const TOGGLE_PRODUCT_STATUS = gql`
+  mutation ToggleProductStatus($slug: String!) {
+    toggleProductStatus(slug: $slug) {
+      _id
+      name
+      slug
+      active
+      updated_at
+    }
+  }
+`;
+
+const DELETE_PRODUCT = gql`
+  mutation DeleteProduct($_id: String!) {
+    deleteProduct(_id: $_id) {
+      _id
+      name
+      slug
+    }
+  }
+`;
+
+interface ToggleProductStatusResponse {
+  toggleProductStatus: AdminProductType;
+}
+
+interface DeleteProductResponse {
+  deleteProduct: AdminProductType;
+}
 
 type Category = string;
 type ProductListProps = {
@@ -71,6 +102,50 @@ const ProductList: FC<ProductListProps> = ({
   const [productsList, setProductsList] = useState(products || []);
   const productsContainerRef = useRef<HTMLDivElement>(null);
 
+  // GraphQL mutations
+  const [toggleProductStatus] = useMutation<ToggleProductStatusResponse>(
+    TOGGLE_PRODUCT_STATUS,
+    {
+      onCompleted: (data) => {
+        setProductsList((prevProducts) =>
+          prevProducts.map((product) =>
+            product.slug === data.toggleProductStatus.slug
+              ? { ...product, active: data.toggleProductStatus.active }
+              : product
+          )
+        );
+        toast.success(
+          productsTranslate.products[lang].function.toggleProductStatus.success
+        );
+      },
+      onError: (error) => {
+        const errorMessage =
+          error.graphQLErrors?.[0]?.message ||
+          (error.networkError ? "Network error occurred" : null) ||
+          productsTranslate.products[lang].error.general;
+        toast.error(errorMessage);
+      },
+    }
+  );
+
+  const [deleteProduct] = useMutation<DeleteProductResponse>(DELETE_PRODUCT, {
+    onCompleted: (data) => {
+      setProductsList((prevProducts) =>
+        prevProducts.filter((product) => product._id !== data.deleteProduct._id)
+      );
+      toast.success(
+        productsTranslate.products[lang].function.handleDelete.success
+      );
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.graphQLErrors?.[0]?.message ||
+        (error.networkError ? "Network error occurred" : null) ||
+        productsTranslate.products[lang].error.general;
+      toast.error(errorMessage);
+    },
+  });
+
   const handleCategoryFilterChange = (event: Event) => {
     const { value } = event.target;
     void setCategoryFilter(value);
@@ -97,63 +172,26 @@ const ProductList: FC<ProductListProps> = ({
     // }
     // updateQueryParams({ page }, searchParamsReadOnly, router, pathName);
   };
-  const toggleProductStatus = async (slug: string) => {
-    let toastLoading;
+  const toggleProductStatusHandler = async (slug: string) => {
     try {
-      toastLoading = toast.loading(
-        productsTranslate.products[lang].function.toggleProductStatus.loading
-      );
-      await api_client.put(`/admin/dashboard/products/${slug}/active`, {
-        active: !productsList.find((product) => product.slug === slug)?.active,
+      await toggleProductStatus({
+        variables: { slug },
       });
-      setProductsList((prevProducts) =>
-        prevProducts.map((product) =>
-          product.slug === slug
-            ? { ...product, active: !product.active }
-            : product
-        )
-      );
-      toast.success(
-        productsTranslate.products[lang].function.toggleProductStatus.success
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(
-          error?.message || productsTranslate.products[lang].error.general
-        );
-      } else {
-        toast.error(productsTranslate.products[lang].error.general);
-      }
-    } finally {
-      toast.dismiss(toastLoading);
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     }
   };
 
-  const handleDelete = async (slug: string) => {
-    let toastLoading;
+  const handleDeleteProduct = async (productId: string) => {
     try {
-      toastLoading = toast.loading(
-        productsTranslate.products[lang].function.handleDelete.loading
-      );
-      await api_client.delete(`/admin/dashboard/products/${slug}`);
-      setProductsList((prevProducts) =>
-        prevProducts.filter((product) => product.slug !== slug)
-      );
-      toast.success(
-        productsTranslate.products[lang].function.handleDelete.success
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(
-          error?.message || productsTranslate.products[lang].error.general
-        );
-      } else {
-        toast.error(productsTranslate.products[lang].error.general);
-      }
-    } finally {
-      toast.dismiss(toastLoading);
+      await deleteProduct({
+        variables: { _id: productId },
+      });
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     }
-    // Implement delete functionality here
   };
   useEffect(() => {
     if (productsContainerRef.current) {
@@ -489,7 +527,9 @@ const ProductList: FC<ProductListProps> = ({
                           <MdHistory className="w-4 h-4" />
                         </Link>
                         <button
-                          onClick={() => toggleProductStatus(product.slug)}
+                          onClick={() =>
+                            toggleProductStatusHandler(product.slug)
+                          }
                           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-indigo-600 transition-colors"
                         >
                           <TfiReload className="w-4 h-4" />
@@ -501,7 +541,7 @@ const ProductList: FC<ProductListProps> = ({
                           <FaEdit className="w-4 h-4" />
                         </Link>
                         <button
-                          onClick={() => handleDelete(product.slug)}
+                          onClick={() => handleDeleteProduct(product._id)}
                           className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-red-600 transition-colors"
                         >
                           <FaTrash className="w-4 h-4" />

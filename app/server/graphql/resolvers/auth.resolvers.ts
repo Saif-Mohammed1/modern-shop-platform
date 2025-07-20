@@ -4,6 +4,7 @@ import { AuthTranslate } from "@/public/locales/server/Auth.Translate";
 
 import { UserValidation, type UserCreateDTO } from "../../dtos/user.dto";
 import { AuthMiddleware } from "../../middlewares/auth.middleware";
+import { TwoFactorService } from "../../services/2fa.service";
 import { UserService } from "../../services/user.service";
 import type { Context } from "../apollo-server";
 
@@ -24,6 +25,7 @@ interface TwoFALoginType {
 type LoginResponseType = UserResult | TwoFALoginType;
 
 const userService: UserService = new UserService();
+const twoFactorService: TwoFactorService = new TwoFactorService();
 export const authResolvers = {
   LoginResponse: {
     __resolveType(obj: LoginResponseType): string | null {
@@ -40,32 +42,6 @@ export const authResolvers = {
     },
   },
   Query: {
-    getUser: async (_parent: unknown, _args: unknown, { req }: Context) => {
-      // Extract token from authorization header
-      const authHeader = req.headers.get("authorization");
-      const token = authHeader?.replace("Bearer ", "");
-
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
-      // Here you would typically verify the token and get user data
-      // For now, throwing an error to indicate this needs proper implementation
-      throw new Error(
-        "getUser query not implemented - requires token verification"
-      );
-    },
-    getUserById: async (
-      _parent: unknown,
-      { id }: { id: string },
-      _context: Context
-    ) => {
-      const user = await userService.findUserById(id);
-      if (!user) {
-        throw new Error("User not found");
-      }
-      return user;
-    },
     getActiveSessions: async (
       _parent: unknown,
       _args: unknown,
@@ -76,6 +52,22 @@ export const authResolvers = {
         req.user?._id.toString()!
       );
       return sessions;
+    },
+
+    getTwoFactorAuditLogs: async (
+      _parent: unknown,
+      _args: unknown,
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const userId = req.user?._id.toString()!;
+
+      const logs = await twoFactorService.getAuditLogs(userId);
+      return logs.map((log) => ({
+        timestamp: log.timestamp,
+        action: log.action,
+        metadata: "{}",
+      }));
     },
   },
   Mutation: {
@@ -269,6 +261,57 @@ export const authResolvers = {
       );
       return {
         message: AuthTranslate[lang].auth.updateLoginNotificationSent.success,
+      };
+    },
+
+    // Two-Factor Authentication mutations
+    enable2FA: async (_parent: unknown, _args: unknown, { req }: Context) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const userId = req.user?._id.toString()!;
+
+      const result = await twoFactorService.initialize2FA(userId);
+      return {
+        qrCode: result.qrCode,
+        manualEntryCode: result.manualEntryCode,
+        backupCodes: result.backupCodes,
+      };
+    },
+
+    verify2FA: async (
+      _parent: unknown,
+      { token }: { token: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const userId = req.user?._id.toString()!;
+
+      await twoFactorService.verify2FA(userId, token);
+      return {
+        message: "Two-factor authentication enabled successfully",
+      };
+    },
+
+    disable2FA: async (_parent: unknown, _args: unknown, { req }: Context) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const userId = req.user?._id.toString()!;
+
+      await twoFactorService.disable2FA(userId);
+      return {
+        message: "Two-factor authentication disabled successfully",
+      };
+    },
+
+    regenerateBackupCodes: async (
+      _parent: unknown,
+      _args: unknown,
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const userId = req.user?._id.toString()!;
+
+      const newCodes = await twoFactorService.regenerateBackupCodes(userId);
+      return {
+        newCodes,
       };
     },
   },

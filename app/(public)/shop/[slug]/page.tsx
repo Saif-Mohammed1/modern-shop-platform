@@ -1,34 +1,12 @@
 import type { Metadata } from "next";
 
 import type { ProductType } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import { api_gql } from "@/app/lib/utilities/api.graphql";
 import { lang } from "@/app/lib/utilities/lang";
 import ErrorHandler from "@/components/Error/errorHandler";
 import ProductDetail from "@/components/products/product-details/productDetails";
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
-type TypeMetaData = {
-  data: {
-    getProductBySlug: {
-      product: Pick<ProductType, "name" | "description">;
-    };
-  };
-};
-type TypeData = {
-  data: {
-    getProductBySlug: {
-      product: ProductType;
-      distribution: {
-        [key: string]: number;
-      };
-    };
-    // getProducts: {
-    //   products: {
-    //     docs: ProductType[];
-    //   };
-    // };
-  };
-};
 type Props = {
   params: Promise<{
     slug: string;
@@ -44,7 +22,7 @@ const GET_PRODUCT_METADATA = `
     }
   }
 `;
-const GET_PRODUCT = `
+const GET_PRODUCT = /* GraphQL */ `
   query GetProductMetaData($slug: String!, $populate: Boolean) {
     getProductBySlug(slug: $slug, populate: $populate) {
       product {
@@ -89,37 +67,30 @@ const GET_PRODUCT = `
   }
 `;
 const getProductMetaData = async (slug: string) => {
-  const {
-    data,
-  }: {
-    data: TypeMetaData;
-  } = await api.post("/graphql", {
-    query: GET_PRODUCT_METADATA,
-    variables: { slug },
-  });
-  return data.data.getProductBySlug;
+  const { getProductBySlug } = await api_gql<{
+    getProductBySlug: {
+      product: Pick<ProductType, "name" | "description">;
+    };
+  }>(GET_PRODUCT_METADATA, { slug });
+  return getProductBySlug;
 };
 const getProductData = async (slug: string) => {
   const {
-    data: {
-      data: {
-        getProductBySlug: { product, distribution },
-        // getProducts: {
-        //   products: { docs: relatedProducts },
-        // },
-      },
-    },
-  }: {
-    data: TypeData;
-  } = await api.post("/graphql", {
-    query: GET_PRODUCT,
-    variables: {
-      slug,
-      populate: true, // Assuming you want to populate the product details
-      // filter: {
-      //   limit: 8, // Limit to 4 related products
-      // },
-    },
+    getProductBySlug: { product, distribution },
+  } = await api_gql<{
+    getProductBySlug: {
+      product: ProductType;
+      distribution: {
+        one: number;
+        two: number;
+        three: number;
+        four: number;
+        five: number;
+      };
+    };
+  }>(GET_PRODUCT, {
+    slug,
+    populate: true,
   });
 
   return {
@@ -157,24 +128,19 @@ const page = async (props: Props) => {
   try {
     const { product, distribution } = await getProductData(slug);
     // change distribution from {one: 0, two: 0, three: 0, four: 0, five: 0} to {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-
-    distribution["1"] = distribution.one;
-    distribution["2"] = distribution.two;
-    distribution["3"] = distribution.three;
-    distribution["4"] = distribution.four;
-    distribution["5"] = distribution.five;
-    delete distribution.one;
-    delete distribution.two;
-    delete distribution.three;
-    delete distribution.four;
-    delete distribution.five;
+    const distributionModified: Record<string, number> = {};
+    distributionModified["1"] = distribution.one;
+    distributionModified["2"] = distribution.two;
+    distributionModified["3"] = distribution.three;
+    distributionModified["4"] = distribution.four;
+    distributionModified["5"] = distribution.five;
 
     return (
       // <ComponentLoading>
       // </ComponentLoading>
       <ProductDetail
         product={product}
-        distribution={distribution}
+        distribution={distributionModified}
         // reviews={product.reviews}
         // relatedProducts={relatedProducts || []}
       />

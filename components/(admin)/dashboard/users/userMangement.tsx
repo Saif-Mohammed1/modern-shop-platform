@@ -108,15 +108,15 @@ export interface User {
   email: string;
   phone?: string;
   role: string;
+  status: UserStatus;
+  preferences: UserPreferencesProps["preferences"];
+  security: Security;
   created_at: string;
   verification: {
     email_verified: boolean;
     phone_verified: boolean;
   };
   authMethods: string[];
-  security: Security;
-  preferences: UserPreferencesProps["preferences"];
-  status: UserStatus;
 }
 
 // interface StatusBadgeProps {

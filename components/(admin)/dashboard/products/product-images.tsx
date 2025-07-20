@@ -1,4 +1,5 @@
 // product-images.tsx
+import { gql, useMutation } from "@apollo/client";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import { useFormContext } from "react-hook-form";
@@ -6,11 +7,26 @@ import toast from "react-hot-toast";
 import { FaImage, FaTrash } from "react-icons/fa";
 
 import type { OldImage } from "@/app/lib/types/products.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 
 import type { PreviewFile } from "./addProduct";
+
+// GraphQL Mutation
+const REMOVE_PRODUCT_IMAGE = gql`
+  mutation RemoveProductImage($slug: String!, $public_id: String!) {
+    removeProductImage(slug: $slug, public_id: $public_id) {
+      message
+    }
+  }
+`;
+
+// GraphQL response type
+interface RemoveImageResponse {
+  removeProductImage: {
+    message: string;
+  };
+}
 
 // type OldImage = {
 //   link: string;
@@ -24,6 +40,26 @@ export default function ProductImages({
   const { setValue, watch } = useFormContext();
   const images: OldImage[] | PreviewFile[] = watch("images") || [];
   const slug = watch("slug");
+
+  // GraphQL Mutation
+  const [removeProductImage] = useMutation<RemoveImageResponse>(
+    REMOVE_PRODUCT_IMAGE,
+    {
+      onCompleted: (data) => {
+        if (data?.removeProductImage?.message) {
+          toast.success(
+            productsTranslate.products[lang].editProduct.removeImage.success
+          );
+        }
+      },
+      onError: (error) => {
+        toast.error(
+          error.message || productsTranslate.products[lang].error.general
+        );
+      },
+    }
+  );
+
   // Modified type guard
   const isOldImages = (image: OldImage | PreviewFile): image is OldImage => {
     return typeof image === "object" && "public_id" in image;
@@ -51,35 +87,31 @@ export default function ProductImages({
   const removeImage = async (index: number) => {
     const imageToRemove = images[index];
     let newImages;
+
     if (isOldImages(imageToRemove)) {
-      let toastLoading;
       try {
-        toastLoading = toast.loading(
+        toast.loading(
           productsTranslate.products[lang].editProduct.removeImage.loading
         );
 
-        await api_client.put(`/admin/dashboard/products/${slug}/remove-image`, {
-          public_id: imageToRemove.public_id,
+        // Execute GraphQL mutation
+        await removeProductImage({
+          variables: {
+            slug: slug,
+            public_id: imageToRemove.public_id,
+          },
         });
-        toast.success(
-          productsTranslate.products[lang].editProduct.removeImage.success
-        );
+
         newImages = images.filter((_, i) => i !== index);
-      } catch (error: unknown) {
+      } catch (_error: unknown) {
+        // Error handling is done in onError callback
         newImages = images;
-        if (error instanceof Error) {
-          toast.error(
-            error?.message || productsTranslate.products[lang].error.general
-          );
-        } else {
-          toast.error(productsTranslate.products[lang].error.general);
-        }
-      } finally {
-        toast.dismiss(toastLoading);
       }
     } else {
+      // For new images (PreviewFile), just remove from array
       newImages = images.filter((_, i) => i !== index);
     }
+
     setValue("images", newImages);
   };
 

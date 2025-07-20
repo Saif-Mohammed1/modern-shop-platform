@@ -8,8 +8,6 @@ import AddressBook from "@/components/customers/address/addressBook";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { addressTranslate } from "@/public/locales/client/(auth)/account/addressTranslate";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: addressTranslate[lang].metadata.title,
   description: addressTranslate[lang].metadata.description,

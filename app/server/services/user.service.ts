@@ -271,12 +271,31 @@ export class UserService {
     await this.repository.incrementRateLimit(user, action);
   }
   // Password Management
+  async find(
+    user_id: string,
+    trx?: Knex.Transaction
+    // options?: string
+  ) {
+    const user = await this.repository.find({ _id: user_id }, trx);
+    if (!user) {
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+    }
+    return user;
+  }
   async findUserById(
     user_id: string,
     trx?: Knex.Transaction
     // options?: string
-  ): Promise<IUserDB> {
-    const user = await this.repository.findById(user_id, trx);
+  ) {
+    const user = await this.repository.findUserById(user_id, trx);
+    if (!user) {
+      throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
+    }
+    return user;
+  }
+
+  async findUserWithAuditLogById(user_id: string, trx?: Knex.Transaction) {
+    const user = await this.repository.findUserWithAuditLogById(user_id, trx);
     if (!user) {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }

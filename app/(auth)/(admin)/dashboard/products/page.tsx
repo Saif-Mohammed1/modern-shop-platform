@@ -2,8 +2,11 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
-import type { ProductsSearchParams } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import type {
+  AdminProductType,
+  ProductsSearchParams,
+} from "@/app/lib/types/products.types";
+import { api_gql } from "@/app/lib/utilities/api.graphql";
 import { lang } from "@/app/lib/utilities/lang";
 import AdminProducts from "@/components/(admin)/dashboard/products/adminProduct";
 import ErrorHandler from "@/components/Error/errorHandler";
@@ -18,58 +21,67 @@ export const metadata: Metadata = {
 type Props = {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 };
-const queryParams = async (searchParams: ProductsSearchParams) => {
-  const url = new URLSearchParams();
 
-  // Append each parameter only if it's not undefined
-  if (searchParams.category !== undefined) {
-    url.append("category", searchParams.category);
-  }
-  if (searchParams.search !== undefined) {
-    url.append("search", searchParams.search);
-  }
-  if (searchParams.sort !== undefined) {
-    url.append("sort", searchParams.sort);
-  }
-  if (searchParams.fields !== undefined) {
-    url.append("fields", searchParams.fields);
-  }
-  if (searchParams.page !== undefined) {
-    url.append("page", searchParams.page);
-  }
-  if (searchParams.limit !== undefined) {
-    url.append("limit", searchParams.limit);
-  }
-  if (searchParams.rating !== undefined) {
-    url.append("rating", searchParams.rating);
-  }
-  // if (searchParams.min !== undefined) {
-  //   url.append("price[gte]", searchParams.min);
-  // }
-  // if (searchParams.max !== undefined) {
-  //   url.append("price[lte]", searchParams.max);
-  // }
-
-  const queryString = url.toString();
-  const {
-    data: {
-      products: { docs, meta, links },
-
-      categories,
-    },
-  } = await api.get(
-    `/admin/dashboard/products/${queryString ? `?${queryString}` : ""}`,
-    {
-      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
+// GraphQL query for admin products
+const GET_ADMIN_PRODUCTS = `
+  query GetAdminProducts($filter: SearchParams) {
+    getProducts(filter: $filter) {
+      products {
+        docs {
+          _id
+          name
+          category
+          price
+          discount
+          discount_expire
+          description
+          stock
+          ratings_average
+          ratings_quantity
+          slug
+          reserved
+          sold
+          sku
+          created_at
+          active
+          last_reserved
+          last_modified_by {
+            _id
+            name
+          }
+          images {
+            _id
+            link
+            public_id
+          }
+          shipping_info {
+            weight
+            dimensions {
+              length
+              width
+              height
+            }
+          }
+        }
+        meta {
+          total
+          page
+          limit
+          totalPages
+          hasNext
+          hasPrev
+        }
+        links {
+          previous
+          next
+          first
+          prev
+        }
+      }
+      categories
     }
-  );
-
-  return {
-    products: docs,
-    categories,
-    pagination: { meta, links },
-  };
-};
+  }
+`;
 
 const page = async (props: Props) => {
   const searchParams = await props.searchParams;
@@ -84,9 +96,47 @@ const page = async (props: Props) => {
   //   min: searchParams.min || undefined,
   //   max: searchParams.max || undefined,
   // };
+  const headersObj = Object.fromEntries((await headers()).entries());
+
+  // Create a clean filter object with default values and undefined for unset values
+  const filter: ProductsSearchParams = {
+    category: searchParams.category || undefined,
+    search: searchParams.search || undefined,
+    sort: searchParams.sort || undefined,
+    fields: searchParams.fields || undefined,
+    page: searchParams.page ? +searchParams.page : undefined,
+    limit: searchParams.limit ? +searchParams.limit : undefined,
+    rating: searchParams.rating ? +searchParams.rating : undefined,
+    //  min: searchParams.min ? +searchParams.min : undefined,
+    //  max: searchParams.max ? +searchParams.max : undefined,
+  };
+
+  // Remove undefined values to keep the object clean
+
   try {
-    const { products, categories, pagination } =
-      await queryParams(searchParams);
+    const { getProducts } = await api_gql<{
+      getProducts: {
+        products: {
+          docs: AdminProductType[];
+          meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+            hasNext: boolean;
+            hasPrev: boolean;
+          };
+          links: {
+            previous: string;
+            next: string;
+            first: string;
+            prev: string;
+          };
+        };
+        categories: string[];
+      };
+    }>(GET_ADMIN_PRODUCTS, { filter }, headersObj);
+
     return (
       <div className="p-8 bg-gray-100 min-h-screen">
         <h1 className="text-3xl font-bold mb-6">
@@ -96,21 +146,24 @@ const page = async (props: Props) => {
       //products={products}
       /> */}
         <AdminProducts
-          products={products}
-          categories={categories}
-          pagination={
-            pagination || {
-              meta: {
-                total: 0,
-                page: 0,
-                limit: 0,
-                totalPages: 0,
-                hasNext: false,
-                hasPrev: false,
-              },
-              links: { previous: "", next: "" },
-            }
-          }
+          products={getProducts.products.docs}
+          categories={getProducts.categories}
+          pagination={{
+            meta: getProducts.products.meta || {
+              total: 0,
+              page: 0,
+              limit: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false,
+            },
+            links: getProducts.products.links || {
+              previous: "",
+              next: "",
+              first: "",
+              prev: "",
+            },
+          }}
         />
       </div>
     );

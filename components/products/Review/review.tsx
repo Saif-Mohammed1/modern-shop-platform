@@ -1,14 +1,15 @@
+import { useLazyQuery, gql } from "@apollo/client";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import StarRatings from "react-star-ratings";
 
 // import Skeleton from "react-loading-skeleton";
 // import "react-loading-skeleton/dist/skeleton.css";
 import type { ReviewsType } from "@/app/lib/types/reviews.db.types";
 import type { UserAuthType } from "@/app/lib/types/users.db.types";
-import api_client from "@/app/lib/utilities/api.client";
 // import CustomButton from "@/components/button/button";
 import { lang } from "@/app/lib/utilities/lang";
 import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
@@ -34,6 +35,34 @@ type ReviewSectionProps = {
   product_id: string;
   user: UserAuthType | null;
 };
+const GET_REVIEWS = gql`
+  query GetProductReviews($product_id: String!, $filter: Filter) {
+    getProductReviews(product_id: $product_id, filter: $filter) {
+      docs {
+        _id
+        user_name
+        product_id {
+          name
+          slug
+        }
+        rating
+        comment
+        created_at
+      }
+      meta {
+        hasNext
+      }
+    }
+  }
+`;
+interface GetReviewsResponse {
+  getProductReviews: {
+    docs: ReviewsType[];
+    meta: {
+      hasNext: boolean;
+    };
+  };
+}
 
 const ReviewSection = ({
   reviews,
@@ -42,33 +71,33 @@ const ReviewSection = ({
   averageRating,
   totalReviews,
 }: ReviewSectionProps) => {
-  const [loading, setLoading] = useState(false);
   const [moreResults, setMoreResults] = useState(reviews.data || []);
   const [page, setPage] = useState(1);
   const [showMore, setShowMore] = useState(reviews.hasNextPage);
 
-  const getMoreResults = async () => {
-    try {
-      setLoading(true);
-      const newPage = page + 1;
-      const {
-        data,
-      }: {
-        data: {
-          docs: ReviewsType[];
-          meta: {
-            hasNext: boolean;
-          };
-        };
-      } = await api_client.get(
-        `/customers/reviews/${product_id}/?page=${newPage}`
-      );
-      setMoreResults((prev) => [...prev, ...data.docs]);
-      setPage(newPage);
-      setShowMore(data.meta.hasNext);
-    } finally {
-      setLoading(false);
+  const [fetchMoreReviews, { loading }] = useLazyQuery<GetReviewsResponse>(
+    GET_REVIEWS,
+    {
+      onCompleted: (data) => {
+        setMoreResults((prev) => [...prev, ...data.getProductReviews.docs]);
+        setShowMore(data.getProductReviews.meta.hasNext);
+      },
+      onError: (err) => {
+        toast.error(err.message || reviewsTranslate[lang].errors.global);
+      },
     }
+  );
+
+  const getMoreResults = async () => {
+    const newPage = page + 1;
+    setPage(newPage);
+
+    await fetchMoreReviews({
+      variables: {
+        product_id,
+        filter: { page: newPage },
+      },
+    });
   };
 
   return (

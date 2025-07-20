@@ -9,7 +9,6 @@ import UserOrderTracking from "@/components/shop/orders/orderTracking";
 import { accountOrdersTranslate } from "@/public/locales/client/(auth)/account/ordersTranslate";
 
 // import OrderHistory from "@/components/shop/orders/orderHistory";
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: accountOrdersTranslate[lang].metadata.title,

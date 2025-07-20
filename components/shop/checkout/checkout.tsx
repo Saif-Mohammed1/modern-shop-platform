@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -7,13 +8,35 @@ import toast from "react-hot-toast";
 
 import type { AddressType } from "@/app/lib/types/address.db.types";
 import type { Event } from "@/app/lib/types/products.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { calculateDiscount } from "@/app/lib/utilities/priceUtils";
 import imageSrc from "@/app/lib/utilities/productImageHandler";
 import type { AddressFormValues } from "@/components/customers/address/AddressForm";
 import { useCartStore } from "@/components/providers/store/cart/cart.store";
 import { checkoutPageTranslate } from "@/public/locales/client/(public)/checkoutPageTranslate";
+
+// GraphQL Mutations
+const ADD_ADDRESS_MUTATION = gql`
+  mutation AddAddress($input: CreateAddressInput!) {
+    addAddress(input: $input) {
+      _id
+      street
+      city
+      state
+      postal_code
+      phone
+      country
+    }
+  }
+`;
+
+const CREATE_CHECKOUT_SESSION_MUTATION = gql`
+  mutation CreateCheckoutSession($input: CheckoutSessionInput!) {
+    createCheckoutSession(input: $input) {
+      url
+    }
+  }
+`;
 
 const AddressForm = dynamic(
   () => import("@/components/customers/address/AddressForm")
@@ -25,15 +48,40 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
   const [selectedAddress, setSelectedAddress] = useState(
     addresses.length ? addresses[0] : ""
   );
-  // const [newAddress, setNewAddress] = useState({
-  //   street: "",
-  //   city: "",
-  //   state: "",
-  //   postal_code: "",
-  //   phone: "",
-  //   country: "Ukraine",
-  // });
   const [showAddressForm, setShowAddressForm] = useState(false);
+
+  // Apollo Client mutations
+  const [addAddress] = useMutation<
+    { addAddress: AddressType },
+    { input: AddressFormValues }
+  >(ADD_ADDRESS_MUTATION, {
+    onCompleted: (data) => {
+      setAddresses((prevAddresses) => [...prevAddresses, data.addAddress]);
+      setSelectedAddress(data.addAddress);
+      setShowAddressForm(false);
+      toast.success(
+        checkoutPageTranslate[lang].functions.handleAddNewAddress.success
+      );
+    },
+    onError: (error) => {
+      toast.error(error.message || checkoutPageTranslate[lang].errors.global);
+    },
+  });
+
+  const [createCheckoutSession] = useMutation<
+    { createCheckoutSession: { url: string } },
+    { input: { shipping_info: AddressType } }
+  >(CREATE_CHECKOUT_SESSION_MUTATION, {
+    onCompleted: (data) => {
+      toast.success(
+        checkoutPageTranslate[lang].functions.handelCheckout.success
+      );
+      window.open(data.createCheckoutSession.url, "_blank");
+    },
+    onError: (error) => {
+      toast.error(error.message || checkoutPageTranslate[lang].errors.global);
+    },
+  });
 
   // Calculate subtotal of cart items
   const subtotal = cartItems.reduce<number>((total, item) => {
@@ -71,27 +119,14 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handleAddNewAddress.loading
       );
-      const { data: newAddress } = await api_client.post(
-        "/customers/address",
-        data
-      );
-      setAddresses((prevAddresses) => [
-        ...prevAddresses,
-        newAddress as AddressType,
-      ]);
-      toast.success(
-        checkoutPageTranslate[lang].functions.handleAddNewAddress.success
-      );
 
-      setSelectedAddress(newAddress);
-      setShowAddressForm(false);
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : checkoutPageTranslate[lang].errors.global;
-
-      toast.error(errorMessage);
+      await addAddress({
+        variables: {
+          input: data,
+        },
+      });
+    } catch (_error: unknown) {
+      // Error handling is done in onError callback
     } finally {
       toast.dismiss(toastLoading);
     }
@@ -117,23 +152,16 @@ const ShippingComponentV3 = ({ address }: { address: AddressType[] }) => {
       toastLoading = toast.loading(
         checkoutPageTranslate[lang].functions.handelCheckout.loading
       );
-      const {
-        data: { url },
-      } = await api_client.post("/customers/orders", {
-        shipping_info: selectedAddress,
-        // products: cartItems,
-      });
-      toast.success(
-        checkoutPageTranslate[lang].functions.handelCheckout.success
-      );
-      window.open(url, "_blank");
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : checkoutPageTranslate[lang].errors.global;
 
-      toast.error(errorMessage);
+      await createCheckoutSession({
+        variables: {
+          input: {
+            shipping_info: selectedAddress as AddressType,
+          },
+        },
+      });
+    } catch (_error: unknown) {
+      // Error handling is done in onError callback
     } finally {
       toast.dismiss(toastLoading);
     }

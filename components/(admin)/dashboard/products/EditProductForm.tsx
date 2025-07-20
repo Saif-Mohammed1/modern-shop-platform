@@ -1,13 +1,13 @@
 // components/products/EditProductForm.tsx
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import type { ProductType } from "@/app/lib/types/products.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { productsTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/productTranslate";
 
@@ -20,7 +20,42 @@ import ProductPricing from "./product-pricing";
 import ProductReview from "./product-review";
 import ProductShipping from "./product-shipping";
 
-// components/products/EditProductForm.tsx
+// GraphQL Mutation
+const UPDATE_PRODUCT = gql`
+  mutation UpdateProduct($_id: String!, $product: ProductInput!) {
+    updateProduct(_id: $_id, product: $product) {
+      _id
+      name
+      slug
+      category
+      price
+      discount
+      discount_expire
+      description
+      stock
+      sku
+      images {
+        link
+        public_id
+      }
+      shipping_info {
+        weight
+        dimensions {
+          length
+          width
+          height
+        }
+      }
+      active
+      updated_at
+    }
+  }
+`;
+
+// GraphQL response type
+interface UpdateProductResponse {
+  updateProduct: ProductType;
+}
 
 interface EditProductFormProps {
   defaultValues: ProductType;
@@ -33,36 +68,79 @@ export default function EditProductForm({
   const [step, setStep] = useState(1);
   const totalSteps = 6;
   const router = useRouter();
+
+  // GraphQL mutation
+  const [updateProduct] = useMutation<UpdateProductResponse>(UPDATE_PRODUCT, {
+    onCompleted: (_data) => {
+      toast.success(
+        productsTranslate.products[lang].editProduct.form.productSubmit.success
+      );
+      router.push(`/dashboard/products?search=${defaultValues.name}`);
+    },
+    onError: (error) => {
+      // Extract specific error message if available
+      const errorMessage =
+        error.graphQLErrors?.[0]?.message ||
+        (error.networkError ? "Network error occurred" : null) ||
+        productsTranslate.products[lang].error.general;
+
+      toast.error(errorMessage);
+    },
+  });
+
   const handleSubmit = methods.handleSubmit(async (data) => {
-    let toastLoading;
     if (step === totalSteps) {
+      // Filter out file objects from images (keep only uploaded images)
       if (data.images) {
         data.images = data.images.filter((img) => !(typeof img === "object"));
       }
+
       try {
-        toastLoading = toast.loading(
-          productsTranslate.products[lang].editProduct.form.productSubmit
-            .loading
-        );
-        await api_client.put(
-          `/admin/dashboard/products/${defaultValues.slug}`,
-          data
-        );
-        toast.success(
-          productsTranslate.products[lang].editProduct.form.productSubmit
-            .success
-        );
-        router.push(`/dashboard/products?search=${defaultValues.name}`);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(
-            error?.message || productsTranslate.products[lang].error.general
-          );
-        } else {
-          toast.error(productsTranslate.products[lang].error.general);
-        }
-      } finally {
-        toast.dismiss(toastLoading);
+        // Generate slug from name if not provided
+        const slug =
+          data.slug ||
+          data.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+
+        // Prepare product data for mutation
+        const productInput = {
+          name: data.name,
+          slug,
+          category: data.category,
+          price: Number(data.price),
+          discount: Number(data.discount) || 0,
+          discount_expire: data.discount_expire || null,
+          description: data.description,
+          stock: Number(data.stock),
+          sku: data.sku,
+          images:
+            data.images?.map((img: any) => ({
+              link: (img as { link: string }).link,
+              public_id: (img as { public_id: string }).public_id,
+            })) || [],
+          shipping_info: {
+            weight: Number(data.shipping_info?.weight) || 0,
+            dimensions: {
+              length: Number(data.shipping_info?.dimensions?.length) || 0,
+              width: Number(data.shipping_info?.dimensions?.width) || 0,
+              height: Number(data.shipping_info?.dimensions?.height) || 0,
+            },
+          },
+          reserved: Number(data.reserved) || 0,
+          sold: Number(data.sold) || 0,
+        };
+
+        await updateProduct({
+          variables: {
+            _id: defaultValues._id,
+            product: productInput,
+          },
+        });
+      } catch (_error) {
+        // Error handling is done in onError callback
+        // Silent catch to prevent unhandled promise rejection
       }
     } else {
       setStep((prev) => Math.min(prev + 1, totalSteps));
@@ -97,7 +175,7 @@ export default function EditProductForm({
               setStep((prev) => Math.max(prev - 1, 1));
             }}
           />
-        </form>{" "}
+        </form>
       </FormProvider>
     </div>
   );

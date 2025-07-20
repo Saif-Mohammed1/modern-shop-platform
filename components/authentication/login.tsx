@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -7,7 +8,6 @@ import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { loginTranslate } from "@/public/locales/client/(public)/auth/loginTranslate";
 import { authControllerTranslate } from "@/public/locales/server/authControllerTranslate";
@@ -16,6 +16,37 @@ import { TwoFactorForm } from "../2fa/onLogin/twoFactorForm";
 import { useCartHook } from "../providers/store/cart/useCartHook";
 import Spinner from "../spinner/spinner";
 
+const VALIDATE_BACKUP_CODES = gql`
+  mutation ValidateBackupCodes($input: ValidateBackupCodesInput!) {
+    validateBackupCodes(input: $input) {
+      success
+      message
+      data {
+        access_token
+        user {
+          _id
+          name
+          email
+        }
+      }
+    }
+  }
+`;
+
+interface ValidateBackUpResponse {
+  validateBackupCodes: {
+    success: boolean;
+    message: string;
+    data: {
+      access_token: string;
+      user: {
+        _id: string;
+        name: string;
+        email: string;
+      };
+    };
+  };
+}
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,6 +59,32 @@ const LoginPage = () => {
   const params = useSearchParams();
   const { mergeLocalCartWithDB } = useCartHook();
   const callbackUrl = params.get("callbackUrl");
+
+  const [validateBackupCodes] = useMutation<ValidateBackUpResponse>(
+    VALIDATE_BACKUP_CODES,
+    {
+      onCompleted: (data) => {
+        const message = data?.validateBackupCodes?.message;
+        toast.success(
+          message || loginTranslate[lang].functions.handelBackup2fa.success
+        );
+
+        // Handle successful backup code validation
+        if (callbackUrl) {
+          router.back(); // Go back to previous page (closes modal)
+          router.push(callbackUrl);
+        } else {
+          router.back(); // Go back to previous page (closes modal)
+          router.push("/");
+        }
+      },
+      onError: (error) => {
+        const message = error.message || loginTranslate[lang].errors.global;
+        setError(message);
+        toast.error(message);
+      },
+    }
+  );
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -113,26 +170,19 @@ const LoginPage = () => {
   };
 
   const handleBackupVerify = async (codes: string[]) => {
-    // setIsLoading(true);
     setIsLoading2fa(true);
     try {
-      ///auth/2fa/backup/validate
-
-      const {
-        data: { message },
-      } = await api_client.post("/auth/2fa/backup/validate", {
-        email,
-        codes,
+      await validateBackupCodes({
+        variables: {
+          input: {
+            email,
+            codes,
+          },
+        },
       });
-
-      toast.success(
-        message || loginTranslate[lang].functions.handelBackup2fa.success
-      );
-    } catch (error: unknown) {
-      const message =
-        (error as Error)?.message || loginTranslate[lang].errors.global;
-      setError(message);
-      toast.error(message);
+    } catch (_error) {
+      // Error handling is done in onError callback
+      // Silent catch to prevent unhandled promise rejection
     } finally {
       setIsLoading2fa(false);
     }

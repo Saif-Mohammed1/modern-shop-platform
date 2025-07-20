@@ -2,6 +2,7 @@ export const reviewsTypeDefs = /* GraphQL */ `
   type Review {
     _id: String!
     user_id: String!
+    user_name: String!
     product_id: [Product_id!]!
     rating: Float!
     comment: String!

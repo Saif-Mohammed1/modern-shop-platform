@@ -4,7 +4,6 @@ import { create } from "zustand";
 
 // import type { ProductCartPick } from "@/app/lib/types/cart.db.types";
 import type { WishlistType } from "@/app/lib/types/wishList.types";
-// import api_client from "@/app/lib/utilities/api.client";
 
 interface InitialState {
   wishlist: WishlistType;

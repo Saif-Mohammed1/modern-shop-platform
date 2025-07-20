@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 
 import type { ProductType } from "@/app/lib/types/products.types";
-import api from "@/app/lib/utilities/api";
+import { api_gql } from "@/app/lib/utilities/api.graphql";
 import ErrorHandler from "@/components/Error/errorHandler";
 import ModelProductDetail from "@/components/ui/ModelProductDetail";
 import OverlayWrapper from "@/components/ui/OverlayWrapper";
@@ -38,26 +38,12 @@ const page = async (props: Props) => {
   const { slug } = params;
   try {
     const {
-      data: {
-        data: {
-          getProductBySlug: { product },
-        },
-      },
-    }: {
-      data: {
-        data: {
-          getProductBySlug: {
-            product: ProductType;
-          };
-        };
+      getProductBySlug: { product },
+    } = await api_gql<{
+      getProductBySlug: {
+        product: ProductType;
       };
-    } = await api.post("/graphql", {
-      query: GET_PRODUCT,
-      variables: {
-        slug,
-      },
-      headers: Object.fromEntries((await headers()).entries()), // Convert ReadonlyHeaders to plain object
-    });
+    }>(GET_PRODUCT, { slug }, Object.fromEntries((await headers()).entries()));
 
     return (
       <OverlayWrapper>

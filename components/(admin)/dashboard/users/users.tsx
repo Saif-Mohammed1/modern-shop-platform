@@ -1,6 +1,7 @@
 // export default AdminUsers;
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import React, { useEffect, useState } from "react";
@@ -14,7 +15,6 @@ import {
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.db.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import { statusStyles } from "@/app/lib/utilities/status-style";
 import Pagination, {
@@ -28,7 +28,16 @@ import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard
 import { shopPageTranslate } from "@/public/locales/client/(public)/shop/shoppageTranslate";
 
 // export default AdminUsers;
-
+const DELETE_ACCOUNT = gql`
+  mutation ($id: ID!) {
+    deleteAccountByAdmin(id: $id) {
+      message
+    }
+  }
+`;
+interface DeleteMutationResponse {
+  deleteAccountByAdmin: { message: string };
+}
 type Props = {
   users: UserAuthType[];
   pagination: PaginationType;
@@ -37,6 +46,26 @@ type Props = {
 const AdminUsers = ({ users, pagination }: Props) => {
   const [usersList, setUsersList] = useState(users || []);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [deletedId, setDeletedId] = useState<string | null>(null);
+  const [deleteAccountByAdmin] = useMutation<DeleteMutationResponse>(
+    DELETE_ACCOUNT,
+    {
+      onCompleted: (data) => {
+        if (data.deleteAccountByAdmin) {
+          toast.success(
+            data.deleteAccountByAdmin.message ||
+              usersTranslate.users[lang].functions.handleDelete.success
+          );
+          setUsersList((prev) => prev.filter((user) => user._id !== deletedId));
+          setDeletedId(null);
+        }
+      },
+      onError: (err) => {
+        toast.error(err.message || usersTranslate.users[lang].error.global);
+        setDeletedId(null);
+      },
+    }
+  );
   const [search, setSearch] = useQueryState(
     "search",
     parseAsString
@@ -59,49 +88,11 @@ const AdminUsers = ({ users, pagination }: Props) => {
   const onPaginationChange = (page: number) => {
     void setCurrentPage(page);
   };
-  // const handleDelete = async (id: string) => {
-  //   if (confirm(usersTranslate.users[lang].functions.handleDelete.confirm)) {
-  //     let toastId;
-  //     try {
-  //       toastId = toast.loading(
-  //         usersTranslate.users[lang].functions.handleDelete.loading
-  //       );
-  //       await api_client.delete(`/admin/dashboard/users/${id}`);
-  //       toast.success(
-  //         usersTranslate.users[lang].functions.handleDelete.success
-  //       );
-  //       setUsersList((prev) => prev.filter((user) => user._id !== id));
-  //     } catch (error: unknown) {
-  //       toast.error(
-  //         error instanceof Error
-  //           ? error.message
-  //           : usersTranslate.users[lang].error.global
-  //       );
-  //     } finally {
-  //       toast.dismiss(toastId);
-  //     }
-  //   } else {
-  //     toast.success(usersTranslate.users[lang].functions.handleDelete.canceled);
-  //   }
-  // };
   const handleDeleteUser = async (id: string) => {
-    let toastId;
-    try {
-      toastId = toast.loading(
-        usersTranslate.users[lang].functions.handleDelete.loading
-      );
-      await api_client.delete(`/admin/dashboard/users/${id}`);
-      toast.success(usersTranslate.users[lang].functions.handleDelete.success);
-      setUsersList((prev) => prev.filter((user) => user._id !== id));
-    } catch (error: unknown) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : usersTranslate.users[lang].error.global
-      );
-    } finally {
-      toast.dismiss(toastId);
-    }
+    setDeletedId(id);
+    await deleteAccountByAdmin({
+      variables: { id },
+    });
   };
 
   const handleSearchChanges = (e: Event) => {
@@ -282,7 +273,14 @@ const AdminUsers = ({ users, pagination }: Props) => {
           <tbody className="divide-y divide-gray-200">
             {usersList.map((user) => (
               <tr key={user._id} className="hover:bg-gray-50 transition-colors">
-                <td className="py-3 px-4 text-sm text-gray-700">{user.name}</td>
+                <td className="py-3 px-4 text-sm text-gray-700">
+                  <Link
+                    href={`/dashboard/users/${user._id}`}
+                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    {user.name}
+                  </Link>
+                </td>
                 <td className="py-3 px-4 text-sm text-gray-700">
                   {user.email}
                 </td>

@@ -9,8 +9,6 @@ import ChangePassword from "@/components/customers/changePassword";
 import ErrorHandler from "@/components/Error/errorHandler";
 import { accountSettingsTranslate } from "@/public/locales/client/(auth)/account/settingsTranslate";
 
-// export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: accountSettingsTranslate[lang].metadata.title,
   description: accountSettingsTranslate[lang].metadata.description,

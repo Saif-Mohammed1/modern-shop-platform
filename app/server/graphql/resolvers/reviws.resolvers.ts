@@ -4,6 +4,7 @@ import { ReviewTranslate } from "@/public/locales/server/Review.Translate";
 import { ReviewValidation, type createReviewDto } from "../../dtos/reviews.dto";
 import { AuthMiddleware } from "../../middlewares/auth.middleware";
 import { ReviewService } from "../../services/review.service";
+import { GlobalFilterValidator } from "../../validators/global-filter.validator";
 import type { Context } from "../apollo-server";
 interface QueryInput {
   page: number;
@@ -59,6 +60,17 @@ export const reviewsResolvers = {
       });
       return reviews;
     },
+    checkReview: async (
+      _parent: unknown,
+      { product_id }: { product_id: string },
+      { req }: Context
+    ) => {
+      await AuthMiddleware.requireAuth([])(req);
+      const user_id = String(req.user?._id);
+
+      await reviewService.checkIfUserHasOrderedProduct(user_id, product_id);
+      return { exists: false }; // User can leave a review
+    },
   },
   Mutation: {
     createReview: async (
@@ -81,12 +93,16 @@ export const reviewsResolvers = {
       { req }: Context
     ) => {
       await AuthMiddleware.requireAuth([])(req);
+
+      // Validate ID format
+      const validatedId = GlobalFilterValidator.validateId(id);
+
       const user_id = String(req.user?._id);
       const dto = ReviewValidation.validateUpdateReview({
         ...input,
         user_id,
       });
-      const review = await reviewService.updateReview(id, dto);
+      const review = await reviewService.updateReview(validatedId, dto);
       return review;
     },
     deleteReview: async (
@@ -95,8 +111,12 @@ export const reviewsResolvers = {
       { req }: Context
     ) => {
       await AuthMiddleware.requireAuth([])(req);
+
+      // Validate ID format
+      const validatedId = GlobalFilterValidator.validateId(id);
+
       const user_id = String(req.user?._id);
-      await reviewService.deleteReview(id, user_id);
+      await reviewService.deleteReview(validatedId, user_id);
       return {
         message: ReviewTranslate[lang].controllers.deleteReview.success,
       };

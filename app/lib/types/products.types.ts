@@ -8,11 +8,11 @@ export type ProductsSearchParams = {
   search?: string;
   sort?: string;
   fields?: string;
-  page?: string;
-  limit?: string;
-  rating?: string;
-  min?: string;
-  max?: string;
+  page?: number;
+  limit?: number;
+  rating?: number;
+  min?: number;
+  max?: number;
 };
 
 export type Event = React.ChangeEvent<HTMLInputElement | HTMLSelectElement>;

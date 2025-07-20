@@ -104,11 +104,7 @@ export class ProductValidation {
     images: this.imagesSchema,
 
     user_id: zObjectId, // Assuming it's a string
-    // user_id: z.string().min(1, {
-    //   message:
-    //     errorControllerTranslate[lang].controllers.handleValidationErrorDB
-    //       .user_id.required,
-    // }), // Assuming it's a string
+
     description: z
       .string({
         required_error: ProductTranslate[lang].dto.description.required,
@@ -126,22 +122,7 @@ export class ProductValidation {
         message: ProductTranslate[lang].dto.stock.min,
       })
       .transform((v) => Math.floor(v)), // Ensure integer stock values
-    ratings_average: z
-      .number()
-      .min(1, {
-        message: ProductTranslate[lang].dto.ratings_average.min,
-      })
-      .max(5, {
-        message: ProductTranslate[lang].dto.ratings_average.max,
-      })
-      .default(4.5)
-      .transform((v) => Math.round(v * 10) / 10), // Round to 1 decimal
-    ratings_quantity: z
-      .number()
-      .min(0, {
-        message: ProductTranslate[lang].dto.ratings_quantity.min,
-      })
-      .default(0),
+
     active: z.boolean().default(true),
     sku: z.string().trim().optional(), // Automatically generated
     reserved: z

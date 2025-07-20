@@ -75,11 +75,15 @@ export const ordersTypeDefs = /* GraphQL */ `
     method: String!
     transaction_id: String!
   }
-
+  type User_info {
+    name: String!
+    email: String!
+  }
   type Order {
     _id: ID!
     status: String!
     user_id: String!
+    user_info: User_info!
     shipping_address: Shipping_address!
     items: [OrderItems!]!
     currency: String!
@@ -134,6 +138,24 @@ export const ordersTypeDefs = /* GraphQL */ `
     cancellation_reason: String
   }
 
+  input AdminOrderFilter {
+    email: String
+    status: String
+    startDate: String
+    endDate: String
+    sort: String
+    page: Int
+    limit: Int
+  }
+
+  input CheckoutSessionInput {
+    shipping_info: Shipping_addressInput!
+  }
+
+  type CheckoutSessionResponse {
+    url: String!
+  }
+
   type Query {
     getOrders(filter: OrderFilter): OrderResult!
     getOrderById(id: String!): Order!
@@ -146,5 +168,8 @@ export const ordersTypeDefs = /* GraphQL */ `
     updateOrderStatus(id: String!, status: String!): Order!
     updateOrder(id: String!, input: CreateOrderInput!): Order!
     deleteOrder(id: String!): responseWithMessage!
+    createCheckoutSession(
+      input: CheckoutSessionInput!
+    ): CheckoutSessionResponse!
   }
 `;

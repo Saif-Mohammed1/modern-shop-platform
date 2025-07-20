@@ -45,7 +45,7 @@ class UserController {
       throw new AppError(AuthTranslate[lang].errors.userNotFound, 404);
     }
 
-    const user = await this.userService.findUserById(req.id);
+    const user = await this.userService.find(req.id);
     return NextResponse.json(
       this.userService.filterForRole(user, req.user?.role),
       {

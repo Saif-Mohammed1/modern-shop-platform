@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -12,16 +13,12 @@ import {
   FiUnlock,
 } from "react-icons/fi";
 
-import {
-  type ClientAuditLogDetails,
-  SecurityAuditAction,
-} from "@/app/lib/types/audit.db.types";
+import { type ClientAuditLogDetails } from "@/app/lib/types/audit.db.types";
 import {
   type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.db.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -32,6 +29,91 @@ import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard
 import AuditLogTable from "./AuditLogTable";
 import { SecurityActionsModal } from "./SecurityActionsModal";
 
+// GraphQL Mutations
+const UPDATE_USER_BY_ADMIN = gql`
+  mutation UpdateUserByAdmin($id: ID!, $input: UpdateUserByAdminInput!) {
+    updateUserByAdmin(id: $id, input: $input) {
+      _id
+      name
+      email
+      phone
+      role
+      status
+      created_at
+      verification {
+        email_verified
+        phone_verified
+      }
+      two_factor_enabled
+      login_notification_sent
+      security {
+        auditLog {
+          action
+          timestamp
+          details {
+            success
+            message
+            device {
+              fingerprint
+              device
+              os
+              browser
+              ip
+              location {
+                city
+                country
+                latitude
+                longitude
+              }
+              is_bot
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const FORCE_PASSWORD_RESET = gql`
+  mutation ForcePasswordReset($id: ID!) {
+    forcePasswordReset(id: $id) {
+      message
+    }
+  }
+`;
+
+const REVOKE_SESSIONS = gql`
+  mutation RevokeSessions($id: ID!) {
+    revokeSessions(id: $id) {
+      message
+    }
+  }
+`;
+
+const LOCK_ACCOUNT = gql`
+  mutation LockAccount($id: ID!) {
+    lockAccount(id: $id) {
+      message
+    }
+  }
+`;
+
+const UNLOCK_ACCOUNT = gql`
+  mutation UnlockAccount($id: ID!) {
+    unlockAccount(id: $id) {
+      message
+    }
+  }
+`;
+
+const DELETE_USER_BY_ADMIN = gql`
+  mutation DeleteUserByAdmin($id: ID!) {
+    deleteUserByAdmin(id: $id) {
+      message
+    }
+  }
+`;
+
 interface UserEditPageProps {
   user: UserAuthType & {
     security: {
@@ -39,14 +121,149 @@ interface UserEditPageProps {
     };
   };
 }
+
+// GraphQL response types
+interface UpdateUserResponse {
+  updateUserByAdmin: UserAuthType & {
+    security: {
+      auditLog: ClientAuditLogDetails[];
+    };
+  };
+}
+
+interface SecurityActionResponse {
+  message: string;
+}
+
+interface DeleteUserResponse {
+  deleteUserByAdmin: {
+    message: string;
+  };
+}
 export default function UserEditPage({ user }: UserEditPageProps) {
+  const router = useRouter();
   const [userData, setUser] = useState(user);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [updatingFields, setUpdatingFields] = useState<Set<keyof UserAuthType>>(
     new Set()
   );
-  const router = useRouter();
+
+  // GraphQL Mutations
+  const [updateUserByAdmin, { loading }] = useMutation<UpdateUserResponse>(
+    UPDATE_USER_BY_ADMIN,
+    {
+      onCompleted: (data) => {
+        toast.success(
+          data?.updateUserByAdmin
+            ? usersTranslate.users[lang].editUsers.form.success
+            : usersTranslate.users[lang].editUsers.form.failed
+        );
+        setUser(data.updateUserByAdmin);
+        setUpdatingFields(new Set());
+      },
+
+      onError: (error) => {
+        toast.error(
+          error.message || usersTranslate.users[lang].editUsers.form.failed
+        );
+      },
+    }
+  );
+
+  const [forcePasswordReset] = useMutation<{
+    forcePasswordReset: SecurityActionResponse;
+  }>(FORCE_PASSWORD_RESET, {
+    onCompleted: (data) => {
+      const message =
+        data?.forcePasswordReset?.message ||
+        usersTranslate.users[lang].editUsers.handleSecurityAction
+          .forcePasswordReset.success;
+      toast.success(message);
+    },
+    onError: (error) => {
+      toast.error(
+        error.message ||
+          usersTranslate.users[lang].editUsers.handleSecurityAction
+            .forcePasswordReset.error
+      );
+    },
+  });
+
+  const [revokeSessions] = useMutation<{
+    revokeSessions: SecurityActionResponse;
+  }>(REVOKE_SESSIONS, {
+    onCompleted: (data) => {
+      const message =
+        data?.revokeSessions?.message ||
+        usersTranslate.users[lang].editUsers.handleSecurityAction.revokeSessions
+          .success;
+      toast.success(message);
+    },
+    onError: (error) => {
+      toast.error(
+        error.message ||
+          usersTranslate.users[lang].editUsers.handleSecurityAction
+            .revokeSessions.error
+      );
+    },
+  });
+
+  const [lockAccount] = useMutation<{
+    lockAccount: SecurityActionResponse;
+  }>(LOCK_ACCOUNT, {
+    onCompleted: (data) => {
+      const message =
+        data?.lockAccount?.message ||
+        usersTranslate.users[lang].editUsers.handleSecurityAction.lockAccount
+          .success;
+      toast.success(message);
+    },
+    onError: (error) => {
+      toast.error(
+        error.message ||
+          usersTranslate.users[lang].editUsers.handleSecurityAction.lockAccount
+            .error
+      );
+    },
+  });
+
+  const [unlockAccount] = useMutation<{
+    unlockAccount: SecurityActionResponse;
+  }>(UNLOCK_ACCOUNT, {
+    onCompleted: (data) => {
+      const message =
+        data?.unlockAccount?.message ||
+        usersTranslate.users[lang].editUsers.handleSecurityAction.unlockAccount
+          .success;
+      toast.success(message);
+    },
+    onError: (error) => {
+      toast.error(
+        error.message ||
+          usersTranslate.users[lang].editUsers.handleSecurityAction
+            .unlockAccount.error
+      );
+    },
+  });
+
+  const [deleteUserByAdmin] = useMutation<DeleteUserResponse>(
+    DELETE_USER_BY_ADMIN,
+    {
+      onCompleted: (data) => {
+        const message =
+          data?.deleteUserByAdmin?.message ||
+          usersTranslate.users[lang].editUsers.handleDeleteUser.success;
+        toast.success(message);
+        router.push("/dashboard/users");
+      },
+      onError: (error) => {
+        toast.error(
+          error.message ||
+            usersTranslate.users[lang].editUsers.handleDeleteUser.failed
+        );
+      },
+    }
+  );
   // const debouncedUpdate = debounce(async (updateFn, field, value) => {
   //   try {
   //     await updateFn(field, value);
@@ -61,91 +278,55 @@ export default function UserEditPage({ user }: UserEditPageProps) {
     setUpdatingFields((prev) => prev.add(e));
   };
   const confirmUpdate = async () => {
-    setLoading(true);
-    try {
-      const response = await api_client.patch(
-        `/admin/dashboard/users/${userData._id}`,
-        {
-          // [field]: value,
-
+    await updateUserByAdmin({
+      variables: {
+        id: userData._id,
+        input: {
           name: userData.name,
           email: userData.email,
           role: userData.role,
           status: userData.status,
-          auditAction: SecurityAuditAction.USER_UPDATE,
-        }
-      );
-      setUser(response.data);
-      // rest updating fields
-      setUpdatingFields(new Set());
-      toast.success(usersTranslate.users[lang].editUsers.form.success);
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          usersTranslate.users[lang].editUsers.form.failed
-      );
-    } finally {
-      setLoading(false);
-    }
+        },
+      },
+    });
   };
   type SecurityAction =
     | "forcePasswordReset"
     | "revokeSessions"
     | "lockAccount"
     | "unlockAccount";
-  // Security actions
-  const handleSecurityAction = async (action: SecurityAction) => {
-    try {
-      switch (action) {
-        case "forcePasswordReset":
-          await api_client.get(
-            `/admin/dashboard/users/${userData._id}/security`
-          );
-          break;
-        case "revokeSessions":
-          await api_client.post(
-            `/admin/dashboard/users/${userData._id}/security`
-          );
-          break;
-        case "lockAccount":
-          await api_client.put(
-            `/admin/dashboard/users/${userData._id}/security`
-          );
-          break;
-        case "unlockAccount":
-          await api_client.patch(
-            `/admin/dashboard/users/${userData._id}/security`
-          );
-          break;
-      }
 
-      toast.success(
-        usersTranslate.users[lang].editUsers.handleSecurityAction[action]
-          .success
-      );
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          usersTranslate.users[lang].editUsers.handleSecurityAction[action]
-            .error
-      );
+  // Security actions - simplified since onCompleted/onError handle the responses
+  const handleSecurityAction = async (action: SecurityAction) => {
+    switch (action) {
+      case "forcePasswordReset":
+        await forcePasswordReset({
+          variables: { id: userData._id },
+        });
+        break;
+      case "revokeSessions":
+        await revokeSessions({
+          variables: { id: userData._id },
+        });
+        break;
+      case "lockAccount":
+        await lockAccount({
+          variables: { id: userData._id },
+        });
+        break;
+      case "unlockAccount":
+        await unlockAccount({
+          variables: { id: userData._id },
+        });
+        break;
     }
   };
 
-  // Dangerous actions
+  // Dangerous actions - simplified since onCompleted/onError handle the responses
   const handleDeleteUser = async () => {
-    try {
-      await api_client.delete(`/admin/dashboard/users/${userData._id}`);
-      toast.success(
-        usersTranslate.users[lang].editUsers.handleDeleteUser.success
-      );
-      router.push("/dashboard/users");
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error)?.message ||
-          usersTranslate.users[lang].editUsers.handleDeleteUser.failed
-      );
-    }
+    await deleteUserByAdmin({
+      variables: { id: userData._id },
+    });
   };
 
   return (

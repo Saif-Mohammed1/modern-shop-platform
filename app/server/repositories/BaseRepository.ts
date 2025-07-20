@@ -9,7 +9,7 @@ import {
 
 // type id = Schema.Types.ObjectId;
 interface Repository<T> {
-  find(filter?: Partial<T>, trx?: Knex.Transaction): Promise<T[]>;
+  find(filter?: Partial<T>, trx?: Knex.Transaction): Promise<T>;
   findById(id: string, trx?: Knex.Transaction): Promise<T | null>;
   create(data: T, trx?: Knex.Transaction): Promise<T>;
   update(
@@ -38,8 +38,8 @@ export abstract class BaseRepository<
   protected query(trx?: Knex.Transaction) {
     return trx ? trx<T>(this.tableName) : this.knex<T>(this.tableName);
   }
-  async find(filter: Partial<T> = {}, trx?: Knex.Transaction): Promise<T[]> {
-    return (await this.query(trx).where(filter)) as T[];
+  async find(filter: Partial<T> = {}, trx?: Knex.Transaction): Promise<T> {
+    return (await this.query(trx).where(filter).first()) as T;
   }
 
   async findById(id: string, trx?: Knex.Transaction): Promise<T | null> {

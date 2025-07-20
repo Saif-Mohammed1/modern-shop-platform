@@ -55,8 +55,7 @@ export class AuthMiddleware {
         );
       }
       const decoded = await this.tokenService.decodedAccessToken(result.data);
-      const user = await this.userService.findUserById(decoded.user_id);
-
+      const user = await this.userService.find(decoded.user_id);
       if (!user) {
         throw new AppError(commonTranslations[lang].userNotExists, 404);
       }
@@ -90,8 +89,7 @@ export class AuthMiddleware {
         );
       }
       const decoded = await this.tokenService.decodedAccessToken(result.data);
-      const user = await this.userService.findUserById(decoded.user_id);
-
+      const user = await this.userService.find(decoded.user_id);
       if (!user) {
         throw new AppError(commonTranslations[lang].userNotExists, 404);
       }

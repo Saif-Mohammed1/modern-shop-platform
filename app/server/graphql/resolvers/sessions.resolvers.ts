@@ -7,6 +7,7 @@ import { refreshTokenControllerTranslate } from "@/public/locales/server/refresh
 import { AuthMiddleware } from "../../middlewares/auth.middleware";
 import { SessionService } from "../../services/session.service";
 import { TokensService } from "../../services/tokens.service";
+import { GlobalFilterValidator } from "../../validators/global-filter.validator";
 import type { Context } from "../apollo-server";
 
 const sessionService = new SessionService();
@@ -67,7 +68,11 @@ export const sessionsResolvers = {
       { req }: Context
     ) => {
       await AuthMiddleware.requireAuth([])(req);
-      await sessionService.revokeSession(id);
+
+      // Validate ID format
+      const validatedId = GlobalFilterValidator.validateId(id);
+
+      await sessionService.revokeSession(validatedId);
       return {
         message:
           refreshTokenControllerTranslate[lang].functions.revokeSession.message,

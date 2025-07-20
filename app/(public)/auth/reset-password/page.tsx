@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-// import ErrorHandler from "@/components/Error/errorHandler";
-import api from "@/app/lib/utilities/api";
+import { api_gql } from "@/app/lib/utilities/api.graphql";
 import { lang } from "@/app/lib/utilities/lang";
 import InvalidRestPassword from "@/components/authentication/InvalidRestPassword";
 import ResetPasswordPage from "@/components/authentication/resetPassword";
@@ -34,10 +33,11 @@ const page = async (props: { searchParams: Promise<SearchParams> }) => {
     notFound();
   }
   try {
-    await api.post("/graphql", {
-      query: IS_EMAIL_AND_TOKEN_VALID_MUTATION,
-      variables: { token, email },
-    });
+    await api_gql<{
+      isEmailAndTokenValid: {
+        message: string;
+      };
+    }>(IS_EMAIL_AND_TOKEN_VALID_MUTATION, { token, email });
 
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">

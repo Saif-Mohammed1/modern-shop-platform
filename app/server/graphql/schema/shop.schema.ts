@@ -71,36 +71,29 @@ export const shopTypeDefs = /* GraphQL */ `
     created_at: String
   }
   input ProductInput {
-    name: String
-    category: String
-    price: Float
+    name: String!
+    category: String!
+    price: Float!
     discount: Float
     discount_expire: String
-    description: String
-    stock: Int
-    slug: String
+    description: String!
+    stock: Int!
+    sku: String
+    images: [String!]!
+    shipping_info: ProductShippingInput!
     reserved: Int
     sold: Int
-    sku: String
-    images: [ProductImageInput]
-    shipping_info: ProductShippingInput
-  }
-
-  input ProductImageInput {
-    _id: String
-    link: String
-    public_id: String
   }
 
   input ProductShippingInput {
-    weight: Float
-    dimensions: ProductDimensionsInput
+    weight: Float!
+    dimensions: ProductDimensionsInput!
   }
 
   input ProductDimensionsInput {
-    length: Float
-    width: Float
-    height: Float
+    length: Float!
+    width: Float!
+    height: Float!
   }
   type RatingDistribution {
     one: Int
@@ -128,6 +121,31 @@ export const shopTypeDefs = /* GraphQL */ `
     limit: Int
     rating: Float
   }
+
+  input ProductHistoryFilterInput {
+    sort: String
+    page: Int
+    limit: Int
+    actor: String
+    action: String
+  }
+
+  type ProductHistoryItem {
+    versionId: String!
+    timestamp: String!
+    name: String
+    price: Float
+    discount: Float
+    stock: Int
+    description: String
+  }
+
+  type ProductHistoryResult {
+    docs: [ProductHistoryItem!]!
+    meta: PaginationMeta!
+    links: Links
+  }
+
   type TopOfferProducts {
     topOfferProducts: [ProductBase!]
     newProducts: [ProductBase!]
@@ -137,10 +155,17 @@ export const shopTypeDefs = /* GraphQL */ `
     getProducts(filter: SearchParams): ProductsWithCategories
     getProductBySlug(slug: String!, populate: Boolean): ProductWithDistribution
     getTopOffersAndNewProducts: TopOfferProducts!
+    getProductHistory(
+      slug: String!
+      productHistoryFilter: ProductHistoryFilterInput
+    ): ProductHistoryResult!
   }
   type Mutation {
     createProduct(product: ProductInput!): Product
     updateProduct(_id: String!, product: ProductInput!): Product
     deleteProduct(_id: String!): Product
+    toggleProductStatus(slug: String!): Product
+    removeProductImage(slug: String!, public_id: String!): responseWithMessage!
+    restoreProductVersion(slug: String!, versionId: String!): Product
   }
 `;

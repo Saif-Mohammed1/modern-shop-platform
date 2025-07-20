@@ -56,37 +56,13 @@ export const authTypeDefs = /* GraphQL */ `
     phone_verified: Boolean
   }
 
-  enum UserStatus {
-    ACTIVE
-    INACTIVE
-    SUSPENDED
-  }
-
-  type UserAuthType {
-    _id: ID!
-    name: String!
-    email: EmailAddress!
-    phone: String!
-    role: String!
-    created_at: DateTime!
-    verification: VerificationStatus!
-    two_factor_enabled: Boolean!
-    login_notification_sent: Boolean!
-    status: UserStatus!
-    access_token: String!
-    access_token_expires: Int!
-  }
-  type UserResult {
-    user: UserAuthType
-    access_token: String
-    refreshToken: String
-  }
   type TwoFALoginType {
     requires2FA: Boolean!
     tempToken: String!
     expires: String!
     message: String
   }
+
   input CreateUser {
     name: String!
     email: EmailAddress!
@@ -108,9 +84,13 @@ export const authTypeDefs = /* GraphQL */ `
     password: String!
     confirmPassword: String!
   }
+  type UserResult {
+    user: UserAuthType
+    access_token: String
+    refreshToken: String
+  }
+
   type Query {
-    getUser: UserAuthType!
-    getUserById(id: ID!): UserAuthType!
     getActiveSessions: SessionsResult!
   }
   type Mutation {
@@ -133,4 +113,3 @@ export const authTypeDefs = /* GraphQL */ `
     ): responseWithMessage!
   }
 `;
-// updateUser(input: UpdateUserInput!): UserAuthType

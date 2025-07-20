@@ -274,7 +274,7 @@ export class StripeService {
     }
     // Retrieve user and shipping info
 
-    const user = await this.userService.findUserById(
+    const user = await this.userService.find(
       session.client_reference_id as string,
       trx
     );

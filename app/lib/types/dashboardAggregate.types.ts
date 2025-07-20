@@ -246,7 +246,7 @@ interface RefundAnalyticsResult {
     invoice_id: string;
   }>;
   commonReasons: Array<{
-    _id: string;
+    reason: string;
     count: number;
     totalAmount: number;
   }>;

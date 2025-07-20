@@ -1,5 +1,6 @@
 "use client";
 
+import { useLazyQuery, useMutation } from "@apollo/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -7,7 +8,10 @@ import { toast } from "react-hot-toast";
 import { FiEdit3, FiX } from "react-icons/fi";
 import StarRatings from "react-star-ratings";
 
-import api_client from "@/app/lib/utilities/api.client";
+import {
+  CHECK_REVIEW_QUERY,
+  CREATE_REVIEW_MUTATION,
+} from "@/app/lib/graphql/mutations/reviews";
 import { lang } from "@/app/lib/utilities/lang";
 import { reviewsTranslate } from "@/public/locales/client/(public)/reviewsTranslate";
 
@@ -20,24 +24,23 @@ const MAX_COMMENT_LENGTH = 500;
 
 const CreateReview = ({ reviewsLength, product_id }: CreateReviewProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const router = useRouter();
 
+  const [checkReviewQuery, { loading: checkReviewLoading }] =
+    useLazyQuery(CHECK_REVIEW_QUERY);
+  const [createReviewMutation, { loading: createReviewLoading }] = useMutation(
+    CREATE_REVIEW_MUTATION
+  );
+
+  const isLoading = checkReviewLoading || createReviewLoading;
+
   const checkOrder = async () => {
-    setIsLoading(true);
     try {
-      // await toast.promise(api_client.patch(`/customers/reviews/${product_id}`), {
-      //   loading:
-      //     reviewsTranslate[lang].createReviewsSection.functions.checkOrder
-      //       .loading,
-      //   success:
-      //     reviewsTranslate[lang].createReviewsSection.functions.checkOrder
-      //       .success,
-      //   error: (error) => error.message || reviewsTranslate[lang].errors.global,
-      // });
-      await api_client.patch(`/customers/reviews/${product_id}`);
+      await checkReviewQuery({
+        variables: { product_id },
+      });
       toast.success(
         reviewsTranslate[lang].createReviewsSection.functions.checkOrder.success
       );
@@ -46,9 +49,6 @@ const CreateReview = ({ reviewsLength, product_id }: CreateReviewProps) => {
       toast.error(
         (error as Error).message || reviewsTranslate[lang].errors.global
       );
-      // Error handled by toast.promise
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -70,9 +70,14 @@ const CreateReview = ({ reviewsLength, product_id }: CreateReviewProps) => {
     }
 
     try {
-      await api_client.post(`/customers/reviews/${product_id}`, {
-        rating,
-        comment,
+      await createReviewMutation({
+        variables: {
+          input: {
+            product_id,
+            rating,
+            comment,
+          },
+        },
       });
       toast.success(
         reviewsTranslate[lang].createReviewsSection.functions.handleSubmit
@@ -86,7 +91,6 @@ const CreateReview = ({ reviewsLength, product_id }: CreateReviewProps) => {
       toast.error(
         (error as Error).message || reviewsTranslate[lang].errors.global
       );
-      // Error handled by toast.promise
     }
   };
 

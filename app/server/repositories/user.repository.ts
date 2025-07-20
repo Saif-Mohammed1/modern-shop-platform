@@ -6,6 +6,7 @@ import type { Knex } from "knex";
 import {
   SecurityAuditAction,
   type AuditLogDetails,
+  type ClientAuditLogDetails,
 } from "@/app/lib/types/audit.db.types";
 import type {
   QueryBuilderConfig,
@@ -25,6 +26,7 @@ import type {
   Preferences,
   UserCurrency,
   UserRole,
+  UserAuthType,
 } from "@/app/lib/types/users.db.types";
 import AppError from "@/app/lib/utilities/appError";
 import { generateUUID } from "@/app/lib/utilities/id";
@@ -919,6 +921,21 @@ export class UserRepository extends BaseRepository<IUserDB> {
       this.tableName,
       options.query,
       queryConfig
+    ).aggregate(
+      [
+        `
+json_build_object(
+'email_verified',users.email_verified,
+'phone_verified',users.phone_verified) AS verification
+      `,
+        `
+json_build_object(
+'preferences_language', preferences_language,
+      'preferences_currency', preferences_currency
+      ) AS preferences
+      `,
+      ],
+      [`_id`]
     );
     // this work around is to prevent non-admin users from seeing inactive products
     // and this work too
@@ -927,6 +944,348 @@ export class UserRepository extends BaseRepository<IUserDB> {
     // if (!isAdmin) queryBuilder.filter.active = true;
 
     return await queryBuilder.execute();
+  }
+  async findUserWithAuditLogById(
+    id: string,
+    trx?: Knex.Transaction
+  ): Promise<
+    (UserAuthType & { security: { auditLog: ClientAuditLogDetails[] } }) | null
+  > {
+    const query = trx ?? this.knex;
+
+    // Get basic user info
+    const user = (await this.query(trx)
+      .where("users._id", id)
+      .select([
+        "users.*",
+        this.knex.raw(`
+        json_build_object(
+          'language', users.preferences_language,
+          'currency', users.preferences_currency
+        ) AS preferences
+        `),
+        this.knex.raw(`
+        json_build_object(
+          'email_verified', users.email_verified,
+          'phone_verified', users.phone_verified
+        ) AS verification
+        `),
+      ])
+      .first()) as
+      | (IUserDB & {
+          preferences: { language: string; currency: string };
+          verification: { email_verified: boolean; phone_verified: boolean };
+        })
+      | undefined;
+
+    if (!user) {
+      return null;
+    }
+
+    // Get recent audit log (last 20 entries for edit page)
+    const auditLog = (await query<IAuditLogDB>("audit_log")
+      .where("audit_log.user_id", id)
+      .leftJoin(
+        "device_fingerprints",
+        "audit_log.device_id",
+        "device_fingerprints._id"
+      )
+      .leftJoin(
+        "device_details",
+        "device_fingerprints.fingerprint",
+        "device_details.fingerprint"
+      )
+      .select([
+        "audit_log.*",
+        this.knex.raw(`
+        COALESCE(jsonb_build_object(
+          'fingerprint', device_fingerprints.fingerprint,
+          'device', device_details.device,
+          'os', device_details.os,
+          'browser', device_details.browser,
+          'brand', device_details.brand,
+          'model', device_details.model,
+          'ip', device_fingerprints.ip,
+          'location', jsonb_build_object(
+            'city', device_fingerprints.location_city,
+            'country', device_fingerprints.location_country,
+            'latitude', device_fingerprints.location_latitude,
+            'longitude', device_fingerprints.location_longitude,
+            'source', device_fingerprints.location_source
+          ),
+          'is_bot', device_fingerprints.is_bot
+        ), '{}'::jsonb) as device_info
+        `),
+      ])
+      .orderBy("audit_log.timestamp", "desc")
+      .limit(20)) as (IAuditLogDB & { device_info: any })[];
+
+    // Transform audit log to client format
+    const clientAuditLog: ClientAuditLogDetails[] = auditLog.map((log) => ({
+      action: log.action,
+      timestamp: log.timestamp,
+      details: {
+        success: log.details_success || false,
+        message: log.details_message || "No details available",
+        device: log.device_info,
+      },
+    }));
+
+    // Return user data in the expected format
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      status: user.status,
+      created_at: user.created_at.toISOString(),
+      verification: user.verification,
+      two_factor_enabled: user.two_factor_enabled,
+      login_notification_sent: user.login_notification_sent,
+      security: {
+        auditLog: clientAuditLog,
+      },
+    };
+  }
+  async findUserById(id: string, trx?: Knex.Transaction) {
+    const query = trx ?? this.knex;
+
+    // Get user with basic info, preferences, verification, and security data
+    const user = (await this.query(trx)
+      .where("users._id", id)
+      .select([
+        "users.*",
+        this.knex.raw(`
+        json_build_object(
+          'language', users.preferences_language,
+          'currency', users.preferences_currency
+        ) AS preferences
+        `),
+        this.knex.raw(`
+        json_build_object(
+          'email_verified', users.email_verified,
+          'phone_verified', users.phone_verified
+        ) AS verification
+        `),
+        // Security data
+        "security.two_factor_secret",
+        "security.two_factor_secret_expiry",
+        "security.suspicious_device_change",
+        "security.impossible_travel",
+        "security.request_velocity",
+        "security.last_login as security_last_login",
+        "security.password_changed_at as security_password_changed_at",
+      ])
+      .leftJoin("security", "users._id", "security.user_id")
+      .first()) as
+      | (IUserDB & {
+          preferences: { language: string; currency: string };
+          verification: { email_verified: boolean; phone_verified: boolean };
+          security_last_login?: Date;
+          security_password_changed_at?: Date;
+          suspicious_device_change?: boolean;
+          impossible_travel?: boolean;
+          request_velocity?: number;
+        })
+      | undefined;
+
+    if (!user) {
+      return null;
+    }
+
+    // Get rate limits
+    const rateLimits = await query<IRateLimitsDB>("rate_limits")
+      .where("user_id", id)
+      .select("*");
+
+    // Get recent audit log (last 10 entries)
+    const auditLog = (await query<IAuditLogDB>("audit_log")
+      .where("audit_log.user_id", id)
+      .leftJoin(
+        "device_fingerprints",
+        "audit_log.device_id",
+        "device_fingerprints._id"
+      )
+      .leftJoin(
+        "device_details",
+        "device_fingerprints.fingerprint",
+        "device_details.fingerprint"
+      )
+      .select([
+        "audit_log.*",
+        this.knex.raw(`
+        COALESCE(jsonb_build_object(
+          'fingerprint', device_fingerprints.fingerprint,
+          'device', device_details.device,
+          'os', device_details.os,
+          'browser', device_details.browser,
+          'brand', device_details.brand,
+          'model', device_details.model,
+          'ip', device_fingerprints.ip,
+          'location', jsonb_build_object(
+            'city', device_fingerprints.location_city,
+            'country', device_fingerprints.location_country,
+            'latitude', device_fingerprints.location_latitude,
+            'longitude', device_fingerprints.location_longitude,
+            'source', device_fingerprints.location_source
+          ),
+          'is_bot', device_fingerprints.is_bot
+        ), '{}'::jsonb) as device_info
+        `),
+      ])
+      .orderBy("audit_log.timestamp", "desc")
+      .limit(10)) as (IAuditLogDB & { device_info: any })[];
+
+    // Get recent login history (last 10 entries)
+    const loginHistory = (await query<ILoginHistoryDB>("login_history")
+      .where("login_history.user_id", id)
+      .leftJoin(
+        "device_fingerprints",
+        "login_history.device_id",
+        "device_fingerprints._id"
+      )
+      .leftJoin(
+        "device_details",
+        "device_fingerprints.fingerprint",
+        "device_details.fingerprint"
+      )
+      .select([
+        "login_history.*",
+        this.knex.raw(`
+        COALESCE(jsonb_build_object(
+          'fingerprint', device_fingerprints.fingerprint,
+          'device', device_details.device,
+          'os', device_details.os,
+          'browser', device_details.browser,
+          'brand', device_details.brand,
+          'model', device_details.model,
+          'ip', device_fingerprints.ip,
+          'location', jsonb_build_object(
+            'city', device_fingerprints.location_city,
+            'country', device_fingerprints.location_country,
+            'latitude', device_fingerprints.location_latitude,
+            'longitude', device_fingerprints.location_longitude,
+            'source', device_fingerprints.location_source
+          ),
+          'is_bot', device_fingerprints.is_bot
+        ), '{}'::jsonb) as device_info
+        `),
+      ])
+      .orderBy("login_history.created_at", "desc")
+      .limit(10)) as (ILoginHistoryDB & { device_info: any })[];
+
+    // Transform rate limits into the expected format
+    const rateLimitsMap = rateLimits.reduce(
+      (
+        acc: Record<
+          string,
+          {
+            locked: boolean;
+            last_attempt: string | null;
+            attempts: number;
+            lock_until: string | null;
+          }
+        >,
+        limit
+      ) => {
+        acc[limit.action] = {
+          locked: !!(
+            limit.lock_until && new Date(limit.lock_until) > new Date()
+          ),
+          last_attempt: limit.last_attempt?.toISOString() || null,
+          attempts: limit.attempts,
+          lock_until: limit.lock_until?.toISOString() || null,
+        };
+        return acc;
+      },
+      {}
+    );
+
+    // Construct the final user object
+    const result = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      status: user.status,
+      preferences: user.preferences,
+      verification: user.verification,
+      login_notification_sent: user.login_notification_sent,
+      two_factor_enabled: user.two_factor_enabled,
+      last_login: user.last_login?.toISOString(),
+      password_changed_at: user.password_changed_at?.toISOString() || null,
+      created_at: user.created_at?.toISOString(),
+      updated_at: user.updated_at?.toISOString(),
+      security: {
+        two_factor_enabled: user.two_factor_enabled,
+        rateLimits: {
+          login: rateLimitsMap.login || {
+            locked: false,
+            last_attempt: null,
+            attempts: 0,
+            lock_until: null,
+          },
+          passwordReset: rateLimitsMap.passwordReset || {
+            locked: false,
+            last_attempt: null,
+            attempts: 0,
+            lock_until: null,
+          },
+          verification: rateLimitsMap.verification || {
+            locked: false,
+            last_attempt: null,
+            attempts: 0,
+            lock_until: null,
+          },
+          "2fa": rateLimitsMap["2fa"] || {
+            locked: false,
+            last_attempt: null,
+            attempts: 0,
+            lock_until: null,
+          },
+          backup_recovery: rateLimitsMap.backup_recovery || {
+            locked: false,
+            last_attempt: null,
+            attempts: 0,
+            lock_until: null,
+          },
+        },
+        behavioralFlags: {
+          suspicious_device_change: user.suspicious_device_change || false,
+          impossible_travel: user.impossible_travel || false,
+          request_velocity: user.request_velocity || 0,
+        },
+        auditLog: auditLog.map((log) => ({
+          _id: log._id,
+          timestamp: log.timestamp.toISOString(),
+          action: log.action,
+          details: {
+            success: log.details_success,
+            message: log.details_message,
+            device: log.device_info,
+          },
+        })),
+        loginHistory: loginHistory.map((login) => ({
+          _id: login._id,
+          timestamp: login.created_at.toISOString(),
+          success: login.success,
+          device: login.device_info,
+        })),
+        last_login:
+          user.security_last_login?.toISOString() ||
+          user.last_login?.toISOString() ||
+          null,
+        password_changed_at:
+          user.security_password_changed_at?.toISOString() ||
+          user.password_changed_at?.toISOString() ||
+          null,
+      },
+      authMethods: ["email"], // You can extend this based on your auth_methods table if you have one
+    };
+
+    return result;
   }
   private async preSaveUser(
     user: Partial<IUserDB>,

@@ -1340,7 +1340,7 @@ export class DashboardRepository implements BaseDashboardRepository {
       ),
       weeklyTrend,
       commonReasons: commonReasons.rows.map((r) => ({
-        reason: r._id,
+        reason: r.reason || "Unknown", // Handle potential null values
         frequency: r.count,
         financialImpact: r.totalAmount,
       })),

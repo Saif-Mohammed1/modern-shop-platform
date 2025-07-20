@@ -1,11 +1,11 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 
 import { OrderStatus, type OrderType } from "@/app/lib/types/orders.db.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { formatCurrency } from "@/app/lib/utilities/formatCurrency";
 import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
@@ -17,29 +17,47 @@ import { ordersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboar
 interface AdminOrderDetailsProps {
   order: OrderType;
 }
+const UPDATE_ORDER_STATUS = gql`
+  mutation UpdateOrderStatus($id: String!, $status: String!) {
+    updateOrderStatus(id: $id, status: $status) {
+      _id
+      status
+    }
+  }
+`;
 
+interface UpdateMutationResponse {
+  updateOrderStatus: {
+    _id: string;
+    status: OrderStatus;
+  };
+}
 const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
-  const router = useRouter();
   const [status, setStatus] = useState<OrderStatus>(order.status);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateOrderStatus, { loading }] = useMutation<UpdateMutationResponse>(
+    UPDATE_ORDER_STATUS,
+    {
+      onCompleted: (data) => {
+        const updatedOrder = data.updateOrderStatus;
+        setStatus(updatedOrder.status as OrderStatus);
+        toast.success(
+          ordersTranslate.functions[lang].handleStatusUpdate.success
+        );
+      },
+      onError: (error) => {
+        toast.error(
+          (error as Error)?.message || ordersTranslate.functions[lang].error
+        );
+      },
+    }
+  );
 
-  useEffect(() => {
-    setStatus(order.status);
-  }, [order.status]);
+  const router = useRouter();
 
   const handleStatusUpdate = async () => {
-    try {
-      setIsUpdating(true);
-      await api_client.put(`/admin/dashboard/orders/${order._id}`, { status });
-      toast.success(ordersTranslate.functions[lang].handleStatusUpdate.success);
-      router.refresh();
-    } catch (error: unknown) {
-      toast.error(
-        (error as Error).message || ordersTranslate.functions[lang].error
-      );
-    } finally {
-      setIsUpdating(false);
-    }
+    await updateOrderStatus({
+      variables: { id: order._id, status },
+    });
   };
 
   return (
@@ -181,9 +199,9 @@ const AdminOrderDetails = ({ order }: AdminOrderDetailsProps) => {
           />
           <Button
             onClick={handleStatusUpdate}
-            disabled={isUpdating || status === order.status}
+            disabled={loading || status === order.status}
           >
-            {isUpdating ? "Updating..." : "Update Status"}
+            {loading ? "Updating..." : "Update Status"}
           </Button>
         </CardContent>
       </Card>

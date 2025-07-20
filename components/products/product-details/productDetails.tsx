@@ -155,35 +155,6 @@ const ProductDetail = ({
     }
   }, [data, loading]);
 
-  // useEffect(() => {
-  //   const getrelatedProducts = async () => {
-  //     try {
-  //       const {
-  //         data,
-  //       }: {
-  //         data: {
-  //           products: {
-  //             docs: ProductType[];
-  //           };
-  //         };
-  //       } = await api_client.get(`/shop/?category=${product.category}&limit=8`);
-
-  //       setRelatedProducts(data.products.docs);
-  //     } catch (_error) {
-  //       setRelatedProducts([]);
-  //       // console.error(error);
-  //     }
-  //   };
-  //   // Immediately invoke and handle promise properly
-  //   void (async () => {
-  //     try {
-  //       await getrelatedProducts();
-  //     } catch (error) {
-  //       /* eslint-disable no-console */
-  //       console.error("Error fetching related products:", error);
-  //     }
-  //   })();
-  // }, [product.category]);
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

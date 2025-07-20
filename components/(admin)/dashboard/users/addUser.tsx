@@ -1,5 +1,6 @@
 "use client";
 
+import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import toast from "react-hot-toast";
@@ -15,17 +16,72 @@ import {
 import validator from "validator";
 import { z } from "zod";
 
+import { type ClientAuditLogDetails } from "@/app/lib/types/audit.db.types";
 import {
   AuthMethod,
+  type UserAuthType,
   UserRole,
   UserStatus,
 } from "@/app/lib/types/users.db.types";
-import api_client from "@/app/lib/utilities/api.client";
 import { lang } from "@/app/lib/utilities/lang";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import { usersTranslate } from "@/public/locales/client/(auth)/(admin)/dashboard/usersTranslate";
+
+// GraphQL Mutation
+const CREATE_USER_BY_ADMIN = gql`
+  mutation CreateUserByAdmin($input: CreateUserByAdminInput!) {
+    createUserByAdmin(input: $input) {
+      _id
+      name
+      email
+      phone
+      role
+      status
+      created_at
+      verification {
+        email_verified
+        phone_verified
+      }
+      two_factor_enabled
+      login_notification_sent
+      security {
+        auditLog {
+          action
+          timestamp
+          details {
+            success
+            message
+            device {
+              fingerprint
+              device
+              os
+              browser
+              ip
+              location {
+                city
+                country
+                latitude
+                longitude
+              }
+              is_bot
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+// GraphQL response type
+interface CreateUserResponse {
+  createUserByAdmin: UserAuthType & {
+    security: {
+      auditLog: ClientAuditLogDetails[];
+    };
+  };
+}
 
 const userSchema = z.object({
   name: z
@@ -85,7 +141,6 @@ type UserFormValues = z.infer<typeof userSchema>;
 const AddUser = () => {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<UserFormValues>({
     name: "",
     email: "",
@@ -100,6 +155,22 @@ const AddUser = () => {
       marketingOptIn: false,
     },
   });
+
+  // GraphQL Mutation
+  const [createUserByAdmin, { loading: isSubmitting }] =
+    useMutation<CreateUserResponse>(CREATE_USER_BY_ADMIN, {
+      onCompleted: (data) => {
+        if (data?.createUserByAdmin) {
+          toast.success(
+            usersTranslate.users[lang].addUsers.function.handleSubmit.success
+          );
+          router.push(`/dashboard/users?email=${formData.email}`);
+        }
+      },
+      onError: (error) => {
+        toast.error(error.message || usersTranslate.users[lang].error.global);
+      },
+    });
 
   const handleInputChange = (name: string, value: any) => {
     setFormData((prev) => {
@@ -119,7 +190,7 @@ const AddUser = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+
     try {
       const validationResult = userSchema.safeParse(formData);
       if (!validationResult.success) {
@@ -139,32 +210,37 @@ const AddUser = () => {
         setErrors(errors);
         return;
       }
+
       // Handle valid form submission
       setErrors({});
 
-      if (formData.phone === "") {
-        delete formData.phone;
-      }
-      const response: {
-        data: {
-          error?: string;
-        };
-      } = await api_client.post("/admin/dashboard/users", formData);
+      // Prepare mutation input
+      const mutationInput = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        ...(formData.phone &&
+          formData.phone !== "" && { phone: formData.phone }),
+        role: formData.role,
+        status: formData.status,
+        authMethods: formData.authMethods,
+        preferences: {
+          language: formData.preferences.language,
+          currency: formData.preferences.currency,
+          marketingOptIn: formData.preferences.marketingOptIn,
+        },
+      };
 
-      if (response.data.error) {
-        throw new Error(response.data.error);
-      }
-
-      toast.success(
-        usersTranslate.users[lang].addUsers.function.handleSubmit.success
-      );
-      router.push(`/dashboard/users?email=${formData.email}`);
+      // Execute GraphQL mutation
+      await createUserByAdmin({
+        variables: {
+          input: mutationInput,
+        },
+      });
     } catch (error: unknown) {
       toast.error(
         (error as Error)?.message || usersTranslate.users[lang].error.global
       );
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
