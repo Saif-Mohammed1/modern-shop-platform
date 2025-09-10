@@ -5,6 +5,8 @@
 .pnp.js
 .yarn/install-state.gz
 
+# codacy
+/.codacy
 # testing
 /coverage
 
@@ -50,3 +52,6 @@ next-env.d.ts
 **/*.swp*
 
 certificates
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

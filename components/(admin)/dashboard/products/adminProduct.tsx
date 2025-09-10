@@ -441,7 +441,7 @@ const ProductList: FC<ProductListProps> = ({
                         <FaTag className="text-purple-600" />
                         <span className="font-medium">Discount:</span>
                         <span className="text-purple-600">
-                          ${product.discount.toFixed(2)}
+                          ${product.discount?.toFixed(2) ?? "0.00"}
                         </span>
                       </div>
                       <span

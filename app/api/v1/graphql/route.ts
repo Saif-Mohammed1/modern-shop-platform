@@ -7,13 +7,8 @@ const handler = startServerAndCreateNextHandler<NextRequest, Context>(
   apolloServer,
   {
     context: async (req: NextRequest) => {
-      // Extract user information from request headers
-      // const token = req.headers.get("authorization")?.replace("Bearer ", "");
-
       return {
         req,
-        // token,
-        // Add user authentication logic here
       };
     },
   }

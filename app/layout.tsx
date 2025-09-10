@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { Toaster } from "react-hot-toast";
 
 import { lang } from "@/app/lib/utilities/lang";
+import FloatingAIButton from "@/components/ai-assistant/FloatingAIButton";
 import Footer from "@/components/footer/footer";
 import NavBar from "@/components/navBar/navBar";
 import Providers from "@/components/providers/providers";
@@ -42,6 +43,9 @@ export default async function RootLayout({
             {children}
             <Footer />
           </main>
+
+          {/* AI Assistant - Available on specific pages (/, /shop, /shop/[slug]) */}
+          <FloatingAIButton />
         </Providers>
         <Toaster position="top-left" />
       </body>

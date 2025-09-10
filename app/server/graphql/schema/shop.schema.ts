@@ -151,6 +151,13 @@ export const shopTypeDefs = /* GraphQL */ `
     newProducts: [ProductBase!]
     topRating: [ProductBase!]
   }
+
+  type AISearchResult {
+    products: ProductsResult!
+    searchIntent: String!
+    confidence: Float!
+    suggestions: [String!]!
+  }
   type Query {
     getProducts(filter: SearchParams): ProductsWithCategories
     getProductBySlug(slug: String!, populate: Boolean): ProductWithDistribution
@@ -159,6 +166,7 @@ export const shopTypeDefs = /* GraphQL */ `
       slug: String!
       productHistoryFilter: ProductHistoryFilterInput
     ): ProductHistoryResult!
+    aiSearchProducts(query: String!): AISearchResult!
   }
   type Mutation {
     createProduct(product: ProductInput!): Product

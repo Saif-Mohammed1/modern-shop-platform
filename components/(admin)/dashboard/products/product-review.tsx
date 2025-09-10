@@ -66,7 +66,7 @@ export default function ProductReview({
           label:
             productsTranslate.products[lang].addProduct.form.productReview
               .final_price,
-          value: `$${values.price - values.discount}`,
+          value: `$${values.price - (values.discount ?? 0)}`,
         },
         {
           label:

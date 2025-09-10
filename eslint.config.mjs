@@ -40,6 +40,7 @@ export default [
       "**/*.old.*",
       "**/migrate.ts",
       "config",
+      ".codacy/**",
     ],
   },
   eslintJS.configs.recommended,

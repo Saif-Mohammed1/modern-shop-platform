@@ -1,4 +1,5 @@
 import { UserRole } from "@/app/lib/types/users.db.types";
+import { AIQueryParserService } from "@/app/lib/utilities/ai-query-parser";
 import AppError from "@/app/lib/utilities/appError";
 import { lang } from "@/app/lib/utilities/lang";
 import { productControllerTranslate } from "@/public/locales/server/productControllerTranslate";
@@ -12,6 +13,7 @@ import type { Context } from "../apollo-server";
 
 const productService: ProductService = new ProductService();
 const reviewService: ReviewService = new ReviewService();
+const aiQueryParser: AIQueryParserService = new AIQueryParserService();
 type SearchParams = {
   category?: string;
   name?: string;
@@ -167,6 +169,46 @@ export const shopResolvers = {
 
       const history = await productService.getProductHistory(slug, { query });
       return history;
+    },
+    aiSearchProducts: async (
+      _parent: unknown,
+      { query }: { query: string },
+      _context: Context
+    ) => {
+      // User Query: ${query}
+      const aiParams = await aiQueryParser.parseUserQuery(query);
+      // AI Parsed Params: ${JSON.stringify(aiParams)}
+      // Convert AI params to URLSearchParams like existing getProducts resolver
+      const searchQuery = new URLSearchParams();
+
+      // The AI parser now handles keyword extraction in its fallback
+      // so aiParams.search should always have a meaningful search term
+      if (aiParams.search) {
+        searchQuery.append("search", aiParams.search);
+      }
+
+      if (aiParams.rating) {
+        searchQuery.append("rating[gte]", aiParams.rating.toString());
+        searchQuery.append("rating[lte]", "5");
+      }
+      // Add price filtering if AI detected price preferences
+      if (aiParams.price_max) {
+        searchQuery.append("price[lte]", aiParams.price_max.toString());
+      }
+      if (aiParams.price_min) {
+        searchQuery.append("price[gte]", aiParams.price_min.toString());
+      }
+      // Search Query Params: ${searchQuery.toString()}
+      const productsResult = await productService.getProducts({
+        query: searchQuery,
+      });
+      // Products Result: ${JSON.stringify(productsResult)}
+      return {
+        products: productsResult,
+        searchIntent: aiParams.intent || "AI-powered search",
+        confidence: aiParams.confidence || 0.8,
+        suggestions: aiParams.suggestions || [],
+      };
     },
   },
   Mutation: {
