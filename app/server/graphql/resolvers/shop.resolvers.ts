@@ -1,3 +1,4 @@
+import { EnhancedAIQueryParserService } from "@/app/lib/enhanced-ai-with-tools";
 import { UserRole } from "@/app/lib/types/users.db.types";
 import { AIQueryParserService } from "@/app/lib/utilities/ai-query-parser";
 import AppError from "@/app/lib/utilities/appError";
@@ -14,6 +15,8 @@ import type { Context } from "../apollo-server";
 const productService: ProductService = new ProductService();
 const reviewService: ReviewService = new ReviewService();
 const aiQueryParser: AIQueryParserService = new AIQueryParserService();
+const enhancedAI: EnhancedAIQueryParserService =
+  new EnhancedAIQueryParserService(productService);
 type SearchParams = {
   category?: string;
   name?: string;
@@ -209,6 +212,53 @@ export const shopResolvers = {
         confidence: aiParams.confidence || 0.8,
         suggestions: aiParams.suggestions || [],
       };
+    },
+
+    intelligentSearch: async (
+      _parent: unknown,
+      { query }: { query: string },
+      _context: Context
+    ) => {
+      try {
+        // 🚀 REAL AI WITH TOOLS - Uses Google Gemini AI that can call your functions as tools
+        const aiResult = await enhancedAI.intelligentSearch(query);
+
+        return {
+          response: aiResult.response,
+          confidence: aiResult.confidence,
+          timestamp: aiResult.timestamp,
+          suggestedProducts: aiResult.suggestedProducts,
+          insights: aiResult.insights,
+          debugLogs: aiResult.debugLogs,
+        };
+      } catch (error) {
+        return {
+          response:
+            "I encountered an issue while processing your request with AI. Please try again.",
+          confidence: 0.0,
+          timestamp: new Date().toISOString(),
+          suggestedProducts: [],
+          insights: {
+            totalMatches: 0,
+            priceAnalysis: {
+              min: 0,
+              max: 0,
+              average: 0,
+              median: 0,
+            },
+            categories: [],
+            averageRating: 0,
+            stockInsights: {
+              lowStock: 0,
+              mediumStock: 0,
+              highStock: 0,
+              outOfStock: 0,
+            },
+            recommendations: [],
+          },
+          debugLogs: `Error: ${error instanceof Error ? error.message : "Unknown error"} - Note: Real AI processing failed`,
+        };
+      }
     },
   },
   Mutation: {

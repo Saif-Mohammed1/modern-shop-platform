@@ -158,6 +158,84 @@ export const shopTypeDefs = /* GraphQL */ `
     confidence: Float!
     suggestions: [String!]!
   }
+
+  type IntelligentSearchResponse {
+    """
+    AI-generated response with insights and recommendations
+    """
+    response: String!
+
+    """
+    Confidence score of the AI response (0-1)
+    """
+    confidence: Float!
+
+    """
+    Timestamp when the search was performed
+    """
+    timestamp: String!
+
+    """
+    Optional: Actual product results if AI found specific matches
+    """
+    suggestedProducts: [ProductBase]
+
+    """
+    Optional: Search insights and analytics
+    """
+    insights: SearchInsights
+
+    """
+    Debug logs showing AI tool calls and parameters (for development)
+    """
+    debugLogs: String
+  }
+
+  type SearchInsights {
+    """
+    Total products found matching criteria
+    """
+    totalMatches: Int
+
+    """
+    Price analysis of found products
+    """
+    priceAnalysis: PriceAnalysis
+
+    """
+    Category distribution
+    """
+    categories: [String!]
+
+    """
+    Average rating of found products
+    """
+    averageRating: Float
+
+    """
+    Stock level insights
+    """
+    stockInsights: StockInsights
+
+    """
+    Personalized recommendations
+    """
+    recommendations: [String!]
+  }
+
+  type PriceAnalysis {
+    min: Float
+    max: Float
+    average: Float
+    median: Float
+  }
+
+  type StockInsights {
+    lowStock: Int
+    mediumStock: Int
+    highStock: Int
+    outOfStock: Int
+  }
   type Query {
     getProducts(filter: SearchParams): ProductsWithCategories
     getProductBySlug(slug: String!, populate: Boolean): ProductWithDistribution
@@ -167,6 +245,10 @@ export const shopTypeDefs = /* GraphQL */ `
       productHistoryFilter: ProductHistoryFilterInput
     ): ProductHistoryResult!
     aiSearchProducts(query: String!): AISearchResult!
+    """
+    Intelligent AI search that can use tools to analyze and search products
+    """
+    intelligentSearch(query: String!): IntelligentSearchResponse!
   }
   type Mutation {
     createProduct(product: ProductInput!): Product

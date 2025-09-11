@@ -5,7 +5,8 @@ import { useState } from "react";
 import { BsChatDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 
-import AIChatDialog from "./AIChatDialog";
+// import AIChatDialog from "./AIChatDialog";
+import AIChatDialogV2 from "./AIChatDialogV2";
 
 export default function FloatingAIButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,7 +69,7 @@ export default function FloatingAIButton() {
       </div>
 
       {/* AI Chat Dialog */}
-      <AIChatDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <AIChatDialogV2 isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
 }
