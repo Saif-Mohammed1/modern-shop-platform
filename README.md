@@ -328,8 +328,8 @@ Features:
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/Saif-Mohammed1/--Uk.git
-cd shop
+git clone https://github.com/Saif-Mohammed1/modern-shop-platform.git
+cd modern-shop-platform
 ```
 
 2. **Install dependencies**
