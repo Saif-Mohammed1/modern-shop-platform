@@ -1,4 +1,3 @@
-License: MIT
 
 # 🛍️ Modern E-Commerce Platform
 
@@ -710,6 +709,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - All open-source contributors
 
 ---
+## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+This project is licensed under the MIT License — see the `LICENSE` file in the project root for details.
 
 **Note**: This is a production-ready template showcasing enterprise-level patterns and security best practices. Feel free to use it as a foundation for your e-commerce projects.
 
