@@ -1,3 +1,5 @@
+License: MIT
+
 # 🛍️ Modern E-Commerce Platform
 
 A production-ready, full-stack e-commerce application built with Next.js 15, GraphQL, and PostgreSQL. This project showcases enterprise-level architecture with advanced security features, real-time capabilities, and a scalable microservice-inspired structure.
