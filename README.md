@@ -8,6 +8,7 @@ A production-ready, full-stack e-commerce application built with Next.js 15, Gra
 ![GraphQL](https://img.shields.io/badge/GraphQL-16.11-E10098?logo=graphql)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Latest-316192?logo=postgresql)
 ![Apollo](https://img.shields.io/badge/Apollo-4.12-311C87?logo=apollo-graphql)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## 📋 Table of Contents
 
